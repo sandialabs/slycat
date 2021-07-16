@@ -40,18 +40,10 @@ import { Provider, } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import { createLogger, } from 'redux-logger';
 import dac_reducer from './reducers';
-// import { 
-//   updateThreeDSync,
-//   setXValues,
-//   setYValues,
-//   setVValues,
-//   setXIndex,
-//   setYIndex,
-//   setVIndex,
-//   setHiddenSimulations,
-//   setManuallyHiddenSimulations,
-//   setSelectedSimulations,
-// } from './actions';
+import { 
+    setZoomExtent,
+    setZoomFlag,
+  } from './actions';
 
 
 // wait for document ready
@@ -269,9 +261,8 @@ $(document).ready(function() {
 
                     // Create Redux store and set its state based on what's in the bookmark
                     const state_tree = {
-                      // MAX_POINTS_ANIMATE: MAX_POINTS_ANIMATE,
-                      // SCATTER_PLOT_TYPE: SCATTER_PLOT_TYPE,
-                      // cont_colormap: cont_colormap,
+                        dac_zoom_extent: "dac-zoom-extent" in bookmark ? bookmark["dac-zoom-extent"] : null,
+                        dac_zoom_flag: "dac-zoom-flag" in bookmark ? bookmark["dac-zoom-flag"] : false,
                     }
                     // Create logger for redux
                     const loggerMiddleware = createLogger();
@@ -954,27 +945,8 @@ $(document).ready(function() {
                       (
                       <Provider store={store}>
                         <Selector 
-                          MAX_POINTS_ANIMATE={MAX_POINTS_ANIMATE}
                           // Padding around the scatterplot
                           SCATTER_BORDER={SCATTER_BORDER}
-                          POINT_COLOR={POINT_COLOR}
-                          POINT_SIZE={POINT_SIZE}
-                          SCATTER_PLOT_TYPE={SCATTER_PLOT_TYPE}
-                          NO_SEL_COLOR={NO_SEL_COLOR}
-                          SELECTION_COLOR={SELECTION_COLOR}
-                          FOCUS_COLOR={FOCUS_COLOR}
-                          COLOR_BY_LOW={COLOR_BY_LOW}
-                          COLOR_BY_HIGH={COLOR_BY_HIGH}
-                          cont_colormap={cont_colormap}
-                          OUTLINE_NO_SEL={OUTLINE_NO_SEL}
-                          OUTLINE_SEL={OUTLINE_SEL}
-                          var_include_columns={var_include_columns}
-                          init_alpha_values={init_alpha_values}
-                          init_color_by_col={init_color_by_col}
-                          // This one seems like it should just be zoom_extent and tracked
-                          // entirely in the bookmark
-                          init_zoom_extent={init_zoom_extent}
-                          init_subset_center={init_subset_center}
                         />
                       </Provider>
                       )
@@ -982,7 +954,7 @@ $(document).ready(function() {
 
                     self.scatter_plot_react_render = ReactDOM.render(
                         selector,
-                      document.getElementById('dac-selector-svg')
+                      document.getElementById('dac-selector-svg-container')
                     );
 
                   },
@@ -1214,6 +1186,10 @@ $(document).ready(function() {
         
         // update button status
         scatter_buttons.set_zoom_button(new_extent.detail.zoom);
+
+        // dispatch update to mds_coords in redux
+        window.store.dispatch(setZoomExtent(new_extent.detail.extent));
+        window.store.dispatch(setZoomFlag(new_extent.detail.zoom));
 
         // bookmark new zoom extent
         bookmarker.updateState({"dac-zoom-extent": new_extent.detail.extent,

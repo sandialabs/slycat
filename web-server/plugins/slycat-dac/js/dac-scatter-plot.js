@@ -733,6 +733,7 @@ function zoom()
 
 	// find final selection indices
 	var extent = d3.event.target.extent();
+	// console.debug(`new zoom extent is %o, %o, %o, %o`, extent[0][0], extent[1][0], extent[0][1], extent[1][1]);
 
 	// look for points that were selected
 	var selection = get_brush_sel(extent);
@@ -885,12 +886,12 @@ module.reset_zoom = function ()
 	var extent = [[0 - scatter_border, 0 - scatter_border],
 	              [1 + scatter_border, 1 + scatter_border]];
 	x_scale.domain([extent[0][0], extent[1][0]]);
-    y_scale.domain([extent[0][1], extent[1][1]]);
+	y_scale.domain([extent[0][1], extent[1][1]]);
 
 	// reset zoom in bookmarks
-    var zoomEvent = new CustomEvent("DACZoomChanged",
-                                      {detail: {extent: extent, zoom: false}});
-    document.body.dispatchEvent(zoomEvent);
+	var zoomEvent = new CustomEvent("DACZoomChanged",
+																		{detail: {extent: extent, zoom: false}});
+	document.body.dispatchEvent(zoomEvent);
 
 }
 
@@ -1000,7 +1001,14 @@ module.reset_zoom = function ()
 // selection brush end handler call back
 function sel_brush_end()
 {
-	console.debug(`sel_brush_end()`);
+	// console.debug(`sel_brush_end()`);
+	// const brush = d3.event.target;
+	// console.debug(
+	// 	`About to run sel_brush_end event handler with brush %o with x domain %o and y domain %o`,
+	// 	brush,
+	// 	brush.x().domain(),
+	// 	brush.y().domain()
+	// );
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
@@ -1123,6 +1131,13 @@ function defocus() {
 // set up subset change event
 document.body.addEventListener("DACBrushReady", (eventData) => {
 	const brush = eventData.detail.brush;
+	// console.debug(`Registering events for new brush %o`, brush);
+	// console.debug(
+	// 	`About to Registering a new brush event handlers with brush %o with x domain %o and y domain %o`,
+	// 	brush,
+	// 	brush.x().domain(),
+	// 	brush.y().domain()
+	// );
 	brush.on("brushstart", brushstart);
 	brush.on("brushend", brushend);
 });
@@ -1134,7 +1149,15 @@ function brushstart() {
 	}
 }
 
-function brushend() {
+function brushend(someevent) {
+	// console.debug('brushend event handler fired');
+	// const brush = d3.event.target;
+	// console.debug(
+	// 	`About to run brushend event handler with brush %o with x domain %o and y domain %o`,
+	// 	brush,
+	// 	brush.x().domain(),
+	// 	brush.y().domain()
+	// );
 	// enable zoom
 	if (selections.sel_type() == 0) 
 	{
