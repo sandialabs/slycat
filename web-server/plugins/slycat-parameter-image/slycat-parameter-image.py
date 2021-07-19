@@ -36,8 +36,12 @@ def register_slycat_plugin(context):
         columns = []
         metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", "0")["arrays"][0]
         for index, attribute in enumerate(metadata["attributes"]):
-            if attribute["type"] != "string":
-                continue
+            if isinstance(attribute["type"], bytes):
+                if attribute["type"].decode() != "string":
+                    continue
+            else:
+                if str(attribute["type"]) != "string":
+                    continue
             column = slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index)
             if not numpy.any(search(column)):
                 continue
