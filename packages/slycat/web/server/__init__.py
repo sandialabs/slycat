@@ -294,20 +294,21 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
                 for attribute in array.attributes(len(hdf5_array.attributes)):
 
                     # previous code: this pulls entire dataset!
-                    # values = evaluate(hdf5_array, attribute.expression, "attribute")
+                    if array.order is not None:
+                        values = evaluate(hdf5_array, attribute.expression, "attribute")
 
                     # get each hyperslice
                     for hyperslice in attribute.hyperslices():
 
                         # new code: only pull hyperslice
-                        values = evaluate(hdf5_array, attribute.expression, "attribute", 
-                            hyperslice=hyperslice)
+                        if array.order is None:
+                            values = evaluate(hdf5_array, attribute.expression, "attribute", 
+                                hyperslice=hyperslice)
+                            return_list.append(values)
 
                         # put in order, if necessary
                         if array.order is not None:
-                            return_list.append(values[order])
-                        else:
-                            return_list.append(values)
+                            return_list.append(values[order][hyperslice])                            
 
     return return_list
 
