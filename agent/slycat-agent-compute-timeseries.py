@@ -80,8 +80,8 @@ def tardir(path):
 # Compute the model.
 try:
     start_now = datetime.datetime.now()
-    start_time = start_now.strftime("%d/%m/%Y %H:%M:%S")
-    print("[START] " + start_time)
+    start_time_str = start_now.strftime("%d/%m/%Y %H:%M:%S")
+    print("[START] " + start_time_str)
 
     print("Examining and verifying data.")
     """
@@ -405,10 +405,10 @@ except:
 tardir(dirname)
 
 finish_now = datetime.datetime.now()
-finish_time = finish_now.strftime("%d/%m/%Y %H:%M:%S")
-print("[FINISH] " + finish_time)
+finish_time_str = finish_now.strftime("%d/%m/%Y %H:%M:%S")
+print("[FINISH] " + finish_time_str)
 
-run_time = finish_time - start_time
+run_time = finish_now - start_now
 run_time = run_time.total_seconds()
 
 print("[RUN TIME] " + str(run_time))
