@@ -342,7 +342,7 @@ function display_plot_pull_down(i)
             plots_displayed[select_id] = 1;
 
 			// update newly selected plot
-			draw_plot(select_id);
+			draw_plots([select_id]);
 
 			// plot changed event
             var plotEvent = new CustomEvent("DACPlotsChanged", {detail: {
@@ -632,32 +632,31 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
 		mid: mid,
 		type: "DAC",
 		command: "subsample_time_var",
-		parameters: {plot_id: plot_id, database_id: sel_plot_ind,
+		parameters: {plot_list: [plot_id], 
+					 database_ids: [sel_plot_ind],
 		             plot_selection: curr_sel_table_order,
 		             num_subsamples: "Inf",
-		             x_min: plots_selected_zoom_x[plot_id][0],
-		             x_max: plots_selected_zoom_x[plot_id][1],
-		             y_min: plots_selected_zoom_y[plot_id][0],
-		             y_max: plots_selected_zoom_y[plot_id][1]},
+		             zoom_x: [plots_selected_zoom_x[plot_id]],
+		             zoom_y: [plots_selected_zoom_y[plot_id]]},
 		success: function (result)
 		{
             // convert to variable
 		    result = JSON.parse(result);
 
 			// add data to table, rows are time steps
-			var num_time_steps = result["time_points"].length;
+			var num_time_steps = result["time_points"][0].length;
 			for (var i = 0; i < num_time_steps; i++) {
 
 			    // time step is first column
-			    csv_output += result["time_points"][i] + ","
+			    csv_output += result["time_points"][0][i] + ","
 
 			    // next columns are variables
 			    for (var j = 0; j < num_sel-1; j++) {
-			        csv_output += result["var_data"][j][i] + ","
+			        csv_output += result["var_data"][0][j][i] + ","
 			    }
 
 			    // last variable
-			    csv_output += result["var_data"][num_sel-1][i] + "\n";
+			    csv_output += result["var_data"][0][num_sel-1][i] + "\n";
 
 			}
 
@@ -776,6 +775,9 @@ module.draw = function()
         plots_expected = plots_expected + plots_displayed[i];
     }
 
+	// keep track of plots to draw
+	var plot_list = []
+
 	// the sizes and ranges of the plots are all the same
 	for (var i = 0; i < Math.min(num_included_plots,3); ++i) {
 
@@ -828,9 +830,14 @@ module.draw = function()
 
 		// draw actual plot (if it should be displayed -- only for initial load)
 		if (plots_displayed[i] == 1) {
-		    draw_plot(i);
+		    plot_list.push(i);
 		}
 
+	}
+
+	// draw all the plots at once
+	if (plot_list.length > 0) {
+		draw_plots(plot_list);
 	}
 }
 
@@ -872,12 +879,23 @@ function check_links(i)
 // (2) update data in d3
 // (3) re-draw d3 plots
 // (4) update indicators for plot
-function draw_plot(i)
+// input is a list of plots to draw
+function draw_plots(plot_list)
 {
 
-	// first, we refresh the data
-	// since this is an ajax call, we only continue after the
-	// data has been retrieved
+	// get database ids for plots
+	var database_ids = []
+	for (var j=0; j < plot_list.length; j++) {
+		database_ids.push(plots_selected[plot_list[j]])
+	}
+
+	// get x, y limits for zoom for plots
+	var zoom_x = []
+	var zoom_y = []
+	for (var j=0; j < plot_list.length; j++) {
+		zoom_x.push(plots_selected_zoom_x[plot_list[j]])
+		zoom_y.push(plots_selected_zoom_y[plot_list[j]])
+	}
 
 	// compile selections into one list
 	var refresh_selections = [];
@@ -894,11 +912,14 @@ function draw_plot(i)
 	}
 
 	// if selection is non-empty show display indicator
-	if (refresh_selections.length == 0) {
-		plots_selected_displayed[i] = 0;
-	} else {
-		plots_selected_displayed[i] = 1;
+	for (var j=0; j < plot_list.length; j++) {
+		if (refresh_selections.length == 0) {
+			plots_selected_displayed[j] = 0;
+		} else {
+			plots_selected_displayed[j] = 1;
+		}
 	}
+
 
 	// call to server to get subsampled data
 	client.post_sensitive_model_command(
@@ -906,69 +927,83 @@ function draw_plot(i)
 		mid: mid,
 		type: "DAC",
 		command: "subsample_time_var",
-		parameters: {plot_id: i, database_id: plots_selected[i],
+		parameters: {plot_list: plot_list, 
+					 database_ids: database_ids,
 		             plot_selection: refresh_selections,
 		             num_subsamples: max_time_points,
-		             x_min: plots_selected_zoom_x[i][0],
-		             x_max: plots_selected_zoom_x[i][1],
-		             y_min: plots_selected_zoom_y[i][0],
-		             y_max: plots_selected_zoom_y[i][1]},
+		             zoom_x: zoom_x,
+		             zoom_y: zoom_y},
 		success: function (result)
 		{
+
 		    // convert to variable
 		    result = JSON.parse(result);
-
+			
 			// recover plot id
-			var plot_id = result["plot_id"];
+			var plot_list = result["plot_list"];
 
-			// save new data
-			plots_selected_time[plot_id] = result["time_points"];
-			plots_selected_data[plot_id] = result["var_data"];
+			// do each plot in list
+			for (var j=0; j < plot_list.length; j++) {
 
-			// save resolution indicator (for null selection do not show indicator)
-			if (plots_selected_data[plot_id].length > 0)
-			{
-				plots_selected_resolution[plot_id] = result["resolution"];
-			} else {
-				plots_selected_resolution[plot_id] = -1;
+				// get plot id
+				var plot_id = plot_list[j]
+
+				// save new time points
+				plots_selected_time[plot_id] = result["time_points"][j];
+
+				// save new data, if there was a selection
+				if (result["var_data"].length > 0) {
+					plots_selected_data[plot_id] = result["var_data"][j];
+				} else {
+					plots_selected_data[plot_id] = [];
+				}
+
+				// save resolution indicator (for null selection do not show indicator)
+				if (plots_selected_data[plot_id].length > 0)
+				{
+					plots_selected_resolution[plot_id] = result["resolution"][j];
+				} else {
+					plots_selected_resolution[plot_id] = -1;
+				}
+
+				// was zoom range changed?  (this is an error condition,
+				// likely from a template application)
+				if (result["range_change"][j]) {
+
+					// reset zoom
+					plots_selected_zoom_x[plot_id] = result["data_range_x"][j];
+					plots_selected_zoom_y[plot_id] = result["data_range_y"][j];
+
+					// unlink plot
+					$("#dac-link-plot-" + (plot_id+1).toString()).prop("checked", false);
+					link_plots[plot_id] = 0;
+
+					// plot zoom change event
+					var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
+										plots_zoom_x: plots_selected_zoom_x,
+										plots_zoom_y: plots_selected_zoom_y} });
+					document.body.dispatchEvent(plotZoomEvent);
+
+					// link plot change event
+					var linkPlotEvent = new CustomEvent("DACLinkPlotsChanged", {detail:
+														link_plots});
+					document.body.dispatchEvent(linkPlotEvent);
+
+				}
+
+				// now update data in d3
+				update_data_d3(plot_id);
+
+				// then re-draw d3 plot
+				draw_plot_d3(plot_id);
+
+				// update indicators for this plot
+				update_indicators(plot_id);
+
+				// done, check links
+				check_links(plot_id);
+
 			}
-
-            // was zoom range changed?  (this is an error condition,
-            // likely from a template application)
-            if (result["range_change"]) {
-
-                // reset zoom
-                plots_selected_zoom_x[i] = result["data_range_x"];
-                plots_selected_zoom_y[i] = result["data_range_y"];
-
-                // unlink plot
-                $("#dac-link-plot-" + (i+1).toString()).prop("checked", false);
-                link_plots[i] = 0;
-
-                // plot zoom change event
-                var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
-                                     plots_zoom_x: plots_selected_zoom_x,
-                                     plots_zoom_y: plots_selected_zoom_y} });
-                document.body.dispatchEvent(plotZoomEvent);
-
-                // link plot change event
-                var linkPlotEvent = new CustomEvent("DACLinkPlotsChanged", {detail:
-                                                    link_plots});
-                document.body.dispatchEvent(linkPlotEvent);
-
-            }
-
-			// now update data in d3
-			update_data_d3(i);
-
-			// then re-draw d3 plot
-			draw_plot_d3(i);
-
-			// update indicators for this plot
-			update_indicators(i);
-
-			// done, check links
-			check_links(i);
 
 		},
 		error: function ()
@@ -1297,7 +1332,7 @@ function zoom()
 					}
 
 					// re-draw plot
-					draw_plot(j);
+					draw_plots([j]);
 				}
 			}
 
@@ -1320,7 +1355,7 @@ function zoom()
 				plots_selected_zoom_y[j] = ["-Inf", "Inf"];
 
 				// re-draw plot
-				draw_plot(j);
+				draw_plots([j]);
 
 			}
 		}

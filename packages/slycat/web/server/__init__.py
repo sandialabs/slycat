@@ -46,10 +46,12 @@ def mix(a, b, amount):
 
 
 # @cache_it
-def evaluate(hdf5_array, expression, expression_type, expression_level=0):
+def evaluate(hdf5_array, expression, expression_type, expression_level=0, hyperslice=None):
     """Evaluate a hyperchunk expression."""
     # cherrypy.log.error("%sEvaluating %s expression: %s" % (
     #     "  " * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))
+
+    cherrypy.log.error("evaluate expression: " + str(expression))
     if isinstance(expression, int):
         return expression
     elif isinstance(expression, float):
@@ -57,7 +59,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0):
     elif isinstance(expression, str):
         return expression
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
-        return hdf5_array.get_data(expression.index)[...]
+        if hyperslice is None:
+            return hdf5_array.get_data(expression.index)[...]
+        else:
+            return hdf5_array.get_data(expression.index)[hyperslice]
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
         left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1)
         for operand in expression.operands[1:]:
@@ -262,23 +267,49 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     --------
     `/api/models/(mid)/arraysets/(aid)/data`
     """
+
+    # parse hyperchunks
     if isinstance(hyperchunks, str):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
     return_list = []
+
+    # get lock and open file
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+
+            # instatiate arrayset
             hdf5_arrayset = slycat.hdf5.ArraySet(file)
+
+            # go through each array in arrayset
             for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+
+                # instatiate array
                 hdf5_array = hdf5_arrayset[array.index]
+
+                # returnvalues in hyperchunk order
                 if array.order is not None:
                     order = evaluate(hdf5_array, array.order, "order")
+
+                # go through each attribute in array
                 for attribute in array.attributes(len(hdf5_array.attributes)):
-                    values = evaluate(hdf5_array, attribute.expression, "attribute")
+
+                    # previous code: this pulls entire dataset!
+                    if array.order is not None:
+                        values = evaluate(hdf5_array, attribute.expression, "attribute")
+
+                    # get each hyperslice
                     for hyperslice in attribute.hyperslices():
+
+                        # new code: only pull hyperslice
+                        if array.order is None:
+                            values = evaluate(hdf5_array, attribute.expression, "attribute", 
+                                hyperslice=hyperslice)
+                            return_list.append(values)
+
+                        # put in order, if necessary
                         if array.order is not None:
-                            return_list.append(values[order][hyperslice])
-                        else:
-                            return_list.append(values[hyperslice])
+                            return_list.append(values[order][hyperslice])                            
+
     return return_list
 
 
