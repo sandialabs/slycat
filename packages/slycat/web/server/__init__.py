@@ -286,7 +286,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
                 # instatiate array
                 hdf5_array = hdf5_arrayset[array.index]
 
-                # returnvalues in hyperchunk order
+                # return values in hyperchunk order
                 if array.order is not None:
                     order = evaluate(hdf5_array, array.order, "order")
 

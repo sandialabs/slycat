@@ -25,18 +25,19 @@
 	overflow: hidden !important;
 }
 
-/* mds buttons */
+/* mds buttons
 #dac-scatter-select-buttons
 {
 	/*margin: 3px 3px 3px 3px;
-	display: inline-block;*/
-}
+	display: inline-block;
+} */
 
-/* difference buttons */
+/* difference buttons
+#dac-difference-buttons
 {
     margin: 3px 3px 3px 3px;
     display: inline-block;
-}
+} */
 
 /* difference sync indicator */
 #dac-selection-synced

@@ -45,7 +45,6 @@ import {
     setZoomFlag,
 } from './actions';
 
-
 // wait for document ready
 $(document).ready(function() {
 
@@ -130,21 +129,28 @@ $(document).ready(function() {
 
                 if (result[0] == "Done") {
 
+                    // Remove progress element from DOM
+                    $('#dac-progress-feedback').remove();
+
                     // done uploading to database
                     check_preferences();
 
                 } else if (result[0] == "Error") {
 
-                    dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
+                    $("#dac-progress-feedback").show()
 
                     // update progress and output log
                     $("#dac_processing_progress_bar").text("No Data Loaded (See Info > Parse Log)");
                     $("#dac_processing_progress_bar").width(100 + "%");
 
+                    dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
+
                     // request error log
                     update_error_log(user_scroll);
 
                 } else {
+
+                    $("#dac-progress-feedback").show()
 
                     // update progress and output log
                     $("#dac_processing_progress_bar").text(result[0]);
@@ -608,12 +614,13 @@ $(document).ready(function() {
 					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"]),
 				};
 
-	            // Remove progress element from DOM
-	            $('#dac-progress-feedback').remove();
-
 	            // set up jQuery layout for user interface
 				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
 							  SCATTER_BUTTONS_HEIGHT);
+
+                // turn on main console (after layout, to avoid flicker on load)
+                $("#dac-main-console").show()
+                $("#dac-plots").show()
 
                 // set up alpha slider value change event
                 document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
@@ -669,6 +676,10 @@ $(document).ready(function() {
                 ).then(
 		   	          function (variables_meta, variables, data_table_meta, data_table)
                   {
+
+                    // remove loading spinner
+                    $("#dac-model-loading").remove();
+
                     // get number of variables, points and columns in table
                     var num_vars = variables_meta[0]["row-count"];
                     var num_cols = data_table_meta[0]["column-count"];
