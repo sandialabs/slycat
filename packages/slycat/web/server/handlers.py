@@ -2802,8 +2802,19 @@ def get_remote_file(hostname, path, **kwargs):
     """
 
     sid, session_type = get_sid(hostname)
-    with slycat.web.server.remote.get_session(sid) as session:
-        return session.get_file(path, **kwargs)
+    if session_type == 'smb':
+        with slycat.web.server.smb.get_session(sid) as session:
+            split_list = path.split('/')
+            del split_list[1]
+            del split_list[0]
+            content_type, encoding = slycat.mime_type.guess_type(path)
+            if content_type is None:
+                content_type = "application/octet-stream"
+            cherrypy.response.headers["content-type"] = content_type
+            return session.get_file(path='/{0}'.format('/'.join(split_list)))
+    else:
+        with slycat.web.server.remote.get_session(sid) as session:
+            return session.get_file(path, **kwargs)
 
 
 def get_remote_image(hostname, path, **kwargs):

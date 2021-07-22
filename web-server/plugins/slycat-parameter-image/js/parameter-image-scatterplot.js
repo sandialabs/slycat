@@ -2766,6 +2766,7 @@ $.widget("parameter_image.scatterplot",
       if (this.status == 404) {
         if(!self.login_open)
         {
+          // TODO add SMB check here
           self.login_open = true;
           self.remotes.get_remote({
             hostname: uri.hostname(),

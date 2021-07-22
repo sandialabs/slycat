@@ -30,7 +30,7 @@ def register_slycat_plugin(context):
       [type] -- [description]
     """
 
-        expression = re.compile('file://|http')
+        expression = re.compile('smb://|file://|http')
         search = numpy.vectorize(lambda x: bool(expression.search(x)))
 
         columns = []
