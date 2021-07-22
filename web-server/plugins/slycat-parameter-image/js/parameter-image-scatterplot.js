@@ -2769,6 +2769,7 @@ $.widget("parameter_image.scatterplot",
           // TODO add SMB check here
           self.login_open = true;
           self.remotes.get_remote({
+            smb: uri.protocol() == "smb",
             hostname: uri.hostname(),
             title: "Login to " + uri.hostname(),
             message: "Loading " + uri.pathname(),

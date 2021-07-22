@@ -8,6 +8,9 @@ import mapping from 'knockout-mapping';
 import ispasswordrequired from 'js/slycat-server-ispasswordrequired';
 import template from 'templates/slycat-remote-login.html';
 import "bootstrap";
+import React from "react";
+import ReactDOM from "react-dom";
+import SmbAuthentication from 'components/SmbAuthentication.tsx';
 
 export function login(params)
 {
@@ -23,32 +26,58 @@ export function login(params)
     component.remote.enable(false);
     component.remote.status_type("info");
     component.remote.status("Connecting ...");
-    client.post_remotes(
-    {
-      hostname: params.hostname,
-      username: component.remote.username(),
-      password: component.remote.password(),
-      success: function(sid)
+    if(!params.smb) {
+      client.post_remotes(
       {
-        component.container.children().modal("hide");
-        if(params.success)
-          params.success(sid);
-      },
-      error: function(request, status, reason_phrase)
-      {
-        component.remote.enable(true);
-        component.remote.status_type("danger");
-        component.remote.status(reason_phrase);
-        component.remote.focus("password");
-      },
+        hostname: params.hostname,
+        username: component.remote.username(),
+        password: component.remote.password(),
+        success: function(sid)
+        {
+          component.container.children().modal("hide");
+          if(params.success)
+            params.success(sid);
+        },
+        error: function(request, status, reason_phrase)
+        {
+          component.remote.enable(true);
+          component.remote.status_type("danger");
+          component.remote.status(reason_phrase);
+          component.remote.focus("password");
+        },
+      });
+    }
+    else {
+      client.post_remotes_smb_fetch({
+        user_name: component.remote.username(),
+        password: component.remote.password(),
+        server: params.hostname,
+        share: component.remote.share()
+    }).then((response) => {
+        console.log("authenticated.",response);
+        if(response.ok){
+          component.container.children().modal("hide");
+          params.success(response.data.sid);
+        } else {
+          component.remote.enable(true);
+          component.remote.status_type("danger");
+          component.remote.focus("password");
+        }
+    }).catch((error)=>{
+      component.remote.enable(true);
+      component.remote.status_type("danger");
+      //component.remote.status(reason_phrase);
+      component.remote.focus("password");
     });
+    }
   }
   component.title = ko.observable(params.title || "Login");
   component.message = ko.observable(params.message || "");
-  component.remote = mapping.fromJS({username: null, password: null, status: null, enable: true, focus: false, status_type: null});
+  component.remote = mapping.fromJS({username: null, password: null, status: null, enable: true, focus: false, status_type: null, share: null, session_exists: null});
   component.remote.focus.extend({notify: "always"});
   component.container = $($.parseHTML(template)).appendTo($("body"));
   component.ispasswordrequired = ispasswordrequired;
+  component.smb = params.smb;
   component.container.children().on("shown.bs.modal", function()
   {
     component.remote.focus(true);
@@ -58,6 +87,26 @@ export function login(params)
     component.container.remove();
   });
   ko.applyBindings(component, component.container.get(0));
+
+  // If protocol is SMB, use the React login
+  if(params.smb) {
+    const setSmbAuthValues = function(hostname, username, password, share, session_exists) {
+      //component.remote.hostname(hostname)
+      component.remote.username(username)
+      component.remote.password(password)
+      component.remote.share(share)
+      component.remote.session_exists(session_exists)
+    }
+    ReactDOM.render(
+      <div>
+        <SmbAuthentication
+          loadingData={false}
+          callBack={setSmbAuthValues}
+        />
+      </div>,
+      document.querySelector(".smb-login")
+    );
+  }
   component.container.children().modal("show");
 }
 
@@ -101,6 +150,7 @@ export function create_pool()
         {
           login(
           {
+            smb: params.smb,
             hostname: params.hostname,
             title: params.title,
             message: params.message,
