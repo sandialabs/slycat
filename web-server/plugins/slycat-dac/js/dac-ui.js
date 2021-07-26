@@ -1199,7 +1199,7 @@ $(document).ready(function() {
         // update button status
         scatter_buttons.set_zoom_button(new_extent.detail.zoom);
 
-        // dispatch update to mds_coords in redux
+        // dispatch update to zoom in redux
         window.store.dispatch(setZoomExtent(new_extent.detail.extent));
         window.store.dispatch(setZoomFlag(new_extent.detail.zoom));
 
