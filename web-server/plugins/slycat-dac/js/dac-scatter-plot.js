@@ -138,7 +138,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
             // set subset to full mds_coord set, unless subset is available
             mds_subset = selections.get_subset();
 
-			// call server to compute new coords (in case of bookmarks)
+						// call server to compute new coords (in case of bookmarks)
             client.post_sensitive_model_command(
             {
                 mid: mid,
@@ -179,7 +179,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .interpolate(d3.interpolateRgb);
 
                         // finish with plot
+												console.time(`module.draw()`);
                         module.draw();
+												console.timeEnd(`module.draw()`);
 
                     },
                 error: function ()
@@ -245,14 +247,13 @@ module.draw = function ()
 		color_scale.domain([min_color_val, max_color_val]);
 	}
 	
-	// brush has to be under points
-	sel_zoom_buttons();
 	draw_points();
 
 }
 
 // entirely redraws points (including selection)
 function draw_points () {
+	console.time(`dac-scatter-plot.js draw_points()`);
 
 	// draw points (either circles or squares)
 	if (scatter_plot_type == "circle") {
@@ -261,6 +262,7 @@ function draw_points () {
 		draw_squares();
 	}
 
+	console.timeEnd(`dac-scatter-plot.js draw_points()`);
 }
 
 // d3 function to set outline color according to selection
@@ -379,7 +381,13 @@ function draw_circles ()
 			return y_scale(d[1])
 		})
 		.attr("r", set_point_size)
-		.on("mousedown", sel_individual);
+		// Alex disabling mousedown handler since we are doing selection in a 
+		// new layer now. Keeping around for debugging, but should be removed
+		// after a few months.
+		// .on("mousedown", (d,i) => {
+			// sel_individual(d,i);
+		// })
+		;
 
     // hide unfiltered points
     scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
@@ -423,7 +431,11 @@ function draw_circles ()
                             return y_scale(d[1])
                         })
                         .attr("r", point_size * 1.5)
-                        .on("mousedown", defocus);
+												// Alex disabling mousedown handler since we are doing selection in a 
+												// new layer now. Keeping around for debugging, but should be removed
+												// after a few months.
+                        // .on("mousedown", defocus)
+												;
 
 	    }
 	}
@@ -471,7 +483,11 @@ function draw_squares ()
 		})
 		.attr("width", set_point_size)
 		.attr("height", set_point_size)
-		.on("mousedown", sel_individual);
+		// Alex disabling mousedown handler since we are doing selection in a 
+		// new layer now. Keeping around for debugging, but should be removed
+		// after a few months.
+		// .on("mousedown", sel_individual)
+		;
 
     // hide unfiltered points
     scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
@@ -516,7 +532,11 @@ function draw_squares ()
                         })
                         .attr("width", point_size * 3)
                         .attr("height", point_size * 3)
-                        .on("mousedown", defocus);
+												// Alex disabling mousedown handler since we are doing selection in a 
+												// new layer now. Keeping around for debugging, but should be removed
+												// after a few months.
+                        // .on("mousedown", defocus)
+												;
 
 	    }
 	}
@@ -525,12 +545,14 @@ function draw_squares ()
 // animate if MDS coordinates have changed, or from zoom
 var animate = function ()
 {
+	console.time(`dac-scatter-plot.js animate()`);
 	// circles and square have to be treated differently
 	if (scatter_plot_type == "circle") {
 		animate_circles();
 	} else {
 		animate_squares();
 	}
+	console.timeEnd(`dac-scatter-plot.js animate()`);
 }
 
 // animate if MDS coordinates have changed, or for zoom (private) for circles
@@ -713,82 +735,35 @@ module.update_color = function(new_color_by_col)
 
 }
 
-// set callback for selection 1,2, subset or zoom radio buttons
-var sel_zoom_buttons = function()
-{
-
-	// clear up any old selection/zooming
-	scatter_plot.selectAll("g.brush").remove();
-
-	// enable zoom
-	if (selections.sel_type() == 0)
-	{
-		// set up zoom brushing
-		scatter_plot.append("g")
-			.attr("class", "brush")
-			.call(d3.svg.brush()
-				.x(x_scale)
-				.y(y_scale)
-				.on("brushend", zoom));
-
-    // subset
-	} else if (selections.sel_type() == -1) {
-
-		// set up subset selection
-		scatter_plot.append("g")
-			.attr("class", "brush")
-			.call(d3.svg.brush()
-				.x(x_scale)
-				.y(y_scale)
-				.on("brushend", subset));
-
-	} else {
-
-		// otherwise enable normal selection
-		scatter_plot.append("g")
-			.attr("class", "brush")
-			.call(d3.svg.brush()
-				.x(x_scale)
-				.y(y_scale)
-				.on("brushstart", selections.zero_sel)
-				.on("brush", sel_brush)
-				.on("brushend", sel_brush_end));
-	};
-
-}
-
 // zoom handler call back
 function zoom()
 {
 
 	// find final selection indices
 	var extent = d3.event.target.extent();
+	// console.debug(`new zoom extent is %o, %o, %o, %o`, extent[0][0], extent[1][0], extent[0][1], extent[1][1]);
 
 	// look for points that were selected
 	var selection = get_brush_sel(extent);
 
     // was it an empty zoom?
     if (selection.length > 0) {
+			// user did zoom in on something, so reset window
+			x_scale.domain([extent[0][0], extent[1][0]]);
+			y_scale.domain([extent[0][1], extent[1][1]]);
 
-        // user did zoom in on something, so reset window
-        x_scale.domain([extent[0][0], extent[1][0]]);
-        y_scale.domain([extent[0][1], extent[1][1]]);
-
-        // fire zoom changed event
-        var zoomEvent = new CustomEvent("DACZoomChanged",
-                                          {detail: {extent: extent, zoom: true}});
-        document.body.dispatchEvent(zoomEvent);
-
+			// fire zoom changed event
+			var zoomEvent = new CustomEvent("DACZoomChanged",
+																				{detail: {extent: extent, zoom: true}});
+			document.body.dispatchEvent(zoomEvent);
     } else {
-
-        // reset scale
-        module.reset_zoom();
-
+			// reset scale
+			module.reset_zoom();
     }
 
     // remove gray selection box
     d3.event.target.clear();
-    d3.select(this).call(d3.event.target);
+    d3.selectAll('.brush').call(d3.event.target);
 
     // re-draw display (animate if small number of points)
     if (mds_coords.length > max_points_animate) {
@@ -802,7 +777,7 @@ function zoom()
 // get subset for future analysis
 function subset ()
 {
-
+	// console.debug(`subset()`);
 	// get subset selected
 	var extent = d3.event.target.extent();
 
@@ -875,7 +850,7 @@ function subset ()
 
 	// remove gray selection box
 	d3.event.target.clear();
-	d3.select(this).call(d3.event.target);
+	d3.selectAll('.brush').call(d3.event.target);
 
 	// fire subset changed event
 	var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
@@ -919,121 +894,130 @@ module.reset_zoom = function ()
 	var extent = [[0 - scatter_border, 0 - scatter_border],
 	              [1 + scatter_border, 1 + scatter_border]];
 	x_scale.domain([extent[0][0], extent[1][0]]);
-    y_scale.domain([extent[0][1], extent[1][1]]);
+	y_scale.domain([extent[0][1], extent[1][1]]);
 
 	// reset zoom in bookmarks
-    var zoomEvent = new CustomEvent("DACZoomChanged",
-                                      {detail: {extent: extent, zoom: false}});
-    document.body.dispatchEvent(zoomEvent);
+	var zoomEvent = new CustomEvent("DACZoomChanged",
+																		{detail: {extent: extent, zoom: false}});
+	document.body.dispatchEvent(zoomEvent);
 
 }
 
+// Alex disabling this beacause it's not used anymore
+// but might be useful in the future to update selected points
+// instead of re-rendering the entire scatterplot.
 // selection brush handler call back
-function sel_brush()
-{
+// function sel_brush()
+// {
+// 	console.debug(`sel_brush()`);
+// 	gray real-time selection box
+// 	var extent = d3.event.target.extent();
 
-	// gray real-time selection box
-	var extent = d3.event.target.extent();
+// 	scatter_points.attr("stroke", function(d,i) {
 
-	scatter_points.attr("stroke", function(d,i) {
+// 		// default fill
+// 		var outline_color = no_sel_color;
 
-		// default fill
-		var outline_color = no_sel_color;
+// 		// if newly selected, fill color is current selection color
+// 		if (extent[0][0] <= d[0] && d[0] < extent[1][0]
+// 			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
-		// if newly selected, fill color is current selection color
-		if (extent[0][0] <= d[0] && d[0] < extent[1][0]
-			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
+// 				// use curr_sel_type to identify color
+// 				var curr_sel_type = selections.sel_type();
+// 				if (curr_sel_type > 0) {
+// 				    outline_color = sel_color[curr_sel_type-1]
+// 				}
 
-				// use curr_sel_type to identify color
-				var curr_sel_type = selections.sel_type();
-				if (curr_sel_type > 0) {
-				    outline_color = sel_color[curr_sel_type-1]
-				}
+// 		} else {
 
-		} else {
+// 			// color everything else according to what's already selected
+//             for (var j = 0; j < max_num_sel; j++) {
+//                 if (selections.in_sel_x(i,j+1) != -1) {
+//                     outline_color = sel_color[j]
+//                 }
+//             }
 
-			// color everything else according to what's already selected
-            for (var j = 0; j < max_num_sel; j++) {
-                if (selections.in_sel_x(i,j+1) != -1) {
-                    outline_color = sel_color[j]
-                }
-            }
+// 		};
 
-		};
+// 		return outline_color;
+// 	});
 
-		return outline_color;
-	});
+// 	scatter_points.attr("stroke-width", function(d,i) {
 
-	scatter_points.attr("stroke-width", function(d,i) {
+// 		// default outline width
+// 		var outline_width = outline_no_sel;
 
-		// default outline width
-		var outline_width = outline_no_sel;
+// 		// if newly selected, outline is thick
+// 		if (extent[0][0] <= d[0] && d[0] < extent[1][0]
+// 			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
-		// if newly selected, outline is thick
-		if (extent[0][0] <= d[0] && d[0] < extent[1][0]
-			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
+// 				outline_width = outline_sel;
 
-				outline_width = outline_sel;
+// 		} else {
 
-		} else {
+// 			// outline is also thick for things that were previously selected
+// 			if (selections.in_sel(i)) {
+// 				outline_width = outline_sel;
+// 			};
 
-			// outline is also thick for things that were previously selected
-			if (selections.in_sel(i)) {
-				outline_width = outline_sel;
-			};
+// 		};
 
-		};
+// 		return outline_width;
+// 	});
 
-		return outline_width;
-	});
+// 	// different point sizes for circles or squares
+// 	if (scatter_plot_type == 'circle') {
+// 			scatter_points.attr("r", set_sel_point_size);
+// 	} else {
+// 			scatter_points.attr("width", set_sel_point_size);
+// 		scatter_points.attr("height", set_sel_point_size);
+// 	}
 
-    // different point sizes for circles or squares
-    if (scatter_plot_type == 'circle') {
-        scatter_points.attr("r", set_sel_point_size);
-    } else {
-        scatter_points.attr("width", set_sel_point_size);
-	    scatter_points.attr("height", set_sel_point_size);
-    }
-
-}
+// }
 
 // helper function for sel_brush_start
 // to determine point size when selected
-function set_sel_point_size (d,i)
-{
+// function set_sel_point_size (d,i)
+// {
 
-	// gray real-time selection box
-	var extent = d3.event.target.extent();
+// 	// gray real-time selection box
+// 	var extent = d3.event.target.extent();
 
-    // default point size
-    var sel_point_size = compute_point_size (false);
+//     // default point size
+//     var sel_point_size = compute_point_size (false);
 
-    // if newly selected, outline is thick
-    if (extent[0][0] <= d[0] && d[0] < extent[1][0]
-        && extent[0][1] <= d[1] && d[1] < extent[1][1]) {
+//     // if newly selected, outline is thick
+//     if (extent[0][0] <= d[0] && d[0] < extent[1][0]
+//         && extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
-            sel_point_size = compute_point_size (true);
+//             sel_point_size = compute_point_size (true);
 
-    } else {
+//     } else {
 
-        // outline is also thick for things that were previously selected
-        if (selections.in_sel(i)) {
+//         // outline is also thick for things that were previously selected
+//         if (selections.in_sel(i)) {
 
-            sel_point_size = compute_point_size (true);
-        };
+//             sel_point_size = compute_point_size (true);
+//         };
 
-    };
+//     };
 
-    return sel_point_size;
+//     return sel_point_size;
 
-}
+// }
 
 // selection brush end handler call back
 function sel_brush_end()
 {
-
+	// console.debug(`sel_brush_end()`);
 	// find final selection indices
 	var extent = d3.event.target.extent();
+
+	// clear existing selection if we are not zoom or subset
+	if(selections.sel_type() !== 0 && selections.sel_type() !== -1)
+	{
+		selections.zero_sel();
+	}
 
 	// look for points that were selected
 	// (record for table jump)
@@ -1059,7 +1043,7 @@ function sel_brush_end()
 
 	// remove gray selection box
 	d3.event.target.clear();
-	d3.select(this).call(d3.event.target);
+	d3.selectAll('.brush').call(d3.event.target);
 
 	// fire selection change event
 	var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
@@ -1070,6 +1054,7 @@ function sel_brush_end()
 // select an individual point
 function sel_individual (d,i)
 {
+		// console.debug(`running sel_individual with i = %o, selections=%o`, i, selections);
     // check if point is visible
     if (filtered_selection[i] == 1.0) {
 
@@ -1149,6 +1134,78 @@ function defocus() {
 
 	}
 
+}
+
+// set up subset change event
+document.body.addEventListener("DACBrushReady", (eventData) => {
+	// Registering event handlers for new brush
+	const brush = eventData.detail.brush;
+	brush.on("brushend", brushend);
+});
+
+function brushend(someevent) {
+	// enable zoom
+	if (selections.sel_type() == 0) 
+	{
+		// set up zoom brushing
+		zoom();
+	} 
+	// subset
+	else if (selections.sel_type() == -1) 
+	{
+		// set up subset selection
+		subset();
+	} 
+	// selection (either through click or brush)
+	else 
+	{
+		// otherwise enable normal selection
+		var extent = d3.event.target.extent();
+		// Check if extent is zero, meaning it was just a click not a selection
+		if(extent[0][0] == extent[1][0] && extent[0][1] == extent[1][1])
+		{
+			// console.debug(`This was just a click, not a selection.`)
+			// Let's figure out where the click happened
+			const event = d3.event.sourceEvent;
+			const x = event.pageX;
+			const y = event.pageY;
+			// console.debug(`Click occurred here: %o, %o`, x, y);
+			// Find all the elements under the point
+			const elements = document.elementsFromPoint(x, y);
+			// console.debug(`elementsFromPoint is %o`, elements);
+
+			// Grab the first circle
+			// const points = $(elements).filter('#dac-mds-scatterplot circle, #dac-mds-scatterplot rect.square');
+			const point = $(elements).filter('#dac-mds-scatterplot circle, #dac-mds-scatterplot rect.square').get(0);
+			// console.debug(`points in elementsFromPoint: %o`, points);
+			// console.debug(`point in elementsFromPoint: %o`, point);
+			// console.debug(`selections.sel_type() is %o`, selections.sel_type());
+
+			// And fire a mousedown on the first circle if we have one
+			if(point)
+			{
+				const d = d3.select(point).data()[0];
+				const i = d[2];
+				// console.debug(`our cicle has i=%o`, i);
+				sel_individual(d,i);
+			}
+			// Otherwise, if there was nothing under the click, clear selection if we are not zoom or subset
+			else if(selections.sel_type() !== 0 && selections.sel_type() !== -1)
+			{
+				// console.debug(`inside else if(selections.sel_type() !== 0 && selections.sel_type() !== -1)`);
+				selections.zero_sel();
+				// fire selection change event
+				var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+								active_sel: []} });
+				document.body.dispatchEvent(selectionEvent);	
+			}
+		}
+		// Otherwise handle brush selection
+		else
+		{
+			sel_brush_end();
+		}
+	}
 }
 
 export default module;
