@@ -15,6 +15,10 @@ import SmbAuthentication from 'components/SmbAuthentication.tsx';
 export function login(params)
 {
   var component = {};
+  let smb_info = {};
+  smb_info["hostname"] = params.hostname;
+  smb_info["collab"] = params.collab_name;
+
   component.cancel = function()
   {
     component.container.children().modal("hide");
@@ -102,6 +106,8 @@ export function login(params)
         <SmbAuthentication
           loadingData={false}
           callBack={setSmbAuthValues}
+          hover={true}
+          smb_info={smb_info}
         />
       </div>,
       document.querySelector(".smb-login")

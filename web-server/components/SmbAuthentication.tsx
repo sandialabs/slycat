@@ -1,5 +1,6 @@
 import React from 'react';
 import client from "js/slycat-web-client";
+import { displayPartsToString } from 'typescript';
 
 /**
  * this class sets up and tests a remote session to an agent
@@ -28,7 +29,8 @@ export default class SmbAuthentication extends React.Component<any,any> {
       share: display.share?display.share:null,
       hostnames : [],
       loadingData: this.props.loadingData,
-      initialLoad: false
+      initialLoad: false,
+      smb_info: this.props.smb_info
     };
   }
 
@@ -85,17 +87,23 @@ export default class SmbAuthentication extends React.Component<any,any> {
    */
   populateDisplay = ():any => {
     const display:any = {};
-    if(localStorage.getItem("slycat-smb-remote-controls-hostname")){
-      display.hostname = localStorage.getItem("slycat-smb-remote-controls-hostname") ?
-      localStorage.getItem("slycat-smb-remote-controls-hostname"):null;
+    if(!this.props.hover) {
+      if(localStorage.getItem("slycat-smb-remote-controls-hostname")){
+        display.hostname = localStorage.getItem("slycat-smb-remote-controls-hostname") ?
+        localStorage.getItem("slycat-smb-remote-controls-hostname"):null;
+      }
+      if(localStorage.getItem("slycat-smb-remote-controls-username")){
+        display.username = localStorage.getItem("slycat-smb-remote-controls-username") ?
+        localStorage.getItem("slycat-smb-remote-controls-username"):null;
+      }
+      if(localStorage.getItem("slycat-smb-remote-controls-share")){
+        display.share = localStorage.getItem("slycat-smb-remote-controls-share") ?
+        localStorage.getItem("slycat-smb-remote-controls-share"):null;
+      }
     }
-    if(localStorage.getItem("slycat-smb-remote-controls-username")){
-      display.username = localStorage.getItem("slycat-smb-remote-controls-username") ?
-      localStorage.getItem("slycat-smb-remote-controls-username"):null;
-    }
-    if(localStorage.getItem("slycat-smb-remote-controls-share")){
-      display.share = localStorage.getItem("slycat-smb-remote-controls-share") ?
-      localStorage.getItem("slycat-smb-remote-controls-share"):null;
+    else {
+      display.hostname = this.props.smb_info["hostname"];
+      display.share = this.props.smb_info["collab"];
     }
     return display;
   };
