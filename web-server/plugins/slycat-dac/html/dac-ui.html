@@ -5,9 +5,9 @@ S. Martin
 4/16/2015
 -->
 
-<div id="dac-model" style="-webkit-flex:1; flex:1;">
+<div id="dac-model" style="-webkit-flex:1; flex:1">
 
-	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px">
+	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px; display: none">
 
 		<label>Data is being processed for the model (it is safe to close the browser):</label>
 		<div class="progress" style="margin-bottom: 15px">
@@ -22,7 +22,7 @@ S. Martin
 
 	</div>
 
-	<div class="ui-layout-center dac-model-content">
+	<div class="ui-layout-center dac-model-content" id="dac-main-console" style="display:none">
 
 		<div class="ui-layout-center" id="dac-control-bar-scatter-plot">
 
@@ -92,8 +92,18 @@ S. Martin
 				
 			<div class="ui-layout-center" id="dac-mds-pane">
 
+				<!-- Model Loading Indicator -->
+				<div id="dac-model-loading" style="
+					top: 45%;
+					width: 100%;
+					position:absolute;
+					text-align:center">
+					<i class="spinner-border text-secondary"></i>
+				</div>
+
 				<!-- MDS Scatter Plot -->
 				<svg id="dac-mds-scatterplot"></svg>
+				<div id="dac-selector-svg-container"></div>
 
 			</div>
 			
@@ -141,7 +151,7 @@ S. Martin
 		
 	</div>
 	
-	<div class="ui-layout-east dac-model-content" id="dac-plots">
+	<div class="ui-layout-east dac-model-content" id="dac-plots" style="display:none">
 
 		<small>
 

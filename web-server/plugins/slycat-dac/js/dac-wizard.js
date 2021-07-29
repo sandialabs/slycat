@@ -79,7 +79,7 @@ function constructor(params)
 
     // number of landmarks
     // (mathematical minimum number of landmarks is 3)
-    var NUM_LANDMARKS = 2000
+    var NUM_LANDMARKS = 200
     component.num_landmarks = ko.observable(NUM_LANDMARKS);
 
     // TDMS defaults

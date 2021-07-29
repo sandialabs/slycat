@@ -31,6 +31,20 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout";
 
+import React from "react";
+import ReactDOM from "react-dom";
+import Selector from "./components/Selector";
+
+import { createStore, applyMiddleware, } from 'redux';
+import { Provider, } from 'react-redux';
+import thunkMiddleware from 'redux-thunk';
+import { createLogger, } from 'redux-logger';
+import dac_reducer from './reducers';
+import { 
+    setZoomExtent,
+    setZoomFlag,
+} from './actions';
+
 // wait for document ready
 $(document).ready(function() {
 
@@ -115,21 +129,28 @@ $(document).ready(function() {
 
                 if (result[0] == "Done") {
 
+                    // Remove progress element from DOM
+                    $('#dac-progress-feedback').remove();
+
                     // done uploading to database
                     check_preferences();
 
                 } else if (result[0] == "Error") {
 
-                    dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
+                    $("#dac-progress-feedback").show()
 
                     // update progress and output log
                     $("#dac_processing_progress_bar").text("No Data Loaded (See Info > Parse Log)");
                     $("#dac_processing_progress_bar").width(100 + "%");
 
+                    dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
+
                     // request error log
                     update_error_log(user_scroll);
 
                 } else {
+
+                    $("#dac-progress-feedback").show()
 
                     // update progress and output log
                     $("#dac_processing_progress_bar").text(result[0]);
@@ -243,6 +264,49 @@ $(document).ready(function() {
 
                     // truncate model name to max name length
                     MODEL_NAME = MODEL_NAME.substring(0, MAX_PLOT_NAME);
+
+                    // Create Redux store and set its state based on what's in the bookmark
+                    const state_tree = {
+                        dac_zoom_extent: "dac-zoom-extent" in bookmark ? bookmark["dac-zoom-extent"] : null,
+                        dac_zoom_flag: "dac-zoom-flag" in bookmark ? bookmark["dac-zoom-flag"] : false,
+                        scatterplot_size: [],
+                    }
+                    // Create logger for redux
+                    const loggerMiddleware = createLogger();
+                    window.store = createStore(
+                      dac_reducer, 
+                      {
+                        ...state_tree, 
+                        ...bookmark.state, 
+                        derived: {
+                          mds_coords: [],
+                        }
+                      },
+                      applyMiddleware(
+                        thunkMiddleware, // Lets us dispatch() functions
+                        loggerMiddleware, // Neat middleware that logs actions. 
+                                          // Logger must be the last middleware in chain, 
+                                          // otherwise it will log thunk and promise, 
+                                          // not actual actions.
+                        // throttleMiddleware, // Allows throttling of actions
+                      )
+                    );
+
+                    // Save Redux state to bookmark whenever it changes
+                    const bookmarkReduxStateTree = () => {
+                      bookmarker.updateState({
+                        state: 
+                        // Remove derived property from state tree because it should be computed
+                        // from model data each time the model is loaded. Otherwise it has the 
+                        // potential of becoming huge. Plus we shouldn't be storing model data
+                        // in the bookmark, just UI state.
+                        // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+                        // sets it to null, so I think it's better to remove it entirely.
+                        // eslint-disable-next-line no-undefined
+                        { ...window.store.getState(), derived: undefined }
+                      });
+                    };
+                    window.store.subscribe(bookmarkReduxStateTree);
 
                     // set up model origin column data
                     setup_model_origin();
@@ -550,12 +614,13 @@ $(document).ready(function() {
 					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"]),
 				};
 
-	            // Remove progress element from DOM
-	            $('#dac-progress-feedback').remove();
-
 	            // set up jQuery layout for user interface
 				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
 							  SCATTER_BUTTONS_HEIGHT);
+
+                // turn on main console (after layout, to avoid flicker on load)
+                $("#dac-main-console").show()
+                $("#dac-plots").show()
 
                 // set up alpha slider value change event
                 document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
@@ -603,284 +668,324 @@ $(document).ready(function() {
                 document.body.addEventListener("DACFilterButtonState", filter_button_state);
 
                 // load all relevant data and set up panels
-                $.when(request.get_table_metadata("dac-variables-meta", mid),
-		   	           request.get_table("dac-variables-meta", mid),
-		   	           request.get_table_metadata("dac-datapoints-meta", mid),
-			           request.get_table("dac-datapoints-meta", mid)).then(
-		   	           function (variables_meta, variables, data_table_meta, data_table)
-		   	                {
+                $.when(
+                  request.get_table_metadata("dac-variables-meta", mid),
+                  request.get_table("dac-variables-meta", mid),
+                  request.get_table_metadata("dac-datapoints-meta", mid),
+                  request.get_table("dac-datapoints-meta", mid),
+                ).then(
+		   	          function (variables_meta, variables, data_table_meta, data_table)
+                  {
 
-                                // get number of variables, points and columns in table
-                                var num_vars = variables_meta[0]["row-count"];
-                                var num_cols = data_table_meta[0]["column-count"];
-                                var num_editable_cols = editable_columns.attributes.length;
-                                var num_points = data_table_meta[0]["row-count"];
+                    // remove loading spinner
+                    $("#dac-model-loading").remove();
 
-                                // check variables to be included
-                                var var_include_columns = include_check("dac-var-include-columns", num_vars, true);
-                                var meta_include_columns = include_check("dac-meta-include-columns", num_cols, true);
+                    // get number of variables, points and columns in table
+                    var num_vars = variables_meta[0]["row-count"];
+                    var num_cols = data_table_meta[0]["column-count"];
+                    var num_editable_cols = editable_columns.attributes.length;
+                    var num_points = data_table_meta[0]["row-count"];
 
-                                // initialize sliders to all one, unless valid bookmark is available
-                                var init_alpha_values = [];
-                                for (var i = 0; i < num_vars; i++) {
-                                    init_alpha_values.push(1.0); }
-                                if ("dac-slider-values" in bookmark) {
+                    // check variables to be included
+                    var var_include_columns = include_check("dac-var-include-columns", num_vars, true);
+                    var meta_include_columns = include_check("dac-meta-include-columns", num_cols, true);
 
-                                    // make sure alpha values are the correct length
-                                    if (bookmark["dac-slider-values"].length == num_vars) {
-                                        init_alpha_values = bookmark["dac-slider-values"];
-                                    };
-                                };
+                    // initialize sliders to all one, unless valid bookmark is available
+                    var init_alpha_values = [];
+                    for (var i = 0; i < num_vars; i++) {
+                        init_alpha_values.push(1.0); }
+                    if ("dac-slider-values" in bookmark) {
 
-                                // get initial selections, using bookmarks if available
-                                var init_sel_1 = include_check("dac-sel-1", num_points, false);
-                                var init_sel_2 = include_check("dac-sel-2", num_points, false);
-                                var init_sel_3 = include_check("dac-sel-3", num_points, false);
+                        // make sure alpha values are the correct length
+                        if (bookmark["dac-slider-values"].length == num_vars) {
+                            init_alpha_values = bookmark["dac-slider-values"];
+                        };
+                    };
 
-                                // get focus point
-                                var init_focus = null;
-                                if ("dac-sel-focus" in bookmark) {
+                    // get initial selections, using bookmarks if available
+                    var init_sel_1 = include_check("dac-sel-1", num_points, false);
+                    var init_sel_2 = include_check("dac-sel-2", num_points, false);
+                    var init_sel_3 = include_check("dac-sel-3", num_points, false);
 
-                                    // get bookmarked focus value
-                                    init_focus = bookmark["dac-sel-focus"];
+                    // get focus point
+                    var init_focus = null;
+                    if ("dac-sel-focus" in bookmark) {
 
-                                    // make sure focus is in at least one selection
-                                    if ((init_sel_1.indexOf(init_focus) == -1) &&
-                                        (init_sel_2.indexOf(init_focus) == -1) &&
-                                        (init_sel_3.indexOf(init_focus) == -1)) {
-                                         init_focus = null;
-                                    }
-                                }
+                        // get bookmarked focus value
+                        init_focus = bookmark["dac-sel-focus"];
 
-                                // get state of selection button, default to 1 (red)
-                            	var init_sel_type = 1;
-                                if ("dac-sel-type" in bookmark) {
-                                    init_sel_type = bookmark["dac-sel-type"];
-                                }
+                        // make sure focus is in at least one selection
+                        if ((init_sel_1.indexOf(init_focus) == -1) &&
+                            (init_sel_2.indexOf(init_focus) == -1) &&
+                            (init_sel_3.indexOf(init_focus) == -1)) {
+                              init_focus = null;
+                        }
+                    }
 
-                                // set up maximum number of selections
-                                var MAX_NUM_SEL = SELECTION_COLOR.length;
-                                selections.setup(MAX_NUM_SEL);
+                    // get state of selection button, default to 1 (red)
+                    var init_sel_type = 1;
+                    if ("dac-sel-type" in bookmark) {
+                        init_sel_type = bookmark["dac-sel-type"];
+                    }
 
-                                // initialize selections/focus
-                                selections.set_sel(init_sel_1, 1);
-                                selections.set_sel(init_sel_2, 2);
-                                selections.set_sel(init_sel_3, 3);
-                                selections.set_focus(init_focus);
-                                selections.set_sel_type(init_sel_type);
+                    // set up maximum number of selections
+                    var MAX_NUM_SEL = SELECTION_COLOR.length;
+                    selections.setup(MAX_NUM_SEL);
 
-                                // initialize color by selection using bookmark, if any
-                                var init_color_by_sel = -1;
-                                if ("dac-color-by" in bookmark) {
-                                    init_color_by_sel = bookmark["dac-color-by"];
-                                }
+                    // initialize selections/focus
+                    selections.set_sel(init_sel_1, 1);
+                    selections.set_sel(init_sel_2, 2);
+                    selections.set_sel(init_sel_3, 3);
+                    selections.set_focus(init_focus);
+                    selections.set_sel_type(init_sel_type);
 
-                                // initialize zoom extent, if bookmarked
-                                var init_zoom_extent = null;
-                                var init_zoom_flag = null;
-                                if ("dac-zoom-extent" in bookmark) {
-                                    init_zoom_extent = bookmark["dac-zoom-extent"];
+                    // initialize color by selection using bookmark, if any
+                    var init_color_by_sel = -1;
+                    if ("dac-color-by" in bookmark) {
+                        init_color_by_sel = bookmark["dac-color-by"];
+                    }
 
-                                    // check if button should be marked
-                                    if ("dac-zoom-flag" in bookmark) {
-                                        init_zoom_flag = bookmark["dac-zoom-flag"];
-                                        if (init_zoom_flag == false) {
-                                            init_zoom_extent = null;
-                                        }
-                                    }
-                                }
+                    // initialize zoom extent, if bookmarked
+                    var init_zoom_extent = null;
+                    var init_zoom_flag = null;
+                    if ("dac-zoom-extent" in bookmark) {
+                        init_zoom_extent = bookmark["dac-zoom-extent"];
 
-                                // initialize subset center, if bookmarked
-                                var init_subset_center = [.5, .5];
-                                if ("dac-subset-center" in bookmark) {
-                                    init_subset_center = bookmark["dac-subset-center"];
-                                }
+                        // check if button should be marked
+                        if ("dac-zoom-flag" in bookmark) {
+                            init_zoom_flag = bookmark["dac-zoom-flag"];
+                            if (init_zoom_flag == false) {
+                                init_zoom_extent = null;
+                            }
+                        }
+                    }
 
-                                // initialize subset itself, if bookmarked
-                                var init_mds_subset = [];
-                                var init_subset_flag = false;
-                                for (var i = 0; i < num_points; i++ ) {
-                                    init_mds_subset.push(1);
-                                }
-                                if ("dac-mds-subset" in bookmark) {
+                    // initialize subset center, if bookmarked
+                    var init_subset_center = [.5, .5];
+                    if ("dac-subset-center" in bookmark) {
+                        init_subset_center = bookmark["dac-subset-center"];
+                    }
 
-                                    // get bookmarked subset
-                                    var book_mds_subset = bookmark["dac-mds-subset"];
+                    // initialize subset itself, if bookmarked
+                    var init_mds_subset = [];
+                    var init_subset_flag = false;
+                    for (var i = 0; i < num_points; i++ ) {
+                        init_mds_subset.push(1);
+                    }
+                    if ("dac-mds-subset" in bookmark) {
 
-                                    // check that subset is correct length
-                                    if (book_mds_subset.length == num_points) {
-                                        init_mds_subset = book_mds_subset;
-                                    }
+                      // get bookmarked subset
+                      var book_mds_subset = bookmark["dac-mds-subset"];
 
-                                    // get subset button status
-                                    if ("dac-subset-flag" in bookmark) {
-                                        init_subset_flag = bookmark["dac-subset-flag"];
-                                    }
-                                }
-                                selections.update_subset(init_mds_subset);
+                      // check that subset is correct length
+                      if (book_mds_subset.length == num_points) {
+                        init_mds_subset = book_mds_subset;
+                      }
 
-                                // initialize difference button order and position
-                                var init_fisher_order = [];
-                                var init_fisher_pos = null;
-                                if ("dac-fisher-order" in bookmark) {
+                      // get subset button status
+                      if ("dac-subset-flag" in bookmark) {
+                        init_subset_flag = bookmark["dac-subset-flag"];
+                      }
+                    }
+                    selections.update_subset(init_mds_subset);
 
-                                    // get bookmarked fisher order and position
-                                    // (both are stored at the same time when bookmarked)
-                                    init_fisher_order = bookmark["dac-fisher-order"];
-                                    init_fisher_pos = bookmark["dac-fisher-pos"];
+                    // initialize difference button order and position
+                    var init_fisher_order = [];
+                    var init_fisher_pos = null;
+                    if ("dac-fisher-order" in bookmark) {
 
-                                    // check that order is correct length
-                                    if (init_fisher_order.length != num_vars) {
-                                        init_fisher_order = [];
-                                        init_fisher_pos = null;
-                                    }
-                                }
+                        // get bookmarked fisher order and position
+                        // (both are stored at the same time when bookmarked)
+                        init_fisher_order = bookmark["dac-fisher-order"];
+                        init_fisher_pos = bookmark["dac-fisher-pos"];
 
-                                // initialize difference button status
-                                var init_diff_desired_state = null;
-                                if ("dac-diff-desired-state" in bookmark) {
-                                    init_diff_desired_state = bookmark["dac-diff-desired-state"];
-                                }
+                        // check that order is correct length
+                        if (init_fisher_order.length != num_vars) {
+                            init_fisher_order = [];
+                            init_fisher_pos = null;
+                        }
+                    }
 
-                                // initialize plots selected
-                                var init_plots_selected = [];
-                                var init_plots_displayed = [1,1,1];
-                                if ("dac-plots-selected" in bookmark) {
+                    // initialize difference button status
+                    var init_diff_desired_state = null;
+                    if ("dac-diff-desired-state" in bookmark) {
+                        init_diff_desired_state = bookmark["dac-diff-desired-state"];
+                    }
 
-                                    // both selected and displayed plots are bookmarked simultaneously
-                                    init_plots_selected = bookmark["dac-plots-selected"];
-                                    init_plots_displayed = bookmark["dac-plots-displayed"];
+                    // initialize plots selected
+                    var init_plots_selected = [];
+                    var init_plots_displayed = [1,1,1];
+                    if ("dac-plots-selected" in bookmark) {
 
-                                    // check if plots are in included variables list
-                                    // if not, revert to first three variables
-                                    for (var i = 0; i < init_plots_selected.length; i++) {
-                                        if (var_include_columns.indexOf(init_plots_selected[i]) == -1) {
-                                            init_plots_selected = [];
-                                            init_plots_displayed = [1,1,1];
-                                        }
-                                    }
-                                }
+                        // both selected and displayed plots are bookmarked simultaneously
+                        init_plots_selected = bookmark["dac-plots-selected"];
+                        init_plots_displayed = bookmark["dac-plots-displayed"];
 
-                                // initialize plot zoom values
-                                var init_plots_zoom_x = new Array(3);
-                                var init_plots_zoom_y = new Array(3);
-                                for (var i = 0; i < 3; i++) {
-		                            init_plots_zoom_x[i] = ["-Inf", "Inf"];
-                                    init_plots_zoom_y[i] = ["-Inf", "Inf"];
-                                }
+                        // check if plots are in included variables list
+                        // if not, revert to first three variables
+                        for (var i = 0; i < init_plots_selected.length; i++) {
+                            if (var_include_columns.indexOf(init_plots_selected[i]) == -1) {
+                                init_plots_selected = [];
+                                init_plots_displayed = [1,1,1];
+                            }
+                        }
+                    }
 
-                                // check for plot zoom bookmarks
-                                if ("dac-plots-zoom-x" in bookmark) {
+                    // initialize plot zoom values
+                    var init_plots_zoom_x = new Array(3);
+                    var init_plots_zoom_y = new Array(3);
+                    for (var i = 0; i < 3; i++) {
+                    init_plots_zoom_x[i] = ["-Inf", "Inf"];
+                        init_plots_zoom_y[i] = ["-Inf", "Inf"];
+                    }
 
-                                    // both x and y are bookmarked at the same time
-                                    init_plots_zoom_x = bookmark["dac-plots-zoom-x"];
-                                    init_plots_zoom_y = bookmark["dac-plots-zoom-y"];
-                                }
+                    // check for plot zoom bookmarks
+                    if ("dac-plots-zoom-x" in bookmark) {
 
-                                // check for plot links bookmark
-                                var init_link_plots = [0,0,0];
-                                if ("dac-link-plots" in bookmark) {
-                                    init_link_plots = bookmark["dac-link-plots"];
-                                }
+                        // both x and y are bookmarked at the same time
+                        init_plots_zoom_x = bookmark["dac-plots-zoom-x"];
+                        init_plots_zoom_y = bookmark["dac-plots-zoom-y"];
+                    }
 
-                                // check for sort order bookmark
-                                var init_sort_order = null;
-                                var init_sort_col = null;
-                                if ("dac-table-order" in bookmark) {
+                    // check for plot links bookmark
+                    var init_link_plots = [0,0,0];
+                    if ("dac-link-plots" in bookmark) {
+                        init_link_plots = bookmark["dac-link-plots"];
+                    }
 
-                                    // check if sort col exists
-                                    if (bookmark["dac-table-sort-col"] < (num_cols + num_editable_cols)) {
-                                        init_sort_order = bookmark["dac-table-order"];
-                                        init_sort_col = bookmark["dac-table-sort-col"];
-                                    }
-                                }
+                    // check for sort order bookmark
+                    var init_sort_order = null;
+                    var init_sort_col = null;
+                    if ("dac-table-order" in bookmark) {
 
-                                // initialize table column filters, if bookmarked
-                                var column_filters = [];
-                                for (var i = 0; i < (num_cols + num_editable_cols); i++) {
-                                    column_filters.push("");
-                                }
-                                if ("dac-table-filters" in bookmark) {
+                        // check if sort col exists
+                        if (bookmark["dac-table-sort-col"] < (num_cols + num_editable_cols)) {
+                            init_sort_order = bookmark["dac-table-order"];
+                            init_sort_col = bookmark["dac-table-sort-col"];
+                        }
+                    }
 
-                                    // check if column filters are in table
-                                    if (bookmark["dac-table-filters"].length == column_filters.length) {
-                                        column_filters = bookmark["dac-table-filters"];
-                                    }
-                                }
+                    // initialize table column filters, if bookmarked
+                    var column_filters = [];
+                    for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+                        column_filters.push("");
+                    }
+                    if ("dac-table-filters" in bookmark) {
 
-                                // initialize filter button state and filter mask
-                                var init_filter_button = false;
-                                var init_filter_mask = [];
-                                for (var i = 0; i < num_points; i++) {
-                                    init_filter_mask.push(1.0);
-                                }
-                                if ("dac-filter-button-state" in bookmark) {
-                                    init_filter_button = bookmark["dac-filter-button-state"];
+                        // check if column filters are in table
+                        if (bookmark["dac-table-filters"].length == column_filters.length) {
+                            column_filters = bookmark["dac-table-filters"];
+                        }
+                    }
 
-                                    // check if filters is correct length
-                                    if (bookmark["dac-filter-mask"].length == num_points) {
-                                        init_filter_mask = bookmark["dac-filter-mask"];
-                                    }
-                                }
+                    // initialize filter button state and filter mask
+                    var init_filter_button = false;
+                    var init_filter_mask = [];
+                    for (var i = 0; i < num_points; i++) {
+                        init_filter_mask.push(1.0);
+                    }
+                    if ("dac-filter-button-state" in bookmark) {
+                        init_filter_button = bookmark["dac-filter-button-state"];
 
-                                // update filter mask/button in selections
-                                selections.update_filter(init_filter_mask, init_filter_button);
+                        // check if filters is correct length
+                        if (bookmark["dac-filter-mask"].length == num_points) {
+                            init_filter_mask = bookmark["dac-filter-mask"];
+                        }
+                    }
 
-                                // set up table with editable columns
-                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                    editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                                    MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
-                                    column_filters);
+                    // update filter mask/button in selections
+                    selections.update_filter(init_filter_mask, init_filter_button);
 
-		   	                    // set up the alpha sliders
-				                alpha_sliders.setup(ALPHA_STEP, num_vars,
-				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
-				                                    var_include_columns, init_alpha_values);
+                    // set up table with editable columns
+                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                      editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
+                      MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                      column_filters
+                    );
 
-				                // set up the alpha buttons
-				                alpha_buttons.setup(num_vars, var_include_columns);
+                    // set up the alpha sliders
+                    alpha_sliders.setup(ALPHA_STEP, num_vars,
+                      variables[0]["data"][0], MAX_SLIDER_NAME,
+                      var_include_columns, init_alpha_values
+                    );
 
-				                // set up the time series plots
-				                plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
-				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
-				                            variables_meta, variables, var_include_columns,
-				                            data_table[0]["data"][0].length, init_plots_selected,
-				                            init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
-				                            init_link_plots);
+                    // set up the alpha buttons
+                    alpha_buttons.setup(num_vars, var_include_columns);
 
-                                // set up MDS scatter plot buttons
-                                scatter_buttons.setup(SELECTION_COLOR, MAX_NUM_PLOTS, init_subset_flag, 
-                                    init_zoom_flag, init_fisher_order, init_fisher_pos, 
-                                    init_diff_desired_state, var_include_columns, data_table_meta[0], 
-                                    meta_include_columns, data_table[0], editable_columns, model_origin, 
-                                    init_color_by_sel, MAX_COLOR_NAME);
-                                
-				                // set up the MDS scatter plot
-                                var init_color_by_col = scatter_buttons.get_color_by_col();
-				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_COLOR,
-					                FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, cont_colormap,
-					                OUTLINE_NO_SEL, OUTLINE_SEL, var_include_columns,
-					                init_alpha_values, init_color_by_col, init_zoom_extent, 
-                                    init_subset_center);
+                    // set up the time series plots
+                    plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
+                      MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
+                      variables_meta, variables, var_include_columns,
+                      data_table[0]["data"][0].length, init_plots_selected,
+                      init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
+                      init_link_plots
+                    );
 
-		   	                },
-		   	                function () {
-		   	                    dialog.ajax_error ("Server error: could not load initial data.")("","","");
+                    // set up MDS scatter plot buttons
+                    scatter_buttons.setup(SELECTION_COLOR, MAX_NUM_PLOTS, init_subset_flag, 
+                      init_zoom_flag, init_fisher_order, init_fisher_pos, 
+                      init_diff_desired_state, var_include_columns, data_table_meta[0], 
+                      meta_include_columns, data_table[0], editable_columns, model_origin, 
+                      init_color_by_sel, MAX_COLOR_NAME
+                    );
+                            
+                    // set up the MDS scatter plot
+                    var init_color_by_col = scatter_buttons.get_color_by_col();
+                    scatter_plot.setup(
+                      MAX_POINTS_ANIMATE, 
+                      SCATTER_BORDER, 
+                      POINT_COLOR,
+                      POINT_SIZE, 
+                      SCATTER_PLOT_TYPE, 
+                      NO_SEL_COLOR, 
+                      SELECTION_COLOR,
+                      FOCUS_COLOR, 
+                      COLOR_BY_LOW, 
+                      COLOR_BY_HIGH, 
+                      cont_colormap,
+                      OUTLINE_NO_SEL, 
+                      OUTLINE_SEL, 
+                      var_include_columns,
+                      init_alpha_values, 
+                      init_color_by_col, 
+                      init_zoom_extent, 
+                      init_subset_center
+                    );
+                        
+                    // Create React selector
+                    const selector = 
+                      (
+                      <Provider store={store}>
+                        <Selector 
+                          // Padding around the scatterplot
+                          SCATTER_BORDER={SCATTER_BORDER}
+                        />
+                      </Provider>
+                      )
+                    ;
 
-		   	                    // remove dac-plots so screen isn't so ugly
-		                        for (var i = 0; i < 3; i++) {
-		                            $("#dac-select-plot-" + (i+1)).remove();
-		                            $("#dac-link-plot-" + (i+1)).remove();
-		                            $("#dac-low-resolution-plot-" + (i+1)).remove();
-		                            $("#dac-full-resolution-plot-" + (i+1)).remove();
-		                            $("#dac-link-label-plot-" + (i+1)).remove();
-		                            $("#dac-plots-displayed-" + (i+1)).remove();
-		                            $("#dac-plots-not-displayed-" + (i+1)).remove();
-		                            $("#dac-download-plot-" + (i+1)).remove();
-		                        };
+                    self.scatter_plot_react_render = ReactDOM.render(
+                        selector,
+                      document.getElementById('dac-selector-svg-container')
+                    );
 
-		   	                });
+                  },
+                  function () {
+                    dialog.ajax_error ("Server error: could not load initial data.")("","","");
+
+                    // remove dac-plots so screen isn't so ugly
+                    for (var i = 0; i < 3; i++) {
+                        $("#dac-select-plot-" + (i+1)).remove();
+                        $("#dac-link-plot-" + (i+1)).remove();
+                        $("#dac-low-resolution-plot-" + (i+1)).remove();
+                        $("#dac-full-resolution-plot-" + (i+1)).remove();
+                        $("#dac-link-label-plot-" + (i+1)).remove();
+                        $("#dac-plots-displayed-" + (i+1)).remove();
+                        $("#dac-plots-not-displayed-" + (i+1)).remove();
+                        $("#dac-download-plot-" + (i+1)).remove();
+                    };
+
+                  });
 
 			},
 			function ()
@@ -1093,6 +1198,10 @@ $(document).ready(function() {
         
         // update button status
         scatter_buttons.set_zoom_button(new_extent.detail.zoom);
+
+        // dispatch update to zoom in redux
+        window.store.dispatch(setZoomExtent(new_extent.detail.extent));
+        window.store.dispatch(setZoomFlag(new_extent.detail.zoom));
 
         // bookmark new zoom extent
         bookmarker.updateState({"dac-zoom-extent": new_extent.detail.extent,

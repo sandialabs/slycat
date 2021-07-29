@@ -27,6 +27,10 @@ def register_slycat_plugin(context):
     
     import cherrypy
 
+    # for profiling
+    import time
+    from datetime import timedelta
+
     def finish(database, model):
         slycat.web.server.update_model(database, model,
                                        state="finished", result="succeeded",
@@ -448,13 +452,15 @@ def register_slycat_plugin(context):
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
 
+
         # get input parameters
 
         # first parameter is just passed along then echoed back as a result
-        plot_id = int(kwargs["plot_id"])
+        plot_list = [int(plot_id) for plot_id in kwargs["plot_list"]]
+        num_vars = len(plot_list)
 
         # variable number in database
-        database_ind = int(kwargs["database_id"])
+        database_ids = "|".join([str(database_id) for database_id in kwargs["database_ids"]])
 
         # rows of matrix to subsample
         rows = kwargs["plot_selection"]
@@ -463,90 +469,117 @@ def register_slycat_plugin(context):
         num_subsample = str2float(kwargs["num_subsamples"])
 
         # range of samples (x-value)
-        x_min = str2float(kwargs["x_min"])
-        x_max = str2float(kwargs["x_max"])
-        y_min = str2float(kwargs["y_min"])
-        y_max = str2float(kwargs["y_max"])
+        zoom_x = []
+        zoom_y = []
+        for i in range(num_vars):
+            zoom_x.append([str2float(kwargs["zoom_x"][i][0]), str2float(kwargs["zoom_x"][i][1])])
+            zoom_y.append([str2float(kwargs["zoom_y"][i][0]), str2float(kwargs["zoom_y"][i][1])])
 
-        # load time points and data from database
+        # get time points for all variables
         time_points = slycat.web.server.get_model_arrayset_data(
-            database, model, "dac-time-points", "%s/0/..." % database_ind)[0]
+            database, model, "dac-time-points", "%s/0/..." % database_ids)
 
         # get desired rows of variable data from database (all at once)
         num_rows = len(rows)
         var_data = []
         if num_rows > 0:
+
+            # put request in order
             str_rows = [str(x) for x in rows]
             hyper_rows = "|".join(str_rows)
 
+            tic = time.clock()
+
             # load desired rows using hyperchunks
-            var_data = numpy.array(slycat.web.server.get_model_arrayset_data(database, model,
-                "dac-var-data", "%s/0/%s" % (database_ind, hyper_rows)))
+            hql_var_data = slycat.web.server.get_model_arrayset_data(database, model,
+                "dac-var-data", "%s/0/%s" % (database_ids, hyper_rows))
 
-        # get actual time (x) range
-        time_points_min = numpy.amin(time_points)
-        time_points_max = numpy.amax(time_points)
+            toc = time.clock()
+            cherrypy.log.error("Var Data time to load: " + str(toc-tic))
 
-        # test requested range time (x)
-        x_min, x_max, range_change_x = test_range(x_min, x_max, time_points_min, time_points_max)
+            # split variable data according to variable
+            split_hql = list(range(0, num_rows*num_vars, num_rows)) + [num_rows*num_vars]
+            for i in range(len(split_hql)-1):
+                var_data.append(numpy.array(hql_var_data[split_hql[i]:split_hql[i+1]]))
 
-        # get data range in y (if any data was requested)
-        data_min = -float("Inf")
-        data_max = float("Inf")
-        if len(var_data) > 0:
-            data_min = numpy.amin(var_data)
-            data_max = numpy.amax(var_data)
+        # get actual time (x) range for each variable
+        time_points_range = []
+        for i in range(num_vars):
+            time_points_min = numpy.amin(time_points[i])
+            time_points_max = numpy.amax(time_points[i])
+            time_points_range.append([time_points_min, time_points_max])
+
+
+        # test requested range time (x) for each variable
+        zoom_x, range_change_x = test_range(zoom_x, time_points_range)
+
+        # get data range in y (if any data was requested) for each variable
+        data_range = []
+        for i in range(num_vars):
+            data_range.append([-float("Inf"), float("Inf")])
+            if num_rows > 0:
+                data_min = numpy.amin(var_data[i])
+                data_max = numpy.amax(var_data[i])
+                data_range[i] = [data_min, data_max]
 
         # test requested range data (y)
-        y_min, y_max, range_change_y = test_range(y_min, y_max, data_min, data_max)
+        zoom_y, range_change_y = test_range(zoom_y, data_range)
 
-        # combine range changes (if anything changed, a change is recorded)
-        range_change = range_change_x or range_change_y
+        # subsample, per variable
+        range_change = []
+        subsample_stepsize = []
+        time_points_subsample = []
+        var_data_subsample = []
+        data_range_x = []
+        data_range_y = []
+        for i in range(num_vars):
 
-        # find indices within user selected range
-        range_inds = numpy.where((time_points >= x_min) & (time_points <= x_max))[0]
+            # combine range changes (if anything changed, a change is recorded)
+            range_change.append(range_change_x[i] or range_change_y[i])
 
-        # make sure something was selected
-        if len(range_inds) == 0:
-            range_inds_min = numpy.amax(numpy.where(time_points < x_min)[0])
-            range_inds_max = numpy.amin(numpy.where(time_points > x_max)[0])
-            range_inds = list(range(range_inds_min, range_inds_max+1))
+            # find indices within user selected range for each variable
+            range_inds = numpy.where((time_points[i] >= zoom_x[i][0]) & \
+                (time_points[i] <= zoom_x[i][1]))[0]
 
-        # add indices just before and just after user selected range
-        if range_inds[0] > 0:
-            range_inds = numpy.insert(range_inds, 0, range_inds[0] - 1)
-        if range_inds[-1] < (len(time_points) - 1):
-            range_inds = numpy.append(range_inds, range_inds[-1] + 1)
+            # make sure something was selected
+            if len(range_inds) == 0:
+                range_inds_min = numpy.amax(numpy.where(time_points[i] < zoom_x[i][0])[0])
+                range_inds_max = numpy.amin(numpy.where(time_points[i] > zoom_y[i][1])[0])
+                range_inds = list(range(range_inds_min, range_inds_max+1))
 
-        # compute step size for subsample
-        num_samples = len(range_inds)
-        subsample_stepsize = max(1, int(numpy.ceil(float(num_samples) / num_subsample)))
-        sub_inds = range_inds[0::subsample_stepsize]
+            # add indices just before and just after user selected range
+            if range_inds[0] > 0:
+                range_inds = numpy.insert(range_inds, 0, range_inds[0] - 1)
+            if range_inds[-1] < (len(time_points) - 1):
+                range_inds = numpy.append(range_inds, range_inds[-1] + 1)
 
-        # add in last index, if not already present
-        if sub_inds[-1] != range_inds[-1]:
-            sub_inds = numpy.append(sub_inds, range_inds[-1])
+            # compute step size for subsample
+            num_samples = len(range_inds)
+            subsample_stepsize.append(max(1, int(numpy.ceil(float(num_samples) / num_subsample))))
+            sub_inds = range_inds[0::subsample_stepsize[i]]
+            
+            # add in last index, if not already present
+            if sub_inds[-1] != range_inds[-1]:
+                sub_inds = numpy.append(sub_inds, range_inds[-1])
 
-        # get subsamples
-        time_points_subsample = time_points[sub_inds]
-        if len(var_data) > 0:
-            var_data_subsample = var_data[:, sub_inds].tolist()
-        else:
-            var_data_subsample = []
+            # get subsamples
+            time_points_subsample.append(time_points[i][sub_inds].tolist())
+            if num_rows > 0:
+                var_data_subsample.append(var_data[i][:, sub_inds].tolist())
 
-        # convert ranges to java-script returnable result
-        data_range_x = [float2str(x_min), float2str(x_max)]
-        data_range_y = [float2str(y_min), float2str(y_max)]
+            # convert ranges to java-script returnable result
+            data_range_x.append([float2str(zoom_x[i][0]), float2str(zoom_x[i][1])])
+            data_range_y.append([float2str(zoom_y[i][0]), float2str(zoom_y[i][1])])
 
         # return data using content function
         def content():
-            yield json.dumps({"time_points": time_points_subsample.tolist(),
+            yield json.dumps({"time_points": time_points_subsample,
                               "var_data": var_data_subsample,
                               "resolution": subsample_stepsize,
                               "data_range_x": data_range_x,
                               "data_range_y": data_range_y,
                               "range_change": range_change,
-                              "plot_id": plot_id})
+                              "plot_list": plot_list})
 
         return content()
 
@@ -579,25 +612,36 @@ def register_slycat_plugin(context):
     # helper function for subsample_time_var
     # tests requested data range versus actual range
     # returns changed range and flag indicating change performed
-    def test_range (req_min, req_max, act_min, act_max):
+    def test_range (req_range, act_range):
 
-        range_change = False
+        # test range for each variable
+        num_vars = len(act_range)
+        range_change = []
+        for i in range(num_vars):
 
-        # is requested x min in data range?
-        if req_min >= act_max:
+            range_change_i = False
 
-            # no -- reset x min
-            req_min = -float("Inf")
-            range_change = True
+            # is requested min in data range?
+            req_min = req_range[i][0]
+            if req_min >= act_range[i][1]:
 
-        # is requested x max in data range?
-        if req_max <= req_min:
+                # no -- reset min
+                req_min = -float("Inf")
+                range_change_i = True
 
-            # no -- reset y max
-            req_max = float("Inf")
-            range_change = True
+            # is requested max in data range?
+            req_max = req_range[i][1]
+            if req_max <= act_range[i][0]:
 
-        return req_min, req_max, range_change
+                # no -- reset max
+                req_max = float("Inf")
+                range_change_i = True
+            
+            # update requested range
+            req_range[i] = [req_min, req_max]
+            range_change.append(range_change_i)
+
+        return req_range, range_change
 
 
     # adds, removes, and updates the editable columns in the metadata table.
@@ -1105,9 +1149,6 @@ def register_slycat_plugin(context):
 
                 # convert landmarks back to numpy array
                 landmarks = numpy.asarray(landmarks)
-
-                cherrypy.log.error("landmarks for combination models")
-                cherrypy.log.error(str(landmarks))
 
             # remove empty time steps
             for i in reversed(range(num_vars)):

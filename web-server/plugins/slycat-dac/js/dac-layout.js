@@ -8,6 +8,9 @@
 import scatter_plot from "./dac-scatter-plot.js";
 import plots from "./dac-plots.js";
 import metadata_table from "./dac-table.js";
+import { 
+    setScatterplotSize,
+} from './actions';
 
 export default {
 
@@ -57,9 +60,10 @@ export default {
             {
                 size: SCATTER_BUTTONS_HEIGHT,
             },
-            onresize_end: function()
+            onresize_end: function(pane_name, pane_element, pane_state, pane_options, layout_name)
             {
                 scatter_plot.draw();
+                window.store.dispatch(setScatterplotSize([pane_state.innerWidth, pane_state.innerHeight]));
             },
         });
 

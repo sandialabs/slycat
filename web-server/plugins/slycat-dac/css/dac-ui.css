@@ -25,18 +25,19 @@
 	overflow: hidden !important;
 }
 
-/* mds buttons */
+/* mds buttons
 #dac-scatter-select-buttons
 {
 	/*margin: 3px 3px 3px 3px;
-	display: inline-block;*/
-}
+	display: inline-block;
+} */
 
-/* difference buttons */
+/* difference buttons
+#dac-difference-buttons
 {
     margin: 3px 3px 3px 3px;
     display: inline-block;
-}
+} */
 
 /* difference sync indicator */
 #dac-selection-synced
@@ -220,4 +221,16 @@
 	/*margin: 1px;*/
 	font-size: 12px;
 	width: 40px;
+}
+
+/************************/
+/* scatterplot selector react component   */
+/************************/
+#dac-selector-svg
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 }
