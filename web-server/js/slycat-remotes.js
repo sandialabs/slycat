@@ -152,6 +152,7 @@ export function create_pool()
           {
             smb: params.smb,
             hostname: params.hostname,
+            collab_name: params.collab_name,
             title: params.title,
             message: params.message,
             success: function(sid)

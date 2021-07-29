@@ -2760,6 +2760,10 @@ $.widget("parameter_image.scatterplot",
     xhr.image = image;
     xhr.open("GET", api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
     xhr.responseType = "arraybuffer";
+    
+    //Split path to get collab name. Assume collab name is the first thing in path. 
+    let split_path = uri.path().split("/");
+    let collab_name = split_path[1];
 
     xhr.onload = function(e){
       //If the image isn't in cache, open an agent session:
@@ -2771,6 +2775,7 @@ $.widget("parameter_image.scatterplot",
           self.remotes.get_remote({
             smb: uri.protocol() == "smb",
             hostname: uri.hostname(),
+            collab_name: collab_name ? collab_name: null,
             title: "Login to " + uri.hostname(),
             message: "Loading " + uri.pathname(),
             cancel: function() {
