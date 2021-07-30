@@ -9,7 +9,7 @@ import 'plugins/slycat-project-wizards/slycat-project-wizards';
 
 // Models
 import 'plugins/slycat-parameter-image/slycat-parameter-image';
-import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
+// import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
 import 'plugins/slycat-cca/slycat-cca';
 import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
 import 'plugins/slycat-video-swarm/vs-model';
