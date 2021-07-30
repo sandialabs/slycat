@@ -86,8 +86,9 @@ services:
         dockerfile: ./sshd/DockerFile
       ports:
         - "2222:22"
-      expose:
-        - 22
+      # Alex disabling ssh external port because of constant attempts to exploit on myslycat.com
+      # expose:
+      #   - 22
       #          user:password:uid:gid
       command: slycat:slycat:1001:1001
       networks:
