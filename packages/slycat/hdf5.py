@@ -159,8 +159,11 @@ class DArray(slycat.darray.Prototype):
 
       def __getitem__(self, *args, **kwargs):
         result = self._storage.__getitem__(*args, **kwargs)
-        if dtype == "string":
-          self._dtype = 'unicode'
+
+        # check for unicode string, convert to numpy
+        if type(result) is bytes:
+          result = numpy.str_(result.decode())
+
         return result.astype(self._dtype)
 
     return StorageWrapper(self._storage["attribute/%s" % attribute], self._metadata["attribute-types"][attribute])

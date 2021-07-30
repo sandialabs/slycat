@@ -58,12 +58,9 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, hypers
     elif isinstance(expression, str):
         return expression
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
-        cherrypy.log.error("[alex] evaluate expression, instance")
         if hyperslice is None:
-            cherrypy.log.error("full data")
             return hdf5_array.get_data(expression.index)[...]
         else:
-            cherrypy.log.error("hyperslice")
             return hdf5_array.get_data(expression.index)[hyperslice]
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
         left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1)
