@@ -43,6 +43,8 @@ services:
           && npm run dev
       ports:
         - 9000:9000
+      expose:
+        - 9000
       networks:
         - sly-net
       volumes:
