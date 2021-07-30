@@ -677,9 +677,6 @@ $(document).ready(function() {
 		   	          function (variables_meta, variables, data_table_meta, data_table)
                   {
 
-                    // remove loading spinner
-                    $("#dac-model-loading").remove();
-
                     // get number of variables, points and columns in table
                     var num_vars = variables_meta[0]["row-count"];
                     var num_cols = data_table_meta[0]["column-count"];
@@ -928,7 +925,10 @@ $(document).ready(function() {
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
                       init_color_by_sel, MAX_COLOR_NAME
                     );
-                            
+                    
+                    // remove loading spinner
+                    $("#dac-model-loading").remove();
+
                     // set up the MDS scatter plot
                     var init_color_by_col = scatter_buttons.get_color_by_col();
                     scatter_plot.setup(
