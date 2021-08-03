@@ -50,6 +50,9 @@ var editable_col_types = [];
 // total number of metadata columns (including invisible columns)
 var num_metadata_cols = null;
 
+// number of origin columns
+var num_origin_cols = 0;
+
 // max number of selections
 var max_num_sel = null;
 
@@ -130,7 +133,6 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
 	// set number of columns to use
 	num_cols = include_columns.length;
-	var num_origin_cols = 0;
 	if (model_origin.length > 0) { num_origin_cols = 1 };
 	num_editable_cols = editable_columns["attributes"].length;
 
@@ -1282,9 +1284,9 @@ function update_editable_col(row, col, val)
 
 			// alert scatter plot for update of colors
 			var editableColEvent = new CustomEvent("DACEditableColChanged", 
-				{ detail: num_metadata_cols + col });
+				{ detail: num_metadata_cols + col + num_origin_cols});
 			document.body.dispatchEvent(editableColEvent);
-			
+
 			},
 		error: function ()
 		{

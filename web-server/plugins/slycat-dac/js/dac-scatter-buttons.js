@@ -154,6 +154,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
 
     // add origin column, if it exists
     num_origin_col = 0;
+    model_origin["data"] = [MODEL_ORIGIN];
     if (MODEL_ORIGIN.length > 0) {
 
         // add to list in drop down
@@ -203,7 +204,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
 
     // "From Model" origin column coloring
     } else if (init_color_by_sel == num_metadata_cols) {
-        update_color_by_col_data (model_origin, 0, 0);
+        update_color_by_col_data (model_origin, 0, num_metadata_cols);
 
     // actual meta data coloring
     } else {
@@ -575,7 +576,7 @@ module.update_color_by_col = function(select_col)
     // "From Model" origin column coloring
     } else if (select_col == num_metadata_cols) {
 
-        update_color_col_data (model_origin, 0, 0);
+        update_color_by_col_data (model_origin, 0, num_metadata_cols);
         scatter_plot.update_color(curr_color_by_col);
 
     // actual meta data coloring

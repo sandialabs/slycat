@@ -69,10 +69,6 @@ $(document).ready(function() {
     // scatter plot points (circles or squares)
     var SCATTER_PLOT_TYPE = "circle";
 
-    // variable/metadata inclusion columns
-    var var_include_columns = null;
-    var meta_include_columns = null;
-
     // colormap defaults
     var cont_colormap = null;
 
@@ -102,6 +98,7 @@ $(document).ready(function() {
 
     // model origin data (initialize to empty)
     var model_origin = [];
+    var num_origin_cols = 0;
 
     // model name (for downloading tables)
     var MODEL_NAME = "";
@@ -364,6 +361,7 @@ $(document).ready(function() {
                         {
 
                             model_origin = result;
+                            num_origin_cols = 1;
 
                             // continue to editable columns
                             setup_editable_columns();
@@ -864,7 +862,7 @@ $(document).ready(function() {
 
                     // initialize table column filters, if bookmarked
                     var column_filters = [];
-                    for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+                    for (var i = 0; i < (num_cols + num_editable_cols + num_origin_cols); i++) {
                         column_filters.push("");
                     }
                     if ("dac-table-filters" in bookmark) {
