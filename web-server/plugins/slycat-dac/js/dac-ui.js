@@ -948,10 +948,10 @@ $(document).ready(function() {
                       init_zoom_extent, 
                       init_subset_center
                     );
-
+                        
                     // remove loading spinner
                     $("#dac-model-loading").remove();
-                        
+
                     // Create React selector
                     const selector = 
                       (

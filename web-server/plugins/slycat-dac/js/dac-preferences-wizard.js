@@ -35,6 +35,9 @@ function constructor(params)
     var var_include_columns = [];
     var meta_include_columns = [];
 
+    // number of editable columns in model
+    var num_editable_cols = 0;
+
     // colorbrewer palettes for selecting colormap (sequential, diverging, and discrete)
     // for continuous variables we use 9 colors, for discrete we use 8
     var cb_seq={YlGn:{9:["#ffffe5","#f7fcb9","#d9f0a3","#addd8e","#78c679","#41ab5d","#238443","#006837","#004529"]},
@@ -224,11 +227,12 @@ function constructor(params)
             arrays: "0",
             statistics: "0/...",
             success: function(metadata) {
+
+                // set up metadata list
                 var attributes = [];
                 var name = null;
                 var type = null;
                 var constant = null;
-                var string = null;
                 var tooltip = null;
                 for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
                 {
@@ -273,6 +277,15 @@ function constructor(params)
                 });
             }
         });
+
+        // check for editable columns
+        bookmarker.getState(function(bookmark){
+            if ("dac-editable-cols-attributes" in bookmark) {
+                num_editable_cols = bookmark["dac-editable-cols-attributes"].length;
+
+            }
+        });
+
     };
 
     // upon starting wizard, populate metadata
@@ -629,6 +642,13 @@ function constructor(params)
                                 "dac-SCATTER-PLOT-TYPE": component.dac_scatter_plot_type(),
                                 "dac-MAX-CATS": dac_max_cats,
                                 "dac-MAX-FREETEXT-LEN": dac_max_freetext_len});
+
+        // reset filters in case table columns have changed
+        var column_filters = [];
+        for (var i = 0; i < (meta_include_columns.length + num_editable_cols); i++) {
+            column_filters.push("");
+        }
+        bookmarker.updateState({"dac-table-filters": column_filters});
 
         // re-init MDS coords
         init_MDS_coords();
