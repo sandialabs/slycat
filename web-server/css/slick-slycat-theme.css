@@ -101,7 +101,7 @@
 	height: auto !important;
 }
 .highlightWrapper {
-  /* color: white; */
+  color: white;
 	padding: 2px 4px 3px 4px;
 }
 .highlightWrapper.light {
