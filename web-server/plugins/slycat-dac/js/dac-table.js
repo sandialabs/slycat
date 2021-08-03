@@ -42,12 +42,13 @@ var grid_columns = [];
 var grid_rows = [];
 
 // slick grid table column dimensions (split into editable/non-editable)
-var num_rows = [];
-var num_cols = [];
-var num_editable_cols = [];
+var num_rows = null;
+var num_cols = null;
+var num_editable_cols = null;
 var editable_col_types = [];
 
-var curr_sel_type = null;
+// total number of metadata columns (including invisible columns)
+var num_metadata_cols = null;
 
 // max number of selections
 var max_num_sel = null;
@@ -104,6 +105,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
                          init_sort_order, init_sort_col, init_col_filters)
 {
 
+	// keep track of number of metadata columns
+	num_metadata_cols = metadata[0]["column-count"];
+
 	// set up callback for data download button
 	var download_button = document.querySelector("#dac-download-table-button");
 	download_button.addEventListener("click", download_button_callback);
@@ -123,7 +127,6 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
 	// get number of rows and total available columns in data table
 	num_rows = data[0]["data"][0].length;
-	var avail_cols = data[0]["data"].length;
 
 	// set number of columns to use
 	num_cols = include_columns.length;
@@ -1277,6 +1280,11 @@ function update_editable_col(row, col, val)
 			// finish update
 			data_view.endUpdate();
 
+			// alert scatter plot for update of colors
+			var editableColEvent = new CustomEvent("DACEditableColChanged", 
+				{ detail: num_metadata_cols + col });
+			document.body.dispatchEvent(editableColEvent);
+			
 			},
 		error: function ()
 		{
@@ -1284,11 +1292,8 @@ function update_editable_col(row, col, val)
 					("","","");
 			data_view.endUpdate();
 		}
-	});
 
-	// alert scatter plot for update of colors
-	var editableColEvent = new CustomEvent("DACEditableColChanged", { detail: num_cols + col });
-	document.body.dispatchEvent(editableColEvent);
+	});
 
 }
 
@@ -1308,12 +1313,6 @@ module.resize = function()
 
 	// re-render header
 	grid_view.setColumns(grid_view.getColumns())
-}
-
-// gets called to set selection type
-module.set_sel_type = function(new_sel_type)
-{
-	curr_sel_type = new_sel_type;
 }
 
 // highlight rows for selections
