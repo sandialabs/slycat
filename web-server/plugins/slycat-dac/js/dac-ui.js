@@ -925,9 +925,6 @@ $(document).ready(function() {
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
                       init_color_by_sel, MAX_COLOR_NAME
                     );
-                    
-                    // remove loading spinner
-                    $("#dac-model-loading").remove();
 
                     // set up the MDS scatter plot
                     var init_color_by_col = scatter_buttons.get_color_by_col();
@@ -951,6 +948,9 @@ $(document).ready(function() {
                       init_zoom_extent, 
                       init_subset_center
                     );
+
+                    // remove loading spinner
+                    $("#dac-model-loading").remove();
                         
                     // Create React selector
                     const selector = 

@@ -429,8 +429,8 @@ var download_button_callback = function ()
     var defaultFilename = model_name + " Metadata_Table.csv";
     defaultFilename = defaultFilename.replace(/ /g,"_");
 
-	// check if there anything is selected
-	if (filtered_sel.length == 0) {
+	// check if anything is selected
+	if ((filtered_sel.length == 0) && !module.filters_active()) {
 
 		// nothing selected: download entire table
 		write_data_table(vis_sel, defaultFilename);
@@ -716,9 +716,12 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 	// buttons for dialog
 	var buttons_save = [
 		{className: "btn-light", label:"Cancel"},
-		{className: "btn-primary", label:"Save All Visible", icon_class:"fa fa-table"},
-		{className: "btn-primary", label:"Save Selected Visible", icon_class:"fa fa-check"}
-	];
+		{className: "btn-primary", label:"Save All Visible", icon_class:"fa fa-table"}]
+		
+	if (sel.length > 0) {
+		buttons_save.push({className: "btn-primary", 
+			label:"Save Selected Visible", icon_class:"fa fa-check"})
+	};
 
 	// launch dialog
 	dialog.dialog(
