@@ -12,9 +12,6 @@
 # S. Martin
 # 10/22/2020
 
-# connection to Slycat server
-import slycat.web.client
-
 # use a separate argument parser
 import argparse
 
