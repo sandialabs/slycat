@@ -501,4 +501,5 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "timeseries", "media-columns", media_columns)
 
     # Register a wizard for creating instances of the new model
-    context.register_wizard("timeseries", "New Timeseries Model", require={"action": "create", "context": "project"})
+    # Alex disabling creation of new timeseries models on myslycat.com because we need a cluster for it to work.
+    # context.register_wizard("timeseries", "New Timeseries Model", require={"action": "create", "context": "project"})
