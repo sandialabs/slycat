@@ -31,9 +31,9 @@ export async function loadTemplate(name, format) {
     case "parameter-image":
       html = await import(/* webpackChunkName: "ui_parameter_image_template" */ 'plugins/slycat-parameter-image/ui.html');
       break;
-    // case "timeseries":
-    //   html = await import(/* webpackChunkName: "ui_timeseries_template" */ 'plugins/slycat-timeseries-model/ui.html');
-    //   break;
+    case "timeseries":
+      html = await import(/* webpackChunkName: "ui_timeseries_template" */ 'plugins/slycat-timeseries-model/ui.html');
+      break;
     case "cca":
       html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca/ui.html');
       break;
@@ -77,9 +77,9 @@ export async function loadModule(name) {
     case "parameter-image":
       module = await import(/* webpackChunkName: "ui_parameter_image_module" */ 'plugins/slycat-parameter-image/js/ui.js');
       break;
-    // case "timeseries":
-    //   module = await import(/* webpackChunkName: "ui_timeseries_module" */ 'plugins/slycat-timeseries-model/js/ui.js');
-    //   break;
+    case "timeseries":
+      module = await import(/* webpackChunkName: "ui_timeseries_module" */ 'plugins/slycat-timeseries-model/js/ui.js');
+      break;
     case "cca":
       module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca/js/ui.js');
       break;
