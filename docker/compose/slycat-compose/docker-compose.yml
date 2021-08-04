@@ -40,11 +40,15 @@ services:
         - | 
           npm install \
           && NODE_TLS_REJECT_UNAUTHORIZED=0 npm rebuild node-sass \
-          && npm run dev
+          && npm run myslycat
+      # Expose ports. HOST:CONTAINER
+      # Alex exposing port 80 for myslycat.com. Not using ssl for simplicity.
       ports:
-        - 9000:9000
+        - "80:80"
+      # Expose ports without publishing them to the host machine - they’ll only be accessible to linked services. Only the internal port can be specified.
+      # Alex disabling becuse we are not using 9000 and no need to only expose without publishing. Not sure why this was there in the first place.
       # expose:
-      #   - 9000
+      #   - "9000"
       networks:
         - sly-net
       volumes:
@@ -57,12 +61,15 @@ services:
         dockerfile: ./haproxy/DockerFile
       depends_on:
         - "slycat-web-server"
-      ports:
-        - 80:80
-        - 443:443
+      # Alex disabling publishing haproxy ports since they are only used internally.
+      # ports:
+      #   - "80:80"
+      #   - "443:443"
+      # Alex only internally exposing 443 since that's how the client connects to the api. 
+      # 80 is myslycat.com client port, so not exposing it internally at all.
       expose:
-        - 80
-        - 443
+        # - "80"
+        - "443"
       networks:
         - sly-net
 
@@ -84,10 +91,12 @@ services:
       build:
         context: .
         dockerfile: ./sshd/DockerFile
-      ports:
-        - "2222:22"
+      # Alex disabling publishing ssh ports externally on myslycat.com because bots are constantly trying to log in on them.
+      # ports:
+      #   - "2222:22"
+      # Alex intnerally exposing ssh port 22 for media retrieval and remote browsing.
       expose:
-        - 22
+        - "22"
       #          user:password:uid:gid
       command: slycat:slycat:1001:1001
       networks:
