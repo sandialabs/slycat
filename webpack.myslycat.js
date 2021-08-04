@@ -42,7 +42,8 @@ module.exports = merge(common, {
 
   // production mode config start
   mode: 'production',
-  devtool: 'source-map',
+  // Alex diabling source maps on myslycat.com to conserve webpack memory
+  // devtool: 'source-map',
   // performance: {
   //   hints: 'warning'
   // },
