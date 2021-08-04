@@ -376,16 +376,33 @@ $(document).ready(function() {
         
         let variable_aliases_promise = new Promise(get_variable_aliases);
         variable_aliases_promise.then(() => {
-          // Create logger for redux
-          const loggerMiddleware = createLogger();
-
-          // Create throttle for redux
+          // Adding middlewares to redux store
+          const middlewares = [];
+          // Lets us dispatch() functions
+          middlewares.push(thunkMiddleware);
+          // Neat middleware that logs actions. 
+          // Logger must be the last middleware in chain, 
+          // otherwise it will log thunk and promise, 
+          // not actual actions.
+          // Adding it only in development mode to reduce console messages in prod
+          if (process.env.NODE_ENV === `development`) {
+              // Create logger for redux
+              const loggerMiddleware = createLogger({
+                  // Setting console level to 'debug' for logger messages
+                  level: 'debug',
+                  // Enable diff to start showing diffs between prevState and nextState
+                  // diff: true,
+              });
+              middlewares.push(loggerMiddleware);
+          }
+          // Create throttle for redux. Allows throttling of actions.
           const defaultWait = 500
           const defaultThrottleOption = { // https://lodash.com/docs#throttle
             leading: true,
             trailing: true
           }
           const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
+          middlewares.push(throttleMiddleware);
 
           // Add unique IDs to bookmarked open_media, as these are now required.
           let bookmarked_open_media = bookmark["open-images-selection"] ? bookmark["open-images-selection"] : [];
@@ -435,14 +452,7 @@ $(document).ready(function() {
                 three_d_colorby_legends: {},
               }
             },
-            applyMiddleware(
-              thunkMiddleware, // Lets us dispatch() functions
-              loggerMiddleware, // Neat middleware that logs actions. 
-                                // Logger must be the last middleware in chain, 
-                                // otherwise it will log thunk and promise, 
-                                // not actual actions.
-              throttleMiddleware, // Allows throttling of actions
-            )
+            applyMiddleware(...middlewares)
           );
 
           // Save Redux state to bookmark whenever it changes

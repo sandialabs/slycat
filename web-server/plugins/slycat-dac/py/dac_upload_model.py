@@ -84,7 +84,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
 
     # start our single "dac-datapoints-meta" array.
     dimensions = [dict(name="row", end=len(meta_rows))]
-    attributes = [dict(name=name, type=type) for name, type in zip(meta_column_names, meta_column_types)]
+    attributes = [dict(name=name.decode("utf-8"), type=type) for name, type in zip(meta_column_names, meta_column_types)]
     slycat.web.server.put_model_array(database, model, "dac-datapoints-meta", 0, attributes, dimensions)
 
     # upload data into the array
@@ -96,7 +96,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
 
     # start our single "dac-datapoints-meta" array.
     dimensions = [dict(name="row", end=len(meta_vars))]
-    attributes = [dict(name=name, type="string") for name in meta_var_col_names]
+    attributes = [dict(name=name.decode("utf-8"), type="string") for name in meta_var_col_names]
     slycat.web.server.put_model_array(database, model, "dac-variables-meta", 0, attributes, dimensions)
 
     # upload data into the array

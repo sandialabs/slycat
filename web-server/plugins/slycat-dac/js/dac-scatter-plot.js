@@ -138,7 +138,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
             // set subset to full mds_coord set, unless subset is available
             mds_subset = selections.get_subset();
 
-						// call server to compute new coords (in case of bookmarks)
+			// call server to compute new coords (in case of bookmarks)
             client.post_sensitive_model_command(
             {
                 mid: mid,
@@ -179,9 +179,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .interpolate(d3.interpolateRgb);
 
                         // finish with plot
-												console.time(`module.draw()`);
                         module.draw();
-												console.timeEnd(`module.draw()`);
 
                     },
                 error: function ()
@@ -253,7 +251,6 @@ module.draw = function ()
 
 // entirely redraws points (including selection)
 function draw_points () {
-	console.time(`dac-scatter-plot.js draw_points()`);
 
 	// draw points (either circles or squares)
 	if (scatter_plot_type == "circle") {
@@ -262,7 +259,6 @@ function draw_points () {
 		draw_squares();
 	}
 
-	console.timeEnd(`dac-scatter-plot.js draw_points()`);
 }
 
 // d3 function to set outline color according to selection
@@ -380,14 +376,14 @@ function draw_circles ()
 		.attr("cy", function(d) {
 			return y_scale(d[1])
 		})
-		.attr("r", set_point_size)
+		.attr("r", set_point_size);
+
 		// Alex disabling mousedown handler since we are doing selection in a 
 		// new layer now. Keeping around for debugging, but should be removed
 		// after a few months.
 		// .on("mousedown", (d,i) => {
 			// sel_individual(d,i);
 		// })
-		;
 
     // hide unfiltered points
     scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
@@ -430,12 +426,12 @@ function draw_circles ()
                         .attr("cy", function(d) {
                             return y_scale(d[1])
                         })
-                        .attr("r", point_size * 1.5)
-												// Alex disabling mousedown handler since we are doing selection in a 
-												// new layer now. Keeping around for debugging, but should be removed
-												// after a few months.
+                        .attr("r", point_size * 1.5);
+
+						// Alex disabling mousedown handler since we are doing selection in a 
+						// new layer now. Keeping around for debugging, but should be removed
+						// after a few months.
                         // .on("mousedown", defocus)
-												;
 
 	    }
 	}
@@ -482,12 +478,12 @@ function draw_squares ()
 			return y_scale(d[1]) - point_size;
 		})
 		.attr("width", set_point_size)
-		.attr("height", set_point_size)
+		.attr("height", set_point_size);
+
 		// Alex disabling mousedown handler since we are doing selection in a 
 		// new layer now. Keeping around for debugging, but should be removed
 		// after a few months.
 		// .on("mousedown", sel_individual)
-		;
 
     // hide unfiltered points
     scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
@@ -531,12 +527,12 @@ function draw_squares ()
                             return y_scale(d[1]) - point_size;
                         })
                         .attr("width", point_size * 3)
-                        .attr("height", point_size * 3)
-												// Alex disabling mousedown handler since we are doing selection in a 
-												// new layer now. Keeping around for debugging, but should be removed
-												// after a few months.
+                        .attr("height", point_size * 3);
+
+						// Alex disabling mousedown handler since we are doing selection in a 
+						// new layer now. Keeping around for debugging, but should be removed
+						// after a few months.
                         // .on("mousedown", defocus)
-												;
 
 	    }
 	}
@@ -545,14 +541,12 @@ function draw_squares ()
 // animate if MDS coordinates have changed, or from zoom
 var animate = function ()
 {
-	console.time(`dac-scatter-plot.js animate()`);
 	// circles and square have to be treated differently
 	if (scatter_plot_type == "circle") {
 		animate_circles();
 	} else {
 		animate_squares();
 	}
-	console.timeEnd(`dac-scatter-plot.js animate()`);
 }
 
 // animate if MDS coordinates have changed, or for zoom (private) for circles
@@ -741,7 +735,6 @@ function zoom()
 
 	// find final selection indices
 	var extent = d3.event.target.extent();
-	// console.debug(`new zoom extent is %o, %o, %o, %o`, extent[0][0], extent[1][0], extent[0][1], extent[1][1]);
 
 	// look for points that were selected
 	var selection = get_brush_sel(extent);
@@ -754,7 +747,7 @@ function zoom()
 
 			// fire zoom changed event
 			var zoomEvent = new CustomEvent("DACZoomChanged",
-																				{detail: {extent: extent, zoom: true}});
+				{detail: {extent: extent, zoom: true}});
 			document.body.dispatchEvent(zoomEvent);
     } else {
 			// reset scale
@@ -777,7 +770,7 @@ function zoom()
 // get subset for future analysis
 function subset ()
 {
-	// console.debug(`subset()`);
+
 	// get subset selected
 	var extent = d3.event.target.extent();
 
@@ -898,7 +891,7 @@ module.reset_zoom = function ()
 
 	// reset zoom in bookmarks
 	var zoomEvent = new CustomEvent("DACZoomChanged",
-																		{detail: {extent: extent, zoom: false}});
+		{detail: {extent: extent, zoom: false}});
 	document.body.dispatchEvent(zoomEvent);
 
 }
@@ -909,7 +902,6 @@ module.reset_zoom = function ()
 // selection brush handler call back
 // function sel_brush()
 // {
-// 	console.debug(`sel_brush()`);
 // 	gray real-time selection box
 // 	var extent = d3.event.target.extent();
 
@@ -1009,7 +1001,7 @@ module.reset_zoom = function ()
 // selection brush end handler call back
 function sel_brush_end()
 {
-	// console.debug(`sel_brush_end()`);
+
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
@@ -1054,8 +1046,8 @@ function sel_brush_end()
 // select an individual point
 function sel_individual (d,i)
 {
-		// console.debug(`running sel_individual with i = %o, selections=%o`, i, selections);
-    // check if point is visible
+
+	// check if point is visible
     if (filtered_selection[i] == 1.0) {
 
         // check for subset exclusion
@@ -1138,29 +1130,35 @@ function defocus() {
 
 // set up subset change event
 document.body.addEventListener("DACBrushReady", (eventData) => {
+
 	// Registering event handlers for new brush
 	const brush = eventData.detail.brush;
 	brush.on("brushend", brushend);
+
 });
 
 function brushend(someevent) {
+
 	// enable zoom
 	if (selections.sel_type() == 0) 
 	{
 		// set up zoom brushing
 		zoom();
-	} 
+	}
+
 	// subset
 	else if (selections.sel_type() == -1) 
 	{
 		// set up subset selection
 		subset();
 	} 
+	
 	// selection (either through click or brush)
 	else 
 	{
 		// otherwise enable normal selection
 		var extent = d3.event.target.extent();
+
 		// Check if extent is zero, meaning it was just a click not a selection
 		if(extent[0][0] == extent[1][0] && extent[0][1] == extent[1][1])
 		{
@@ -1170,6 +1168,7 @@ function brushend(someevent) {
 			const x = event.pageX;
 			const y = event.pageY;
 			// console.debug(`Click occurred here: %o, %o`, x, y);
+
 			// Find all the elements under the point
 			const elements = document.elementsFromPoint(x, y);
 			// console.debug(`elementsFromPoint is %o`, elements);
@@ -1181,25 +1180,30 @@ function brushend(someevent) {
 			// console.debug(`point in elementsFromPoint: %o`, point);
 			// console.debug(`selections.sel_type() is %o`, selections.sel_type());
 
-			// And fire a mousedown on the first circle if we have one
+			// select individual point
 			if(point)
 			{
 				const d = d3.select(point).data()[0];
 				const i = d[2];
 				// console.debug(`our cicle has i=%o`, i);
+				
 				sel_individual(d,i);
 			}
+
 			// Otherwise, if there was nothing under the click, clear selection if we are not zoom or subset
 			else if(selections.sel_type() !== 0 && selections.sel_type() !== -1)
 			{
+
 				// console.debug(`inside else if(selections.sel_type() !== 0 && selections.sel_type() !== -1)`);
 				selections.zero_sel();
 				// fire selection change event
 				var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
 								active_sel: []} });
-				document.body.dispatchEvent(selectionEvent);	
+				document.body.dispatchEvent(selectionEvent);
+
 			}
 		}
+
 		// Otherwise handle brush selection
 		else
 		{

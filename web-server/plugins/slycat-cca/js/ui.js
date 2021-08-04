@@ -545,20 +545,31 @@ $(document).ready(function() {
       return;
     }
     
-    // Create logger for redux
-    const loggerMiddleware = createLogger();
+    // Adding middlewares to redux store
+    const middlewares = [];
+    // Lets us dispatch() functions
+    middlewares.push(thunkMiddleware);
+    // Neat middleware that logs actions. 
+    // Logger must be the last middleware in chain, 
+    // otherwise it will log thunk and promise, 
+    // not actual actions.
+    // Adding it only in development mode to reduce console messages in prod
+    if (process.env.NODE_ENV === `development`) {
+        // Create logger for redux
+        const loggerMiddleware = createLogger({
+            // Setting console level to 'debug' for logger messages
+            level: 'debug',
+            // Enable diff to start showing diffs between prevState and nextState
+            // diff: true,
+        });
+        middlewares.push(loggerMiddleware);
+    }
 
     // Create Redux store and set its initial state
     store = createStore(
       cca_reducer, 
       redux_state_tree,
-      applyMiddleware(
-        thunkMiddleware, // Lets us dispatch() functions
-        loggerMiddleware, // Neat middleware that logs actions. 
-                          // Logger must be the last middleware in chain, 
-                          // otherwise it will log thunk and promise, 
-                          // not actual actions.
-      )
+      applyMiddleware(...middlewares)
     );
 
     store.dispatch(
