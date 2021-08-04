@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "node --trace-deprecation --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.dev.js",
     "prod.dev": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.prod.dev.js",
-    "myslycat": "node --max_old_space_size=1400 ./node_modules/webpack/bin/webpack.js serve --config webpack.myslycat.js",
+    "myslycat": "node --max_old_space_size=1200 ./node_modules/webpack/bin/webpack.js serve --config webpack.myslycat.js",
     "watch": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js --config webpack.watch.js --watch",
     "prod": "webpack --config webpack.prod.js",
     "test": "./node_modules/.bin/jest",
