@@ -100,6 +100,9 @@ module.exports = merge(common, {
 
     // Where non-webpack generated files are located on the filesystem.
     // contentBase: [path.join(__dirname, 'web-server/plugins/slycat-project-wizards'), path.join(__dirname, 'web-server/plugins/slycat-model-wizards')],
+
+    // Attempt to write to disk instead of keeping in memory to reduce memory usage of webpack on memory limited VMs
+    writeToDisk: true,
     
     // Public URL of served files. Commended out because we want them available at the root URL.
     publicPath: '/',
