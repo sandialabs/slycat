@@ -173,7 +173,7 @@ function constructor(params)
               // Get list of model ids project data is used in
               client.get_project_data_parameter_fetch({ did: did, param: "mid"}).then((models) => {
                 // if there are no more models using that project data, delete it
-                if(models.length === 0) {
+                if(models && models.length === 0) {
                   client.delete_project_data_fetch({ did: did });
                 }
               });
@@ -610,7 +610,7 @@ function constructor(params)
                 // Get the list of models using that project data
                 client.get_project_data_parameter_fetch({did: did, param: "mid"}).then((models) => {
                   // if there are no more models using that project data, delete it
-                  if(models.length === 0) {
+                  if(models && models.length === 0) {
                       client.delete_project_data_fetch({did: did});
                     }
                   });

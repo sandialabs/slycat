@@ -6,7 +6,6 @@ import { displayPartsToString } from 'typescript';
  * this class sets up and tests a remote session to an agent
  */
 export default class SmbAuthentication extends React.Component<any,any> {
-
   /**
    *Creates an instance of SlycatRemoteControls.
    * @param {callBack, ConnectButton} props, 
@@ -33,7 +32,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
       smb_info: this.props.smb_info
     };
   }
-
+  private poll;
   /**
    * function used to test if we have an ssh connection to the hostname
    * @param {hostname}
@@ -78,6 +77,10 @@ export default class SmbAuthentication extends React.Component<any,any> {
   async componentDidMount(){
     await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
+    this.poll = setInterval(
+      async () => await this.checkRemoteStatus(this.state.hostname), 
+      3000
+    );
   }
 
   /**
@@ -156,6 +159,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
    */
   componentWillUnmount() {
     const display = this.populateDisplay();
+    clearInterval(this.poll);
     const state = {
       remote_hosts: [],
       enable: true,
