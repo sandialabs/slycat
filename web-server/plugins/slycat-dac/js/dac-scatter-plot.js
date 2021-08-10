@@ -756,7 +756,7 @@ function zoom()
 
     // remove gray selection box
     d3.event.target.clear();
-    d3.selectAll('.brush').call(d3.event.target);
+    d3.selectAll('#dac-selector-svg .brush').call(d3.event.target);
 
     // re-draw display (animate if small number of points)
     if (mds_coords.length > max_points_animate) {
@@ -843,7 +843,7 @@ function subset ()
 
 	// remove gray selection box
 	d3.event.target.clear();
-	d3.selectAll('.brush').call(d3.event.target);
+	d3.selectAll('#dac-selector-svg .brush').call(d3.event.target);
 
 	// fire subset changed event
 	var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
@@ -1035,7 +1035,7 @@ function sel_brush_end()
 
 	// remove gray selection box
 	d3.event.target.clear();
-	d3.selectAll('.brush').call(d3.event.target);
+	d3.selectAll('#dac-selector-svg .brush').call(d3.event.target);
 
 	// fire selection change event
 	var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
