@@ -62,14 +62,14 @@ services:
       depends_on:
         - "slycat-web-server"
       # Alex disabling publishing haproxy ports since they are only used internally.
-      # ports:
+      ports:
       #   - "80:80"
-      #   - "443:443"
+        - "443:443"
       # Alex only internally exposing 443 since that's how the client connects to the api. 
       # 80 is myslycat.com client port, so not exposing it internally at all.
-      expose:
+      # expose:
         # - "80"
-        - "443"
+        # - "443"
       networks:
         - sly-net
 
