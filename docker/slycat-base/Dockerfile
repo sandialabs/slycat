@@ -75,7 +75,7 @@ RUN ln -s /etc/slycat/slycat-web-server /etc/rc.d/init.d/slycat-web-server && \
     chmod -R 750 /etc/slycat && \
     chown --recursive root:slycat /etc/slycat/
 
-EXPOSE 443
+EXPOSE 8080
 COPY web-server-config.ini /etc/slycat/
 COPY run-slycat.sh /etc/slycat/
 ENTRYPOINT ["/bin/sh","/etc/slycat/run-slycat.sh"]

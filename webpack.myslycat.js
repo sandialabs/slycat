@@ -113,7 +113,7 @@ module.exports = merge(common, {
     index: 'slycat_projects.html',
     proxy: {
       '/api': {
-        target: 'https://haproxy:443',
+        target: 'http://haproxy:8080',
         pathRewrite: {'^/api' : ''},
         secure: false,
       },
