@@ -1278,6 +1278,7 @@ function toggle_resolution (i, resolution)
 // zoom handler call back
 function zoom()
 {
+
 	// get current plot index
 	var plot_id_str = this.parentNode.id;
 	var plot_id = Number(plot_id_str.split("-").pop()) - 1;
