@@ -164,6 +164,10 @@ class DArray(slycat.darray.Prototype):
         if type(result) is bytes:
           result = numpy.str_(result.decode())
 
+        # check for normal string, convert to numpy
+        if type(result) is str:
+          result = numpy.str_(result)
+
         return result.astype(self._dtype)
 
     return StorageWrapper(self._storage["attribute/%s" % attribute], self._metadata["attribute-types"][attribute])
