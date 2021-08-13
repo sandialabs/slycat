@@ -53,6 +53,8 @@ services:
         - sly-net
       volumes:
         - ../../../:/usr/src/app/slycat
+      restart: always
+
 
   # http://host_os_ip/haproxy?stats  usr:admin, password:admin
   haproxy:
@@ -74,6 +76,7 @@ services:
         # - "443"
       networks:
         - sly-net
+      restart: always
 
   couchdb:
     image: couchdb
@@ -103,6 +106,7 @@ services:
       command: slycat:slycat:1001:1001
       networks:
         - sly-net
+      restart: always
 networks:
   sly-net:
 volumes:
