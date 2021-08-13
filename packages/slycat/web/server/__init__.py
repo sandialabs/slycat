@@ -97,7 +97,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, hypers
         return left
     elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
         if expression.name == "index":
-            return numpy.indices(hdf5_array.shape)[expression.args[0]]
+            if hyperslice is None:
+                return numpy.indices(hdf5_array.shape)[expression.args[0]]
+            else:
+                return numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice]
         elif expression.name == "rank":
             values = evaluate(hdf5_array, expression.args[0], expression_type, expression_level + 1)
             order = numpy.argsort(values)
@@ -295,9 +298,9 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
                     # previous code: this pulls entire dataset!                 
                     # values = evaluate(hdf5_array, attribute.expression, "attribute")
 
-                    # new code: pull one row at a time
+                    # if order is present, we still pull entire dataset
                     if array.order is not None:
-                        values = evaluate(hdf5_array, attribute.expression, "attribute")
+                       values = evaluate(hdf5_array, attribute.expression, "attribute")
 
                     # get each hyperslice
                     for hyperslice in attribute.hyperslices():
@@ -305,13 +308,14 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
                         # put in order, if necessary
                         if array.order is not None:
                             return_list.append(values[order][hyperslice])
+                            
                         else:
 
                             # prevous code -- select hyperslices from all values
-                            # return_list.append(values[hyperslice])  
+                            # return_list.append(values[hyperslice]) 
 
                             # new code: only pull one hyperslice at a time
-                            values = evaluate(hdf5_array, attribute.expression, "attribute", 
+                            values = evaluate(hdf5_array, attribute.expression, "attribute",
                                 hyperslice=hyperslice)
                             return_list.append(values)
 
