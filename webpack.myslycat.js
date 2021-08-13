@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const fs = require('fs');
 // Commenting out ExportNodeModules plugin because it crashes with Babel7
 // const ExportNodeModules = require('webpack-node-modules-list');
 
@@ -108,8 +109,13 @@ module.exports = merge(common, {
     publicPath: '/',
     // compress: true,
     host: '0.0.0.0',
+    public: 'myslycat.com',
     port: 443,
-    https: true,
+    https: {
+      key: fs.readFileSync('server.key'),
+      cert: fs.readFileSync('server.crt'),
+      ca: fs.readFileSync('ca.pem'),
+    },  
     index: 'slycat_projects.html',
     proxy: {
       '/api': {
