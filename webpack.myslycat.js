@@ -108,8 +108,8 @@ module.exports = merge(common, {
     publicPath: '/',
     // compress: true,
     host: '0.0.0.0',
-    port: 80,
-    // https: false,
+    port: 443,
+    https: true,
     index: 'slycat_projects.html',
     proxy: {
       '/api': {

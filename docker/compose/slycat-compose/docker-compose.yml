@@ -44,7 +44,7 @@ services:
       # Expose ports. HOST:CONTAINER
       # Alex exposing port 80 for myslycat.com. Not using ssl for simplicity.
       ports:
-        - "80:80"
+        - "443:443"
       # Expose ports without publishing them to the host machine - they’ll only be accessible to linked services. Only the internal port can be specified.
       # Alex disabling becuse we are not using 9000 and no need to only expose without publishing. Not sure why this was there in the first place.
       # expose:
