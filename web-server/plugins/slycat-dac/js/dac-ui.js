@@ -69,10 +69,6 @@ $(document).ready(function() {
     // scatter plot points (circles or squares)
     var SCATTER_PLOT_TYPE = "circle";
 
-    // variable/metadata inclusion columns
-    var var_include_columns = null;
-    var meta_include_columns = null;
-
     // colormap defaults
     var cont_colormap = null;
 
@@ -102,6 +98,7 @@ $(document).ready(function() {
 
     // model origin data (initialize to empty)
     var model_origin = [];
+    var num_origin_cols = 0;
 
     // model name (for downloading tables)
     var MODEL_NAME = "";
@@ -271,8 +268,27 @@ $(document).ready(function() {
                         dac_zoom_flag: "dac-zoom-flag" in bookmark ? bookmark["dac-zoom-flag"] : false,
                         scatterplot_size: [],
                     }
-                    // Create logger for redux
-                    const loggerMiddleware = createLogger();
+
+                    // Adding middlewares to redux store
+                    const middlewares = [];
+                    // Lets us dispatch() functions
+                    middlewares.push(thunkMiddleware);
+                    // Neat middleware that logs actions. 
+                    // Logger must be the last middleware in chain, 
+                    // otherwise it will log thunk and promise, 
+                    // not actual actions.
+                    // Adding it only in development mode to reduce console messages in prod
+                    if (process.env.NODE_ENV === `development`) {
+                        // Create logger for redux
+                        const loggerMiddleware = createLogger({
+                            // Setting console level to 'debug' for logger messages
+                            level: 'debug',
+                            // Enable diff to start showing diffs between prevState and nextState
+                            // diff: true,
+                        });
+                        middlewares.push(loggerMiddleware);
+                    }
+                    
                     window.store = createStore(
                       dac_reducer, 
                       {
@@ -282,14 +298,7 @@ $(document).ready(function() {
                           mds_coords: [],
                         }
                       },
-                      applyMiddleware(
-                        thunkMiddleware, // Lets us dispatch() functions
-                        loggerMiddleware, // Neat middleware that logs actions. 
-                                          // Logger must be the last middleware in chain, 
-                                          // otherwise it will log thunk and promise, 
-                                          // not actual actions.
-                        // throttleMiddleware, // Allows throttling of actions
-                      )
+                      applyMiddleware(...middlewares)
                     );
 
                     // Save Redux state to bookmark whenever it changes
@@ -364,6 +373,7 @@ $(document).ready(function() {
                         {
 
                             model_origin = result;
+                            num_origin_cols = 1;
 
                             // continue to editable columns
                             setup_editable_columns();
@@ -677,9 +687,6 @@ $(document).ready(function() {
 		   	          function (variables_meta, variables, data_table_meta, data_table)
                   {
 
-                    // remove loading spinner
-                    $("#dac-model-loading").remove();
-
                     // get number of variables, points and columns in table
                     var num_vars = variables_meta[0]["row-count"];
                     var num_cols = data_table_meta[0]["column-count"];
@@ -867,7 +874,7 @@ $(document).ready(function() {
 
                     // initialize table column filters, if bookmarked
                     var column_filters = [];
-                    for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+                    for (var i = 0; i < (num_cols + num_editable_cols + num_origin_cols); i++) {
                         column_filters.push("");
                     }
                     if ("dac-table-filters" in bookmark) {
@@ -928,7 +935,7 @@ $(document).ready(function() {
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
                       init_color_by_sel, MAX_COLOR_NAME
                     );
-                            
+
                     // set up the MDS scatter plot
                     var init_color_by_col = scatter_buttons.get_color_by_col();
                     scatter_plot.setup(
@@ -952,6 +959,9 @@ $(document).ready(function() {
                       init_subset_center
                     );
                         
+                    // remove loading spinner
+                    $("#dac-model-loading").remove();
+
                     // Create React selector
                     const selector = 
                       (

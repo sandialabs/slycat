@@ -25,8 +25,6 @@ def register_slycat_plugin(context):
     import threading
     import traceback
     
-    import cherrypy
-
     # for profiling
     import time
     from datetime import timedelta
@@ -488,14 +486,9 @@ def register_slycat_plugin(context):
             str_rows = [str(x) for x in rows]
             hyper_rows = "|".join(str_rows)
 
-            tic = time.clock()
-
             # load desired rows using hyperchunks
             hql_var_data = slycat.web.server.get_model_arrayset_data(database, model,
                 "dac-var-data", "%s/0/%s" % (database_ids, hyper_rows))
-
-            toc = time.clock()
-            cherrypy.log.error("Var Data time to load: " + str(toc-tic))
 
             # split variable data according to variable
             split_hql = list(range(0, num_rows*num_vars, num_rows)) + [num_rows*num_vars]

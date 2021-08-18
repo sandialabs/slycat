@@ -4,7 +4,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 //TODO: brought warning in just to show react can render remove later
-import TimeseriesWizard from "components/timeseries-wizard/TimeSeriesWizard.tsx"
+import TimeseriesWizard from "components/timeseries-wizard/TimeseriesWizard.tsx"
 import server_root from "js/slycat-server-root";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";

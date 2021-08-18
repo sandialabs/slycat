@@ -398,7 +398,7 @@ def parser ():
         help="Channels must occur in at least this many shots, integer >= 0. " +
              "Use zero to indicate that channel must occur in every shot. " +
              "Default: %(default)s.")
-    parser.add_argument("--num-landmarks", default=2000, type=int,
+    parser.add_argument("--num-landmarks", default=200, type=int,
         help="Number of landmarks to use, integer >= 3.  Can also use zero " +
              "to indicate use of full dataset (no landmarks).")
     parser.add_argument("--overvoltage", action="store_true",

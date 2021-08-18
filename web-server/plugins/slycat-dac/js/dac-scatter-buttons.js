@@ -154,6 +154,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
 
     // add origin column, if it exists
     num_origin_col = 0;
+    model_origin["data"] = [MODEL_ORIGIN];
     if (MODEL_ORIGIN.length > 0) {
 
         // add to list in drop down
@@ -171,7 +172,11 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
 	for (var i = 0; i < editable_columns["attributes"].length; i++) {
 
         // add to list in drop down
-        color_by_type.push("string");
+        if (editable_columns["attributes"][i]["type"] == "categorical") {
+            color_by_type.push("categorical")
+        } else {
+            color_by_type.push("string");
+        }
         color_by_cols.push(num_metadata_cols + num_origin_col + i);
 
         // make sure names aren't too long (if they are then truncate)
@@ -194,15 +199,16 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
     // editable column coloring
     } else if (init_color_by_sel >= num_metadata_cols + num_origin_col) {
         update_color_by_col_data (editable_columns, 
-            init_color_by_sel - num_metadata_cols - num_origin_col);
+            init_color_by_sel - num_metadata_cols - num_origin_col,
+            init_color_by_sel);
 
     // "From Model" origin column coloring
     } else if (init_color_by_sel == num_metadata_cols) {
-        update_color_by_col_data (model_origin, 0);
+        update_color_by_col_data (model_origin, 0, num_metadata_cols);
 
     // actual meta data coloring
     } else {
-        update_color_by_col_data (data_table, init_color_by_sel);
+        update_color_by_col_data (data_table, init_color_by_sel, init_color_by_sel);
     };
 
     // populate pull down menu
@@ -528,6 +534,13 @@ function truncate_color_by_name (name_i) {
 module.update_color_by_col = function(select_col)
 {
 
+    // check if current column matches selected column
+    if (curr_color_by_sel != select_col) {
+
+        // do nothing
+        return;
+    }
+
     // no coloring
     if (select_col == -1) {
 
@@ -544,7 +557,8 @@ module.update_color_by_col = function(select_col)
             aid: "dac-editable-columns",
             success: function (data)
             {
-                update_color_by_col_data (data, select_col - num_metadata_cols - num_origin_col);
+                update_color_by_col_data (data, 
+                    select_col - num_metadata_cols - num_origin_col, select_col);
                 scatter_plot.update_color(curr_color_by_col);
             },
             error: function () {
@@ -562,7 +576,7 @@ module.update_color_by_col = function(select_col)
     // "From Model" origin column coloring
     } else if (select_col == num_metadata_cols) {
 
-        update_color_col_data (model_origin, 0);
+        update_color_by_col_data (model_origin, 0, num_metadata_cols);
         scatter_plot.update_color(curr_color_by_col);
 
     // actual meta data coloring
@@ -572,7 +586,7 @@ module.update_color_by_col = function(select_col)
         $.when(request.get_table("dac-datapoints-meta", mid)).then(
             function (data)
             {
-                update_color_by_col_data (data, select_col);
+                update_color_by_col_data (data, select_col, select_col);
                 scatter_plot.update_color(curr_color_by_col);
             },
             function ()
@@ -589,31 +603,52 @@ module.update_color_by_col = function(select_col)
 }
 
 // actual color plotting
-function update_color_by_col_data (data, select_col)
+function update_color_by_col_data (data, data_col, select_col)
 {
-    
+
     // check for string data
     if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
 
         // use alphabetical order by number to color
 
         // get string data
-        var color_by_string_data = data["data"][select_col];
+        var color_by_string_data = data["data"][data_col];
 
         // get unique sorted string data
         var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
+        
+        // set curr_color_by_col
+        set_curr_color_by_col (color_by_string_data, unique_sorted_string_data);
 
-        // get indices or original string data in the unique sorted string data
-        curr_color_by_col = [];
-        for (var i=0; i < color_by_string_data.length; i++) {
-            curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
-        }
+    // for categorical data, use given order of categories
+    } else if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "categorical") {
+
+        // get category labels
+        var categories = data["categories"][data_col];
+
+        // get string data
+        var color_by_string_data = data["data"][data_col]
+
+        // set curr_color_by_col
+        set_curr_color_by_col (color_by_string_data, categories);
 
     } else {
 
         // get selected column from data base (number data)
-        curr_color_by_col = data["data"][select_col];
+        curr_color_by_col = data["data"][data_col];
 
+    }
+
+}
+
+// set curr_color_by_col using strings, in order provided
+function set_curr_color_by_col (color_by_string_data, ordered_strings)
+{
+
+    // get indices for original string data in the unique sorted string data
+    curr_color_by_col = [];
+    for (var i=0; i < color_by_string_data.length; i++) {
+        curr_color_by_col.push(ordered_strings.indexOf(color_by_string_data[i]));
     }
 
 }
