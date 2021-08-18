@@ -1,4 +1,4 @@
-FROM node:15
+FROM node
 # see https://github.com/sass/node-sass/issues/3077 locking down to node 15 until this is resolved
 WORKDIR /usr/src/slycat
 RUN git config --global http.sslVerify false
