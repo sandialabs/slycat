@@ -58,10 +58,9 @@ export function login(params)
         server: params.hostname,
         share: component.remote.share()
     }).then((response) => {
-        console.log("authenticated.",response);
         if(response.ok){
           component.container.children().modal("hide");
-          params.success(response.data.sid);
+          params.success(response.status);
         } else {
           component.remote.enable(true);
           component.remote.status_type("danger");
@@ -161,7 +160,7 @@ export function create_pool()
             collab_name: params.collab_name,
             title: params.title,
             message: params.message,
-            success: function(sid)
+            success: function(status)
             {
               if(params.success)
                 params.success(params.hostname);

@@ -2746,8 +2746,6 @@ $.widget("parameter_image.scatterplot",
     }
 
     // If we don't have a session for the image hostname, create one.
-    var cached_uri = URI(api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
-
     console.log("Attempting to load image from server-side cache...");
     console.log("Loading image " + image.uri + " from server...");
 
@@ -2758,7 +2756,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     xhr.image = image;
-    xhr.open("GET", api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
+    xhr.open("GET", api_root + "remotes/" + uri.hostname() + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
     xhr.responseType = "arraybuffer";
     
     //Split path to get collab name. Assume collab name is the first thing in path. 
@@ -2767,10 +2765,9 @@ $.widget("parameter_image.scatterplot",
 
     xhr.onload = function(e){
       //If the image isn't in cache, open an agent session:
-      if (this.status == 404) {
+      if (this.status == 404 || this.status == 400) {
         if(!self.login_open)
         {
-          // TODO add SMB check here
           self.login_open = true;
           self.remotes.get_remote({
             smb: uri.protocol() == "smb",
@@ -2834,7 +2831,7 @@ $.widget("parameter_image.scatterplot",
 
               xhr.image = image;
               //Double encode to avoid cherrypy's auto unencode in the controller
-              xhr.open("GET", api_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
+              xhr.open("GET", api_root + "remotes/" + uri.hostname() + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
               xhr.responseType = "arraybuffer";
               xhr.onload = function(e) {
                 // If we get 404, the remote session no longer exists because it timed-out.
