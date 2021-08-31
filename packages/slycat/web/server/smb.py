@@ -56,7 +56,7 @@ class Smb(object):
             self.connected = self.conn.connect(self.server_ip, self.port)
             connected = True
             cherrypy.log.error('Connected to %s smb server' % self.server)
-            return connected, self.connected
+            return self.connected
         except Exception as e:
             cherrypy.log.error('Connect failed. Reason: %s', e)
             return False
@@ -159,8 +159,7 @@ def create_session(username, password, server, share):
         with session_cache_lock:
             cherrypy.log.error("create the seesion and add it to the session_cache")
             session_cache[smb_id] = Smb(username, password, server, share)
-            is_connected, connected = session_cache[smb_id].connect() 
-            if is_connected:
+            if session_cache[smb_id].connect():
                 return smb_id
             raise cherrypy.HTTPError("401 Remote smb connection failed: could not connect to smb drive")
     except Exception as e:
