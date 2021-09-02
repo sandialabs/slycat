@@ -89,6 +89,8 @@
           session_exists:remote.session_exists
         "></slycat-remote-controls>
         <div class="smb-wizard-login" style="padding-left: 16px;" data-bind="visible: ps_type() == 'smb'">SMB</div>
+        <label class="col-sm-9 alert alert-danger slycat-big-scrolling-alert" role="alert" 
+          data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb', text: 'Remote authentication failed.'" style="position:relative; left:145px;"></label>
       </form>
     </div>
 
@@ -136,9 +138,9 @@
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
   <button class="btn btn-primary local-browser-continue browser-continue" data-bind="visible:tab() == 1,click:upload_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 2 && ps_type() == 'remote',click:connect,enable:remote.enable">Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 2 && ps_type() == 'smb',click:connectSMB,enable:remote.enable">Continue SMB</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 2 && ps_type() == 'smb',click:connectSMB,enable:remote.enable">Continue</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3 && ps_type() == 'remote',click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3 && ps_type() == 'smb',click:load_table_smb"><i class="fa fa-spinner fa-pulse"></i> Continue SMB upload</button>
+  <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3 && ps_type() == 'smb',click:load_table_smb"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
   <button class="btn btn-primary" 
     data-bind="
