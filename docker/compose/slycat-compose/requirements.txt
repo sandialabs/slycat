@@ -11,3 +11,4 @@ routes
 scipy
 npTDMS
 pandas
+pysmb
