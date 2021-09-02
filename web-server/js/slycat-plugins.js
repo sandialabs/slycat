@@ -43,6 +43,9 @@ export async function loadTemplate(name, format) {
     case "run-command":
       html = await import(/* webpackChunkName: "run_command_template" */ 'plugins/slycat-run-command/ui.html');
       break;
+    case "smb":
+      html = await import(/* webpackChunkName: "smb_template" */ 'plugins/slycat-smb/ui.html');
+      break;
     case "VS":
       html = await import(/* webpackChunkName: "ui_video_swarm_template" */ 'plugins/slycat-video-swarm/html/vs-ui.html');
       break;
@@ -88,6 +91,9 @@ export async function loadModule(name) {
       break;
     case "run-command":
       module = await import(/* webpackChunkName: "run_command_module" */ 'plugins/slycat-run-command/ui.js');
+      break;
+    case "smb":
+      module = await import(/* webpackChunkName: "run_command_module" */ 'plugins/slycat-smb/ui.js');
       break;
     case "VS":
       module = await import(/* webpackChunkName: "ui_video_swarm_module" */ 'plugins/slycat-video-swarm/js/vs-ui.js');

@@ -25,6 +25,7 @@ import slycat.web.server.database.couchdb
 import slycat.web.server.hdf5
 import slycat.web.server.plugin
 import slycat.web.server.remote
+import slycat.web.server.smb
 import slycat.web.server.streaming
 import slycat.web.server.upload
 import stat
@@ -68,9 +69,16 @@ def get_sid(hostname):
         for index, host_session in enumerate(session["sessions"]):
             if host_session["hostname"] == hostname:
                 sid = host_session["sid"]
-                if(not slycat.web.server.remote.check_session(sid)):
+                session_type = host_session["session_type"]
+                if(host_session["session_type"] == "ssh" and not slycat.web.server.remote.check_session(sid)):
                     cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, list(slycat.web.server.remote.session_cache.keys())))
                     slycat.web.server.remote.delete_session(sid)
+                    del session["sessions"][index]
+                    database.save(session)
+                    raise cherrypy.HTTPError("404")
+                elif(host_session["session_type"] == "smb" and not slycat.web.server.smb.check_session(sid)):
+                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.smb.check_session(sid), sid, list(slycat.web.server.smb.session_cache.keys())))
+                    slycat.web.server.smb.delete_session(sid)
                     del session["sessions"][index]
                     database.save(session)
                     raise cherrypy.HTTPError("404")
@@ -80,7 +88,7 @@ def get_sid(hostname):
         raise cherrypy.HTTPError("404")
     if sid is None:
         raise cherrypy.HTTPError("400 session is None value")
-    return sid
+    return sid, session_type
 
 
 def require_json_parameter(name):
@@ -1012,14 +1020,18 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
             data = file.file.read()
 
     elif file is None and hostname is not None and path is not None:
-        sid = get_sid(hostname)
-        with slycat.web.server.remote.get_session(sid) as session:
-            filename = "%s@%s:%s" % (session.username, session.hostname, path)
-            if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-                cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
-                                        "cherrypy.HTTPError 400 cannot load directory %s." % filename)
-                raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
-            data = session.sftp.file(path).read()
+        sid, session_type = get_sid(hostname)
+        if session_type == "ssh":
+            with slycat.web.server.remote.get_session(sid) as session:
+                filename = "%s@%s:%s" % (session.username, session.hostname, path)
+                if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+                    cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
+                                            "cherrypy.HTTPError 400 cannot load directory %s." % filename)
+                    raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+                data = session.sftp.file(path).read()
+        elif session_type == "smb":
+            with slycat.web.server.smb.get_session(sid) as session:
+                data = session.get_file(path=path)
     else:
         cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
                                 "cherrypy.HTTPError 400 must supply file parameter, or sid and path parameters.")
@@ -1208,7 +1220,7 @@ def clear_ssh_sessions():
           sid = cherrypy.request.cookie["slycatauth"].value
           couchdb = slycat.web.server.database.couchdb.connect()
           session = couchdb.get("session", sid)
-          cherrypy.log.error("ssh sessions cleared for user session: %s" % session)
+          cherrypy.log.error("ssh and smb sessions cleared for user session: %s" % session)
           cherrypy.response.status = "200"
           if session is not None:
               for ssh_session in session["sessions"]:
@@ -1899,18 +1911,16 @@ def validate_table_columns(columns):
         columns = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in columns]
         columns = numpy.concatenate([numpy.arange(begin, end) for begin, end in columns])
         columns = columns[columns >= 0]
-        return columns
-    except:
+    except Exception as e:
+        cherrypy.log.error(str(e))
         cherrypy.log.error("slycat.web.server.handlers.py validate_table_columns",
                                 "cherrypy.HTTPError 400 malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
         raise cherrypy.HTTPError(
             "400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
-
     if numpy.any(columns < 0):
         cherrypy.log.error("slycat.web.server.handlers.py validate_table_columns",
                                 "cherrypy.HTTPError 400 column values must be non-negative.")
         raise cherrypy.HTTPError("400 Column values must be non-negative.")
-
     return columns
 
 
@@ -2473,13 +2483,73 @@ def post_remotes():
                 if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
                     slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
                 del session["sessions"][i]
-        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username, "session_type": "ssh"})
         database.save(session)
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
         msg = "login could not save session for remote host"
     return {"sid": sid, "status": True, "msg": msg}
 
+
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
+def post_remotes_smb():
+    """
+      Given username, hostname, password as a json payload
+      establishes a session with the remote host and attaches
+      it to the users session
+      :return: {"sid":sid, "status":boolean, msg:""}
+      user_name password
+
+      encode with in js
+
+        b64EncodeUnicode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+    """
+    # try and decode the username and password
+    username, password = slycat.web.server.decode_username_and_password()
+    server = cherrypy.request.json["server"]
+    share = cherrypy.request.json["share"]
+    cherrypy.log.error("username:%s server:%s share:%s" % (username, server , share))
+    if username == None:
+        username = cherrypy.request.login
+    msg = ""
+    sid = slycat.web.server.smb.create_session(username,password,server,share)
+    '''
+    save sid to user session
+    the session will be stored as follows in the users session
+    {sessions:[{{"sid": sid,"hostname": hostname, "username": username}},...]}
+    '''
+    try:
+        database = slycat.web.server.database.couchdb.connect()
+        cherrypy.log.error("got the database")
+        session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+        for i in range(len(session["sessions"])):
+            if session["sessions"][i]["hostname"] == server:
+                if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
+                    slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
+                del session["sessions"][i]
+        cherrypy.log.error("adding session")
+        session["sessions"].append({"sid": sid, "hostname": server, "username": username, "session_type": "smb"})
+        cherrypy.log.error("saving")
+        database.save(session)
+        cherrypy.log.error("saved")
+    except Exception as e:
+        cherrypy.log.error("login could not save session for remotes %s" % e)
+        msg = "login could not save session for remote host"
+    return {"sid": sid, "status": True, "msg": msg}
+
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
+def post_smb_browse(hostname, path):
+    cherrypy.log.error("path:%s hostname:%s" % (path, hostname))
+    sid, session_type = get_sid(hostname)
+    cherrypy.log.error("sid:%s path:%s hostname:%s" % (sid, path, hostname))
+    with slycat.web.server.smb.get_session(sid) as session:
+        return session.browse(path=path)
 
 @cherrypy.tools.json_out(on=True)
 def get_remotes(hostname):
@@ -2496,12 +2566,16 @@ def get_remotes(hostname):
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
         for h_session in session["sessions"]:
             if h_session["hostname"] == hostname:
-                if slycat.web.server.remote.check_session(h_session["sid"]):
+                if h_session["session_type"] == "ssh" and slycat.web.server.remote.check_session(h_session["sid"]):
+                    status = True
+                    msg = "hostname session was found"
+                elif h_session["session_type"] == "smb" and slycat.web.server.smb.check_session(h_session["sid"]):
                     status = True
                     msg = "hostname session was found"
                 else:
                     session["sessions"][:] = [tup for tup in session["sessions"] if tup["hostname"] != hostname]
                     database.save(session)
+
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
     return {"status": status, "msg": msg, "hostName": hostname}
@@ -2539,7 +2613,7 @@ def delete_remote(sid):
 
 @cherrypy.tools.json_out(on=True)
 def get_session_status(hostname):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return "success"
 
@@ -2547,7 +2621,7 @@ def get_session_status(hostname):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_remote_launch(hostname):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     command = cherrypy.request.json["command"]
     with slycat.web.server.remote.get_session(sid) as session:
         return session.launch(command)
@@ -2556,7 +2630,7 @@ def post_remote_launch(hostname):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_submit_batch(hostname):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     filename = cherrypy.request.json["filename"]
     with slycat.web.server.remote.get_session(sid) as session:
         return session.submit_batch(filename)
@@ -2564,28 +2638,28 @@ def post_submit_batch(hostname):
 
 @cherrypy.tools.json_out(on=True)
 def get_checkjob(hostname, jid):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.checkjob(jid)
 
 
 @cherrypy.tools.json_out(on=True)
 def delete_job(hostname, jid):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.cancel_job(jid)
 
 
 @cherrypy.tools.json_out(on=True)
 def get_job_output(hostname, jid, path):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_job_output(jid, path)
 
 
 @cherrypy.tools.json_out(on=True)
 def get_user_config(hostname):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_user_config()
 
@@ -2615,7 +2689,7 @@ def job_time(nodes, tasks, size):
 @cherrypy.tools.json_out(on=True)
 def set_user_config(hostname):
     # TODO add user config mapping
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     config = cherrypy.request.json["config"]
     cherrypy.log.error("user_config %s" % config)
     with slycat.web.server.remote.get_session(sid) as session:
@@ -2657,7 +2731,7 @@ def post_remote_command(hostname):
       type: string
       field type eg string, int...
     """
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     command = cherrypy.request.json["command"]
     with slycat.web.server.remote.get_session(sid) as session:
         return session.run_remote_command(command)
@@ -2665,7 +2739,7 @@ def post_remote_command(hostname):
 
 @cherrypy.tools.json_out(on=True)
 def get_remote_job_status(hostname, jid):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_remote_job_status(jid)
 
@@ -2673,7 +2747,7 @@ def get_remote_job_status(hostname, jid):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_remote_browse(hostname, path):
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     file_reject = re.compile(
         cherrypy.request.json.get("file-reject")) if "file-reject" in cherrypy.request.json else None
     file_allow = re.compile(cherrypy.request.json.get("file-allow")) if "file-allow" in cherrypy.request.json else None
@@ -2727,9 +2801,20 @@ def get_remote_file(hostname, path, **kwargs):
         “Access denied” The session user doesn’t have permissions to access the file.
     """
 
-    sid = get_sid(hostname)
-    with slycat.web.server.remote.get_session(sid) as session:
-        return session.get_file(path, **kwargs)
+    sid, session_type = get_sid(hostname)
+    if session_type == 'smb':
+        with slycat.web.server.smb.get_session(sid) as session:
+            split_list = path.split('/')
+            del split_list[1]
+            del split_list[0]
+            content_type, encoding = slycat.mime_type.guess_type(path)
+            if content_type is None:
+                content_type = "application/octet-stream"
+            cherrypy.response.headers["content-type"] = content_type
+            return session.get_file(path='/{0}'.format('/'.join(split_list)))
+    else:
+        with slycat.web.server.remote.get_session(sid) as session:
+            return session.get_file(path, **kwargs)
 
 
 def get_remote_image(hostname, path, **kwargs):
@@ -2741,7 +2826,7 @@ def get_remote_image(hostname, path, **kwargs):
     :param kwargs:
     :return: image
     """
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_image(path, **kwargs)
 
@@ -2755,7 +2840,7 @@ def get_time_series_names(hostname, path, **kwargs):
     :param kwargs:
     :return: json object of column names
     """
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         csv_file = str(session.get_file(path, **kwargs))
     csv_file = csv_file.replace("\\r\\n","\r\n")
@@ -2802,7 +2887,7 @@ def get_remote_video(hostname, vsid):
     :param vsid: video uuid
     :return: video
     """
-    sid = get_sid(hostname)
+    sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_video(vsid)
 

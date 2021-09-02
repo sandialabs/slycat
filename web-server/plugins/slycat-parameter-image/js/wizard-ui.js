@@ -15,6 +15,11 @@ import { remoteControlsReauth } from "js/slycat-remote-controls";
 import "js/slycat-remote-browser";
 import "js/slycat-table-ingestion";
 import parameterImageWizardUI from "../wizard-ui.html";
+import React from "react";
+import ReactDOM from "react-dom";
+import SmbRemoteFileBrowser from 'components/SmbRemoteFileBrowser.tsx'
+import SmbAuthentication from 'components/SmbAuthentication.tsx';
+
 
 function constructor(params)
 {
@@ -32,7 +37,8 @@ function constructor(params)
   component.remote = mapping.fromJS({
     hostname: null, 
     username: null, 
-    password: null, 
+    password: null,
+    share: null,
     status: null, 
     status_type: null, 
     enable: true, 
@@ -167,7 +173,7 @@ function constructor(params)
               // Get list of model ids project data is used in
               client.get_project_data_parameter_fetch({ did: did, param: "mid"}).then((models) => {
                 // if there are no more models using that project data, delete it
-                if(models.length === 0) {
+                if(models && models.length === 0) {
                   client.delete_project_data_fetch({ did: did });
                 }
               });
@@ -181,6 +187,27 @@ function constructor(params)
     }
   };
 
+  const onSelectTableFile = function(path, fileType, file) {
+    console.log(`newPath:: ${path}, fileType:: ${fileType}, file:: ${file}`);
+    if(fileType === "f"){
+      component.browser.path(path);
+    }
+  };
+  const onSelectParserCallBack = function(ParserName) {
+    component.parser(ParserName);
+  }
+  const onReauth = function() {
+    console.log("onReauth");
+  };
+
+  const setSmbAuthValues = function(hostname, username, password, share, session_exists) {
+    component.remote.hostname(hostname)
+    component.remote.username(username)
+    component.remote.password(password)
+    component.remote.share(share)
+    component.remote.session_exists(session_exists)
+  }
+
   component.select_type = function() {
     var type = component.ps_type();
 
@@ -190,6 +217,17 @@ function constructor(params)
       component.existing_table();
     } else if (type === "remote") {
       component.tab(2);
+    } else if (type === "smb") {
+      component.tab(2);
+      ReactDOM.render(
+        <div>
+          <SmbAuthentication
+            loadingData={false}
+            callBack={setSmbAuthValues}
+          />
+        </div>,
+        document.querySelector(".smb-wizard-login")
+      );
     }
   };
 
@@ -265,7 +303,69 @@ function constructor(params)
     };
     fileUploader.uploadFile(fileObject);
   };
+  component.connectSMB = function() {
+    component.remote.enable(false);
+    component.remote.status_type("info");
+    component.remote.status("Connecting ...");
 
+    if(component.remote.session_exists())
+    {
+      ReactDOM.render(
+        <div>
+          <SmbRemoteFileBrowser 
+            onSelectFileCallBack={onSelectTableFile}
+            onSelectParserCallBack={onSelectParserCallBack}
+            onReauthCallBack={onReauth}
+            hostname={component.remote.hostname()}
+          />
+        </div>,
+        document.querySelector(".smb-wizard-browse")
+      );
+      component.tab(3);
+      component.remote.enable(true);
+      component.remote.status_type(null);
+      component.remote.status(null);
+    }
+    else
+    {
+      client.post_remotes_smb_fetch({
+          user_name: component.remote.username(),
+          password: component.remote.password(),
+          server: component.remote.hostname(),
+          share: component.remote.share()
+      }).then((response) => {
+          console.log("authenticated.",response);
+          if(response.ok){
+            component.remote.session_exists(true);
+            component.remote.enable(true);
+            component.remote.status_type(null);
+            component.remote.status(null);
+            component.tab(3);
+            ReactDOM.render(
+              <div>
+                <SmbRemoteFileBrowser 
+                  onSelectFileCallBack={onSelectTableFile}
+                  onReauthCallBack={onReauth}
+                  hostname={component.remote.hostname()}
+                />
+              </div>,
+              document.querySelector(".smb-wizard-browse")
+            );
+
+          }else{
+            component.remote.enable(true);
+            component.remote.status_type("danger");
+            component.remote.focus("password");
+          }
+      }).catch((error)=>{
+        console.log("could not connect",error)
+        component.remote.enable(true);
+        component.remote.status_type("danger");
+        component.remote.status(reason_phrase);
+        component.remote.focus("password");
+      });
+    }
+  };
   component.connect = function() {
     component.remote.enable(false);
     component.remote.status_type("info");
@@ -300,6 +400,33 @@ function constructor(params)
         }
       });
     }
+  };
+
+  component.load_table_smb = function() {
+    console.log("component.browser.path()",component.browser.path());
+    $('.remote-browser-continue').toggleClass("disabled", true);
+    const file_name = component.browser.path().split("/")[component.browser.path().split("/").length - 1];
+    var fileObject ={
+     pid: component.project._id(),
+     hostname: [component.remote.hostname()],
+     mid: component.model._id(),
+     paths: [component.browser.path()],
+     aids: [["data-table"], file_name],
+     parser: component.parser(),
+     progress: component.remote.progress,
+     progress_status: component.remote.progress_status,
+     progress_final: 90,
+     success: function(){
+       upload_success(component.remote);
+     },
+     error: function(){
+        dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+        $('.remote-browser-continue').toggleClass("disabled", false);
+        component.remote.progress(null);
+        component.remote.progress_status('');
+      }
+    };
+    fileUploader.uploadFile(fileObject);
   };
 
   component.load_table = function() {
@@ -483,7 +610,7 @@ function constructor(params)
                 // Get the list of models using that project data
                 client.get_project_data_parameter_fetch({did: did, param: "mid"}).then((models) => {
                   // if there are no more models using that project data, delete it
-                  if(models.length === 0) {
+                  if(models && models.length === 0) {
                       client.delete_project_data_fetch({did: did});
                     }
                   });

@@ -31,6 +31,7 @@ module.exports = {
     // ui_parameter_plus:  './web-server/plugins/slycat-parameter-image-plus-model/js/ui.js',
     ui_run_command:     './web-server/plugins/slycat-run-command/ui.js',
     slycat_projects:    './web-server/js/slycat-projects-main.js',
+    ui_smb:             './web-server/plugins/slycat-smb/ui.js',
     slycat_project:     './web-server/js/slycat-project-main.js',
     slycat_page:        './web-server/js/slycat-page-main.js',
     slycat_model:       './web-server/js/slycat-model-main.js',
@@ -80,6 +81,11 @@ module.exports = {
       template: 'web-server/plugins/slycat-run-command/ui.html',
       filename: 'ui_run_command.html',
       chunks: ['ui_run_command'],
+    }),
+    new HtmlWebpackPlugin({
+    template: 'web-server/plugins/slycat-smb/ui.html',
+    filename: 'ui_smb.html',
+    chunks: ['ui_smb'],
     }),
     new HtmlWebpackPlugin({
       template: 'web-server/templates/slycat-projects.html',
