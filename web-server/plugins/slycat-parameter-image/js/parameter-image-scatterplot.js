@@ -1604,7 +1604,7 @@ $.widget("parameter_image.scatterplot",
       var playing = self._is_video_playing(video);
       if(!playing)
       {
-        self.syncing_videos.push($(video.parentElement).data('index'));
+        self.syncing_videos.push($(video.parentElement).data('uid'));
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
       }
     });
@@ -2419,7 +2419,7 @@ $.widget("parameter_image.scatterplot",
               self._adjust_leader_line(frame_html);
               if(self.options["video-sync"] && this.currentTime != self.options["video-sync-time"])
               {
-                self.syncing_videos.push(image.index);
+                self.syncing_videos.push(image.uid);
                 this.currentTime = self.options["video-sync-time"];
               }
             })
@@ -2429,7 +2429,7 @@ $.widget("parameter_image.scatterplot",
             })
             .on("pause", function(){
               // console.log("onpause");
-              var pausing_index = self.pausing_videos.indexOf(image.index);
+              var pausing_index = self.pausing_videos.indexOf(image.uid);
               // If video was directly paused by user, set a new video-sync-time and sync all other videos
               if(pausing_index < 0)
               {
@@ -2455,7 +2455,7 @@ $.widget("parameter_image.scatterplot",
             })
             .on("seeked", function(event){
               // console.log("onseeked");
-              var index = self.syncing_videos.indexOf(image.index);
+              var index = self.syncing_videos.indexOf(image.uid);
               if(index < 0)
               {
                 self.options["video-sync-time"] = this.currentTime;
@@ -2476,7 +2476,7 @@ $.widget("parameter_image.scatterplot",
               let frame = d3.select(this.parentElement);
               self._cancel_hover_state(frame, image);
 
-              var playing_index = self.playing_videos.indexOf(image.index);
+              var playing_index = self.playing_videos.indexOf(image.uid);
               // If video was directly played by user
               if(playing_index < 0)
               {
@@ -2498,7 +2498,7 @@ $.widget("parameter_image.scatterplot",
             ;
           if(image.currentTime != undefined && image.currentTime > 0)
           {
-            self.syncing_videos.push(image.index);
+            self.syncing_videos.push(image.uid);
             video.property("currentTime", image.currentTime);
           }
 
@@ -3332,6 +3332,18 @@ $.widget("parameter_image.scatterplot",
     self._open_images(images);
   },
 
+  _getCurrentFrameUID: function()
+  {
+    return store.getState().currentFrame.uid;
+  },
+
+  _getCurrentFrameVideo: function()
+  {
+    let self = this;
+    let video = $(".open-image[data-uid='" + self._getCurrentFrameUID() + "'] video").get(0);
+    return video;
+  },
+
   jump_to_start: function()
   {
     var self = this;
@@ -3340,7 +3352,7 @@ $.widget("parameter_image.scatterplot",
       // Pause all videos
       $(".open-image video").each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
       });
       // Set sync time to 0
@@ -3353,7 +3365,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         self._set_single_video_time(video, 0);
@@ -3370,7 +3382,7 @@ $.widget("parameter_image.scatterplot",
       // Pause all videos and log highest length
       $(".open-image video").each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
         minLength = Math.min(video.duration, minLength);
       });
@@ -3385,7 +3397,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         self._set_single_video_time(video, video.duration - self.options.frameLength);
@@ -3418,7 +3430,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         var time = Math.max(video.currentTime - self.options.frameLength, 0);
@@ -3439,7 +3451,7 @@ $.widget("parameter_image.scatterplot",
       // Pause all videos and log lowest length
       videos.each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
         minLength = Math.min(video.duration, minLength);
       });
@@ -3455,7 +3467,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         var time = Math.min(video.currentTime + self.options.frameLength, video.duration - self.options.frameLength);
@@ -3471,16 +3483,16 @@ $.widget("parameter_image.scatterplot",
     {
       $(".open-image video").each(function(index, video)
       {
-        self.playing_videos.push($(video.parentElement).data('index'));
+        self.playing_videos.push($(video.parentElement).data('uid'));
         video.play();
       });
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
-        self.playing_videos.push($(video.parentElement).data('index'));
+        self.playing_videos.push($(video.parentElement).data('uid'));
         video.play();
       }
     }
@@ -3501,7 +3513,7 @@ $.widget("parameter_image.scatterplot",
 
       videos.each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
       });
 
@@ -3509,15 +3521,14 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
-      var videoIndex;
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
-        videoIndex = $(video.parentElement).data('index');
-        self.pausing_videos.push(videoIndex);
+        let videoUID = $(video.parentElement).data('uid');
+        self.pausing_videos.push(videoUID);
         video.pause();
         self.options["video-sync-time"] = video.currentTime;
-        self.syncing_videos.push(videoIndex);
+        self.syncing_videos.push(videoUID);
         video.currentTime = self.options["video-sync-time"];
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
         self._sync_open_media();
@@ -3530,7 +3541,7 @@ $.widget("parameter_image.scatterplot",
     var self = this;
     if(video != null)
     {
-      self.pausing_videos.push($(video.parentElement).data('index'));
+      self.pausing_videos.push($(video.parentElement).data('uid'));
       video.pause();
       video.currentTime = time;
       self.options["video-sync-time"] = time;

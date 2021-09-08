@@ -439,15 +439,26 @@ class ControlsBar extends React.Component {
           </ControlsGroup>
           {any_video_open &&
           <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3 playback-controls'>
-            <ControlsVideo video_sync={this.state.video_sync} set_video_sync={this.set_video_sync} 
+            <ControlsVideo 
+              video_sync={this.state.video_sync} 
+              set_video_sync={this.set_video_sync} 
               video_sync_time_value={this.state.video_sync_time_value}
-              set_video_sync_time_value={this.set_video_sync_time_value} set_video_sync_time={this.set_video_sync_time}
-              any_video_open={any_video_open} button_style={button_style}
+              set_video_sync_time_value={this.set_video_sync_time_value} 
+              set_video_sync_time={this.set_video_sync_time}
+              any_video_open={any_video_open} 
+              button_style={button_style}
             />
-            <ControlsPlayback trigger_jump_to_start={this.trigger_jump_to_start} 
-              trigger_frame_back={this.trigger_frame_back} trigger_play={this.trigger_play}
-              trigger_pause={this.trigger_pause} trigger_frame_forward={this.trigger_frame_forward} trigger_jump_to_end={this.trigger_jump_to_end}
-              any_video_open={any_video_open} disabled={disabled_playback} playing={playing} button_style={button_style}
+            <ControlsPlayback 
+              trigger_jump_to_start={this.trigger_jump_to_start} 
+              trigger_frame_back={this.trigger_frame_back} 
+              trigger_play={this.trigger_play}
+              trigger_pause={this.trigger_pause} 
+              trigger_frame_forward={this.trigger_frame_forward} 
+              trigger_jump_to_end={this.trigger_jump_to_end}
+              any_video_open={any_video_open} 
+              disabled={disabled_playback} 
+              playing={playing} 
+              button_style={button_style}
             />
           </ControlsGroup>
           }
