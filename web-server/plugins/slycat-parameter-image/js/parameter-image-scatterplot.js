@@ -1431,6 +1431,7 @@ $.widget("parameter_image.scatterplot",
         {
           images.push({
             index : image.index,
+            media_index : image.media_index,
             uri : image.uri.trim(),
             uid : image.uid,
             image_class : "open-image",
@@ -1635,6 +1636,7 @@ $.widget("parameter_image.scatterplot",
         var frame = $(frame);
         var open_element = {
           index : Number(frame.attr("data-index")),
+          media_index : Number(frame.attr("data-media-index")),
           uri : frame.attr("data-uri"),
           uid : frame.attr("data-uid"),
           x : Number(frame.attr("data-transx")),
@@ -1812,6 +1814,7 @@ $.widget("parameter_image.scatterplot",
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
         .attr("data-index", img.index)
+        .attr("data-media-index", img.media_index)
         .call(
           d3.behavior.drag()
             .on('drag', handlers["move"])
@@ -2213,6 +2216,7 @@ $.widget("parameter_image.scatterplot",
         const y = frame.attr("data-transy");
         self._open_images([{
           index : index,
+          media_index : frame.attr("data-media-index"),
           uri : frame.attr("data-uri"),
           image_class : "open-image",
           x : x,
@@ -2908,12 +2912,13 @@ $.widget("parameter_image.scatterplot",
   },
 
   _open_shown_simulations: function() {
+    // console.debug(`_open_shown_simulations in parameter-image-scatterplot`);
     var self = this;
     var areOpen = [];
 
     $(".media-layer div.image-frame")
       .each(function(){
-        areOpen.push($(this).data("index"));
+        areOpen.push($(this).data("uid"));
       });
 
     var width = Number(self.svg.attr("width"));
@@ -2926,12 +2931,13 @@ $.widget("parameter_image.scatterplot",
         image.index != null 
         && image.uri != undefined 
         && self.options.filtered_indices.indexOf(image.index) != -1 
-        && areOpen.indexOf(image.index) == -1 
+        && areOpen.indexOf(image.uid) == -1 
         && !self._is_off_axes(image.index)
       )
       {
         images.push({
           index : image.index,
+          media_index : image.media_index,
           uri : image.uri.trim(),
           image_class : "open-image",
           x : width * image.relx,
@@ -3048,6 +3054,7 @@ $.widget("parameter_image.scatterplot",
 
     self._open_images([{
       index : self.options.indices[image_index],
+      media_index : window.store.getState().media_index,
       uri : self.options.images[self.options.indices[image_index]].trim(),
       image_class : "hover-image",
       x : Math.min(self.x_scale_format(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
@@ -3319,6 +3326,7 @@ $.widget("parameter_image.scatterplot",
       // console.debug('opening images from pin handler');
       images.push({
         index : self.options.indices[image_index],
+        media_index : window.store.getState().media_index,
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "open-image",
         x : self._getDefaultXPosition(image_index, imageWidth),
