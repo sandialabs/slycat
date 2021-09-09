@@ -163,6 +163,7 @@ function constructor(params)
   component.get_server_file_names();
 
   component.cancel = function() {
+    ReactDOM.unmountComponentAtNode(document.querySelector('.smb-wizard-login'));
     if(component.model._id()) {
       client.get_project_data_in_model_fetch({
         mid: component.model._id()}).then((did) => {

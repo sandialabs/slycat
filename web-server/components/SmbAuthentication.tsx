@@ -49,6 +49,15 @@ export default class SmbAuthentication extends React.Component<any,any> {
           this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
             this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
+    }).catch(response => {
+      this.setState({
+        session_exists: false,
+        initialLoad:true,
+        loadingData:false
+      }, () => {
+        this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+      });
     });
   };
   /**
@@ -77,9 +86,12 @@ export default class SmbAuthentication extends React.Component<any,any> {
   async componentDidMount(){
     await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
+    if(this.poll){
+      clearInterval(this.poll);
+    }
     this.poll = setInterval(
       async () => await this.checkRemoteStatus(this.state.hostname), 
-      3000
+      5000
     );
   }
 
@@ -153,13 +165,11 @@ export default class SmbAuthentication extends React.Component<any,any> {
   };
 
   /**
-   * cleanup for when the component is unmounted
-   *
-   * @memberof SmbAuthentication
+   * cleanup state on unmounting
    */
-  componentWillUnmount() {
-    const display = this.populateDisplay();
+  cleanup() {
     clearInterval(this.poll);
+    const display = this.populateDisplay();
     const state = {
       remote_hosts: [],
       enable: true,
@@ -170,6 +180,15 @@ export default class SmbAuthentication extends React.Component<any,any> {
       initialLoad: false
     };
     this.setState(state);
+  }
+  /**
+   * cleanup for when the component is unmounted
+   *
+   * @memberof SmbAuthentication
+   */
+  componentWillUnmount() {
+    this.cleanup();
+    window.removeEventListener('beforeunload', this.cleanup);
   }
 
   /**
