@@ -145,7 +145,6 @@ $.widget("parameter_image.controls",
         metadata={self.options.metadata}
         table_statistics={self.options.table_statistics}
         indices={self.options.indices}
-        media_variables={self.options.image_variables}
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}

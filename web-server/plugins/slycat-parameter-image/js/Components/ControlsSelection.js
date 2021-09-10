@@ -1,9 +1,10 @@
 import * as dialog from "js/slycat-dialog";
+import { connect } from 'react-redux';
 import React from "react";
 import _ from "lodash";
 import "../../css/controls-selection.css";
 
-export default class ControlsSelection extends React.PureComponent {
+class ControlsSelection extends React.PureComponent {
 
   set_value = (variable, variableIndex, value, alert) => {
     let self = this;
@@ -87,8 +88,6 @@ export default class ControlsSelection extends React.PureComponent {
   
   render() {
     // console.log(`ControlsSelection rendered with xValues ${this.props.xValues}`);
-    // console.log(`ControlsSelection rendered with x_variable ${this.props.x_variable}`);
-    // console.log(`ControlsSelection rendered with y_variable ${this.props.y_variable}`);
   
     let display_dividers = true;
     let divider = display_dividers ? (<div className='dropdown-divider' />) : null;
@@ -113,6 +112,13 @@ export default class ControlsSelection extends React.PureComponent {
   
     // Make an array of all open image indexes
     const open_media_indexes = this.props.open_media.map(media => media.index);
+    // console.log(`open_media_indexes is %o`, open_media_indexes);
+    // Make an array of open image indexes for currently selected media column
+    const open_current_media_indexes = this.props.open_media
+      .filter(media => media.media_index == this.props.media_index)
+      .map(media => media.index)
+      ;
+    // console.log(`open_current_media_indexes is %o`, open_current_media_indexes);
     const all_open_hidden = _.difference(open_media_indexes, this.props.hidden_simulations).length === 0;
     const all_open_selected = _.difference(open_media_indexes, this.props.selection).length === 0;
     
@@ -131,21 +137,16 @@ export default class ControlsSelection extends React.PureComponent {
     const unselected_items_header_disabled = hide_unselected_disabled && show_unselected_disabled;
   
     // Completely hide the Pin functionality when the model has no media variables to choose from
-    const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
+    const hide_pin = !(this.props.media_columns && this.props.media_columns.length > 0);
     // Disable the Pin function when no media variable is selected
     // or if the current selection only contains hidden simulations
     // of if the current selection is already pinned
     const no_media_variable_selected = !(this.props.media_variable && this.props.media_variable >= 0);
     const all_selection_hidden = _.difference(this.props.selection, this.props.hidden_simulations).length === 0;
     // console.log(`all_selection_hidden is ${all_selection_hidden}`);
-    // Check if the current selection is already pinned.
-    // Note that this only checks if there is any pin for the current selection,
-    // does not check if the pin matches the currently selected media column.
-    // In the future, we should improve this because it should check if the pins
-    // match the current column so users can select a new column and have the 
-    // menu item to pin available again.
-    const unpinned_selection = _.difference(this.props.selection, open_media_indexes);
-    // console.log(`unpineed_selection is ${unpinned_selection}`);
+    // Check if the current selection for current media column is already pinned.
+    const unpinned_selection = _.difference(this.props.selection, open_current_media_indexes);
+    // console.log(`unpinned_selection is ${unpinned_selection}`);
     const current_selection_pinned = unpinned_selection.length === 0;
     // console.log(`current_selection_pinned is ${current_selection_pinned}`);
     // Find the unpinned items in the current selection that are visible (i.e, not off axes).
@@ -295,4 +296,24 @@ export default class ControlsSelection extends React.PureComponent {
       </div>
     );
   }
-};
+}
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    selection: state.selected_simulations,
+    hidden_simulations: state.hidden_simulations,
+    active_filters: state.active_filters,
+    sync_threeD_colorvar: state.sync_threeD_colorvar,
+    variableRanges: state.variableRanges,
+    open_media: state.open_media,
+    media_index: state.media_index,
+    xValues: state.derived.xValues,
+    yValues: state.derived.yValues,
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  {
+  }
+)(ControlsSelection)

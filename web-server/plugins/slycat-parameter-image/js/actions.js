@@ -26,9 +26,11 @@ export const CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES = 'CLEAR_ALL_THREE_D_VARIABL
 export const SET_X_VALUES = 'SET_X_VALUES'
 export const SET_Y_VALUES = 'SET_Y_VALUES'
 export const SET_V_VALUES = 'SET_V_VALUES'
+export const SET_MEDIA_VALUES = 'SET_MEDIA_VALUES'
 export const SET_X_INDEX = 'SET_X_INDEX'
 export const SET_Y_INDEX = 'SET_Y_INDEX'
 export const SET_V_INDEX = 'SET_V_INDEX'
+export const SET_MEDIA_INDEX = 'SET_MEDIA_INDEX'
 export const SET_OPEN_MEDIA = 'SET_OPEN_MEDIA'
 export const SET_HIDDEN_SIMULATIONS = 'SET_HIDDEN_SIMULATIONS'
 export const SET_MANUALLY_HIDDEN_SIMULATIONS = 'SET_MANUALLY_HIDDEN_SIMULATIONS'
@@ -234,6 +236,10 @@ export function setVValues(values) {
   return { type: SET_V_VALUES, values }
 }
 
+export function setMediaValues(values) {
+  return { type: SET_MEDIA_VALUES, values }
+}
+
 export function setXIndex(index) {
   return { type: SET_X_INDEX, index }
 }
@@ -244,6 +250,10 @@ export function setYIndex(index) {
 
 export function setVIndex(index) {
   return { type: SET_V_INDEX, index }
+}
+
+export function setMediaIndex(index) {
+  return { type: SET_MEDIA_INDEX, index }
 }
 
 export function setOpenMedia(open_media) {

@@ -375,14 +375,9 @@ class ControlsBar extends React.Component {
           <ControlsGroup id={this.scatterplot_id} class='btn-group ml-3'>
             {dropdowns}
             <ControlsButtonVarOptions 
-              selection={this.state.selection} 
-              hidden_simulations={this.state.hidden_simulations}
-              aid={this.props.aid} mid={this.props.mid} 
               model={this.props.model}
-              model_name={this.props.model_name} 
               metadata={this.props.metadata}
               table_statistics={this.props.table_statistics}
-              indices={this.props.indices} 
               axes_variables={this.props.axes_variables}
               button_style={button_style}
               element={this.props.element}
@@ -402,34 +397,30 @@ class ControlsBar extends React.Component {
               trigger_show_unselected={this.trigger_show_unselected}
               trigger_show_selection={this.trigger_show_selection}
               sync_scaling={this.props.sync_scaling}
-              sync_threeD_colorvar={this.props.sync_threeD_colorvar}
               toggle_sync_scaling={this.props.toggleSyncScaling}
-              sync_threeD_colorvar={this.props.sync_threeD_colorvar}
               toggle_sync_threeD_colorvar={this.props.toggleSyncThreeDColorvar}
               trigger_pin_selection={this.trigger_pin_selection}
               trigger_close_all={this.trigger_close_all}
               trigger_show_all={this.trigger_show_all}
               trigger_select_pinned={this.trigger_select_pinned}
-              active_filters={this.props.active_filters}
-              selection={this.state.selection}
-              hidden_simulations={this.state.hidden_simulations}
               indices={this.props.indices}
               rating_variables={this.props.rating_variables}
               metadata={this.props.metadata}
               element={this.props.element}
               button_style={button_style}
-              open_media={this.props.open_media}
-              media_variables={this.props.media_variables}
+              media_columns={this.props.media_columns}
               media_variable={this.state.media_variable}
-              x_variable={this.state.x_variable}
-              y_variable={this.state.y_variable}
-              variableRanges={this.props.variableRanges}
-              xValues={this.props.xValues}
-              yValues={this.props.yValues}
             />
-            <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
-              aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
-              indices={this.props.indices} button_style={button_style} />
+            <ControlsButtonDownloadDataTable 
+              selection={this.state.selection} 
+              hidden_simulations={this.state.hidden_simulations}
+              aid={this.props.aid} 
+              mid={this.props.mid} 
+              model_name={this.props.model_name} 
+              metadata={this.props.metadata}
+              indices={this.props.indices} 
+              button_style={button_style} 
+            />
             <ControlsButtonUpdateTable 
               button_style={button_style} 
               mid={this.props.mid}
@@ -439,15 +430,26 @@ class ControlsBar extends React.Component {
           </ControlsGroup>
           {any_video_open &&
           <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3 playback-controls'>
-            <ControlsVideo video_sync={this.state.video_sync} set_video_sync={this.set_video_sync} 
+            <ControlsVideo 
+              video_sync={this.state.video_sync} 
+              set_video_sync={this.set_video_sync} 
               video_sync_time_value={this.state.video_sync_time_value}
-              set_video_sync_time_value={this.set_video_sync_time_value} set_video_sync_time={this.set_video_sync_time}
-              any_video_open={any_video_open} button_style={button_style}
+              set_video_sync_time_value={this.set_video_sync_time_value} 
+              set_video_sync_time={this.set_video_sync_time}
+              any_video_open={any_video_open} 
+              button_style={button_style}
             />
-            <ControlsPlayback trigger_jump_to_start={this.trigger_jump_to_start} 
-              trigger_frame_back={this.trigger_frame_back} trigger_play={this.trigger_play}
-              trigger_pause={this.trigger_pause} trigger_frame_forward={this.trigger_frame_forward} trigger_jump_to_end={this.trigger_jump_to_end}
-              any_video_open={any_video_open} disabled={disabled_playback} playing={playing} button_style={button_style}
+            <ControlsPlayback 
+              trigger_jump_to_start={this.trigger_jump_to_start} 
+              trigger_frame_back={this.trigger_frame_back} 
+              trigger_play={this.trigger_play}
+              trigger_pause={this.trigger_pause} 
+              trigger_frame_forward={this.trigger_frame_forward} 
+              trigger_jump_to_end={this.trigger_jump_to_end}
+              any_video_open={any_video_open} 
+              disabled={disabled_playback} 
+              playing={playing} 
+              button_style={button_style}
             />
           </ControlsGroup>
           }
@@ -471,13 +473,12 @@ const mapStateToProps = (state, ownProps) => {
     x_index: state.x_index,
     y_index: state.y_index,
     v_index: state.v_index,
+    media_columns: state.derived.media_columns,
     open_media: state.open_media,
-    xValues: state.derived.xValues,
-    yValues: state.derived.yValues,
     variable_aliases: state.derived.variableAliases,
     active_filters: state.active_filters,
     sync_scaling: state.sync_scaling,
-    sync_threeD_colorvar: state.sync_threeD_colorvar,
+    selected_simulations: state.selected_simulations,
   }
 }
 

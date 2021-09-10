@@ -27,9 +27,11 @@ import {
   SET_X_VALUES,
   SET_Y_VALUES,
   SET_V_VALUES,
+  SET_MEDIA_VALUES,
   SET_X_INDEX,
   SET_Y_INDEX,
   SET_V_INDEX,
+  SET_MEDIA_INDEX,
   SET_OPEN_MEDIA,
   SET_HIDDEN_SIMULATIONS,
   SET_MANUALLY_HIDDEN_SIMULATIONS,
@@ -396,6 +398,14 @@ export default function ps_reducer(state = initialState, action) {
         }
       })
       
+    case SET_MEDIA_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          mediaValues: action.values.slice(0)
+        }
+      })
+      
     case SET_X_INDEX:
       return Object.assign({}, state, {
         x_index: action.index
@@ -409,6 +419,11 @@ export default function ps_reducer(state = initialState, action) {
     case SET_V_INDEX:
       return Object.assign({}, state, {
         v_index: action.index
+      })
+      
+    case SET_MEDIA_INDEX:
+      return Object.assign({}, state, {
+        media_index: action.index
       })
       
     case SET_OPEN_MEDIA:

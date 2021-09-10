@@ -34,7 +34,16 @@ class ControlsVideo extends React.Component {
             button_style={this.props.button_style}
           />
         </div>
-        <input type='text' className='form-control form-control-sm video-sync-time' placeholder='Time' value={this.props.video_sync_time_value} onChange={this.props.set_video_sync_time_value} onBlur={this.handleKeypressBlur} onKeyPress={this.handleKeypressBlur} />
+        <input 
+          type='text' 
+          className='form-control form-control-sm video-sync-time' 
+          placeholder='Time' 
+          value={this.props.video_sync_time_value} 
+          onChange={this.props.set_video_sync_time_value} 
+          onBlur={this.handleKeypressBlur} 
+          onKeyPress={this.handleKeypressBlur} 
+          disabled={!this.props.video_sync}
+        />
       </React.Fragment>
     );
   }

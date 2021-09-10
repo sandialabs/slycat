@@ -25,6 +25,7 @@ import ReactDOM from "react-dom";
 import { Provider, connect } from 'react-redux';
 import MediaLegends from './Components/MediaLegends'; 
 import { v4 as uuidv4 } from 'uuid';
+import client from "js/slycat-web-client";
 
 var nodrag = d3.behavior.drag();
 
@@ -1408,8 +1409,10 @@ $.widget("parameter_image.scatterplot",
     // Used to open an initial list of images at startup only
     if(self.updates["open_images"])
     {
-      // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
-      self.options.open_images.forEach(function(image)
+      // Checking for missing parameters
+      let missing_media_row_indexes = [];
+      let open_images_indexes = [];
+      self.options.open_images.forEach((image, index) =>
       {
         if(image.uri === undefined)
           image.uri = self.options.images[image.index];
@@ -1417,41 +1420,93 @@ $.widget("parameter_image.scatterplot",
           image.width = self.options.pinned_width;
         if(image.height === undefined)
           image.height = self.options.pinned_height;
+        // Noting any missing media indexes. This happens for legacy bookmarks which did not include media indexes.
+        if(image.media_index == undefined)
+        {
+          // console.debug(`Image missing media_index: %o`, image);
+          missing_media_row_indexes.push(image.index);
+          open_images_indexes.push(index);
+        }
       });
 
-      // Transform the list of initial images so we can pass them to _open_images()
-      var width = Number(self.svg.attr("width"));
-      var height = Number(self.svg.attr("height"));
-
-      var images = [];
-      self.options.open_images.forEach(function(image, index)
+      // Get all media columns for all pins that don't have them
+      if(missing_media_row_indexes.length)
       {
-        // Making sure we have an index and uri before attempting to open an image
-        if(image.index != null && image.uri != undefined)
-        {
-          images.push({
-            index : image.index,
-            uri : image.uri.trim(),
-            uid : image.uid,
-            image_class : "open-image",
-            x : width * image.relx,
-            y : height * image.rely,
-            width : image.width,
-            height : image.height,
-            target_x : self.x_scale_format(self.options.x[image.index]),
-            target_y : self.y_scale_format(self.options.y[image.index]),
-            video : image.video,
-            currentTime : image.currentTime,
-            current_frame : image.current_frame,
-            initial : true,
+        // console.debug(`Found pins with missing media indexes, so about to fix that up.`)
+        let media_columns = window.store.getState().derived.media_columns;
+        let media_columns_hql = media_columns.join('|');
+        let rows_hql = missing_media_row_indexes.join('|');
+  
+        client.get_model_arrayset_data({
+          mid: self.options.model._id,
+          aid : "data-table",
+          hyperchunks: `0/${media_columns_hql}/${rows_hql}`,
+          success: function(data) {
+            // Chunk data into columns
+            let columns = _.chunk(data, missing_media_row_indexes.length);
+            // console.debug(`columns is %o`, columns);
+
+            // Transpose data into rows
+            let rows = _.zip(...columns);
+            // console.debug(`rows is %o`, rows);
+
+            // For each open image that's missing a media index...
+            open_images_indexes.forEach((open_images_index, index) => {
+              // console.debug(`fixing missing media index for open_media %o`, open_images_index);
+              // Setting its media_index to what we found in its row by matching uri
+              let open_image = self.options.open_images[open_images_index];
+              let media_columns_index = rows[index].indexOf(open_image.uri);
+              let media_index = media_columns[media_columns_index];
+              // console.debug(`setting media_index for %o to %o`, open_image, media_index);
+              open_image.media_index = media_index;
             });
-        }
-        if(image.current_frame)
+            openInitialImages();
+          }
+        });
+      }
+      else
+      {
+        // console.debug(`All pins have media indexes, so no need to fix that up.`)
+        openInitialImages();
+      }
+
+      function openInitialImages()
+      {
+        // Transform the list of initial images so we can pass them to _open_images()
+        var width = Number(self.svg.attr("width"));
+        var height = Number(self.svg.attr("height"));
+  
+        var images = [];
+        self.options.open_images.forEach(function(image, index)
         {
-          self.current_frame = image.index;
-        }
-      });
-      self._open_images(images);
+          // Making sure we have an index and uri before attempting to open an image
+          if(image.index != null && image.uri != undefined)
+          {
+            images.push({
+              index : image.index,
+              media_index : image.media_index,
+              uri : image.uri.trim(),
+              uid : image.uid,
+              image_class : "open-image",
+              x : width * image.relx,
+              y : height * image.rely,
+              width : image.width,
+              height : image.height,
+              target_x : self.x_scale_format(self.options.x[image.index]),
+              target_y : self.y_scale_format(self.options.y[image.index]),
+              video : image.video,
+              currentTime : image.currentTime,
+              current_frame : image.current_frame,
+              initial : true,
+              });
+          }
+          if(image.current_frame)
+          {
+            self.current_frame = image.index;
+          }
+        });
+        self._open_images(images);
+      }
     }
 
     // Update leader targets anytime we resize or change our axes ...
@@ -1604,7 +1659,7 @@ $.widget("parameter_image.scatterplot",
       var playing = self._is_video_playing(video);
       if(!playing)
       {
-        self.syncing_videos.push($(video.parentElement).data('index'));
+        self.syncing_videos.push($(video.parentElement).data('uid'));
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
       }
     });
@@ -1635,6 +1690,7 @@ $.widget("parameter_image.scatterplot",
         var frame = $(frame);
         var open_element = {
           index : Number(frame.attr("data-index")),
+          media_index : Number(frame.attr("data-media-index")),
           uri : frame.attr("data-uri"),
           uid : frame.attr("data-uid"),
           x : Number(frame.attr("data-transx")),
@@ -1812,6 +1868,7 @@ $.widget("parameter_image.scatterplot",
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
         .attr("data-index", img.index)
+        .attr("data-media-index", img.media_index)
         .call(
           d3.behavior.drag()
             .on('drag', handlers["move"])
@@ -2213,6 +2270,7 @@ $.widget("parameter_image.scatterplot",
         const y = frame.attr("data-transy");
         self._open_images([{
           index : index,
+          media_index : frame.attr("data-media-index"),
           uri : frame.attr("data-uri"),
           image_class : "open-image",
           x : x,
@@ -2419,7 +2477,7 @@ $.widget("parameter_image.scatterplot",
               self._adjust_leader_line(frame_html);
               if(self.options["video-sync"] && this.currentTime != self.options["video-sync-time"])
               {
-                self.syncing_videos.push(image.index);
+                self.syncing_videos.push(image.uid);
                 this.currentTime = self.options["video-sync-time"];
               }
             })
@@ -2429,7 +2487,7 @@ $.widget("parameter_image.scatterplot",
             })
             .on("pause", function(){
               // console.log("onpause");
-              var pausing_index = self.pausing_videos.indexOf(image.index);
+              var pausing_index = self.pausing_videos.indexOf(image.uid);
               // If video was directly paused by user, set a new video-sync-time and sync all other videos
               if(pausing_index < 0)
               {
@@ -2455,7 +2513,7 @@ $.widget("parameter_image.scatterplot",
             })
             .on("seeked", function(event){
               // console.log("onseeked");
-              var index = self.syncing_videos.indexOf(image.index);
+              var index = self.syncing_videos.indexOf(image.uid);
               if(index < 0)
               {
                 self.options["video-sync-time"] = this.currentTime;
@@ -2476,7 +2534,7 @@ $.widget("parameter_image.scatterplot",
               let frame = d3.select(this.parentElement);
               self._cancel_hover_state(frame, image);
 
-              var playing_index = self.playing_videos.indexOf(image.index);
+              var playing_index = self.playing_videos.indexOf(image.uid);
               // If video was directly played by user
               if(playing_index < 0)
               {
@@ -2498,7 +2556,7 @@ $.widget("parameter_image.scatterplot",
             ;
           if(image.currentTime != undefined && image.currentTime > 0)
           {
-            self.syncing_videos.push(image.index);
+            self.syncing_videos.push(image.uid);
             video.property("currentTime", image.currentTime);
           }
 
@@ -2912,12 +2970,13 @@ $.widget("parameter_image.scatterplot",
   },
 
   _open_shown_simulations: function() {
+    // console.debug(`_open_shown_simulations in parameter-image-scatterplot`);
     var self = this;
     var areOpen = [];
 
     $(".media-layer div.image-frame")
       .each(function(){
-        areOpen.push($(this).data("index"));
+        areOpen.push($(this).data("uid"));
       });
 
     var width = Number(self.svg.attr("width"));
@@ -2930,12 +2989,13 @@ $.widget("parameter_image.scatterplot",
         image.index != null 
         && image.uri != undefined 
         && self.options.filtered_indices.indexOf(image.index) != -1 
-        && areOpen.indexOf(image.index) == -1 
+        && areOpen.indexOf(image.uid) == -1 
         && !self._is_off_axes(image.index)
       )
       {
         images.push({
           index : image.index,
+          media_index : image.media_index,
           uri : image.uri.trim(),
           image_class : "open-image",
           x : width * image.relx,
@@ -3052,6 +3112,7 @@ $.widget("parameter_image.scatterplot",
 
     self._open_images([{
       index : self.options.indices[image_index],
+      media_index : window.store.getState().media_index,
       uri : self.options.images[self.options.indices[image_index]].trim(),
       image_class : "hover-image",
       x : Math.min(self.x_scale_format(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
@@ -3323,6 +3384,7 @@ $.widget("parameter_image.scatterplot",
       // console.debug('opening images from pin handler');
       images.push({
         index : self.options.indices[image_index],
+        media_index : window.store.getState().media_index,
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "open-image",
         x : self._getDefaultXPosition(image_index, imageWidth),
@@ -3336,6 +3398,18 @@ $.widget("parameter_image.scatterplot",
     self._open_images(images);
   },
 
+  _getCurrentFrameUID: function()
+  {
+    return store.getState().currentFrame.uid;
+  },
+
+  _getCurrentFrameVideo: function()
+  {
+    let self = this;
+    let video = $(".open-image[data-uid='" + self._getCurrentFrameUID() + "'] video").get(0);
+    return video;
+  },
+
   jump_to_start: function()
   {
     var self = this;
@@ -3344,7 +3418,7 @@ $.widget("parameter_image.scatterplot",
       // Pause all videos
       $(".open-image video").each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
       });
       // Set sync time to 0
@@ -3357,7 +3431,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         self._set_single_video_time(video, 0);
@@ -3374,7 +3448,7 @@ $.widget("parameter_image.scatterplot",
       // Pause all videos and log highest length
       $(".open-image video").each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
         minLength = Math.min(video.duration, minLength);
       });
@@ -3389,7 +3463,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         self._set_single_video_time(video, video.duration - self.options.frameLength);
@@ -3422,7 +3496,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         var time = Math.max(video.currentTime - self.options.frameLength, 0);
@@ -3443,7 +3517,7 @@ $.widget("parameter_image.scatterplot",
       // Pause all videos and log lowest length
       videos.each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
         minLength = Math.min(video.duration, minLength);
       });
@@ -3459,7 +3533,7 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
         var time = Math.min(video.currentTime + self.options.frameLength, video.duration - self.options.frameLength);
@@ -3475,16 +3549,16 @@ $.widget("parameter_image.scatterplot",
     {
       $(".open-image video").each(function(index, video)
       {
-        self.playing_videos.push($(video.parentElement).data('index'));
+        self.playing_videos.push($(video.parentElement).data('uid'));
         video.play();
       });
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
-        self.playing_videos.push($(video.parentElement).data('index'));
+        self.playing_videos.push($(video.parentElement).data('uid'));
         video.play();
       }
     }
@@ -3505,7 +3579,7 @@ $.widget("parameter_image.scatterplot",
 
       videos.each(function(index, video)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        self.pausing_videos.push($(video.parentElement).data('uid'));
         video.pause();
       });
 
@@ -3513,15 +3587,14 @@ $.widget("parameter_image.scatterplot",
     }
     else
     {
-      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
-      var videoIndex;
+      let video = self._getCurrentFrameVideo();
       if(video != null)
       {
-        videoIndex = $(video.parentElement).data('index');
-        self.pausing_videos.push(videoIndex);
+        let videoUID = $(video.parentElement).data('uid');
+        self.pausing_videos.push(videoUID);
         video.pause();
         self.options["video-sync-time"] = video.currentTime;
-        self.syncing_videos.push(videoIndex);
+        self.syncing_videos.push(videoUID);
         video.currentTime = self.options["video-sync-time"];
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
         self._sync_open_media();
@@ -3534,7 +3607,7 @@ $.widget("parameter_image.scatterplot",
     var self = this;
     if(video != null)
     {
-      self.pausing_videos.push($(video.parentElement).data('index'));
+      self.pausing_videos.push($(video.parentElement).data('uid'));
       video.pause();
       video.currentTime = time;
       self.options["video-sync-time"] = time;
