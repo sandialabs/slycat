@@ -454,6 +454,7 @@ $(document).ready(function() {
                 mediaValues: [],
                 three_d_colorby_range: {},
                 three_d_colorby_legends: {},
+                media_columns: image_columns,
               }
             },
             applyMiddleware(...middlewares)

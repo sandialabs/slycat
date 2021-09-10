@@ -137,7 +137,7 @@ class ControlsSelection extends React.PureComponent {
     const unselected_items_header_disabled = hide_unselected_disabled && show_unselected_disabled;
   
     // Completely hide the Pin functionality when the model has no media variables to choose from
-    const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
+    const hide_pin = !(this.props.media_columns && this.props.media_columns.length > 0);
     // Disable the Pin function when no media variable is selected
     // or if the current selection only contains hidden simulations
     // of if the current selection is already pinned

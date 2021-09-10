@@ -25,6 +25,7 @@ import ReactDOM from "react-dom";
 import { Provider, connect } from 'react-redux';
 import MediaLegends from './Components/MediaLegends'; 
 import { v4 as uuidv4 } from 'uuid';
+import client from "js/slycat-web-client";
 
 var nodrag = d3.behavior.drag();
 
@@ -1408,8 +1409,10 @@ $.widget("parameter_image.scatterplot",
     // Used to open an initial list of images at startup only
     if(self.updates["open_images"])
     {
-      // This is just a convenience for testing - in practice, these parameters should always be part of the open image specification.
-      self.options.open_images.forEach(function(image)
+      // Checking for missing parameters
+      let missing_media_row_indexes = [];
+      let open_images_indexes = [];
+      self.options.open_images.forEach((image, index) =>
       {
         if(image.uri === undefined)
           image.uri = self.options.images[image.index];
@@ -1417,42 +1420,93 @@ $.widget("parameter_image.scatterplot",
           image.width = self.options.pinned_width;
         if(image.height === undefined)
           image.height = self.options.pinned_height;
+        // Noting any missing media indexes. This happens for legacy bookmarks which did not include media indexes.
+        if(image.media_index == undefined)
+        {
+          // console.debug(`Image missing media_index: %o`, image);
+          missing_media_row_indexes.push(image.index);
+          open_images_indexes.push(index);
+        }
       });
 
-      // Transform the list of initial images so we can pass them to _open_images()
-      var width = Number(self.svg.attr("width"));
-      var height = Number(self.svg.attr("height"));
-
-      var images = [];
-      self.options.open_images.forEach(function(image, index)
+      // Get all media columns for all pins that don't have them
+      if(missing_media_row_indexes.length)
       {
-        // Making sure we have an index and uri before attempting to open an image
-        if(image.index != null && image.uri != undefined)
-        {
-          images.push({
-            index : image.index,
-            media_index : image.media_index,
-            uri : image.uri.trim(),
-            uid : image.uid,
-            image_class : "open-image",
-            x : width * image.relx,
-            y : height * image.rely,
-            width : image.width,
-            height : image.height,
-            target_x : self.x_scale_format(self.options.x[image.index]),
-            target_y : self.y_scale_format(self.options.y[image.index]),
-            video : image.video,
-            currentTime : image.currentTime,
-            current_frame : image.current_frame,
-            initial : true,
+        // console.debug(`Found pins with missing media indexes, so about to fix that up.`)
+        let media_columns = window.store.getState().derived.media_columns;
+        let media_columns_hql = media_columns.join('|');
+        let rows_hql = missing_media_row_indexes.join('|');
+  
+        client.get_model_arrayset_data({
+          mid: self.options.model._id,
+          aid : "data-table",
+          hyperchunks: `0/${media_columns_hql}/${rows_hql}`,
+          success: function(data) {
+            // Chunk data into columns
+            let columns = _.chunk(data, missing_media_row_indexes.length);
+            // console.debug(`columns is %o`, columns);
+
+            // Transpose data into rows
+            let rows = _.zip(...columns);
+            // console.debug(`rows is %o`, rows);
+
+            // For each open image that's missing a media index...
+            open_images_indexes.forEach((open_images_index, index) => {
+              // console.debug(`fixing missing media index for open_media %o`, open_images_index);
+              // Setting its media_index to what we found in its row by matching uri
+              let open_image = self.options.open_images[open_images_index];
+              let media_columns_index = rows[index].indexOf(open_image.uri);
+              let media_index = media_columns[media_columns_index];
+              // console.debug(`setting media_index for %o to %o`, open_image, media_index);
+              open_image.media_index = media_index;
             });
-        }
-        if(image.current_frame)
+            openInitialImages();
+          }
+        });
+      }
+      else
+      {
+        // console.debug(`All pins have media indexes, so no need to fix that up.`)
+        openInitialImages();
+      }
+
+      function openInitialImages()
+      {
+        // Transform the list of initial images so we can pass them to _open_images()
+        var width = Number(self.svg.attr("width"));
+        var height = Number(self.svg.attr("height"));
+  
+        var images = [];
+        self.options.open_images.forEach(function(image, index)
         {
-          self.current_frame = image.index;
-        }
-      });
-      self._open_images(images);
+          // Making sure we have an index and uri before attempting to open an image
+          if(image.index != null && image.uri != undefined)
+          {
+            images.push({
+              index : image.index,
+              media_index : image.media_index,
+              uri : image.uri.trim(),
+              uid : image.uid,
+              image_class : "open-image",
+              x : width * image.relx,
+              y : height * image.rely,
+              width : image.width,
+              height : image.height,
+              target_x : self.x_scale_format(self.options.x[image.index]),
+              target_y : self.y_scale_format(self.options.y[image.index]),
+              video : image.video,
+              currentTime : image.currentTime,
+              current_frame : image.current_frame,
+              initial : true,
+              });
+          }
+          if(image.current_frame)
+          {
+            self.current_frame = image.index;
+          }
+        });
+        self._open_images(images);
+      }
     }
 
     // Update leader targets anytime we resize or change our axes ...

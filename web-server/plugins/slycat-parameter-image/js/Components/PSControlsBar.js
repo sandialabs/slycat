@@ -408,7 +408,7 @@ class ControlsBar extends React.Component {
               metadata={this.props.metadata}
               element={this.props.element}
               button_style={button_style}
-              media_variables={this.props.media_variables}
+              media_columns={this.props.media_columns}
               media_variable={this.state.media_variable}
             />
             <ControlsButtonDownloadDataTable 
@@ -473,6 +473,7 @@ const mapStateToProps = (state, ownProps) => {
     x_index: state.x_index,
     y_index: state.y_index,
     v_index: state.v_index,
+    media_columns: state.derived.media_columns,
     open_media: state.open_media,
     variable_aliases: state.derived.variableAliases,
     active_filters: state.active_filters,
