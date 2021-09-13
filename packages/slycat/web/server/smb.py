@@ -81,7 +81,6 @@ class Smb(object):
 
     def list_Attributes(self, share=None, path='/'):
         if share is None:
-            cherrypy.log.error('getting %s'%path)
             share=self.share
         try:
             return self.conn.getAttributes(share,path)
@@ -116,9 +115,9 @@ class Smb(object):
         }
 
         for sub_share in sorted(self.conn.listPath(share,path), key=lambda item: item.filename):
-            cherrypy.log.error("    File=", sub_share.filename)
-            cherrypy.log.error("    Fileinfo= %s" % hex(sub_share.file_attributes))
-            cherrypy.log.error("    File isdir= %s" % sub_share.isDirectory)
+            # cherrypy.log.error("    File=", sub_share.filename)
+            # cherrypy.log.error("    Fileinfo= %s" % hex(sub_share.file_attributes))
+            # cherrypy.log.error("    File isdir= %s" % sub_share.isDirectory)
             ftype = "d" if sub_share.isDirectory else "f"
             if ftype == "d":
                 mime_type = "application/x-directory"
@@ -157,7 +156,6 @@ def create_session(username, password, server, share):
     smb_id = uuid.uuid4().hex
     try:
         with session_cache_lock:
-            cherrypy.log.error("create the seesion and add it to the session_cache")
             session_cache[smb_id] = Smb(username, password, server, share)
             if session_cache[smb_id].connect():
                 return smb_id

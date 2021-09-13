@@ -2525,18 +2525,14 @@ def post_remotes_smb():
     '''
     try:
         database = slycat.web.server.database.couchdb.connect()
-        cherrypy.log.error("got the database")
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
         for i in range(len(session["sessions"])):
             if session["sessions"][i]["hostname"] == server:
                 if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
                     slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
                 del session["sessions"][i]
-        cherrypy.log.error("adding session")
         session["sessions"].append({"sid": sid, "hostname": server, "username": username, "session_type": "smb"})
-        cherrypy.log.error("saving")
         database.save(session)
-        cherrypy.log.error("saved")
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
         msg = "login could not save session for remote host"
