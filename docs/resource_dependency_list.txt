@@ -138,7 +138,7 @@ zstd                      1.4.5                h9ceee32_0    https://anaconda.or
 @fortawesome/fontawesome-svg-core   1.2.35   https://www.npmjs.com/package/@fortawesome/fontawesome-svg-core
 @fortawesome/free-solid-svg-icons   5.15.3   https://www.npmjs.com/package/@fortawesome/free-solid-svg-icons
 @fortawesome/react-fontawesome      0.1.14   https://www.npmjs.com/package/@fortawesome/react-fontawesome
-bootstrap                            4.5.3   http://getbootstrap.com
+bootstrap                            4.6.0   http://getbootstrap.com
 css-loader                           6.0.3   https://github.com/webpack-contrib/css-loader
 d3 version 3                        3.5.17   http://d3js.org
 d3 version 6                         6.7.0   http://d3js.org
