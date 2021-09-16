@@ -40,7 +40,7 @@ def register_slycat_plugin(context):
         columns = []
         metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "movies.meta", "0")["arrays"][0]
         for index, attribute in enumerate(metadata["attributes"]):
-          if attribute["type"] != "string":
+          if attribute["type"].decode(encoding='UTF-8') != "string":
             continue
           column = slycat.web.server.get_model_arrayset_data(database, model, "movies.meta", "0/%s/..." % index)
           if not numpy.any(search(column)):
