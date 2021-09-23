@@ -2308,11 +2308,16 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
-    // Don't open media if it's already open, unless we are cloning or it's the initial set
+    // Don't open media if it's already open, unless we are cloning or it's the initial set or we are opening shown simulations.
+    // This is hit on hover (hovering again over a point that already has a pin on it) and in
+    // Actions > Pin Selected Items when the selection contains some items that are alrady open
+    // and others that are not yet open. Maybe also in other places.
     if(
       !image.initial
       && !image.clone
-      && $(`.open-image[data-uri='${image.uri}']:not(.scaffolding)`).length > 0
+      && !image.open_shown_simulations
+      // Checking if any open pins have the same index and media_index as this one
+      && $(`.open-image[data-index='${image.index}'][data-media-index='${image.media_index}']:not(.scaffolding)`).length > 0
     )
     {
       self._open_images(images.slice(1));
@@ -2994,9 +2999,11 @@ $.widget("parameter_image.scatterplot",
       )
       {
         images.push({
+          open_shown_simulations : true,
           index : image.index,
           media_index : image.media_index,
           uri : image.uri.trim(),
+          ...(image.uid != undefined && { uid: image.uid }),
           image_class : "open-image",
           x : width * image.relx,
           y : height * image.rely,
