@@ -48,6 +48,10 @@ class Smb(object):
         """Return the time the session was last accessed."""
         return self._accessed
 
+    def getShare(self):
+        """Return the name of the share that the session is connected to"""
+        return self.share
+
     def connect(self):
         try:
             self.conn = SMBConnection(self.username, self.password,

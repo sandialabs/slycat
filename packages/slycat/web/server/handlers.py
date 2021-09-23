@@ -2560,6 +2560,7 @@ def get_remotes(hostname):
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+        share = ""
         for h_session in session["sessions"]:
             if h_session["hostname"] == hostname:
                 if h_session["session_type"] == "ssh" and slycat.web.server.remote.check_session(h_session["sid"]):
@@ -2568,13 +2569,15 @@ def get_remotes(hostname):
                 elif h_session["session_type"] == "smb" and slycat.web.server.smb.check_session(h_session["sid"]):
                     status = True
                     msg = "hostname session was found"
+                    with slycat.web.server.smb.get_session(h_session["sid"]) as session:
+                        share = session.getShare()
                 else:
                     session["sessions"][:] = [tup for tup in session["sessions"] if tup["hostname"] != hostname]
                     database.save(session)
 
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
-    return {"status": status, "msg": msg, "hostName": hostname}
+    return {"status": status, "msg": msg, "hostName": hostname, "share": share}
 
 
 @cherrypy.tools.json_out(on=True)
@@ -2914,6 +2917,11 @@ def get_configuration_remote_hosts():
         remote_hosts.append({"hostname": hostname, "agent": agent})
     return remote_hosts
 
+@cherrypy.tools.json_out(on=True)
+def get_configuration_smb_remote_hosts():
+    if "smb-remote-hosts" in cherrypy.request.app.config["slycat-web-server"]:
+        return cherrypy.request.app.config["slycat-web-server"]["smb-remote-hosts"]
+    return {"hostnames":[]}
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_support_email():
