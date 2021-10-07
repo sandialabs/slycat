@@ -167,6 +167,17 @@ try:
             clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
     # Store an alphabetized collection of cluster names in a JSON file
+    
+    # Decoding potential byte strings
+    key_list = []
+    for key in clusters.keys():
+        key_list.append(key)
+    
+    for key in key_list:
+        new_key = key.decode("UTF-8")
+        clusters[new_key] = clusters[key]
+        del clusters[key]
+
     file_clusters = dict(aid="clusters", file=json.dumps(sorted(clusters.keys())), parser="slycat-blob-parser",
                          timeseries_count=str(timeseries_count))
     with open(os.path.join(dirname, "file_clusters.json"), "w") as file_clusters_json:
@@ -387,6 +398,24 @@ try:
             waveform_times_array[index] = waveform["times"]
             waveform_values_array[index] = waveform["values"]
 
+        # Decoding potential byte strings
+        for attribute in attributes:
+            for key in attribute.keys():
+                old_val = attribute[key]
+                try:
+                    new_val = old_val.decode("UTF-8")
+                except Exception as e:
+                    new_val = old_val
+                attribute[key] = new_val
+        for dimension in dimensions:
+            for key in dimension.keys():
+                old_val = dimension[key]
+                try:
+                    new_val = old_val.decode("UTF-8")
+                except Exception as e:
+                    new_val = old_val
+                dimension[key] = new_val
+        
         print(("Creating array %s %s" % (attributes, dimensions)))
         with open(os.path.join(dirname, "waveform_%s_dimensions.pickle" % name), "wb") as dimensions_file:
             pickle.dump(dimensions_array, dimensions_file)
