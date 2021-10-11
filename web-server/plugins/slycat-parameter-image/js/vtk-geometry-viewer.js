@@ -9,7 +9,17 @@ import vtkOpenGLRenderWindow from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow'
 import vtkRenderWindow from 'vtk.js/Sources/Rendering/Core/RenderWindow';
 import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindowInteractor';
 import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
-import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
+// import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
+import vtkInteractorStyleManipulator from 'vtk.js/Sources/Interaction/Style/InteractorStyleManipulator';
+import vtkGestureCameraManipulator from                   'vtk.js/Sources/Interaction/Manipulators/GestureCameraManipulator';
+
+// import vtkMouseCameraTrackballMultiRotateManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballMultiRotateManipulator';
+import vtkMouseCameraTrackballPanManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballPanManipulator';
+import vtkMouseCameraTrackballRollManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballRollManipulator';
+import vtkMouseCameraTrackballRotateManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballRotateManipulator';
+import vtkMouseCameraTrackballZoomManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballZoomManipulator';
+import vtkMouseCameraTrackballZoomToMouseManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballZoomToMouseManipulator';
+
 import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
 import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -365,7 +375,55 @@ export function load(container, buffer, uri, uid, type) {
   // Setup interactor style to use
   // ----------------------------------------------------------------------------
 
-  const interactorStyle = vtkInteractorStyleTrackballCamera.newInstance();
+  // This was the default interactor style, but caused problems with typing bookmark names
+  // bacause 'w' would change all 3D renderings to wireframe, and other keys had other effects.
+  // Seb suggested we write our own instead, via manipulators.
+  // const interactorStyle = vtkInteractorStyleTrackballCamera.newInstance();
+
+  const interactorStyle = vtkInteractorStyleManipulator.newInstance();
+
+  const manipulators = [
+    {
+      name: vtkMouseCameraTrackballRotateManipulator,
+    },
+    {
+      name: vtkMouseCameraTrackballRollManipulator,
+      shift: true,
+    },
+    {
+      name: vtkMouseCameraTrackballPanManipulator,
+      control: true,
+    },
+    {
+      name: vtkMouseCameraTrackballZoomManipulator,
+      scrollEnabled: true,
+    },
+    {
+      name: vtkMouseCameraTrackballZoomToMouseManipulator,
+      shift: true,
+      scrollEnabled: true,
+    },
+    // Multi rotate manipulator does not work, even on vtk.js website example code
+    // {
+    //   name: vtkMouseCameraTrackballMultiRotateManipulator,
+    //   alt: true,
+    // },
+  ];
+
+  manipulators.forEach((element, index, array) => { 
+    const manipulator = element.name.newInstance();
+    manipulator.setButton(element.button != undefined ? element.button : 1);
+    manipulator.setShift(element.shift != undefined ? element.shift : false);
+    manipulator.setControl(element.control != undefined ? element.control : false);
+    manipulator.setAlt(element.alt != undefined ? element.alt : false);
+    manipulator.setScrollEnabled(element.scrollEnabled != undefined ? element.scrollEnabled : false);
+    interactorStyle.addMouseManipulator(manipulator);
+  });
+
+  interactorStyle.addGestureManipulator(
+    vtkGestureCameraManipulator.newInstance()
+  );
+
   interactor.setInteractorStyle(interactorStyle);
 
   // Dispatching a vtk start interaction event when someone starts interacting with this 
