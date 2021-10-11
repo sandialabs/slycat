@@ -524,7 +524,7 @@ export default class TimeseriesWizard extends React.Component<
       type: 'timeseries',
       name: this.state.timeseriesName,
       description: '',
-      marking: 'mna',
+      marking: '',
     }).then((result) => {
       this.setState({ model: result });
     })
@@ -795,7 +795,6 @@ export default class TimeseriesWizard extends React.Component<
     // Clearing form validation
     // formElement.classList.remove('was-validated');
     // Creating new model
-
     client.put_model_fetch({
       mid: this.state.model["id"],
       name: this.state.timeseriesName,

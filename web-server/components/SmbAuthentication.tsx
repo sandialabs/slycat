@@ -1,6 +1,5 @@
 import React from 'react';
 import client from "js/slycat-web-client";
-import { displayPartsToString } from 'typescript';
 
 /**
  * this class sets up and tests a remote session to an agent
@@ -42,7 +41,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
     return client.get_remotes_fetch(hostname)
       .then((json) => {
         this.setState({
-          session_exists:json.status,
+          session_exists:json.status && (json.share===this.state.share),
           initialLoad:true,
           loadingData:false
         }, () => {
@@ -77,9 +76,10 @@ export default class SmbAuthentication extends React.Component<any,any> {
    * @memberof SmbAuthentication
    */
   getRemoteHosts = async () => {
-    return client.get_configuration_remote_hosts_fetch()
+    return client.get_configuration_smb_remote_hosts_fetch()
       .then((json)=>{
-        this.setState({hostnames:json});
+        console.log(json.hostnames);
+        this.setState({hostnames:json.hostnames});
       })
   };
 
@@ -134,6 +134,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
       case "share":
         localStorage.setItem("slycat-smb-remote-controls-share", value);
         this.setState({share: value},() => {
+          this.checkRemoteStatus(this.state.hostname);
           this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
             this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
@@ -230,7 +231,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
               onChange={(e)=>this.onValueChange(e.target.value, "username")} />
           </div>
         </div>
-        <div className='form-group row mb-3'>
+        {!this.state.session_exists&&(<div className='form-group row mb-3'>
           <label className='col-sm-2 col-form-label'>Password</label>
           <div className='col-sm-9'>
             <input disabled={this.props.loadingData} 
@@ -238,7 +239,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
               onKeyDown={this.handleKeyDown}
               onChange={(e)=>this.onValueChange(e.target.value, "password")} />
           </div>
-        </div>
+        </div>)}
       </div>
     );
   }
@@ -249,11 +250,11 @@ export default class SmbAuthentication extends React.Component<any,any> {
    * @memberof SmbAuthentication
    */
   getHostnamesJSX = () => {
-    const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => {
+    const hostnamesJSX = this.state.hostnames.map((hostname, i) => {
       return (
       <li key={i}>
         <a className='dropdown-item' onClick={(e:any)=>this.onValueChange(e.target.text, "hostname")}>
-          {hostnameObject.hostname}
+          {hostname}
         </a>
       </li>
       )
@@ -291,7 +292,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
             </div>
           </div>
         </div>
-        {!this.state.session_exists&&this.getFormInputsJSX()}
+        {this.getFormInputsJSX()}
       </form>
     );
   }

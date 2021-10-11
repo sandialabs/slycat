@@ -517,6 +517,17 @@ module.get_configuration_remote_hosts_fetch = function()
   });
 };
 
+module.get_configuration_smb_remote_hosts_fetch = function()
+{
+  return fetch(`${api_root}configuration/smb-remote-hosts`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  });
+};
+
 module.get_configuration_version = function(params)
 {
   $.ajax(
