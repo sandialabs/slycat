@@ -168,6 +168,12 @@ class DArray(slycat.darray.Prototype):
         if type(result) is str:
           result = numpy.str_(result)
 
+        for i in range(0, len(result)):
+          try:
+            result[i] = result[i].decode('utf-8')
+          except (UnicodeDecodeError, AttributeError):
+            pass
+            
         return result.astype(self._dtype)
 
     return StorageWrapper(self._storage["attribute/%s" % attribute], self._metadata["attribute-types"][attribute])
