@@ -93,6 +93,10 @@ class DArray(slycat.darray.Prototype):
         data_min = min(slice)
         data_max = max(slice)
         data_unique = numpy.unique(slice)
+        if type(data_min) is bytes:
+            data_min = str(data_min.decode())
+        if type(data_max) is bytes:
+            data_max = str(data_max.decode())
         attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
         attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
         attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concatenate((data_unique, attribute_unique)))
