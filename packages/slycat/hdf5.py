@@ -163,7 +163,7 @@ class DArray(slycat.darray.Prototype):
 
       def __getitem__(self, *args, **kwargs):
         result = self._storage.__getitem__(*args, **kwargs)
-
+        
         # check for unicode string, convert to numpy
         if type(result) is bytes:
           result = numpy.str_(result.decode())
@@ -172,11 +172,13 @@ class DArray(slycat.darray.Prototype):
         if type(result) is str:
           result = numpy.str_(result)
 
-        for i in range(0, len(result)):
-          try:
-            result[i] = result[i].decode('utf-8')
-          except (UnicodeDecodeError, AttributeError):
-            pass
+        # check for list or numpy array, byte decode everything in it
+        if (type(result) is list) or (type(result) is numpy.ndarray):
+          for i in range(0, len(result)):
+            try:
+              result[i] = result[i].decode('utf-8')
+            except (UnicodeDecodeError, AttributeError):
+              pass
             
         return result.astype(self._dtype)
 

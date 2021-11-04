@@ -123,7 +123,6 @@ export default class TimeseriesWizard extends React.Component<
     };
     initialState = cloneDeep(this.state);
     this.getMarkings();
-    this.create_model();
   }
 
   getBodyJsx(): JSX.Element {
@@ -428,6 +427,7 @@ export default class TimeseriesWizard extends React.Component<
       if (markings.length) {
         const configured_markings = markings.map((marking:any) => {return {text: marking["label"], value: marking["type"]} });
         this.setState({ marking: configured_markings });
+        this.create_model();
       }
     });
   }
@@ -534,7 +534,7 @@ export default class TimeseriesWizard extends React.Component<
       type: 'timeseries',
       name: this.state.timeseriesName,
       description: '',
-      marking: '',
+      marking: this.state.marking[0]['value'],
     }).then((result) => {
       this.setState({ model: result });
     })
