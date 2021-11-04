@@ -147,7 +147,7 @@ font-awesome                         4.7.0   https://fontawesome.com/
 he                                   1.2.0   https://github.com/mathiasbynens/he
 jquery                               3.6.0   https://jquery.org/
 jquery-knob                         1.2.11   https://github.com/aterrien/jQuery-Knob
-jquery-ui                           1.12.1   https://jqueryui.com
+jquery-ui                           1.13.0   https://jqueryui.com
 knockout                             3.5.1   http://knockoutjs.com
 knockout.mapping                     2.6.0   https://github.com/SteveSanderson/knockout.mapping
 layout                             1.7.0.2   https://github.com/GedMarc/layout.git
