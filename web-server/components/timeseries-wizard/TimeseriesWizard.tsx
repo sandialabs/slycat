@@ -166,8 +166,10 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "1" ?
           <div>
             <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTableFile}
               onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}
             />
           </div>
@@ -202,8 +204,10 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "3" ?
           <div>
             <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTimeseriesFile}
               onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}
             />
           </div>
@@ -211,8 +215,10 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "4" ?
           <div>
             <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectHDF5Directory}
               onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}
             />
           </div>
@@ -502,6 +508,10 @@ export default class TimeseriesWizard extends React.Component<
     if (selectedPathType === 'd') {
       this.setState({ hdf5Directory: selectedPath });
     }
+  }
+
+  onSelectParser = (selectedParser: string) => {
+    this.setState({ parserType: selectedParser });
   }
 
   handleColumnNames = (names: []) => {

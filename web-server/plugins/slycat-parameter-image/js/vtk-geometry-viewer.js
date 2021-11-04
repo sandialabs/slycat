@@ -383,6 +383,7 @@ export function load(container, buffer, uri, uid, type) {
   const interactorStyle = vtkInteractorStyleManipulator.newInstance();
 
   const manipulators = [
+    // Left mouse button
     {
       name: vtkMouseCameraTrackballRotateManipulator,
     },
@@ -391,9 +392,57 @@ export function load(container, buffer, uri, uid, type) {
       shift: true,
     },
     {
-      name: vtkMouseCameraTrackballPanManipulator,
+      name: vtkMouseCameraTrackballZoomManipulator,
       control: true,
     },
+    {
+      name: vtkMouseCameraTrackballZoomManipulator,
+      alt: true,
+    },
+
+    // Middle mouse button
+    {
+      name: vtkMouseCameraTrackballPanManipulator,
+      button: 2,
+    },
+    {
+      name: vtkMouseCameraTrackballRotateManipulator,
+      button: 2,
+      shift: true,
+    },
+    {
+      name: vtkMouseCameraTrackballRotateManipulator,
+      button: 2,
+      control: true,
+    },
+    {
+      name: vtkMouseCameraTrackballRotateManipulator,
+      button: 2,
+      alt: true,
+    },
+
+    // Right mouse button
+    {
+      name: vtkMouseCameraTrackballZoomManipulator,
+      button: 3,
+    },
+    {
+      name: vtkMouseCameraTrackballPanManipulator,
+      button: 3,
+      shift: true,
+    },
+    {
+      name: vtkMouseCameraTrackballZoomToMouseManipulator,
+      button: 3,
+      control: true,
+    },
+    {
+      name: vtkMouseCameraTrackballZoomToMouseManipulator,
+      button: 3,
+      alt: true,
+    },
+
+    // Scroll mouse function
     {
       name: vtkMouseCameraTrackballZoomManipulator,
       scrollEnabled: true,
