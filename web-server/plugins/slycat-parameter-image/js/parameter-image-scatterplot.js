@@ -16,6 +16,7 @@ import {
   changeCurrentFrame,
   setOpenMedia,
   setMediaSizePosition,
+  updateClosedMedia,
 } from './actions';
 import { get_variable_label } from './ui';
 import { isValueInColorscaleRange } from './color-switcher';
@@ -2961,6 +2962,7 @@ $.widget("parameter_image.scatterplot",
   },
 
   _close_hidden_simulations: function() {
+    // console.debug(`_close_hidden_simulations`);
     var self = this;
     $(".media-layer div.image-frame")
       .filter(function(){
@@ -3018,6 +3020,7 @@ $.widget("parameter_image.scatterplot",
   },
 
   close_all_simulations: function() {
+    // console.debug(`close_all_simulations`);
     var self = this;
     $(".media-layer div.image-frame")
       .each(function(){
@@ -3223,6 +3226,7 @@ $.widget("parameter_image.scatterplot",
 
     // Close any current hover images and associated videos ...
     self.media_layer.selectAll(".hover-image").each(function(){
+      // console.debug(`_close_hover calling _remove_image_and_leader_line`);
       self._remove_image_and_leader_line(d3.select(this));
     });
   },
@@ -3306,24 +3310,36 @@ $.widget("parameter_image.scatterplot",
 
   _remove_image_and_leader_line: function(frame_html)
   {
-    var self = this;
-    var uid = frame_html.attr("data-uid");
-    var index = frame_html.attr("data-index");
-    var line = self.line_layer.select("line[data-uid='" + uid + "']");
+    // console.debug(`_remove_image_and_leader_line`);
+    let self = this;
+    let uid = frame_html.attr("data-uid");
+    let index = frame_html.attr("data-index");
+    let media_index = frame_html.attr("data-media-index");
+    let line = self.line_layer.select("line[data-uid='" + uid + "']");
+    let hover = frame_html.classed('hover-image');
 
     // Let vtk viewer know it was closed
     if(frame_html.node().querySelector('.vtp'))
     {
       frame_html.node().querySelector('.vtp').dispatchEvent(vtkclose_event);
     }
+
+    // Remove the frame and its line
     frame_html.remove();
     line.remove();
+
     // Remove this frame's index from current_frame if it was selected
     if(self.current_frame == index)
     {
       self.current_frame = null;
       // Dispatch update to current frame to redux store
       window.store.dispatch(changeCurrentFrame({}));
+    }
+
+    // Save this frame's state in closed_media if this wasn't just a hover closing
+    if(!hover)
+    {
+      window.store.dispatch(updateClosedMedia(uid));
     }
   },
 
