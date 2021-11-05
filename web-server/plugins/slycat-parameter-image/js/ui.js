@@ -430,9 +430,12 @@ $(document).ready(function() {
             selected_point_size: selected_point_size,
             selected_border_size: selected_border_size,
             variableRanges: {},
+            three_d_cameras: {},
+            three_d_colorvars: {},
             three_d_variable_data_ranges: {},
             three_d_variable_user_ranges: {},
             open_media: bookmarked_open_media,
+            closed_media: [],
             currentFrame: {},
             active_filters: [],
             hidden_simulations: [],
@@ -1321,8 +1324,9 @@ $(document).ready(function() {
       });
 
       // Log changes to hidden selection ...
-      $("#controls").bind("pin-selection", function(event, selection)
+      $("#controls").bind("pin-selection", function(event, selection, restore_size_location)
       {
+        // console.debug(`$("#controls").bind("pin-selection")`);
         // Removing any hidden simulations from those that will be pinned
         var simulations_to_pin = [];
         for(var i=0; i<selected_simulations.length; i++){
@@ -1331,7 +1335,7 @@ $(document).ready(function() {
             simulations_to_pin.push(selected_simulations[i]);
           }
         }
-        $("#scatterplot").scatterplot("pin", simulations_to_pin);
+        $("#scatterplot").scatterplot("pin", simulations_to_pin, restore_size_location);
       });
 
       // Log changes to selection ...

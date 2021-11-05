@@ -8,7 +8,6 @@ import d3 from "d3";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
-import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
@@ -16,6 +15,7 @@ import {
   changeCurrentFrame,
   setOpenMedia,
   setMediaSizePosition,
+  updateClosedMedia,
 } from './actions';
 import { get_variable_label } from './ui';
 import { isValueInColorscaleRange } from './color-switcher';
@@ -2308,11 +2308,16 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
-    // Don't open media if it's already open, unless we are cloning or it's the initial set
+    // Don't open media if it's already open, unless we are cloning or it's the initial set or we are opening shown simulations.
+    // This is hit on hover (hovering again over a point that already has a pin on it) and in
+    // Actions > Pin Selected Items when the selection contains some items that are alrady open
+    // and others that are not yet open. Maybe also in other places.
     if(
       !image.initial
       && !image.clone
-      && $(`.open-image[data-uri='${image.uri}']:not(.scaffolding)`).length > 0
+      && !image.open_shown_simulations
+      // Checking if any open pins have the same index and media_index as this one
+      && $(`.open-image[data-index='${image.index}'][data-media-index='${image.media_index}']:not(.scaffolding)`).length > 0
     )
     {
       self._open_images(images.slice(1));
@@ -2956,6 +2961,7 @@ $.widget("parameter_image.scatterplot",
   },
 
   _close_hidden_simulations: function() {
+    // console.debug(`_close_hidden_simulations`);
     var self = this;
     $(".media-layer div.image-frame")
       .filter(function(){
@@ -2994,9 +3000,11 @@ $.widget("parameter_image.scatterplot",
       )
       {
         images.push({
+          open_shown_simulations : true,
           index : image.index,
           media_index : image.media_index,
           uri : image.uri.trim(),
+          ...(image.uid != undefined && { uid: image.uid }),
           image_class : "open-image",
           x : width * image.relx,
           y : height * image.rely,
@@ -3011,6 +3019,7 @@ $.widget("parameter_image.scatterplot",
   },
 
   close_all_simulations: function() {
+    // console.debug(`close_all_simulations`);
     var self = this;
     $(".media-layer div.image-frame")
       .each(function(){
@@ -3216,6 +3225,7 @@ $.widget("parameter_image.scatterplot",
 
     // Close any current hover images and associated videos ...
     self.media_layer.selectAll(".hover-image").each(function(){
+      // console.debug(`_close_hover calling _remove_image_and_leader_line`);
       self._remove_image_and_leader_line(d3.select(this));
     });
   },
@@ -3299,24 +3309,36 @@ $.widget("parameter_image.scatterplot",
 
   _remove_image_and_leader_line: function(frame_html)
   {
-    var self = this;
-    var uid = frame_html.attr("data-uid");
-    var index = frame_html.attr("data-index");
-    var line = self.line_layer.select("line[data-uid='" + uid + "']");
+    // console.debug(`_remove_image_and_leader_line`);
+    let self = this;
+    let uid = frame_html.attr("data-uid");
+    let index = frame_html.attr("data-index");
+    let media_index = frame_html.attr("data-media-index");
+    let line = self.line_layer.select("line[data-uid='" + uid + "']");
+    let hover = frame_html.classed('hover-image');
 
     // Let vtk viewer know it was closed
     if(frame_html.node().querySelector('.vtp'))
     {
       frame_html.node().querySelector('.vtp').dispatchEvent(vtkclose_event);
     }
+
+    // Remove the frame and its line
     frame_html.remove();
     line.remove();
+
     // Remove this frame's index from current_frame if it was selected
     if(self.current_frame == index)
     {
       self.current_frame = null;
       // Dispatch update to current frame to redux store
       window.store.dispatch(changeCurrentFrame({}));
+    }
+
+    // Save this frame's state in closed_media if this wasn't just a hover closing
+    if(!hover)
+    {
+      window.store.dispatch(updateClosedMedia(uid));
     }
   },
 
@@ -3356,35 +3378,37 @@ $.widget("parameter_image.scatterplot",
     return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
   },
 
-  pin: function(simulations)
+  pin: function(simulations, restore_size_location)
   {
     var self = this;
+    // console.debug(`pin with restore_size_location set to %o`, restore_size_location);
 
-    // console.debug('pin');
+    let scatterplotWidth = Number(self.svg.attr("width"));
+    let scatterplotHeight = Number(self.svg.attr("height"));
 
     // Set default image size
     var imageWidth = self.options.pinned_width;
     var imageHeight = self.options.pinned_height;
 
+    let sync_scaling = window.store.getState().sync_scaling;
+    // Check if there are any open media
+    const firstOpenMedia = window.store.getState().open_media[0];
     // Override default size if Sync Size is enabled
-    if(window.store.getState().sync_scaling)
+    if(sync_scaling && firstOpenMedia)
     {
-      // Check if there are any open media
-      const firstOpenMedia = window.store.getState().open_media[0];
-      if(firstOpenMedia)
-      {
-        // console.debug(`Overriding default media size to match sync`);
-        imageWidth = imageHeight = firstOpenMedia.width;
-      }
+      // console.debug(`Overriding default media size to match sync`);
+      imageWidth = imageHeight = firstOpenMedia.width;
     }
 
     var images = [];
     simulations.forEach(function(image_index, loop_index)
     {
       // console.debug('opening images from pin handler');
-      images.push({
-        index : self.options.indices[image_index],
-        media_index : window.store.getState().media_index,
+      let index = self.options.indices[image_index];
+      let media_index = window.store.getState().media_index;
+      let image = {
+        index : index,
+        media_index : media_index,
         uri : self.options.images[self.options.indices[image_index]].trim(),
         image_class : "open-image",
         x : self._getDefaultXPosition(image_index, imageWidth),
@@ -3393,9 +3417,55 @@ $.widget("parameter_image.scatterplot",
         height : imageHeight,
         target_x : self.x_scale_format(self.options.x[image_index]),
         target_y : self.y_scale_format(self.options.y[image_index]),
-        });
+      };
+
+      let closed_media_state = self._getClosedMedia(index, media_index);
+
+      // If we have closed_media_state for this pin, restore it
+      if(closed_media_state)
+      {
+        // console.debug(`restoring close_media_state for pin at index %o and media_index %o`, index, media_index);
+        
+        // Restoring the UID also restores 3D state, specifically colorBy and camera since they
+        // are indexed in Redux state by UID
+        if(closed_media_state.uid != undefined)
+        {
+          image.uid = closed_media_state.uid;
+        }
+
+        // For videos, restore currentTime
+        if(closed_media_state.currentTime != undefined)
+        {
+          image.currentTime = closed_media_state.currentTime;
+        }
+
+        // If restore_size_location is true, restore size unless sync_scaling is on and we have any media already open
+        if(restore_size_location && !(sync_scaling && firstOpenMedia))
+        {
+          image.width = closed_media_state.width;
+          image.height = closed_media_state.height;
+        }
+
+        // If restore_size_location is true, restore location
+        if(restore_size_location)
+        {
+          image.x = scatterplotWidth * closed_media_state.relx;
+          image.y = scatterplotHeight * closed_media_state.rely;
+        }
+      }
+
+      images.push(image);
     });
     self._open_images(images);
+  },
+
+  _getClosedMedia: function(index, media_index)
+  {
+    // Return the first close_media element that matches index and media_index
+    let match = window.store.getState().closed_media
+      .find(media => media.index == index && media.media_index == media_index)
+      ;
+    return match;
   },
 
   _getCurrentFrameUID: function()

@@ -32,6 +32,7 @@ export const SET_Y_INDEX = 'SET_Y_INDEX'
 export const SET_V_INDEX = 'SET_V_INDEX'
 export const SET_MEDIA_INDEX = 'SET_MEDIA_INDEX'
 export const SET_OPEN_MEDIA = 'SET_OPEN_MEDIA'
+export const UPDATE_CLOSED_MEDIA = 'UPDATE_CLOSED_MEDIA'
 export const SET_HIDDEN_SIMULATIONS = 'SET_HIDDEN_SIMULATIONS'
 export const SET_MANUALLY_HIDDEN_SIMULATIONS = 'SET_MANUALLY_HIDDEN_SIMULATIONS'
 export const SET_MEDIA_SIZE_POSITION = 'SET_MEDIA_SIZE_POSITION'
@@ -258,6 +259,10 @@ export function setMediaIndex(index) {
 
 export function setOpenMedia(open_media) {
   return { type: SET_OPEN_MEDIA, open_media }
+}
+
+export function updateClosedMedia(uid) {
+  return { type: UPDATE_CLOSED_MEDIA, uid }
 }
 
 export function setHiddenSimulations(hidden_simulations) {
