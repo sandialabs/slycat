@@ -231,7 +231,10 @@ class ControlsBar extends React.Component {
   }
 
   trigger_pin_selection = (e) => {
-    this.props.element.trigger("pin-selection", [this.state.selection]);
+    // Passing true along with selection to pin-selection trigger to make it restore the size 
+    // and location of pins. We only do this when pinning from the controls menu, per 
+    // https://github.com/sandialabs/slycat/issues/1043#issuecomment-954137333 
+    this.props.element.trigger("pin-selection", [this.state.selection, true]);
   }
 
   trigger_select_pinned = (e) => {

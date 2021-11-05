@@ -1324,8 +1324,9 @@ $(document).ready(function() {
       });
 
       // Log changes to hidden selection ...
-      $("#controls").bind("pin-selection", function(event, selection)
+      $("#controls").bind("pin-selection", function(event, selection, restore_size_location)
       {
+        // console.debug(`$("#controls").bind("pin-selection")`);
         // Removing any hidden simulations from those that will be pinned
         var simulations_to_pin = [];
         for(var i=0; i<selected_simulations.length; i++){
@@ -1334,7 +1335,7 @@ $(document).ready(function() {
             simulations_to_pin.push(selected_simulations[i]);
           }
         }
-        $("#scatterplot").scatterplot("pin", simulations_to_pin);
+        $("#scatterplot").scatterplot("pin", simulations_to_pin, restore_size_location);
       });
 
       // Log changes to selection ...
