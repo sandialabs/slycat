@@ -10,6 +10,7 @@ var module = {};
 
 module.current_bid = function(bid)
 {
+  // console.debug(`slycat-bookmark-manager.js current_bid`);
   if(bid !== undefined) // Caller wants to set a new bid.
   {
     var new_location = URI(window.location).removeQuery("bid");
@@ -34,12 +35,14 @@ module.current_bid = function(bid)
 
 module.current_mid = function()
 {
+  // console.debug(`slycat-bookmark-manager.js current_mid`);
   var uri = URI(window.location);
   return uri.segment(-2) == "models" ? uri.segment(-1) : null;
 }
 
 module.create = function(pid, mid)
 {
+  // console.debug(`slycat-bookmark-manager.js create`);
   var manager = {};
   var bid_callbacks = [];
 
@@ -84,6 +87,7 @@ module.create = function(pid, mid)
   // Updates the bookmark state (privileged)
   manager.updateState = function(params)
   {
+    // console.debug(`slycat-bookmark-manager.js updateState`);
     $.extend(state, params); // Consider using deep merge by adding true as the first parameter. However, deep merging does not work with bookmarking of expanded and collapsed dendrogram nodes since they are passed as arrays
 
     // Store bookmark and update the bid
@@ -111,6 +115,7 @@ module.create = function(pid, mid)
   // Retrieves the state for the current bookmark id (asynchronous)
   manager.getState = function(callback)
   {
+    // console.debug(`slycat-bookmark-manager.js getState`);
     if($.isEmptyObject(state) && !(bid == null))
     {
       $.ajax(

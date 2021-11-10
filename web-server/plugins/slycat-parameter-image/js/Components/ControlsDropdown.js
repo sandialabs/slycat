@@ -22,15 +22,25 @@ class ControlsDropdown extends React.Component {
         );
       default:
         return (
-          <a 
-            href='#' 
+          // Disabling anchors and trying buttons to see if it helps with FF bug where switching variables reloads page
+          // <a 
+          //   href='#' 
+          //   key={item.key} 
+          //   className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
+          //   onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}
+          //   style={item.style}
+          // >
+          //   {item.name}
+          // </a>
+          <button 
+            type="button"
             key={item.key} 
             className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
             onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}
             style={item.style}
-          >
-            {item.name}
-          </a>
+            >
+              {item.name}
+          </button>
         );
     }
 
