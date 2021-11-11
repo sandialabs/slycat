@@ -1153,7 +1153,9 @@ $(document).ready(function() {
             contentType: false,
             success : function(results)
             {
-              $("#table").table("update_data");
+              // Let's pass the edited variable to the table so it knows which column's
+              // ranked_indices to invalidate
+              $("#table").table("update_data", variable);
 
               if(variable == x_index)
                 update_scatterplot_x(variable);

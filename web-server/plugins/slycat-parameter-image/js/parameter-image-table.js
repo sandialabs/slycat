@@ -380,9 +380,15 @@ $.widget("parameter_image.table",
     self.grid.resizeCanvas();
   },
 
-  update_data: function()
+  // This is called only when user edits the value of a table cell
+  update_data: function(edited_variable)
   {
+    // console.debug(`parameter-image-table.js update_data`);
     var self = this;
+
+    // Clear ranked indices for edited column because we just changed it, so they are invalid
+    self.data.ranked_indices[edited_variable] = undefined;
+
     self.data.invalidate();
     self.grid.invalidate();
     table_helpers._set_selected_rows_no_trigger(self);
@@ -683,6 +689,7 @@ $.widget("parameter_image.table",
 
     self.get_indices = function(direction, rows, callback)
     {
+      // console.debug(`parameter-image-table.js get_indices`);
       if(rows.length == 0)
       {
         callback([]);
