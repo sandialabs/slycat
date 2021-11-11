@@ -88,6 +88,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-parsers", "/configuration/parsers", slycat.web.server.handlers.get_configuration_parsers, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-remote-hosts", "/configuration/remote-hosts", slycat.web.server.handlers.get_configuration_remote_hosts, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-configuration-smb-remote-hosts", "/configuration/smb-remote-hosts", slycat.web.server.handlers.get_configuration_smb_remote_hosts, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-support-email", "/configuration/support-email", slycat.web.server.handlers.get_configuration_support_email, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-injected-code", "/configuration/injected-code", slycat.web.server.handlers.get_configuration_injected_code, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-ga-tracking-id", "/configuration/ga-tracking-id", slycat.web.server.handlers.get_configuration_ga_tracking_id, conditions={"method" : ["GET"]})
@@ -140,9 +141,11 @@ def start(root_path, config_file):
   dispatcher.connect("post-log", "/log", slycat.web.server.handlers.post_log, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
 
-  #TODO: scrub sid
   dispatcher.connect("post-remote-browse", "/remotes/:hostname/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-remotes-smb", "/remotes/smb", slycat.web.server.handlers.post_remotes_smb, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-smb-browse", "/smb/remotes/:hostname/browse{path:.*}", slycat.web.server.handlers.post_smb_browse, conditions={"method" : ["POST"]})
+
 
 
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})

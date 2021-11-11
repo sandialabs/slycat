@@ -11,6 +11,8 @@
 import dac_compute_coords as dac
 import numpy
 
+import cherrypy
+
 # slycat server
 import slycat.web.server
 
@@ -82,9 +84,17 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # create meta data table on server
     slycat.web.server.put_model_arrayset(database, model, "dac-datapoints-meta")
 
+    # convert unicode to string, if necessary
+    meta_column_str_names = []
+    for name in meta_column_names:
+        if isinstance(name, str):
+            meta_column_str_names.append(name)
+        else:
+            meta_column_str_names.append(name.decode("utf-8"))
+
     # start our single "dac-datapoints-meta" array.
     dimensions = [dict(name="row", end=len(meta_rows))]
-    attributes = [dict(name=name.decode("utf-8"), type=type) for name, type in zip(meta_column_names, meta_column_types)]
+    attributes = [dict(name=name, type=type) for name, type in zip(meta_column_str_names, meta_column_types)]
     slycat.web.server.put_model_array(database, model, "dac-datapoints-meta", 0, attributes, dimensions)
 
     # upload data into the array
@@ -94,9 +104,17 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # create variables.meta table on server
     slycat.web.server.put_model_arrayset(database, model, "dac-variables-meta")
 
+    # convert unicode to string, if necessary
+    meta_var_col_str_names = []
+    for name in meta_var_col_names:
+        if isinstance(name, str):
+            meta_var_col_str_names.append(name)
+        else:
+            meta_var_col_str_names.append(name.decode("utf-8"))
+
     # start our single "dac-datapoints-meta" array.
     dimensions = [dict(name="row", end=len(meta_vars))]
-    attributes = [dict(name=name.decode("utf-8"), type="string") for name in meta_var_col_names]
+    attributes = [dict(name=name, type="string") for name in meta_var_col_str_names]
     slycat.web.server.put_model_array(database, model, "dac-variables-meta", 0, attributes, dimensions)
 
     # upload data into the array

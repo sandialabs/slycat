@@ -93,6 +93,10 @@ class DArray(slycat.darray.Prototype):
         data_min = min(slice)
         data_max = max(slice)
         data_unique = numpy.unique(slice)
+        if type(data_min) is bytes:
+            data_min = str(data_min.decode())
+        if type(data_max) is bytes:
+            data_max = str(data_max.decode())
         attribute_min = str(data_min) if attribute_min is None else str(min(data_min, attribute_min))
         attribute_max = str(data_max) if attribute_max is None else str(max(data_max, attribute_max))
         attribute_unique = data_unique if attribute_unique is None else numpy.unique(numpy.concatenate((data_unique, attribute_unique)))
@@ -159,11 +163,23 @@ class DArray(slycat.darray.Prototype):
 
       def __getitem__(self, *args, **kwargs):
         result = self._storage.__getitem__(*args, **kwargs)
-
+        
         # check for unicode string, convert to numpy
         if type(result) is bytes:
           result = numpy.str_(result.decode())
 
+        # check for normal string, convert to numpy
+        if type(result) is str:
+          result = numpy.str_(result)
+
+        # check for list or numpy array, byte decode everything in it
+        if (type(result) is list) or (type(result) is numpy.ndarray):
+          for i in range(0, len(result)):
+            try:
+              result[i] = result[i].decode('utf-8')
+            except (UnicodeDecodeError, AttributeError):
+              pass
+            
         return result.astype(self._dtype)
 
     return StorageWrapper(self._storage["attribute/%s" % attribute], self._metadata["attribute-types"][attribute])

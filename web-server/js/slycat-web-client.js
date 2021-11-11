@@ -517,6 +517,17 @@ module.get_configuration_remote_hosts_fetch = function()
   });
 };
 
+module.get_configuration_smb_remote_hosts_fetch = function()
+{
+  return fetch(`${api_root}configuration/smb-remote-hosts`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  });
+};
+
 module.get_configuration_version = function(params)
 {
   $.ajax(
@@ -756,6 +767,21 @@ module.post_sensitive_model_command = function(params) {
   });
 };
 
+module.post_remotes_smb_fetch = function(params)
+{ 
+  return fetch(`${api_root}remotes/smb`,
+      {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params || {})
+      })
+};
+
 module.post_sensitive_model_command_fetch = function(params, successFunction, errorFunction)
 {
   return fetch(`${api_root}models/${params.mid}/sensitive/${params.type}/${params.command}`,
@@ -782,7 +808,6 @@ module.post_sensitive_model_command_fetch = function(params, successFunction, er
     }
   });
 };
-
 
 module.put_model_command = function(params)
 {
@@ -1518,6 +1543,30 @@ module.post_remote_command = function(params) {
     },
     error: function(request, status, reason_phrase) {
       if (params.error)
+        params.error(request, status, reason_phrase);
+    }
+  });
+};
+
+module.post_remote_browse_smb = function(params)
+{
+  console.log("In browse smb");
+  $.ajax(
+  {
+    contentType: "application/json",
+    data: JSON.stringify(
+    {
+    }),
+    type: "POST",
+    url: api_root + "smb/remotes/" + params.hostname + "/browse" + params.path,
+    success: function(result)
+    {
+      if(params.success)
+        params.success(result);
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(params.error)
         params.error(request, status, reason_phrase);
     }
   });

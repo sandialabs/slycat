@@ -123,7 +123,6 @@ export default class TimeseriesWizard extends React.Component<
     };
     initialState = cloneDeep(this.state);
     this.getMarkings();
-    this.create_model();
   }
 
   getBodyJsx(): JSX.Element {
@@ -166,8 +165,10 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "1" ?
           <div>
             <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTableFile}
               onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}
             />
           </div>
@@ -202,8 +203,10 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "3" ?
           <div>
             <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTimeseriesFile}
               onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}
             />
           </div>
@@ -211,8 +214,10 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "4" ?
           <div>
             <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectHDF5Directory}
               onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}
             />
           </div>
@@ -422,6 +427,7 @@ export default class TimeseriesWizard extends React.Component<
       if (markings.length) {
         const configured_markings = markings.map((marking:any) => {return {text: marking["label"], value: marking["type"]} });
         this.setState({ marking: configured_markings });
+        this.create_model();
       }
     });
   }
@@ -504,6 +510,10 @@ export default class TimeseriesWizard extends React.Component<
     }
   }
 
+  onSelectParser = (selectedParser: string) => {
+    this.setState({ parserType: selectedParser });
+  }
+
   handleColumnNames = (names: []) => {
     const columnNames = [];
     for (let i = 0; i < names.length; i++) {
@@ -524,7 +534,7 @@ export default class TimeseriesWizard extends React.Component<
       type: 'timeseries',
       name: this.state.timeseriesName,
       description: '',
-      marking: 'mna',
+      marking: this.state.marking[0]['value'],
     }).then((result) => {
       this.setState({ model: result });
     })
@@ -795,7 +805,6 @@ export default class TimeseriesWizard extends React.Component<
     // Clearing form validation
     // formElement.classList.remove('was-validated');
     // Creating new model
-
     client.put_model_fetch({
       mid: this.state.model["id"],
       name: this.state.timeseriesName,

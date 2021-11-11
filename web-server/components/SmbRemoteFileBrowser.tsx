@@ -21,7 +21,6 @@ export interface RemoteFileBrowserProps {
   onSelectFileCallBack: Function
   onSelectParserCallBack: Function
   onReauthCallBack: Function
-  selectedOption: string
 }
 
 /**
@@ -71,7 +70,7 @@ interface FileMetaData {
  * @class RemoteFileBrowser
  * @extends {React.Component<RemoteFileBrowserProps, RemoteFileBrowserState>}
  */
-export default class RemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
+export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
     public constructor(props:RemoteFileBrowserProps) {
       super(props)
       this.state = {
@@ -108,7 +107,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
               path:pathInput,
               pathInput
             });
-            client.post_remote_browse(
+            client.post_remote_browse_smb(
             {
               hostname : this.props.hostname,
               path : pathInput,
@@ -255,8 +254,11 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
      */
     private getFilesAsJsx = ():JSX.Element[] => {
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
+        if (!rawFile.mtime){
+          return null
+        }
         return (
-          <tr 
+          <tr
           className={this.state.selected==i?'selected':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
@@ -302,23 +304,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
     }
 
     public render() {
-      let options: Option[] = [];
-      if(this.props.selectedOption == "csv" || this.props.selectedOption == "hdf5") {
-        options = [{
-            text:'Comma separated values (CSV)',
-            value:'slycat-csv-parser'
-          },
-          {
-            text:'Dakota tabular',
-            value:'slycat-dakota-parser'
-        }];
-      }
-      else {
-        options = [{
+      const options: Option[] = [{
+          text:'Comma separated values (CSV)',
+          value:'slycat-csv-parser'
+        },
+        {
           text:'Dakota tabular',
-          value:'slycat-dakota-parser' 
-        }];
-      }
+          value:'slycat-dakota-parser'
+      }];
       const pathStyle:any = {
         width: 'calc(100% - 44px)',
         float: 'left',

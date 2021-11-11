@@ -48,9 +48,11 @@ import {
   setXValues,
   setYValues,
   setVValues,
+  setMediaValues,
   setXIndex,
   setYIndex,
   setVIndex,
+  setMediaIndex,
   setHiddenSimulations,
   setManuallyHiddenSimulations,
   setSelectedSimulations,
@@ -428,9 +430,12 @@ $(document).ready(function() {
             selected_point_size: selected_point_size,
             selected_border_size: selected_border_size,
             variableRanges: {},
+            three_d_cameras: {},
+            three_d_colorvars: {},
             three_d_variable_data_ranges: {},
             three_d_variable_user_ranges: {},
             open_media: bookmarked_open_media,
+            closed_media: [],
             currentFrame: {},
             active_filters: [],
             hidden_simulations: [],
@@ -438,6 +443,7 @@ $(document).ready(function() {
             sync_scaling: true,
             sync_threeD_colorvar: true,
             selected_simulations: [],
+            x_index: x_index,
           }
           window.store = createStore(
             ps_reducer, 
@@ -448,8 +454,10 @@ $(document).ready(function() {
                 variableAliases: variable_aliases,
                 xValues: [],
                 yValues: [],
+                mediaValues: [],
                 three_d_colorby_range: {},
                 three_d_colorby_legends: {},
+                media_columns: image_columns,
               }
             },
             applyMiddleware(...middlewares)
@@ -577,7 +585,7 @@ $(document).ready(function() {
       
       // Wait until the redux store has been created
       createReduxStorePromise.then(() => {
-        // Dispatch update to x and y indexex in Redux
+        // Dispatch update to x and y indexes in Redux
         window.store.dispatch(setXIndex(x_index));
         window.store.dispatch(setYIndex(y_index));
       });
@@ -728,6 +736,11 @@ $(document).ready(function() {
       {
         images_index = bookmark["images-selection"];
       }
+      // Wait until the redux store has been created
+      createReduxStorePromise.then(() => {
+        // Dispatch update to media index in Redux
+        window.store.dispatch(setMediaIndex(images_index));
+      });
       // We don't want to set it to the first column because we have a 
       // None option that users can select to get rid of media sets.
       // // Otherwise set it to the first images column if we have any
@@ -745,8 +758,13 @@ $(document).ready(function() {
           success : function(result)
           {
             images = result[0];
-            setup_scatterplot();
-            //setup_table();
+            // Wait until the redux store has been created
+            createReduxStorePromise.then(() => {
+              // Dispatch update to media values in Redux
+              window.store.dispatch(setMediaValues(images));
+              setup_scatterplot();
+              //setup_table();
+            });
           },
           error: artifact_missing
         });
@@ -1306,8 +1324,9 @@ $(document).ready(function() {
       });
 
       // Log changes to hidden selection ...
-      $("#controls").bind("pin-selection", function(event, selection)
+      $("#controls").bind("pin-selection", function(event, selection, restore_size_location)
       {
+        // console.debug(`$("#controls").bind("pin-selection")`);
         // Removing any hidden simulations from those that will be pinned
         var simulations_to_pin = [];
         for(var i=0; i<selected_simulations.length; i++){
@@ -1316,7 +1335,7 @@ $(document).ready(function() {
             simulations_to_pin.push(selected_simulations[i]);
           }
         }
-        $("#scatterplot").scatterplot("pin", simulations_to_pin);
+        $("#scatterplot").scatterplot("pin", simulations_to_pin, restore_size_location);
       });
 
       // Log changes to selection ...
@@ -1415,7 +1434,7 @@ $(document).ready(function() {
 
     bookmarker.updateState({"variable-selection" : variable});
 
-    // Dispatch update to v indexe in Redux
+    // Dispatch update to v index in Redux
     window.store.dispatch(setVIndex(v_index));
   }
 
@@ -1423,6 +1442,9 @@ $(document).ready(function() {
   {
     images_index = Number(variable);
     images = [];
+
+    // Dispatch update to media values in Redux
+    window.store.dispatch(setMediaIndex(images_index));
 
     if(images_index > -1)
     {
@@ -1436,6 +1458,8 @@ $(document).ready(function() {
           images = result[0];
           // Passing new images to scatterplot
           $("#scatterplot").scatterplot("option", "images", images);
+          // Dispatch update to media values in Redux
+          window.store.dispatch(setMediaValues(images));
         },
         error: artifact_missing
       });
@@ -1444,6 +1468,8 @@ $(document).ready(function() {
     {
       // Passing new images to scatterplot
       $("#scatterplot").scatterplot("option", "images", images);
+      // Dispatch update to media values in Redux
+      window.store.dispatch(setMediaValues(images));
     }
 
     // Log changes to and bookmark the images variable ...

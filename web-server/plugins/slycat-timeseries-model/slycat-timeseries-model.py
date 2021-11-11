@@ -208,6 +208,23 @@ def register_slycat_plugin(context):
             inputs = helpGetFile("%sarrayset_inputs.pickle" % (pickle_path),
                                     use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
             inputs = pickle.loads(inputs)
+
+            # Decoding potential byte strings
+            class MyEncoder(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, numpy.integer):
+                        return int(obj)
+                    elif isinstance(obj, numpy.floating):
+                        return float(obj)
+                    elif isinstance(obj, numpy.ndarray):
+                        return obj.tolist()
+                    elif type(obj) is bytes:
+                        return str(obj.decode())
+                    else:
+                        return super(MyEncoder, self).default(obj)
+
+            inputs = json.loads(json.dumps(inputs, cls=MyEncoder))
+
             slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
             # load attributes
             slycat.web.server.update_model(database, model, progress=55, message="loading attributes")

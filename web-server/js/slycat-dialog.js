@@ -43,9 +43,18 @@ export function dialog(params)
   component.container = $($.parseHTML(template)).appendTo($("body"));
   component.container.children().on("hidden.bs.modal", function()
   {
+    // console.debug(`This fires when the dialog is closed.`);
     component.container.remove();
     if(params.callback)
       params.callback(component.result, component.value);
+
+    // Check if there are other modals open, and add back the 'modal-open' class
+    // to the body tag. This class is removed when a modal closes, but is needed
+    // if there are other modals still open because otherwise scrolling inside
+    // remaining modals breaks.
+    if ($('.modal:visible').length) {
+      $('body').addClass('modal-open');
+    }
   });
   ko.applyBindings(component, component.container.get(0));
   component.container.children().modal("show");

@@ -38,8 +38,7 @@ services:
         - bash
         - -c
         - | 
-          npm install \
-          && NODE_TLS_REJECT_UNAUTHORIZED=0 npm rebuild node-sass \
+          NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
           && npm run myslycat
       # Expose ports. HOST:CONTAINER
       # Alex exposing port 80 for myslycat.com. Not using ssl for simplicity.

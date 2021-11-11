@@ -27,10 +27,13 @@ import {
   SET_X_VALUES,
   SET_Y_VALUES,
   SET_V_VALUES,
+  SET_MEDIA_VALUES,
   SET_X_INDEX,
   SET_Y_INDEX,
   SET_V_INDEX,
+  SET_MEDIA_INDEX,
   SET_OPEN_MEDIA,
+  UPDATE_CLOSED_MEDIA,
   SET_HIDDEN_SIMULATIONS,
   SET_MANUALLY_HIDDEN_SIMULATIONS,
   SET_MEDIA_SIZE_POSITION,
@@ -396,6 +399,14 @@ export default function ps_reducer(state = initialState, action) {
         }
       })
       
+    case SET_MEDIA_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          mediaValues: action.values.slice(0)
+        }
+      })
+      
     case SET_X_INDEX:
       return Object.assign({}, state, {
         x_index: action.index
@@ -411,10 +422,42 @@ export default function ps_reducer(state = initialState, action) {
         v_index: action.index
       })
       
+    case SET_MEDIA_INDEX:
+      return Object.assign({}, state, {
+        media_index: action.index
+      })
+      
     case SET_OPEN_MEDIA:
       return Object.assign({}, state, {
         open_media: action.open_media.slice(0)
       })
+    
+    case UPDATE_CLOSED_MEDIA:
+      // Make sure we can find the uid in current state's open_media array
+      const open_media_matches = state.open_media.filter(element => element.uid == action.uid);
+      if(open_media_matches.length)
+      {
+        const open_media = open_media_matches[0];
+        // If it's 3D media, add its camera params and color by variable
+        if(open_media.threeD)
+        {
+          open_media.three_d_camera = state.three_d_cameras[open_media.uid];
+          open_media.three_d_colorvar = state.three_d_colorvars[open_media.uid];
+        }
+        // If we don't have an entry for this closed media, just add it. 
+        // Otherwise, replace it.
+        let new_closed_media = _.cloneDeep(state.closed_media)
+          // Remove existing entry if it's already there
+          .filter(element => element.index != open_media.index || element.media_index != open_media.media_index)
+          ;
+        // Add new closed media entry
+        new_closed_media.push(open_media);
+        return Object.assign({}, state, {
+          closed_media: new_closed_media
+        })
+      }
+      // If we can't find a match of the uid, do nothing.
+      return state;
       
     case SET_HIDDEN_SIMULATIONS:
       return Object.assign({}, state, {

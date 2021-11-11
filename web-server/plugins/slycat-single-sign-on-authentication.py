@@ -37,6 +37,8 @@ def register_slycat_plugin(context):
         # get the username
         try:
             auth_user = cherrypy.request.headers.get(hdr_val).split(delim)[username_idx]
+            if slycat.web.server.config["slycat-web-server"]["auth-method"] == "pki":
+                auth_user = auth_user.lower()
         except:
             raise cherrypy.HTTPError("407 Proxy Authentication Required: Slycat could not parse an authorized username.")
 

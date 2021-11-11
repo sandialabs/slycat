@@ -42,7 +42,7 @@ export default class ModalMedium extends React.Component<ModalMediumProps,ModalM
 
   render () {
     return(
-      <div className='modal fade' data-backdrop='false' id={this.props.modalId}>
+      <div className='modal' data-backdrop='false' id={this.props.modalId}>
         <div className='modal-dialog modal-md'>
           <div className='modal-content'>
             <div className='modal-header'>
