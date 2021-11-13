@@ -253,11 +253,21 @@ class ControlsButtonVarOptions extends React.PureComponent {
         href='#' 
         onClick={this.props.changeFontFamily}
         style={{fontFamily: font.fontFamily}} 
-        className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
+        className={`dropdown-item ${font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
         data-value={font.name}
       >
         {font.name}
       </a>
+      // Buttons not working here, so leaving as anchors for now. Might not be an issue since it's inside a dialog.
+      // <button type="button"
+      //   key={index} 
+      //   onClick={this.props.changeFontFamily}
+      //   style={{fontFamily: font.fontFamily}} 
+      //   className={`dropdown-item ${font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
+      //   data-value={font.name}
+      // >
+      //   {font.name}
+      // </button>
     ));
 
     let scatterplotVariableRanges = <>

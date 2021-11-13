@@ -15,7 +15,9 @@
               </button>
               <div class="dropdown-menu" aria-labelledby="filter-dropdown">
                 <!-- ko foreach: availableFilters -->
-                  <a href="#" class="dropdown-item" data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
+                  <!-- Disabling anchors and trying buttons to see if it helps with FF bug where switching variables reloads page -->
+                  <!-- <a href="#" class="dropdown-item" data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a> -->
+                  <button type="button" class="dropdown-item" data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></button>
                 <!-- /ko -->
               </div>
             <!-- /ko -->

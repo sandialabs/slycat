@@ -95,11 +95,16 @@ export default class ControlsSelection extends React.PureComponent {
     let nothing_selected = !this.props.selection.length > 0;
     let rating_variable_controls = this.props.rating_variables.map((rating_variable) => (
       <React.Fragment key={rating_variable}>
-        <a href='#' 
+        {/* <a href='#' 
           className={`dropdown-item ${nothing_selected ? 'disabled' : ''}`}
           onClick={(e) => this.set_value(this.props.metadata['column-names'][rating_variable], rating_variable, e)}>
           {this.props.metadata['column-names'][rating_variable]}
-        </a>
+        </a> */}
+        <button type="button" 
+          className={`dropdown-item ${nothing_selected ? 'disabled' : ''}`}
+          onClick={(e) => this.set_value(this.props.metadata['column-names'][rating_variable], rating_variable, e)}>
+          {this.props.metadata['column-names'][rating_variable]}
+        </button>
       </React.Fragment>
     ));
   
@@ -176,44 +181,70 @@ export default class ControlsSelection extends React.PureComponent {
           Actions
         </button>
         <div id='selection-switcher' className='dropdown-menu' aria-labelledby='selection-dropdown'>
-          <a href='#' 
+          {/* <a href='#' 
             className={`dropdown-item ${show_all_disabled ? 'disabled' : ''}`}
             title={show_all_title}
             onClick={this.props.trigger_show_all}>
             Show All Hidden Items
-          </a>
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${show_all_disabled ? 'disabled' : ''}`}
+            title={show_all_title}
+            onClick={this.props.trigger_show_all}>
+            Show All Hidden Items
+          </button>
   
           {divider}
   
           <h6 className={`dropdown-header ${selected_items_header_disabled ? 'disabled' : ''}`}>
             Selected Items
           </h6>
-          <a href='#' 
+          {/* <a href='#' 
             className={`dropdown-item ${hide_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_hide_selection}>
             Hide
-          </a>
-          <a href='#' 
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${hide_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_hide_selection}>
+            Hide
+          </button>
+          {/* <a href='#' 
             className={`dropdown-item ${show_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_show_selection}>
             Show
-          </a>
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${show_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_show_selection}>
+            Show
+          </button>
   
           {divider}
   
           <h6 className={`dropdown-header ${unselected_items_header_disabled ? 'disabled' : ''}`}>
             Unselected Items
           </h6>
-          <a href='#' 
+          {/* <a href='#' 
             className={`dropdown-item ${hide_unselected_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_hide_unselected}>
             Hide Unselected
-          </a>
-          <a href='#' 
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${hide_unselected_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_hide_unselected}>
+            Hide Unselected
+          </button>
+          {/* <a href='#' 
             className={`dropdown-item ${show_unselected_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_show_unselected}>
             Show Unselected
-          </a>
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${show_unselected_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_show_unselected}>
+            Show Unselected
+          </button>
   
           {/* // Completely hide the Pin functionality when the model has no media variables to choose from */
           !hide_pin &&
@@ -223,21 +254,36 @@ export default class ControlsSelection extends React.PureComponent {
           <h6 className={`dropdown-header ${pins_header_disabled ? 'disabled' : ''}`}>
             Pins
           </h6>
-          <a href='#' 
+          {/* <a href='#' 
             className={`dropdown-item ${pin_selected_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_pin_selection}>
             Pin Selected Items
-          </a>
-          <a href='#' 
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${pin_selected_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_pin_selection}>
+            Pin Selected Items
+          </button>
+          {/* <a href='#' 
             className={`dropdown-item ${add_pins_to_selection_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_select_pinned}>
             Add Pins to Selection
-          </a>
-          <a href='#' 
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${add_pins_to_selection_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_select_pinned}>
+            Add Pins to Selection
+          </button>
+          {/* <a href='#' 
             className={`dropdown-item ${close_all_disabled ? 'disabled' : ''}`}
             onClick={this.props.trigger_close_all}>
             Close All Pins
-          </a>
+          </a> */}
+          <button type="button" 
+            className={`dropdown-item ${close_all_disabled ? 'disabled' : ''}`}
+            onClick={this.props.trigger_close_all}>
+            Close All Pins
+          </button>
           </React.Fragment>
           }
   
