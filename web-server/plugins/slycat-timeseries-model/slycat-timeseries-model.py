@@ -470,7 +470,6 @@ def register_slycat_plugin(context):
           "job_submit_time": datetime.datetime.utcnow().isoformat()
           }
         for key, value in model_params.items():
-            cherrypy.log.error("key: %s, value: %s" % (key, value))
             slycat.web.server.put_model_parameter(database, model, key, value, input=False)
 
     def pull_data(database, model, verb, type, command, **kwargs):
@@ -494,16 +493,13 @@ def register_slycat_plugin(context):
             else:
                 slycat.web.server.put_model_parameter(database, model, "computing", False)
         except KeyError:
-            cherrypy.log.error("adding computing artifact")
             slycat.web.server.put_model_parameter(database, model, "computing", False)
             model = database.get("model", model["_id"])
         if model["state"] == "finished":
             raise cherrypy.HTTPError("409 model is in the finished state already")
         if not slycat.web.server.get_model_parameter(database, model, "computing"):
             slycat.web.server.put_model_parameter(database, model, "computing", True)
-            cherrypy.log.error("calling update remote job")
             update_remote_job(model["_id"], model["artifact:jid"], model["artifact:hostname"], calling_client)
-            cherrypy.log.error("returning")
             cherrypy.response.headers["content-type"] = "application/json"
             return json.dumps({'status': 'computing'})
         else:
