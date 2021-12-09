@@ -1009,6 +1009,7 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
     fid = require_integer_parameter(fid, "fid")
     pid = require_integer_parameter(pid, "pid")
 
+    # local upload
     if file is not None and hostname is None and path is None:
 
         # check for byte stream
@@ -1018,27 +1019,23 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
         # otherwise it's a file stream
         else:
             data = file.file.read()
-
+        with slycat.web.server.upload.get_session(uid) as session:
+            session.put_upload_file_part(fid, pid, data)
+    # remote file
     elif file is None and hostname is not None and path is not None:
         sid, session_type = get_sid(hostname)
         if session_type == "ssh":
-            with slycat.web.server.remote.get_session(sid) as session:
-                filename = "%s@%s:%s" % (session.username, session.hostname, path)
-                if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-                    cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
-                                            "cherrypy.HTTPError 400 cannot load directory %s." % filename)
-                    raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
-                data = session.sftp.file(path).read()
+            with slycat.web.server.upload.get_session(uid) as session:
+                session.put_remote_upload_file_part(sid, fid, pid, path)
         elif session_type == "smb":
             with slycat.web.server.smb.get_session(sid) as session:
                 data = session.get_file(path=path)
+                with slycat.web.server.upload.get_session(uid) as session:
+                    session.put_upload_file_part(fid, pid, data)
     else:
         cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
                                 "cherrypy.HTTPError 400 must supply file parameter, or sid and path parameters.")
         raise cherrypy.HTTPError("400 Must supply file parameter, or sid and path parameters.")
-
-    with slycat.web.server.upload.get_session(uid) as session:
-        session.put_upload_file_part(fid, pid, data)
 
 
 @cherrypy.tools.json_in(on=True)

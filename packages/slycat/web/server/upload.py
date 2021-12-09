@@ -36,7 +36,7 @@ import os
 import shutil
 import slycat.web.server.authentication
 import slycat.web.server.database
-
+import stat
 import threading
 import time
 import uuid
@@ -87,6 +87,7 @@ class Session(object):
     self._accessed = now
     self._received = set()
     self._parsing_thread = None
+    self._download_thread = None
     self._lock = threading.Lock()
 
   def __enter__(self):
@@ -110,6 +111,28 @@ class Session(object):
   def accessed(self):
     """Return the time the session was last accessed."""
     return self._accessed
+
+  def put_remote_upload_file_part(self, sid, fid, pid, file_path):
+    """used to download a remote ssh file to the server via a thread"""
+    try:
+      self._download_thread = threading.Thread(name="downlading remote file", target=Session._download_file_part, args=(self, sid, fid, pid, file_path, cherrypy.request.headers.get("x-forwarded-for")))
+      self._download_thread.start()
+    except Exception as e:
+      cherrypy.log.error("e: %s" % str(e))
+
+  def _download_file_part(self, sid, fid, pid, file_path, calling_client):
+    data = None
+    with slycat.web.server.remote.get_session(sid, calling_client) as session:
+        filename = "%s@%s:%s" % (session.username, session.hostname, file_path)
+        if stat.S_ISDIR(session.sftp.stat(file_path).st_mode):
+            cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
+                                    "cherrypy.HTTPError 400 cannot load directory %s." % filename)
+            raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+        try:
+            data = session.sftp.file(file_path).read()
+        except Exception as e:
+            cherrypy.log.error("e: %s" % str(e))
+    self.put_upload_file_part(fid, pid, data)
 
   def put_upload_file_part(self, fid, pid, data):
     if self._parsing_thread is not None:
@@ -140,6 +163,8 @@ class Session(object):
     """
     if self._parsing_thread is not None:
       raise cherrypy.HTTPError("409 Upload already finished.")
+    if self._download_thread is not None and self._download_thread.is_alive():
+      raise cherrypy.HTTPError("423 server is busy downloading file.")
 
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
     missing = [part for part in uploaded if part not in self._received]

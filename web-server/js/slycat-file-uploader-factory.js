@@ -537,7 +537,8 @@ function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
     },
     error: function(request, status, reason_phrase)
     {
-      if(request.status == 400 && !fileObject.sids && !fileObject.paths)
+      console.log("request.status",request.status)
+      if(request.status === 400 && !fileObject.sids && !fileObject.paths)
       {
         var missingElements = JSON.parse(request.responseText).missing;
         missingElements.forEach(function(missingElement){
@@ -545,7 +546,12 @@ function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
           uploadFileSlice(uid, missingElement[1], file);
           finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject);
         });
-      }else{
+      }else if(request.status === 423){
+        setTimeout(function(){
+          finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
+        }, 5000);
+      }
+      else{
         if(fileObject.error) {
           fileObject.error();
         }
