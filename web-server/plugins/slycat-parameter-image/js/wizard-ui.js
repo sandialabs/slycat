@@ -330,10 +330,10 @@ function constructor(params)
     else
     {
       client.post_remotes_smb_fetch({
-          user_name: component.remote.username(),
+          user_name: component.remote.username().trim(),
           password: component.remote.password(),
-          server: component.remote.hostname(),
-          share: component.remote.share()
+          server: component.remote.hostname().trim(),
+          share: component.remote.share().trim()
       }).then((response) => {
           console.log("authenticated.",response);
           if(response.ok){
