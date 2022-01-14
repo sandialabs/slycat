@@ -23,13 +23,33 @@ const checkColumns = (file:any, selectedOption:String, mid:String) => {
          * Then splits on ',' to get the individual column names.
          */
         column_row = e.target.result.split('\n');
-        newColumns = column_row[0].split(',');
+        let csv = column_row[0].includes(","); // true if csv, false if dakota tabular
+        if(csv) {
+          newColumns = column_row[0].split(',');
+        }
+        // if not csv, then dakota tabular
+        else {
+          // If table is dakota tabular, the number of white spaces as the delimiter is arbitrary.
+          // So split on a single white space, then filter all the white spaces out of the resulting array, leaving you with column names.
+          newColumns = column_row[0].split(' ');
+          newColumns = newColumns.filter(function(entry) { return entry.trim() != ''; });
+        }
       };
       reader.readAsText(file);
     }
     else {
       column_row = file.split('\n');
-      newColumns = column_row[0].split(',');
+      let csv = column_row[0].includes(","); // true if csv, false if dakota tabular
+      if(csv) {
+        newColumns = column_row[0].split(',');
+      }
+      // if not csv, then dakota tabular
+      else {
+        // If table is dakota tabular, the number of white spaces as the delimiter is arbitrary.
+        // So split on a single white space, then filter all the white spaces out of the resulting array, leaving you with column names.
+        newColumns = column_row[0].split(' ');
+        newColumns = newColumns.filter(function(entry) { return entry.trim() != ''; });
+      }
     }
 
     return client.get_model_table_metadata_fetch({mid: mid, aid: "data-table"}).then((json)=>{
