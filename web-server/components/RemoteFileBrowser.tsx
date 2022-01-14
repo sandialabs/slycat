@@ -303,7 +303,13 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
 
     public render() {
       let options: Option[] = [];
-      if(this.props.selectedOption == "csv" || this.props.selectedOption == "hdf5") {
+      if (this.props.selectedOption == "xyce") {
+        options = [{
+          text:'Dakota tabular',
+          value:'slycat-dakota-parser' 
+        }];
+      }
+      else {
         options = [{
             text:'Comma separated values (CSV)',
             value:'slycat-csv-parser'
@@ -311,12 +317,6 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           {
             text:'Dakota tabular',
             value:'slycat-dakota-parser'
-        }];
-      }
-      else {
-        options = [{
-          text:'Dakota tabular',
-          value:'slycat-dakota-parser' 
         }];
       }
       const pathStyle:any = {
