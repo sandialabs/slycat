@@ -201,12 +201,16 @@ function constructor(params)
     console.log("onReauth");
   };
 
-  const setSmbAuthValues = function(hostname, username, password, share, session_exists) {
+  const setSmbAuthValues = function(hostname, username, password, share, session_exists, last_key) {
     component.remote.hostname(hostname)
     component.remote.username(username)
     component.remote.password(password)
     component.remote.share(share)
     component.remote.session_exists(session_exists)
+    //If the user hits enter key, try to connect
+    if(last_key === 'Enter') {
+      component.connectSMB();
+    }
   }
 
   component.select_type = function() {
