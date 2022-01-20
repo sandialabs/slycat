@@ -124,6 +124,11 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
         onChange={[Function]}
       >
         <option
+          value="slycat-csv-parser"
+        >
+          Comma separated values (CSV)
+        </option>
+        <option
           value="slycat-dakota-parser"
         >
           Dakota tabular
