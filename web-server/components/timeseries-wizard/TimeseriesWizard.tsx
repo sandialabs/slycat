@@ -825,7 +825,7 @@ export default class TimeseriesWizard extends React.Component<
       <ModalContent
         modalId={this.state.modalId}
         closingCallBack={this.cleanup}
-        title={"Timeseries Wizard"}
+        title={this.state.visibleTab != "0" ? "Timeseries Wizard - " + this.state.selectedOption : "Timeseries Wizard"}
         body={this.getBodyJsx()}
         footer={this.getFooterJSX()}
       />
