@@ -1162,11 +1162,17 @@ $(document).ready(function() {
               if(variable == y_index)
                 update_scatterplot_y(variable);
 
-              load_table_statistics([variable], function(){
+              load_table_statistics([variable], function(new_table_statistics){
                 if(variable == v_index)
                 {
                   update_v(variable);
                 }
+                // Update filter manager with new table statistics
+                filter_manager.set_table_statistics(new_table_statistics);
+                // Let filter manager know that a variable has been changed so it can possibly
+                // update categorical unique values or numeric min/max
+                // filter_manager.load_unique_categories();
+                filter_manager.notify_variable_value_edited(variable);
               });
             },
             error : function(jqXHR, textStatus, errorThrown)
@@ -1831,7 +1837,7 @@ $(document).ready(function() {
         var statistics = metadata.statistics;
         for(var i = 0; i != statistics.length; ++i)
           table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
-        callback();
+        callback(table_statistics);
       }
     });
   }
