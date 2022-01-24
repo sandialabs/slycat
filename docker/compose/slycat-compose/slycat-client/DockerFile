@@ -6,9 +6,9 @@ RUN git config --global http.sslVerify false
 RUN git clone --depth 1 https://github.com/sandialabs/slycat.git
 WORKDIR /usr/src/slycat/slycat
 #RUN npm config set registry http://registry.npmjs.org/
-RUN npm config set strict-ssl false
-RUN NODE_TLS_REJECT_UNAUTHORIZED=0 npm install node-sass --save-dev
-RUN NODE_TLS_REJECT_UNAUTHORIZED=0 npm install
+# RUN npm config set strict-ssl false
+# RUN NODE_TLS_REJECT_UNAUTHORIZED=0 npm install node-sass --save-dev
+# RUN NODE_TLS_REJECT_UNAUTHORIZED=0 npm install
 # RUN npm rebuild node-sass
 #  No need to rebuild node-sass anymore since it was replaced with dart-sass
 CMD ls
