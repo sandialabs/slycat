@@ -13,12 +13,14 @@ exports[`when loading a nav bar we should have a full initialization 1`] = `
 ProgressBar {
   "_reactInternalFiber": FiberNode {
     "_debugHookTypes": null,
-    "_debugID": 75,
+    "_debugID": 130,
     "_debugIsCurrentlyTiming": false,
+    "_debugNeedsRemount": false,
     "_debugOwner": FiberNode {
       "_debugHookTypes": null,
-      "_debugID": 74,
+      "_debugID": 128,
       "_debugIsCurrentlyTiming": false,
+      "_debugNeedsRemount": false,
       "_debugOwner": null,
       "_debugSource": null,
       "actualDuration": 0,
@@ -26,7 +28,7 @@ ProgressBar {
       "alternate": null,
       "child": [Circular],
       "childExpirationTime": 0,
-      "contextDependencies": null,
+      "dependencies": null,
       "effectTag": 1,
       "elementType": [Function],
       "expirationTime": 0,
@@ -41,6 +43,7 @@ ProgressBar {
           "hidden": false,
           "progress": 10,
         },
+        "refProp": null,
         "wrappingComponentProps": null,
       },
       "memoizedState": Object {
@@ -53,235 +56,7 @@ ProgressBar {
         "wrappingComponentProps": null,
       },
       "mode": 0,
-      "nextEffect": FiberNode {
-        "_debugHookTypes": null,
-        "_debugID": 72,
-        "_debugIsCurrentlyTiming": false,
-        "_debugOwner": null,
-        "_debugSource": null,
-        "actualDuration": 0,
-        "actualStartTime": -1,
-        "alternate": FiberNode {
-          "_debugHookTypes": null,
-          "_debugID": 72,
-          "_debugIsCurrentlyTiming": false,
-          "_debugOwner": null,
-          "_debugSource": null,
-          "actualDuration": 0,
-          "actualStartTime": -1,
-          "alternate": [Circular],
-          "child": null,
-          "childExpirationTime": 0,
-          "contextDependencies": null,
-          "effectTag": 0,
-          "elementType": null,
-          "expirationTime": 1073741823,
-          "firstEffect": null,
-          "index": 0,
-          "key": null,
-          "lastEffect": null,
-          "memoizedProps": null,
-          "memoizedState": null,
-          "mode": 0,
-          "nextEffect": null,
-          "pendingProps": null,
-          "ref": null,
-          "return": null,
-          "selfBaseDuration": 0,
-          "sibling": null,
-          "stateNode": Object {
-            "containerInfo": <div>
-              <div
-                class="progress"
-              >
-                <div
-                  aria-valuemax="100"
-                  aria-valuemin="0"
-                  aria-valuenow="10"
-                  class="progress-bar progress-bar-striped progress-bar-animated"
-                  role="progressbar"
-                  style="width: 10%;"
-                >
-                  10
-                  %
-                </div>
-              </div>
-            </div>,
-            "context": Object {},
-            "current": [Circular],
-            "didError": false,
-            "earliestPendingTime": 0,
-            "earliestSuspendedTime": 0,
-            "expirationTime": 0,
-            "finishedWork": null,
-            "firstBatch": null,
-            "hydrate": false,
-            "interactionThreadID": 17,
-            "latestPendingTime": 0,
-            "latestPingedTime": 0,
-            "latestSuspendedTime": 0,
-            "memoizedInteractions": Set {},
-            "nextExpirationTimeToWorkOn": 0,
-            "nextScheduledRoot": null,
-            "pendingChildren": null,
-            "pendingCommitExpirationTime": 0,
-            "pendingContext": null,
-            "pendingInteractionMap": Map {},
-            "pingCache": null,
-            "timeoutHandle": -1,
-          },
-          "tag": 3,
-          "treeBaseDuration": 0,
-          "type": null,
-          "updateQueue": Object {
-            "baseState": null,
-            "firstCapturedEffect": null,
-            "firstCapturedUpdate": null,
-            "firstEffect": null,
-            "firstUpdate": Object {
-              "callback": null,
-              "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
-              "payload": Object {
-                "element": <WrapperComponent
-                  Component={[Function]}
-                  context={null}
-                  props={
-                    Object {
-                      "hidden": false,
-                      "progress": 10,
-                    }
-                  }
-                  wrappingComponentProps={null}
-                />,
-              },
-              "tag": 0,
-            },
-            "lastCapturedEffect": null,
-            "lastCapturedUpdate": null,
-            "lastEffect": null,
-            "lastUpdate": Object {
-              "callback": null,
-              "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
-              "payload": Object {
-                "element": <WrapperComponent
-                  Component={[Function]}
-                  context={null}
-                  props={
-                    Object {
-                      "hidden": false,
-                      "progress": 10,
-                    }
-                  }
-                  wrappingComponentProps={null}
-                />,
-              },
-              "tag": 0,
-            },
-          },
-        },
-        "child": [Circular],
-        "childExpirationTime": 0,
-        "contextDependencies": null,
-        "effectTag": 32,
-        "elementType": null,
-        "expirationTime": 0,
-        "firstEffect": [Circular],
-        "index": 0,
-        "key": null,
-        "lastEffect": [Circular],
-        "memoizedProps": null,
-        "memoizedState": Object {
-          "element": <WrapperComponent
-            Component={[Function]}
-            context={null}
-            props={
-              Object {
-                "hidden": false,
-                "progress": 10,
-              }
-            }
-            wrappingComponentProps={null}
-          />,
-        },
-        "mode": 0,
-        "nextEffect": null,
-        "pendingProps": null,
-        "ref": null,
-        "return": null,
-        "selfBaseDuration": 0,
-        "sibling": null,
-        "stateNode": Object {
-          "containerInfo": <div>
-            <div
-              class="progress"
-            >
-              <div
-                aria-valuemax="100"
-                aria-valuemin="0"
-                aria-valuenow="10"
-                class="progress-bar progress-bar-striped progress-bar-animated"
-                role="progressbar"
-                style="width: 10%;"
-              >
-                10
-                %
-              </div>
-            </div>
-          </div>,
-          "context": Object {},
-          "current": [Circular],
-          "didError": false,
-          "earliestPendingTime": 0,
-          "earliestSuspendedTime": 0,
-          "expirationTime": 0,
-          "finishedWork": null,
-          "firstBatch": null,
-          "hydrate": false,
-          "interactionThreadID": 17,
-          "latestPendingTime": 0,
-          "latestPingedTime": 0,
-          "latestSuspendedTime": 0,
-          "memoizedInteractions": Set {},
-          "nextExpirationTimeToWorkOn": 0,
-          "nextScheduledRoot": null,
-          "pendingChildren": null,
-          "pendingCommitExpirationTime": 0,
-          "pendingContext": null,
-          "pendingInteractionMap": Map {},
-          "pingCache": null,
-          "timeoutHandle": -1,
-        },
-        "tag": 3,
-        "treeBaseDuration": 0,
-        "type": null,
-        "updateQueue": Object {
-          "baseState": Object {
-            "element": <WrapperComponent
-              Component={[Function]}
-              context={null}
-              props={
-                Object {
-                  "hidden": false,
-                  "progress": 10,
-                }
-              }
-              wrappingComponentProps={null}
-            />,
-          },
-          "firstCapturedEffect": null,
-          "firstCapturedUpdate": null,
-          "firstEffect": null,
-          "firstUpdate": null,
-          "lastCapturedEffect": null,
-          "lastCapturedUpdate": null,
-          "lastEffect": null,
-          "lastUpdate": null,
-        },
-      },
+      "nextEffect": null,
       "pendingProps": Object {
         "Component": [Function],
         "context": null,
@@ -289,21 +64,24 @@ ProgressBar {
           "hidden": false,
           "progress": 10,
         },
+        "refProp": null,
         "wrappingComponentProps": null,
       },
       "ref": null,
       "return": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 72,
+        "_debugID": 125,
         "_debugIsCurrentlyTiming": false,
+        "_debugNeedsRemount": false,
         "_debugOwner": null,
         "_debugSource": null,
         "actualDuration": 0,
         "actualStartTime": -1,
         "alternate": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 72,
+          "_debugID": 125,
           "_debugIsCurrentlyTiming": false,
+          "_debugNeedsRemount": false,
           "_debugOwner": null,
           "_debugSource": null,
           "actualDuration": 0,
@@ -311,7 +89,7 @@ ProgressBar {
           "alternate": [Circular],
           "child": null,
           "childExpirationTime": 0,
-          "contextDependencies": null,
+          "dependencies": null,
           "effectTag": 0,
           "elementType": null,
           "expirationTime": 1073741823,
@@ -328,7 +106,10 @@ ProgressBar {
           "return": null,
           "selfBaseDuration": 0,
           "sibling": null,
-          "stateNode": Object {
+          "stateNode": FiberRootNode {
+            "callbackExpirationTime": 0,
+            "callbackNode": null,
+            "callbackPriority": 90,
             "containerInfo": <div>
               <div
                 class="progress"
@@ -348,25 +129,22 @@ ProgressBar {
             </div>,
             "context": Object {},
             "current": [Circular],
-            "didError": false,
-            "earliestPendingTime": 0,
-            "earliestSuspendedTime": 0,
-            "expirationTime": 0,
+            "finishedExpirationTime": 0,
             "finishedWork": null,
-            "firstBatch": null,
+            "firstPendingTime": 0,
+            "firstSuspendedTime": 0,
             "hydrate": false,
             "interactionThreadID": 17,
-            "latestPendingTime": 0,
-            "latestPingedTime": 0,
-            "latestSuspendedTime": 0,
+            "lastExpiredTime": 0,
+            "lastPingedTime": 0,
+            "lastSuspendedTime": 0,
             "memoizedInteractions": Set {},
-            "nextExpirationTimeToWorkOn": 0,
-            "nextScheduledRoot": null,
+            "nextKnownPendingLevel": 0,
             "pendingChildren": null,
-            "pendingCommitExpirationTime": 0,
             "pendingContext": null,
             "pendingInteractionMap": Map {},
             "pingCache": null,
+            "tag": 0,
             "timeoutHandle": -1,
           },
           "tag": 3,
@@ -392,9 +170,12 @@ ProgressBar {
                       "progress": 10,
                     }
                   }
+                  refProp={null}
                   wrappingComponentProps={null}
                 />,
               },
+              "priority": 97,
+              "suspenseConfig": null,
               "tag": 0,
             },
             "lastCapturedEffect": null,
@@ -415,17 +196,20 @@ ProgressBar {
                       "progress": 10,
                     }
                   }
+                  refProp={null}
                   wrappingComponentProps={null}
                 />,
               },
+              "priority": 97,
+              "suspenseConfig": null,
               "tag": 0,
             },
           },
         },
         "child": [Circular],
         "childExpirationTime": 0,
-        "contextDependencies": null,
-        "effectTag": 32,
+        "dependencies": null,
+        "effectTag": 0,
         "elementType": null,
         "expirationTime": 0,
         "firstEffect": [Circular],
@@ -443,6 +227,7 @@ ProgressBar {
                 "progress": 10,
               }
             }
+            refProp={null}
             wrappingComponentProps={null}
           />,
         },
@@ -453,7 +238,10 @@ ProgressBar {
         "return": null,
         "selfBaseDuration": 0,
         "sibling": null,
-        "stateNode": Object {
+        "stateNode": FiberRootNode {
+          "callbackExpirationTime": 0,
+          "callbackNode": null,
+          "callbackPriority": 90,
           "containerInfo": <div>
             <div
               class="progress"
@@ -473,25 +261,22 @@ ProgressBar {
           </div>,
           "context": Object {},
           "current": [Circular],
-          "didError": false,
-          "earliestPendingTime": 0,
-          "earliestSuspendedTime": 0,
-          "expirationTime": 0,
+          "finishedExpirationTime": 0,
           "finishedWork": null,
-          "firstBatch": null,
+          "firstPendingTime": 0,
+          "firstSuspendedTime": 0,
           "hydrate": false,
           "interactionThreadID": 17,
-          "latestPendingTime": 0,
-          "latestPingedTime": 0,
-          "latestSuspendedTime": 0,
+          "lastExpiredTime": 0,
+          "lastPingedTime": 0,
+          "lastSuspendedTime": 0,
           "memoizedInteractions": Set {},
-          "nextExpirationTimeToWorkOn": 0,
-          "nextScheduledRoot": null,
+          "nextKnownPendingLevel": 0,
           "pendingChildren": null,
-          "pendingCommitExpirationTime": 0,
           "pendingContext": null,
           "pendingInteractionMap": Map {},
           "pingCache": null,
+          "tag": 0,
           "timeoutHandle": -1,
         },
         "tag": 3,
@@ -508,6 +293,7 @@ ProgressBar {
                   "progress": 10,
                 }
               }
+              refProp={null}
               wrappingComponentProps={null}
             />,
           },
@@ -534,10 +320,10 @@ ProgressBar {
             "hidden": false,
             "progress": 10,
           },
+          "refProp": null,
           "wrappingComponentProps": null,
         },
         "refs": Object {},
-        "rootFinderInstance": null,
         "state": Object {
           "context": null,
           "mount": true,
@@ -565,8 +351,9 @@ ProgressBar {
     "alternate": null,
     "child": FiberNode {
       "_debugHookTypes": null,
-      "_debugID": 76,
+      "_debugID": 132,
       "_debugIsCurrentlyTiming": false,
+      "_debugNeedsRemount": false,
       "_debugOwner": [Circular],
       "_debugSource": null,
       "actualDuration": 0,
@@ -574,8 +361,9 @@ ProgressBar {
       "alternate": null,
       "child": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 77,
+        "_debugID": 134,
         "_debugIsCurrentlyTiming": false,
+        "_debugNeedsRemount": false,
         "_debugOwner": [Circular],
         "_debugSource": null,
         "actualDuration": 0,
@@ -583,8 +371,9 @@ ProgressBar {
         "alternate": null,
         "child": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 78,
+          "_debugID": 136,
           "_debugIsCurrentlyTiming": false,
+          "_debugNeedsRemount": false,
           "_debugOwner": null,
           "_debugSource": null,
           "actualDuration": 0,
@@ -592,7 +381,7 @@ ProgressBar {
           "alternate": null,
           "child": null,
           "childExpirationTime": 0,
-          "contextDependencies": null,
+          "dependencies": null,
           "effectTag": 0,
           "elementType": null,
           "expirationTime": 0,
@@ -610,8 +399,9 @@ ProgressBar {
           "selfBaseDuration": 0,
           "sibling": FiberNode {
             "_debugHookTypes": null,
-            "_debugID": 79,
+            "_debugID": 137,
             "_debugIsCurrentlyTiming": false,
+            "_debugNeedsRemount": false,
             "_debugOwner": null,
             "_debugSource": null,
             "actualDuration": 0,
@@ -619,7 +409,7 @@ ProgressBar {
             "alternate": null,
             "child": null,
             "childExpirationTime": 0,
-            "contextDependencies": null,
+            "dependencies": null,
             "effectTag": 0,
             "elementType": null,
             "expirationTime": 0,
@@ -649,7 +439,7 @@ ProgressBar {
           "updateQueue": null,
         },
         "childExpirationTime": 0,
-        "contextDependencies": null,
+        "dependencies": null,
         "effectTag": 0,
         "elementType": "div",
         "expirationTime": 0,
@@ -709,7 +499,7 @@ ProgressBar {
         "updateQueue": null,
       },
       "childExpirationTime": 0,
-      "contextDependencies": null,
+      "dependencies": null,
       "effectTag": 0,
       "elementType": "div",
       "expirationTime": 0,
@@ -781,7 +571,7 @@ ProgressBar {
       "updateQueue": null,
     },
     "childExpirationTime": 0,
-    "contextDependencies": null,
+    "dependencies": null,
     "effectTag": 1,
     "elementType": [Function],
     "expirationTime": 0,
@@ -803,8 +593,9 @@ ProgressBar {
     "ref": null,
     "return": FiberNode {
       "_debugHookTypes": null,
-      "_debugID": 74,
+      "_debugID": 128,
       "_debugIsCurrentlyTiming": false,
+      "_debugNeedsRemount": false,
       "_debugOwner": null,
       "_debugSource": null,
       "actualDuration": 0,
@@ -812,7 +603,7 @@ ProgressBar {
       "alternate": null,
       "child": [Circular],
       "childExpirationTime": 0,
-      "contextDependencies": null,
+      "dependencies": null,
       "effectTag": 1,
       "elementType": [Function],
       "expirationTime": 0,
@@ -827,6 +618,7 @@ ProgressBar {
           "hidden": false,
           "progress": 10,
         },
+        "refProp": null,
         "wrappingComponentProps": null,
       },
       "memoizedState": Object {
@@ -839,235 +631,7 @@ ProgressBar {
         "wrappingComponentProps": null,
       },
       "mode": 0,
-      "nextEffect": FiberNode {
-        "_debugHookTypes": null,
-        "_debugID": 72,
-        "_debugIsCurrentlyTiming": false,
-        "_debugOwner": null,
-        "_debugSource": null,
-        "actualDuration": 0,
-        "actualStartTime": -1,
-        "alternate": FiberNode {
-          "_debugHookTypes": null,
-          "_debugID": 72,
-          "_debugIsCurrentlyTiming": false,
-          "_debugOwner": null,
-          "_debugSource": null,
-          "actualDuration": 0,
-          "actualStartTime": -1,
-          "alternate": [Circular],
-          "child": null,
-          "childExpirationTime": 0,
-          "contextDependencies": null,
-          "effectTag": 0,
-          "elementType": null,
-          "expirationTime": 1073741823,
-          "firstEffect": null,
-          "index": 0,
-          "key": null,
-          "lastEffect": null,
-          "memoizedProps": null,
-          "memoizedState": null,
-          "mode": 0,
-          "nextEffect": null,
-          "pendingProps": null,
-          "ref": null,
-          "return": null,
-          "selfBaseDuration": 0,
-          "sibling": null,
-          "stateNode": Object {
-            "containerInfo": <div>
-              <div
-                class="progress"
-              >
-                <div
-                  aria-valuemax="100"
-                  aria-valuemin="0"
-                  aria-valuenow="10"
-                  class="progress-bar progress-bar-striped progress-bar-animated"
-                  role="progressbar"
-                  style="width: 10%;"
-                >
-                  10
-                  %
-                </div>
-              </div>
-            </div>,
-            "context": Object {},
-            "current": [Circular],
-            "didError": false,
-            "earliestPendingTime": 0,
-            "earliestSuspendedTime": 0,
-            "expirationTime": 0,
-            "finishedWork": null,
-            "firstBatch": null,
-            "hydrate": false,
-            "interactionThreadID": 17,
-            "latestPendingTime": 0,
-            "latestPingedTime": 0,
-            "latestSuspendedTime": 0,
-            "memoizedInteractions": Set {},
-            "nextExpirationTimeToWorkOn": 0,
-            "nextScheduledRoot": null,
-            "pendingChildren": null,
-            "pendingCommitExpirationTime": 0,
-            "pendingContext": null,
-            "pendingInteractionMap": Map {},
-            "pingCache": null,
-            "timeoutHandle": -1,
-          },
-          "tag": 3,
-          "treeBaseDuration": 0,
-          "type": null,
-          "updateQueue": Object {
-            "baseState": null,
-            "firstCapturedEffect": null,
-            "firstCapturedUpdate": null,
-            "firstEffect": null,
-            "firstUpdate": Object {
-              "callback": null,
-              "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
-              "payload": Object {
-                "element": <WrapperComponent
-                  Component={[Function]}
-                  context={null}
-                  props={
-                    Object {
-                      "hidden": false,
-                      "progress": 10,
-                    }
-                  }
-                  wrappingComponentProps={null}
-                />,
-              },
-              "tag": 0,
-            },
-            "lastCapturedEffect": null,
-            "lastCapturedUpdate": null,
-            "lastEffect": null,
-            "lastUpdate": Object {
-              "callback": null,
-              "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
-              "payload": Object {
-                "element": <WrapperComponent
-                  Component={[Function]}
-                  context={null}
-                  props={
-                    Object {
-                      "hidden": false,
-                      "progress": 10,
-                    }
-                  }
-                  wrappingComponentProps={null}
-                />,
-              },
-              "tag": 0,
-            },
-          },
-        },
-        "child": [Circular],
-        "childExpirationTime": 0,
-        "contextDependencies": null,
-        "effectTag": 32,
-        "elementType": null,
-        "expirationTime": 0,
-        "firstEffect": [Circular],
-        "index": 0,
-        "key": null,
-        "lastEffect": [Circular],
-        "memoizedProps": null,
-        "memoizedState": Object {
-          "element": <WrapperComponent
-            Component={[Function]}
-            context={null}
-            props={
-              Object {
-                "hidden": false,
-                "progress": 10,
-              }
-            }
-            wrappingComponentProps={null}
-          />,
-        },
-        "mode": 0,
-        "nextEffect": null,
-        "pendingProps": null,
-        "ref": null,
-        "return": null,
-        "selfBaseDuration": 0,
-        "sibling": null,
-        "stateNode": Object {
-          "containerInfo": <div>
-            <div
-              class="progress"
-            >
-              <div
-                aria-valuemax="100"
-                aria-valuemin="0"
-                aria-valuenow="10"
-                class="progress-bar progress-bar-striped progress-bar-animated"
-                role="progressbar"
-                style="width: 10%;"
-              >
-                10
-                %
-              </div>
-            </div>
-          </div>,
-          "context": Object {},
-          "current": [Circular],
-          "didError": false,
-          "earliestPendingTime": 0,
-          "earliestSuspendedTime": 0,
-          "expirationTime": 0,
-          "finishedWork": null,
-          "firstBatch": null,
-          "hydrate": false,
-          "interactionThreadID": 17,
-          "latestPendingTime": 0,
-          "latestPingedTime": 0,
-          "latestSuspendedTime": 0,
-          "memoizedInteractions": Set {},
-          "nextExpirationTimeToWorkOn": 0,
-          "nextScheduledRoot": null,
-          "pendingChildren": null,
-          "pendingCommitExpirationTime": 0,
-          "pendingContext": null,
-          "pendingInteractionMap": Map {},
-          "pingCache": null,
-          "timeoutHandle": -1,
-        },
-        "tag": 3,
-        "treeBaseDuration": 0,
-        "type": null,
-        "updateQueue": Object {
-          "baseState": Object {
-            "element": <WrapperComponent
-              Component={[Function]}
-              context={null}
-              props={
-                Object {
-                  "hidden": false,
-                  "progress": 10,
-                }
-              }
-              wrappingComponentProps={null}
-            />,
-          },
-          "firstCapturedEffect": null,
-          "firstCapturedUpdate": null,
-          "firstEffect": null,
-          "firstUpdate": null,
-          "lastCapturedEffect": null,
-          "lastCapturedUpdate": null,
-          "lastEffect": null,
-          "lastUpdate": null,
-        },
-      },
+      "nextEffect": null,
       "pendingProps": Object {
         "Component": [Function],
         "context": null,
@@ -1075,21 +639,24 @@ ProgressBar {
           "hidden": false,
           "progress": 10,
         },
+        "refProp": null,
         "wrappingComponentProps": null,
       },
       "ref": null,
       "return": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 72,
+        "_debugID": 125,
         "_debugIsCurrentlyTiming": false,
+        "_debugNeedsRemount": false,
         "_debugOwner": null,
         "_debugSource": null,
         "actualDuration": 0,
         "actualStartTime": -1,
         "alternate": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 72,
+          "_debugID": 125,
           "_debugIsCurrentlyTiming": false,
+          "_debugNeedsRemount": false,
           "_debugOwner": null,
           "_debugSource": null,
           "actualDuration": 0,
@@ -1097,7 +664,7 @@ ProgressBar {
           "alternate": [Circular],
           "child": null,
           "childExpirationTime": 0,
-          "contextDependencies": null,
+          "dependencies": null,
           "effectTag": 0,
           "elementType": null,
           "expirationTime": 1073741823,
@@ -1114,7 +681,10 @@ ProgressBar {
           "return": null,
           "selfBaseDuration": 0,
           "sibling": null,
-          "stateNode": Object {
+          "stateNode": FiberRootNode {
+            "callbackExpirationTime": 0,
+            "callbackNode": null,
+            "callbackPriority": 90,
             "containerInfo": <div>
               <div
                 class="progress"
@@ -1134,25 +704,22 @@ ProgressBar {
             </div>,
             "context": Object {},
             "current": [Circular],
-            "didError": false,
-            "earliestPendingTime": 0,
-            "earliestSuspendedTime": 0,
-            "expirationTime": 0,
+            "finishedExpirationTime": 0,
             "finishedWork": null,
-            "firstBatch": null,
+            "firstPendingTime": 0,
+            "firstSuspendedTime": 0,
             "hydrate": false,
             "interactionThreadID": 17,
-            "latestPendingTime": 0,
-            "latestPingedTime": 0,
-            "latestSuspendedTime": 0,
+            "lastExpiredTime": 0,
+            "lastPingedTime": 0,
+            "lastSuspendedTime": 0,
             "memoizedInteractions": Set {},
-            "nextExpirationTimeToWorkOn": 0,
-            "nextScheduledRoot": null,
+            "nextKnownPendingLevel": 0,
             "pendingChildren": null,
-            "pendingCommitExpirationTime": 0,
             "pendingContext": null,
             "pendingInteractionMap": Map {},
             "pingCache": null,
+            "tag": 0,
             "timeoutHandle": -1,
           },
           "tag": 3,
@@ -1178,9 +745,12 @@ ProgressBar {
                       "progress": 10,
                     }
                   }
+                  refProp={null}
                   wrappingComponentProps={null}
                 />,
               },
+              "priority": 97,
+              "suspenseConfig": null,
               "tag": 0,
             },
             "lastCapturedEffect": null,
@@ -1201,17 +771,20 @@ ProgressBar {
                       "progress": 10,
                     }
                   }
+                  refProp={null}
                   wrappingComponentProps={null}
                 />,
               },
+              "priority": 97,
+              "suspenseConfig": null,
               "tag": 0,
             },
           },
         },
         "child": [Circular],
         "childExpirationTime": 0,
-        "contextDependencies": null,
-        "effectTag": 32,
+        "dependencies": null,
+        "effectTag": 0,
         "elementType": null,
         "expirationTime": 0,
         "firstEffect": [Circular],
@@ -1229,6 +802,7 @@ ProgressBar {
                 "progress": 10,
               }
             }
+            refProp={null}
             wrappingComponentProps={null}
           />,
         },
@@ -1239,7 +813,10 @@ ProgressBar {
         "return": null,
         "selfBaseDuration": 0,
         "sibling": null,
-        "stateNode": Object {
+        "stateNode": FiberRootNode {
+          "callbackExpirationTime": 0,
+          "callbackNode": null,
+          "callbackPriority": 90,
           "containerInfo": <div>
             <div
               class="progress"
@@ -1259,25 +836,22 @@ ProgressBar {
           </div>,
           "context": Object {},
           "current": [Circular],
-          "didError": false,
-          "earliestPendingTime": 0,
-          "earliestSuspendedTime": 0,
-          "expirationTime": 0,
+          "finishedExpirationTime": 0,
           "finishedWork": null,
-          "firstBatch": null,
+          "firstPendingTime": 0,
+          "firstSuspendedTime": 0,
           "hydrate": false,
           "interactionThreadID": 17,
-          "latestPendingTime": 0,
-          "latestPingedTime": 0,
-          "latestSuspendedTime": 0,
+          "lastExpiredTime": 0,
+          "lastPingedTime": 0,
+          "lastSuspendedTime": 0,
           "memoizedInteractions": Set {},
-          "nextExpirationTimeToWorkOn": 0,
-          "nextScheduledRoot": null,
+          "nextKnownPendingLevel": 0,
           "pendingChildren": null,
-          "pendingCommitExpirationTime": 0,
           "pendingContext": null,
           "pendingInteractionMap": Map {},
           "pingCache": null,
+          "tag": 0,
           "timeoutHandle": -1,
         },
         "tag": 3,
@@ -1294,6 +868,7 @@ ProgressBar {
                   "progress": 10,
                 }
               }
+              refProp={null}
               wrappingComponentProps={null}
             />,
           },
@@ -1320,10 +895,10 @@ ProgressBar {
             "hidden": false,
             "progress": 10,
           },
+          "refProp": null,
           "wrappingComponentProps": null,
         },
         "refs": Object {},
-        "rootFinderInstance": null,
         "state": Object {
           "context": null,
           "mount": true,

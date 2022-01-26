@@ -159,7 +159,7 @@ try:
                          timeseries_count=str(timeseries_count))
     with open(os.path.join(dirname, "file_clusters.json"), "w") as file_clusters_json:
         json.dump(file_clusters, file_clusters_json)
-    with open(os.path.join(dirname, "file_clusters.out"), "wb") as file_clusters_out:
+    with open(os.path.join(dirname, "file_clusters.out"), "w") as file_clusters_out:
         json.dump(sorted(clusters.keys()), file_clusters_out)
 
 

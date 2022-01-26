@@ -9,7 +9,7 @@ import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import "jquery-ui";
 import "js/slycat-login-controls";
-import pin from '../img/pin.png';
+import pin from 'img/pin.png';
 
 $.widget("parameter_image.scatterplot",
 {

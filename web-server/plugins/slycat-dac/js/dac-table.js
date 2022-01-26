@@ -49,6 +49,12 @@ var editable_col_types = [];
 
 var curr_sel_type = null;
 
+// max number of selections
+var max_num_sel = null;
+
+// colors to use for exporting table
+var user_sel_colors = null;
+
 // keep track of current and previous rows selected
 var prev_row_selected = null;
 var curr_row_selected = null;
@@ -60,11 +66,17 @@ var grid_options = {
 	editable: true,
 };
 
+// model name for downloaded table
+var model_name = "";
+
 // maximum freetext length for editable columns
 var MAX_FREETEXT_LEN = 0;
 
 // hardcoded pixel values for editable columns
 var SEL_BORDER_WIDTH = 11;
+
+// download dialog model status
+var download_dialog_open = false;
 
 // populate slick grid's column metadata
 function make_column(id_index, name, editor, options)
@@ -81,7 +93,8 @@ function make_column(id_index, name, editor, options)
 }
 
 // load grid data and set up colors for selections
-module.setup = function (metadata, data, include_columns, editable_columns, max_freetext_len,
+module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
+                         MODEL_NAME, max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
                          init_sort_order, init_sort_col)
 {
 	// set up callback for data download button
@@ -91,12 +104,24 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 	// set maximum length of freetext for editable columns
 	MAX_FREETEXT_LEN = max_freetext_len;
 
+    // set model name
+    model_name = MODEL_NAME;
+
+    // set maximum number of selections
+    // (note this cannot exceed 8 for the table, as of 11/25/2019)
+    max_num_sel = MAX_NUM_SEL;
+
+    // user colors for outputing table
+    user_sel_colors = USER_SEL_COLORS;
+
 	// get number of rows and total available columns in data table
 	num_rows = data[0]["data"][0].length;
 	var avail_cols = data[0]["data"].length;
 
 	// set number of columns to use
 	num_cols = include_columns.length;
+	var num_origin_cols = 0;
+	if (model_origin.length > 0) { num_origin_cols = 1 };
 	num_editable_cols = editable_columns["attributes"].length;
 
 	// set up slick grid column names (with non-mutable columns)
@@ -107,19 +132,25 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 			metadata[0]["column-names"][include_columns[i]], null, null));
 	}
 
+	// set up model origin, if available (also non-mutable)
+	for (var i = 0; i != num_origin_cols; i++) {
+	    grid_columns.push(make_column(num_cols,
+	        "From Model", null, null));
+	}
+
 	// set up editable column names
 	for (var i = 0; i != num_editable_cols; i++) {
 	    editable_col_types.push(editable_columns["attributes"][i].type);
 		if (editable_col_types[i] == "freetext") {
 
 			// set up freetext editor
-			grid_columns.push(make_column(num_cols + i,
+			grid_columns.push(make_column(num_cols + num_origin_cols + i,
 				editable_columns["attributes"][i].name, TextEditor, null));
 
 		} else {
 
 			// set up categorical editor
-			grid_columns.push(make_column(num_cols + i,
+			grid_columns.push(make_column(num_cols + num_origin_cols + i,
 				editable_columns["attributes"][i].name, SelectCellEditor,
 				editable_columns["categories"][i]));
 		}
@@ -131,10 +162,19 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 		table_data.push(data[0]["data"][include_columns[i]])
 	}
 
+	// populate model origin data
+	for (var i = 0; i != num_origin_cols; i++) {
+	    table_data.push(model_origin);
+	}
+
 	// populate editable column data
 	for (var i = 0; i != num_editable_cols; i++) {
 		table_data.push(editable_columns["data"][i]);
 	}
+
+	// adjust number of columns to reflect origin column
+	// (from now on treat origin column the same as any non-mutable data)
+	num_cols = num_cols + num_origin_cols
 
 	// produce a vector of sequential id for table rows and a zero vector
 	var row_id = [];
@@ -201,7 +241,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 	if (selections.focus() != null) {
 	    module.jump_to([selections.focus()]);
 	} else {
-	    module.jump_to(selections.sel_1());
+	    module.jump_to(selections.sel(1));
 	};
 
 }
@@ -209,15 +249,29 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 // download data table button
 var download_button_callback = function ()
 {
-	// concatenate selections
-	var sel = selections.sel_1().concat(selections.sel_2());
+	// concatenate all selections
+	var sel = selections.sel();
+
+    // construct model based name for table download
+    var defaultFilename = model_name + " Metadata_Table.csv";
+    defaultFilename = defaultFilename.replace(/ /g,"_");
+
 	// check if there anything is selected
 	if (sel.length == 0) {
+
 		// nothing selected: download entire table
-		write_data_table([], "DAC_Untitled_Data_Table.csv");
+		write_data_table([], defaultFilename);
+
 	 } else {
-		// something selected, see what user wants to export
-		openCSVSaveChoiceDialog(sel);
+
+        // check if dialog is already open
+        if (!download_dialog_open) {
+
+            download_dialog_open = true;
+
+            // something selected, see what user wants to export
+            openCSVSaveChoiceDialog(sel, defaultFilename);
+        }
 	 }
  }
 
@@ -227,6 +281,14 @@ function write_data_table (rows_to_output, defaultFilename)
 	// convert data table to csv for writing
 	var csvData = convert_to_csv (rows_to_output);
 
+    module.download_data_table (csvData, defaultFilename);
+
+}
+
+// download data table to browser
+module.download_data_table = function (csvData, defaultFilename)
+{
+
 	// set up download link
 	var D = document;
 	var a = D.createElement("a");
@@ -235,7 +297,7 @@ function write_data_table (rows_to_output, defaultFilename)
 	//build download link:
 	a.href = "data:" + strMimeType + ";charset=utf-8," + encodeURIComponent(csvData);
 
-	// opens download dialog (this code is crap)
+	// opens download dialog
 	if ('download' in a) {
 		a.setAttribute("download", defaultFilename);
 		a.innerHTML = "downloading...";
@@ -249,9 +311,10 @@ function write_data_table (rows_to_output, defaultFilename)
 		}, 66);
 	return true;
 	} else {
-		console.log("Could not detect firefox/chrome.");
+		dialog.ajax_error("Could not download file.  Browser incompatibility?")("","","");
 	}
- };
+
+};
 
 // generate csv text from data table
 function convert_to_csv (user_selection)
@@ -268,28 +331,22 @@ function convert_to_csv (user_selection)
 	else {
 		rows_to_output = user_selection;
 	}
-    
-	// look for extra commas and warn user
-	var extra_commas_found = false;
 
 	// output data in data_view (sorted as desired by user) order
 	var csv_output = "";
 
-	// output headers
-	for (var i = 0; i < (num_cols + num_editable_cols); i++) {
-		var header_name = grid_columns[i].name;
+    // output headers
+    var headers = module.get_headers(true);
+    csv_output = headers[0].join(",");
 
-		// check for commas in column header
-		if (header_name.indexOf(",") != -1) {
-			extra_commas_found = true;
-		}
+    // look for extra commas and warn user
+	var extra_commas_found = headers[1];
 
-		// strip any commas and add to csv header
-		csv_output += header_name.replace(/,/g,"") + ",";
-	 }
+	// add selection color to header, end line
+	csv_output += ',User Selection\n'
 
 	// remove last comma, end line
-	csv_output = csv_output.slice(0,-1) + "\n";
+	// csv_output = csv_output.slice(0,-1) + "\n";
 
 	// output data
 	for (var i = 0; i < num_rows; i++) {
@@ -313,8 +370,12 @@ function convert_to_csv (user_selection)
 				}
 
 				// strip commas
-				csv_row.push(String(item[j]).replace(/,/g, ""));
+				csv_row.push(String(item[j]).replace(/,/g,""));
+
 			}
+
+            // add row selection color to last column
+            csv_row.push(row_sel_color(item));
 
 			// add row to csv output
 			csv_output += csv_row + "\n";
@@ -323,42 +384,148 @@ function convert_to_csv (user_selection)
 
 	// produce warning if extra commas were detected
 	if (extra_commas_found) {
-		 dialog.ajax_error("Warning.  Commas were detected in the table data text and will be removed in the .csv output file.")
+		 dialog.ajax_error("Commas were detected in the table data " +
+		    "text and will be removed in the .csv output file.")
 			("","","");
 	}
 	return csv_output;
 }
 
+// returns table headers and checks for extra commas
+// replaces commas with spaces if replace_commas is true
+module.get_headers = function (replace_commas)
+{
+
+    // keep track of extra commas
+    var extra_commas = false;
+
+    // output headers
+    var headers = [];
+	for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+		var header_name = grid_columns[i].name;
+
+		// check for commas in column header
+		if (header_name.indexOf(",") != -1) {
+			extra_commas = true;
+		}
+
+		// strip any commas (optional) and add to csv header
+		if (replace_commas) {
+    		headers.push(header_name.replace(/,/g,""));
+    	} else {
+    	    headers.push(header_name);
+    	}
+	}
+
+    return [headers, extra_commas];
+}
+
+// gets user selection color for a row in the table
+function row_sel_color (item)
+{
+
+    // convert focus selection to selection-#
+    var row_sel = selection_type(item);
+    if (row_sel == 'focus-selection') {
+        var focus_sel = selections.focus();
+        for (var j = 0; j < max_num_sel; j++) {
+            if (selections.in_sel_x(focus_sel, j+1) != -1) {
+                row_sel = 'selection-' + (j+1);
+                break;
+            }
+        }
+    }
+
+    // convert selection-# to user output color
+    var row_color = "";
+    if (row_sel.search("selection-") != -1) {
+        row_color = user_sel_colors[parseInt(row_sel.charAt(row_sel.length-1))-1];
+    }
+
+    return row_color;
+
+}
+
+// return table values for a selection
+module.selection_values = function (header_col, rows_to_output)
+{
+
+    // return header value and selection color
+    var header_val = []
+    var sel_color = []
+
+    // also return flag indicating if commas were found
+    var extra_commas = false;
+
+    // go through table rows in table order
+	for (var i = 0; i < num_rows; i++) {
+
+		// get slick grid table data
+		var item = grid_view.getDataItem(i);
+
+		// get selection index
+		var sel_i = item[item.length-2];
+
+		// check if data is in the selection
+		if (rows_to_output.indexOf(sel_i) != -1) {
+
+            // check for commas for later warning
+            if (String(item[header_col]).indexOf(",") != -1) {
+                extra_commas = true;
+            }
+
+            // strip commas and add to header list
+            header_val.push(String(item[header_col]).replace(/,/g, ""));
+
+			// get selection color
+            sel_color.push(row_sel_color(item));
+
+		}
+    }
+
+    return [header_val, sel_color, extra_commas];
+
+}
+
 // opens a dialog to ask user if they want to save selection or whole table
 // (modified from videoswarm code)
-function openCSVSaveChoiceDialog(sel)
+function openCSVSaveChoiceDialog(sel, defaultFilename)
 {
 	// sel contains the entire selection (both red and blue)
 	// (always non-empty when called)
 	// message to user
 	var txt = "You have " + sel.length + " row(s) selected.  What would you like to do?";
+
 	// buttons for dialog
 	var buttons_save = [
 		{className: "btn-light", label:"Cancel"},
 		{className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"},
 		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
 	];
+
 	// launch dialog
 	dialog.dialog(
 	{
-		title: "Download Choices",
+		title: "Export Table Data",
 		message: txt,
 		buttons: buttons_save,
 		callback: function(button)
 		{
-		if(button.label == "Save Entire Table")
-			write_data_table([], "DAC_Untitled_Data_Table.csv");
-		else if(button.label == "Save Selected")
-			write_data_table( selections.sel_1().concat(selections.sel_2()),
-				"DAC_Untitled_Data_Table_Selection.csv");
+	        // download dialog is complete
+	        download_dialog_open = false;
+
+		    if (typeof button !== 'undefined') {
+
+                if(button.label == "Save Entire Table")
+                    write_data_table([], defaultFilename);
+
+                else if(button.label == "Save Selected")
+                    write_data_table( selections.sel(),
+                        defaultFilename);
+            }
 		},
 	});
- }
+}
 
 // single row selection
 function one_row_selected(e, args) {
@@ -398,8 +565,7 @@ function one_row_selected(e, args) {
         }
 
 		// make sure we are in a selection mode
-		if (selections.sel_type() == 1 ||
-			selections.sel_type() == 2) {
+		if (selections.sel_type() > 0) {
 
             // check for range selection
             if (range_sel.length > 1) {
@@ -408,16 +574,14 @@ function one_row_selected(e, args) {
                 selections.update_sel_range(range_sel);
 
             } else {
+
                 // check if row is already selected
                 // update selection and/or focus
                 selections.update_sel_focus(data_clicked);
             }
 
-
-
 		// in zoom or subset mode, we can still do focus/de-focus
-		} else if (selections.sel_type() == 0 ||
-				   selections.sel_type() == 3 ) {
+		} else {
 
 			selections.change_focus(data_clicked);
 
@@ -531,23 +695,11 @@ function color_rows(old_metadata) {
 			// make sure the "cssClasses" property exists
 			meta.cssClasses = meta.cssClasses || '';
 
-			var num_cols = item.length;
-
-			// set css class according to selection
-			if (item[num_cols-1] % 10 == 1) {
-				meta.cssClasses = 'selection-1';
-			} else if (item[num_cols-1] % 10 == 2) {
-				meta.cssClasses = 'selection-2';
-			} else if (item[num_cols-1] % 10 == 3) {
-				meta.cssClasses = 'focus-selection';
-			} else if (item[num_cols-1] % 10 == 4) {
-				meta.cssClasses = 'not-in-subset';
-			} else {
-				meta.cssClasses = 'no-selection';
-			}
+            // get selection css class
+            meta.cssClasses = selection_type (item);
 
 			// set css class for currently clicked item
-			if (Math.floor(item[num_cols-1] / 10) == 1) {
+			if (Math.floor(item[item.length-1] / 10) == 1) {
 			    meta.cssClasses += ' clicked';
 			}
 
@@ -555,7 +707,38 @@ function color_rows(old_metadata) {
 
 		return meta;
 	}
+}
 
+// get selection string for coloring
+function selection_type (item)
+{
+    // selection string to return
+    var sel_string = "";
+
+    // get the selection type
+    var sel_css_type = item[item.length-1] % 10;
+
+    // set css according to selection type
+    for (var i = 1; i <= max_num_sel; i++) {
+        if (sel_css_type == i) {
+            sel_string = 'selection-' + i.toString();
+        }
+    }
+
+    // set css class according to focus and subset
+    if (sel_css_type > max_num_sel) {
+
+        if (sel_css_type == (max_num_sel+1)) {
+            sel_string = 'focus-selection';
+        } else if (sel_css_type == (max_num_sel+2)) {
+            sel_string = 'not-in-subset';
+        } else {
+            sel_string = 'no-selection';
+        }
+
+    }
+
+    return sel_string;
 }
 
 // slick grid column sort
@@ -843,8 +1026,6 @@ module.select_rows = function ()
 {
 
 	// update selection indices
-	var new_sel_1 = selections.sel_1();
-	var new_sel_2 = selections.sel_2();
 	var new_focus = selections.focus();
 	var subset_mask = selections.get_subset();
 
@@ -855,25 +1036,27 @@ module.select_rows = function ()
 		sel_vec.push(0);
 	}
 
-	// mark selection 1
-	for (var i = 0; i != new_sel_1.length; i++) {
-		sel_vec[new_sel_1[i]] = 1;
-	}
+    // mark all selections
+    for (var j = 0; j < max_num_sel; j++) {
 
-	// mark selection 2
-	for (var i = 0; i != new_sel_2.length; i++) {
-		sel_vec[new_sel_2[i]] = 2;
-	}
+        // get selections
+        var new_sel = selections.sel(j+1);
+
+        // mark selection j
+        for (var i = 0; i != new_sel.length; i++) {
+            sel_vec[new_sel[i]] = j+1;
+        }
+    }
 
 	// mark focus, if present
 	if (new_focus != null) {
-		sel_vec[new_focus] = 3;
+		sel_vec[new_focus] = max_num_sel+1;
 	}
 
 	// mark if not in subset
 	for (var i = 0; i < subset_mask.length; i++) {
 		if (!subset_mask[i]) {
-			sel_vec[i] = 4;
+			sel_vec[i] = max_num_sel+2;
 		}
 	}
 

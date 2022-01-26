@@ -1,49 +1,144 @@
-#!/bin/env python
+# Slycat Agent
+- The slycat server runs the agent by opening up an ssh session to where the agent code is going to run. 
+- It will then execute and agent command to start the remote agent and wait for the appropiate response from the agent before it start sending commands for the agent to execute.
 
-# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
-# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
-# retains certain rights in this software.
+# Creating a custom Agent
+- When creating an agent for your specific evironment the first place to start should be looking at how the agent was implemented for other systems. 
+- When creating you own agent you will need to implement https://github.com/sandialabs/slycat/blob/master/agent/agent.py
+- Review https://github.com/sandialabs/slycat/blob/master/agent/slycat-slurm-agent.py or https://github.com/sandialabs/slycat/blob/master/agent/slycat-pbs-agent.py to get a good idea of how the agent interface needs to implemented.
 
-# External dependencies
-import PIL.Image
-
-# Python standard library
-import argparse
-
-try:
-    import io as StringIO
-except ImportError:
-    import io
-
-import json
-import os
-import subprocess
-import sys
-import tempfile
-import agent
-import logging
-import traceback
-import random
-import threading
-
-class Agent(agent.Agent):
-    """
-
-    """
-    def __init__(self):
-        """
-        add the list of scripts we want to be able to call
-        """
-        agent.Agent.__init__(self)
-        self.command_list = ["module_name", "wckey", "nnodes", "partition", "ntasks_per_node",
-                             "time_hours", "time_minutes", "time_seconds", "working_dir"]
-
-    def check_hpc_params(self, command_dict):
-        for _ in self.command_list:
-            if _ not in command_dict:
-                raise Exception("missing %s hpc param" % _)
-
+- The following functions will need to be implemented
+```python
+    @abc.abstractmethod
     def run_remote_command(self, command):
+        """
+        run a predefine script on hpc. could potentially be
+        an hpc batch job such as slurm or pbs.
+        :param command: json command
+        :return:
+        """
+        pass
+
+    @abc.abstractmethod
+    def run_shell_command(self, command, jid=0, log_to_file=False):
+        """
+        command to be run on the remote machine
+        :param log_to_file: bool for logging
+        :param jid: job id
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def launch(self, command):
+        """
+        launch a job on the remote machine
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def submit_batch(self, command):
+        """
+        submit a batch job on the remote machine
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def checkjob(self, command):
+        """
+        check a job's status on a remote machine
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def check_agent_job(self, command):
+        """
+        check an agents job status on a remote machine
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def cancel_job(self, command):
+        """
+        cancels a remote job
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def get_job_output(self, command):
+        """
+        get a detailed version of the jobs output
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                       time_seconds,
+                       fn,
+                       tmp_file):
+        """
+        generate a remote batch file that can be used
+        by the remote system's mpi queue
+        :param module_name: 
+        :param wckey: 
+        :param nnodes: 
+        :param partition: 
+        :param ntasks_per_node: 
+        :param time_hours: 
+        :param time_minutes: 
+        :param time_seconds: 
+        :param fn: 
+        :param tmp_file: 
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def run_function(self, command):
+        """
+        function used to run a job
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def check_hpc_params(self, command):
+        """
+        takes a command json and creates a string that can be
+        run hpc jobs
+        :param command: json command
+        :return: 
+        """
+        pass
+```
+
+- Here is an example of each function implemented for a slurm based hoc system.
+
+### run_remote_command
+- the point of this function is to generate a string to be sent to the shell to start a python script.
+    - `commmand` is the command recieved from the server
+    - `jid` is the job uuid for any command run
+    - `command script` is the list of registered commands that can be run on the remote system
+    - `result` is the json payload shipped back to the slycat server
+    - `output` goes to the log
+    - both hpc and non hpc jobs can be started so you don't always have to start say a slurm job you can always run a script locally
+    - if the job is an hpc job it will try to lauch the script into the (in this case)`slurm` running environment.
+    
+```python
         command = command["command"]
         run_commands = []
         # get the command scripts that were sent to the agent
@@ -55,7 +150,7 @@ class Agent(agent.Agent):
         if not run_commands:
             results = {"ok": False, "message": "could not create a run command did you register your script with "
                                                "slycat?"}
-            sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+            sys.stdout.write("%s\n" % json.dumps(results))
             sys.stdout.flush()
             return
         command["run_command"] = run_commands
@@ -78,7 +173,7 @@ class Agent(agent.Agent):
                 self.run_shell_command("mkdir -p %s" % working_dir)
             except Exception as e:
                 output[0] = e.message
-            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode='w')
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
             self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                                 time_seconds, run_commands,
                                 tmp_file)
@@ -110,10 +205,17 @@ class Agent(agent.Agent):
                 }
                 for script in self.scripts]
         }
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
+```
 
-    def run_shell_command(self, command, jid=0, log_to_file=False):
+### run_shell_command
+- this method is used to actually run the shell command on the remote system.
+- command is the is and array of string that when concatonated and space seperated comprise the shell command to run
+  - for example it could be as simple as ['echo', 'hello'] which when sent to the shell will be concatinate and ran as `echo hello`
+
+```python
+def run_shell_command(self, command, jid=0, log_to_file=False):
         # create log file in the users directory for later polling
         if log_to_file:
             log = self.get_job_logger(jid)
@@ -143,28 +245,12 @@ class Agent(agent.Agent):
             return ["FAILED", "FAILED"]
             # print traceback.format_exc()
 
-    def check_agent_job(self, command):
-        results = {
-            "ok": True,
-            "jid": command["command"]["jid"],
-            "status": "[UNKNOWN]",
-            "status_list": self._status_list
-        }
-        try:
-            with open(str(command["command"]["jid"]) + '.log') as log_file:
-                for line in log_file:
-                    if line.strip(' \t\n\r') in self._status_list:
-                        results["status"] = line.strip(' \t\n\r')
-        except IOError:
-            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "file not found: job id log file is "
-                                                                          "probably missung"}, cls=agent.MyEncoder))
-            sys.stdout.flush()
-        except Exception as e:
-            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}, cls=agent.MyEncoder))
-            sys.stdout.flush()
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
-        sys.stdout.flush()
+```
 
+### launch
+- `command` is the command that is to be run with shell command
+
+```python
     def launch(self, command):
         results = {
             "ok": True,
@@ -173,9 +259,15 @@ class Agent(agent.Agent):
 
         results["output"], results["errors"] = self.run_shell_command(command["command"])
 
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
+```
+
+### submit_batch
+- the `command` in this case is actually a file that is to be submitted to sbatch for the slurm environment
+
+```python
     def submit_batch(self, command):
         results = {
             "ok": True,
@@ -185,9 +277,16 @@ class Agent(agent.Agent):
 
         results["output"], results["errors"] = self.run_shell_command("sbatch %s" % results["filename"])
 
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
+```
 
+### checkjob
+- this function is used to check on the jobs status
+- the `command` in this case is the jid used to check the job status
+- in the example below the `sacct` is the command to check the job status for a slurm environment
+
+```python
     def checkjob(self, command):
         results = {
             "ok": True,
@@ -195,19 +294,26 @@ class Agent(agent.Agent):
         }
         try:
             results["output"], results["errors"] = self.run_shell_command("sacct -j %s --format=jobname,state" % results["jid"])
-            myset = str(results["output"].decode()).split('\n')
+            myset = results["output"].split('\n')
             results["output"]="COMPLETED"
             for _ in myset:
                 if "slycat-tmp" in _:
                     results["output"] = _.split()[1]
                     break
         except OSError as e:
-            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}, cls=agent.MyEncoder))
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
             sys.stdout.flush()
 
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
+```
+
+### cancel_job
+- This is the function used to cancel jobs on the hpc
+- Generally it would be a shell command that is run with the given job id that would kill the job
+
+```python
     def cancel_job(self, command):
         results = {
             "ok": True,
@@ -215,11 +321,15 @@ class Agent(agent.Agent):
         }
 
         results["output"], results["errors"] = self.run_shell_command(
-            "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
+            "scancel %s" % results["jid"])
 
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
-
+```
+### get_job_output
+- This function is used to get job output and send it back to the web client
+- The output should be put in `results["output"]`
+```python 
     def get_job_output(self, command):
         results = {
             "ok": True,
@@ -234,15 +344,20 @@ class Agent(agent.Agent):
             results["output"] = "see errors"
             results["errors"] = "the file %s does not exist." % f
 
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
+```
 
+### generate_batch
+- Used to create the hpc scripts sent to the hpc engine eg. slurm
+- In the below example for slurm we are generating a slurm script that will launch our job
+```python
     def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                        time_seconds, fn,
                        tmp_file):
         f = tmp_file
 
-        f.write('#!/bin/bash\n\n')
+        f.write("#!/bin/bash\n\n")
         f.write("#SBATCH --account=%s\n" % wckey)
         f.write("#SBATCH --job-name=slycat-tmp\n")
         f.write("#SBATCH --partition=%s\n\n" % partition)
@@ -265,7 +380,12 @@ class Agent(agent.Agent):
             f.write("%s\n" % c)
 
         f.close()
+```
 
+### run_function
+- calls the generate batch functino and then sends the launch script to the hpc runner
+
+```python
     def run_function(self, command):
         results = {
             "ok": True,
@@ -287,7 +407,7 @@ class Agent(agent.Agent):
             self.run_shell_command("mkdir -p %s" % working_dir)
         except Exception:
             pass
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode='w')
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
@@ -297,11 +417,6 @@ class Agent(agent.Agent):
         results["temp_file"] = data
         results["output"], results["errors"] = self.run_shell_command("sbatch %s" % tmp_file.name)
 
-        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
+        sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
-
-
-if __name__ == "__main__":
-    slurm_cluster_agent = Agent()
-    slurm_cluster_agent.run()
-
+```

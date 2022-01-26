@@ -136,6 +136,16 @@ def parse_meta(file):
     return data # attributes, dimensions, data
 
 
+# update dac-parse-log
+def update_parse_log (database, model, parse_error_log, error_type, error_string):
+
+    parse_error_log.append(error_string)
+    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                          [error_type, "\n".join(parse_error_log)])
+
+    return parse_error_log
+
+
 def parse_zip(database, model, input, files, aids, **kwargs):
 
     """
@@ -155,12 +165,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
-    parse_error_log = []
-    parse_error_log.append("Notes:")
-
-    # start parse log
-    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                          ["Progress", "\n".join(parse_error_log)])
+    parse_error_log = update_parse_log(database, model, [], "Progress", "Notes:")
 
     # get parameters to eliminate likely unusable PTS files
     CSV_MIN_SIZE = int(aids[0])
@@ -183,9 +188,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                                               ["Error", "couldn't read .zip file (too large or corrupted)"])
 
         # record no data message in front of parser log
-        parse_error_log.append("Error -- couldn't read .zip file (too large or corrupted).")
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["No Data", "\n".join(parse_error_log)])
+        parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                           "Error -- couldn't read .zip file (too large or corrupted).")
 
         # print error to cherrypy.log.error
         cherrypy.log.error(traceback.format_exc())
@@ -217,9 +221,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                          ["Error", "CSV files must have .csv extension"])
 
-                    parse_error_log.append("Error -- CSV files must have .csv extension.")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["No Data", "\n".join(parse_error_log)])
+                    update_parse_log(database, model, parse_error_log, "No Data",
+                                     "Error -- CSV files must have .csv extension.")
 
                     raise Exception("CSV files must have .csv extension.")
 
@@ -236,9 +239,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                          ["Error", "META files must have .ini extension"])
 
-                    parse_error_log.append("Error -- META files must have .ini extension.")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["No Data", "\n".join(parse_error_log)])
+                    update_parse_log(database, model, parse_error_log, "No Data",
+                                     "Error -- META files must have .ini extension.")
 
                     raise Exception("META files must have .ini extension.")
 
@@ -248,9 +250,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Error", "unexpected file (not CSV/META) found in .zip file"])
 
-            parse_error_log.append("Error -- unexpected file (not CSV/META) found in .zip file.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["No Data", "\n".join(parse_error_log)])
+            update_parse_log(database, model, parse_error_log, "No Data",
+                             "Error -- unexpected file (not CSV/META) found in .zip file.")
 
             raise Exception("Unexpected file (not CSV/META) found in .zip file.")
 
@@ -269,9 +270,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                       ["Error", "CSV and META files do not match."])
 
-                parse_error_log.append("Error -- CSV and META files do not match.")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["No Data", "\n".join(parse_error_log)])
+                update_parse_log(database, model, parse_error_log, "No Data",
+                                 "Error -- CSV and META files do not match.")
 
                 raise Exception("CSV and META files do not match.")
 
@@ -281,9 +281,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Error", "PTS .zip file must have same number of CSV and META files"])
 
-        parse_error_log.append("Error -- PTS .zip file must have same number of CSV and META files.")
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["No Data", "\n".join(parse_error_log)])
+        update_parse_log(database, model, parse_error_log, "No Data",
+                         "Error -- PTS .zip file must have same number of CSV and META files.")
 
         raise Exception("PTS .zip file must have same number of CSV and META files.")
 
@@ -308,10 +307,6 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
     # put entire thread into a try-except block in order to print
     # errors to cherrypy.log.error
     try:
-
-        # import dac_compute_coords module from source by hand
-        dac = imp.load_source('dac_compute_coords',
-                              os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
 
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
@@ -343,10 +338,9 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # check for an empty csv file
             if len(csv_data_i[0]) < CSV_MIN_SIZE:
-                parse_error_log.append("CSV data file has less than " + str(CSV_MIN_SIZE)
-                                       + " entries -- skipping " + files_no_ext[i] + ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
+                parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                       "CSV data file has less than " + str(CSV_MIN_SIZE) +
+                                       " entries -- skipping " + files_no_ext[i] + ".")
                 continue
 
             # extract meta file from archive and parse
@@ -424,11 +418,10 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # if too few digitizer signals ignore data
             if len(dig_ids_i) < MIN_NUM_DIG:
-                parse_error_log.append("Less than " + str(MIN_NUM_DIG) +
+                parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                       "Less than " + str(MIN_NUM_DIG) +
                                        " time series -- skipping test-op id #"
                                        + str(uniq_test_op[i]) + ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
                 continue
 
             # store test inds for each row and digitizer ids (sorted)
@@ -450,10 +443,9 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         # add removed ids to parse error log
         for i in range(len(dig_id_keys)):
             if not dig_id_keys[i] in keep_dig_ids:
-                parse_error_log.append("Not found in all test ops --- skipping digitizer #" +
+                parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                       "Not found in all test ops --- skipping digitizer #" +
                                        str(dig_id_keys[i])+ ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
 
         # sort and keep consistent, intersecting digitizer ids
         dig_id_keys = sorted(keep_dig_ids)
@@ -497,9 +489,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             # check that table data/wave form data is consistent
             for j in range(len(test_i_inds)):
                 if table_data[test_i_inds[j]] != table_data[test_i_inds[0]]:
-                    parse_error_log.append("Inconsistent meta data for test-op id #" + str(uniq_test_op[i]) + ".")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
+                    parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                        "Inconsistent meta data for test-op id #" + str(uniq_test_op[i]) + ".")
 
             # use first row for table entry
             meta_row_i = []
@@ -550,19 +541,17 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
                 # issue warning if units are not the same
                 if units_i != units_j:
-                    parse_error_log.append("Units for test op #" + str(test_op_id[test_inds[j][i]])
+                    parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                           "Units for test op #" + str(test_op_id[test_inds[j][i]])
                                            + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
                                            + " for " + name_i + ".")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
 
                 # issue warning if time units are not the same
                 if time_units_i != time_units_j:
-                    parse_error_log.append("Time units for test op #" + str(test_op_id[test_inds[j][i]])
+                    parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                           "Time units for test op #" + str(test_op_id[test_inds[j][i]])
                                            + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
                                            + " for " + name_i + ".")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
 
                 # intersect time vector
                 time_i = list(set(time_i) & set(time_data[i][j]))
@@ -570,20 +559,18 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # check if time vectors were inconsistent
             if len(time_i) < max_time_i_len:
-                parse_error_log.append("Inconsistent time points for digitizer #" + str(dig_id_keys[i])
+                parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                       "Inconsistent time points for digitizer #" + str(dig_id_keys[i])
                                        + " -- reduced from " + str(max_time_i_len) + " to "
                                        + str(len(time_i)) + " time points.")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
 
             # check if reduction is below minimum threshold
             if len(time_i) < CSV_MIN_SIZE:
 
                 # log as an error
-                parse_error_log.append("Common time points are less than " + str(CSV_MIN_SIZE)
+                parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                       "Common time points are less than " + str(CSV_MIN_SIZE)
                                        + " -- skipping digitizer #" + str(dig_id_keys[i]) + ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
 
             else:
 
@@ -617,17 +604,15 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         # check that we still have enough digitizers
         if num_vars < MIN_NUM_DIG:
-            parse_error_log.append("Total number of digitizers parsed less than " + str(MIN_NUM_DIG) +
+            parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                   "Total number of digitizers parsed less than " + str(MIN_NUM_DIG) +
                                    " -- no data remaining.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
             meta_rows = []
 
         # if no parse errors then inform user
         if len(parse_error_log) == 1:
-            parse_error_log.append("None.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                    ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                               "No parse errors.")
 
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
@@ -663,6 +648,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         # print error to cherrypy.log.error
         cherrypy.log.error(traceback.format_exc())
+
 
 def register_slycat_plugin(context):
     context.register_parser("dac-zip-file-parser", "PTS CSV/META .zip file", ["dac-zip-file"], parse_zip)

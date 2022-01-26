@@ -1,8 +1,8 @@
-// This function contains code for managing the two selections 
+// This function contains code for managing three selections 
 // in dial-a-cluster.  It contains code that is common in between
-// dac-scatter-plot and dac-table for managing the two selections.
+// dac-scatter-plot and dac-table for managing the selections.
 // It also helps keep the selections synchronized between the two
-// ui panes.
+// ui panes.  (Changed from two to three selections 11/22/2019.)
 //
 // S. Martin
 // 4/8/2015
@@ -10,12 +10,13 @@
 // public functions will be returned via the module variable
 var module = {};
 
-// current selections and type (0 = zoom, 1 = selection_1, 2 = selection_2, 3 = subset)
+// current selections and type 
+// (-1 = subset, 0 = zoom, 1 = first selection, 2 = 2nd selection, ...)
 var curr_sel_type = null;
 
-// selections
-var selection_1 = [];
-var selection_2 = [];
+// selections, set to three (but could accomodate more)
+var selection = [];
+var max_num_sel = null;
 
 // subset mask
 var subset_mask = [];
@@ -25,6 +26,15 @@ var focus = null;
 
 // shift or meta key pressed
 var shift_key_pressed = false;
+
+// set up maximum number of selections
+module.setup = function(MAX_NUM_SEL)
+{
+    max_num_sel = MAX_NUM_SEL;
+    for (var i = 0; i < max_num_sel; i++) {
+        selection.push([]);
+    }
+}
 
 // get selection type
 module.sel_type = function ()
@@ -43,28 +53,31 @@ module.set_sel_type = function(new_sel_type)
     document.body.dispatchEvent(selTypeEvent);
 }
 
-// get actual selection (#1)
-module.sel_1 = function()
+// init selection array i >= 1
+module.set_sel = function(sel, i)
 {
-	return selection_1;
+    selection[i-1] = sel;
 }
 
-// init selection array 1
-module.set_sel_1 = function(sel)
+// get selection array i >= 1
+// returns full selection if nothing passed
+module.sel = function(i=0)
 {
-    selection_1 = sel;
-}
+    // full selection
+    if (i==0) {
 
-// get selection #2
-module.sel_2 = function()
-{
-	return selection_2;
-}
+        var full_sel = [];
+        for (var j = 0; j < max_num_sel; j++) {
+            full_sel = full_sel.concat(selection[j]);
+        }
 
-// init selection array 2
-module.set_sel_2 = function(sel)
-{
-    selection_2 = sel;
+        return full_sel;
+
+    // partial selection
+    } else {
+        return selection[i-1];
+    }
+
 }
 
 // set subset mask, return new selection
@@ -74,30 +87,24 @@ module.update_subset = function(mask)
 	// set new subset mask
 	subset_mask = mask;
 
-    // check for changes in seletions due to subsetting
+    // check for changes in selections due to subsetting
     var sel_changed = false;
 
-	// remove non-subset items from selection 1, if required
-	var new_sel_1 = [];
-	for (var i = 0; i < selection_1.length; i++) {
-		if (subset_mask[selection_1[i]] == 1) {
-			new_sel_1.push(selection_1[i]);
-		} else {
-		    sel_changed = true;
-		}
-	}
-	selection_1 = new_sel_1;
+    // remove non-subset items from each selection, if required
+    for (var j = 0; j < max_num_sel; j++) {
 
-	// remove non-subset items from selection 2, if necessary
-	var new_sel_2 = [];
-	for (var i = 0; i < selection_2.length; i++) {
-		if (subset_mask[selection_2[i]] == 1) {
-			new_sel_2.push(selection_2[i]);
-		} else {
-		    sel_changed = true;
-		}
-	}
-	selection_2 = new_sel_2;
+        // remove non-subset items from selection 1, if required
+        var new_sel = [];
+        for (var i = 0; i < selection[j].length; i++) {
+            if (subset_mask[selection[j][i]] == 1) {
+                new_sel.push(selection[j][i]);
+            } else {
+                sel_changed = true;
+            }
+        }
+        selection[j] = new_sel;
+
+    }
 
 	// remove focus selection, if necessary
 	if (focus != null) {
@@ -107,21 +114,21 @@ module.update_subset = function(mask)
 	}
 
 	// return non-empty selection, if present
-	if (selection_1.length > 0) {
-		return [selection_1, sel_changed];
-	} else if (selection_2.length > 0) {
-		return [selection_2, sel_changed];
-	} else {
-
-		// otherwise return subset indices
-		var subset_inds = [];
-		for (var i = 0; i < subset_mask.length; i++) {
-			if (subset_mask[i] == 1) {
-				subset_inds.push(i);
-			}
-		}
-		return [subset_inds, sel_changed];
+	for (var j = 0; j < max_num_sel; j++) {
+	    if (selection[j].length > 0) {
+	        return [selection[j], sel_changed];
+	    }
 	}
+
+    // otherwise return subset indices
+    var subset_inds = [];
+    for (var i = 0; i < subset_mask.length; i++) {
+        if (subset_mask[i] == 1) {
+            subset_inds.push(i);
+        }
+    }
+    return [subset_inds, sel_changed];
+
 }
 
 // get subset mask
@@ -141,8 +148,6 @@ module.subset_size = function()
 	return num_subset;
 }
 
-
-
 // check if an index is in the subset mask
 module.in_subset = function(i)
 {
@@ -161,44 +166,34 @@ module.focus = function()
 	return focus;
 }
 
-// is index i in selection 1?
+// is index i in selection x >= 1
 // return index or -1 if absent
-module.in_sel_1 = function(i)
+module.in_sel_x = function (i, x)
 {
-	return selection_1.indexOf(i);
-}
-
-// is index i in selection 2?
-// return index or -1 if absent
-module.in_sel_2 = function(i)
-{
-	return selection_2.indexOf(i);
+    return selection[x-1].indexOf(i);
 }
 
 // is index i in any selection?
 // return true or false
 module.in_sel = function(i)
 {
-	if ((selection_1.indexOf(i) == -1) &&
-		(selection_2.indexOf(i) == -1)) {
 
-		return false;
-	} else {
+    // check in each selection
+    for (var j = 0; j < max_num_sel; j++) {
+        if (selection[j].indexOf(i) != -1) {
+            return true;
+        }
+    }
 
-		return true;
-	}
+    // otherwise it wasn't found
+    return false;
+
 }
 
-// return length selection 1
-module.len_sel_1 = function()
+// return length of selection i >= 1
+module.len_sel = function(i)
 {
-	return selection_1.length;
-}
-
-// return length selection 2
-module.len_sel_2 = function()
-{
-	return selection_2.length;
+    return selection[i-1].length;
 }
 
 // toggle shift key flag
@@ -216,11 +211,9 @@ module.shift_key = function ()
 module.zero_sel = function()
 {
 	if (shift_key_pressed == false) {
-		if (curr_sel_type == 1) {
-			selection_1 = [];
-		} else {
-			selection_2 = [];
-		}
+	    if (curr_sel_type > 0) {
+	        selection[curr_sel_type-1] = [];
+	    }
 	}
 }
 
@@ -230,90 +223,70 @@ module.zero_sel = function()
 // 3. if present, and in same selection, remove
 module.update_sel = function(i)
 {
-	if (curr_sel_type == 1) {
+
+    if (curr_sel_type > 0) {
+
+        var curr_sel_ind = curr_sel_type-1;
 
 		// check if present in current selection
-		var sel_1_ind = selection_1.indexOf(i);
-		if (sel_1_ind == -1) {
+		var sel_i_ind = selection[curr_sel_ind].indexOf(i);
+		if (sel_i_ind == -1) {
 
 		    // not present, add
-			selection_1.push(i);
+			selection[curr_sel_ind].push(i);
 
 		} else {
 
 		    // present, remove
-		    selection_1.splice(sel_1_ind, 1);
+		    selection[curr_sel_ind].splice(sel_i_ind, 1);
 		}
 
-		// remove from other selection, if necessary
-		var sel_2_ind = selection_2.indexOf(i);
-		if (sel_2_ind != -1) {
-			selection_2.splice(sel_2_ind, 1);
+		// remove from other selections, if necessary
+		for (var j = 0; j < max_num_sel; j++) {
+		    if (j != curr_sel_ind) {
+		        var sel_j_ind = selection[j].indexOf(i);
+                if (sel_j_ind != -1) {
+                    selection[j].splice(sel_j_ind, 1);
+                }
+		    }
 		}
 
-	} else {
-
-        // check if present in current selection
-		var sel_2_ind = selection_2.indexOf(i);
-		if (sel_2_ind == -1) {
-
-		    // not present, add
-			selection_2.push(i);
-		} else {
-
-		    // present, remove
-		    selection_2.splice(sel_2_ind, 1);
-		}
-
-        // remove for other selection, if necessary
-		var sel_1_ind = selection_1.indexOf(i);
-		if (sel_1_ind != -1) {
-			selection_1.splice(sel_1_ind, 1);
-		}
 	}
+
 }
 
-// update selection range (all at once)
+// update selection range (all at once), but
+// do not remove from current selection if present
 module.update_sel_range = function(sel)
 {
 
     // update range according to current selection type
     for (var i = 0; i < sel.length; i++) {
 
-        if (curr_sel_type == 1) {
+        if (curr_sel_type > 0) {
+
+            var curr_sel_ind = curr_sel_type-1;
 
             // check if present in current selection
-            var sel_1_ind = selection_1.indexOf(sel[i]);
-            if (sel_1_ind == -1) {
+            var sel_i_ind = selection[curr_sel_ind].indexOf(sel[i]);
+            if (sel_i_ind == -1) {
 
                 // not present, add
-                selection_1.push(sel[i]);
+                selection[curr_sel_ind].push(sel[i]);
 
             }
 
-            // remove from other selection, if necessary
-            var sel_2_ind = selection_2.indexOf(sel[i]);
-            if (sel_2_ind != -1) {
-                selection_2.splice(sel_2_ind, 1);
+            // remove from other selections, if necessary
+            for (var j = 0; j < max_num_sel; j++) {
+                if (j != curr_sel_ind) {
+                    var sel_j_ind = selection[j].indexOf(sel[i]);
+                    if (sel_j_ind != -1) {
+                        selection[j].splice(sel_j_ind, 1);
+                    }
+                }
             }
 
-        } else {
-
-            // check if present in current selection
-            var sel_2_ind = selection_2.indexOf(sel[i]);
-            if (sel_2_ind == -1) {
-
-                // not present, add
-                selection_2.push(sel[i]);
-            }
-
-            // remove for other selection, if necessary
-            var sel_1_ind = selection_1.indexOf(sel[i]);
-            if (sel_1_ind != -1) {
-                selection_1.splice(sel_1_ind, 1);
-            }
         }
-
     }
 
     // update selection event
@@ -327,49 +300,51 @@ module.update_sel_range = function(sel)
 module.update_sel_focus = function(i)
 {
 
-	// if there are no selections at all (of either type), we add to selection
-	if (((curr_sel_type == 1) &&
-		 (selection_1.length == 0)) ||
-		((curr_sel_type == 2) &&
-		 (selection_2.length == 0))) {
+    if (curr_sel_type > 0) {
 
-		// add to selection
-		module.update_sel(i);
+        var curr_sel_ind = curr_sel_type - 1;
 
-		// selection has been changed
-		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
-											 active_sel: [i]} });
-		document.body.dispatchEvent(selectionEvent);
+         // if there are no selections at all (of either type), we add to selection
+        if (selection[curr_sel_ind].length == 0) {
 
-	} else {
+            // add to selection
+            module.update_sel(i);
 
-		// otherwise, we test for shift/meta key before adding to selection
-		if (shift_key_pressed) {
+            // selection has been changed
+            var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+                                                 active_sel: [i]} });
+            document.body.dispatchEvent(selectionEvent);
 
-            // check for focus event
-            if (focus == i) {
+        } else {
 
-                // focus chagned
-                module.change_focus(i);
+            // otherwise, we test for shift/meta key before adding to selection
+            if (shift_key_pressed) {
+
+                // check for focus event
+                if (focus == i) {
+
+                    // focus chagned
+                    module.change_focus(i);
+
+                } else {
+
+                    // selection changed
+                    module.update_sel(i);
+
+                    // fire selection change event
+                    var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+                                                         active_sel: [i]} });
+                    document.body.dispatchEvent(selectionEvent);
+                }
 
             } else {
 
-                // selection changed
-                module.update_sel(i);
-
-                // fire selection change event
-                var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
-                                                     active_sel: [i]} });
-                document.body.dispatchEvent(selectionEvent);
+                // in the last case we test for a focus event
+                module.change_focus(i);
             }
+        }
 
-		} else {
-
-			// in the last case we test for a focus event
-			module.change_focus(i);
-		}
-	}
-
+    }
 }
 
 // update focus if selection is done changing
@@ -411,8 +386,12 @@ module.change_focus = function(i) {
 // put selections in random order
 module.shuffle = function ()
 {
-	selection_1 = shuffle(selection_1);
-	selection_2 = shuffle(selection_2);
+
+    // shuffle each selection
+    for (var j = 0; j < max_num_sel; j++) {
+        selection[j] = shuffle(selection[j]);
+    }
+
 }
 
 // Fisher-Yates shuffle from bost.ocks.org

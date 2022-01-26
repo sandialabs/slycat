@@ -241,10 +241,12 @@ def register_slycat_plugin(context):
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
 
-        # convert kwargs into selections in two numpy arrays
-        sel_1 = numpy.array(kwargs["selection_1"])
-        sel_2 = numpy.array(kwargs["selection_2"])
+        # convert kwargs into selections and included columns
+        selection = kwargs["selection"]
         include_columns = numpy.array(kwargs["include_columns"])
+
+        # get total selection
+        tot_selection = [i for sel in selection for i in sel]
 
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
@@ -263,20 +265,38 @@ def register_slycat_plugin(context):
                 dist_mats.append(0)
 
         # calculate Fisher's discriminant for each variable
-        num_sel_1 = len(sel_1)
-        num_sel_2 = len(sel_2)
+        num_sel = len(selection)
         fisher_disc = numpy.zeros(num_vars)
         for i in include_columns:
-            sx2 = numpy.sum(numpy.square(dist_mats[i][sel_1, :][:, sel_1])) / (2 * num_sel_1)
-            sy2 = numpy.sum(numpy.square(dist_mats[i][sel_2, :][:, sel_2])) / (2 * num_sel_2)
-            uxuy2 = (numpy.sum(numpy.square(dist_mats[i][sel_1, :][:, sel_2])) /
-                     (num_sel_1 * num_sel_2) - sx2 / num_sel_1 - sy2 / num_sel_2)
 
-            # make sure we don't divide by zero
-            if (sx2 + sy2) > numpy.finfo(float).eps:
-                fisher_disc[i] = (uxuy2 / (sx2 + sy2))
+            # compute sum of squares for each selection
+            num_sel_x = []
+            ss_sel_x = []
+            for j in range(0, num_sel):
+                num_sel_x.append(len(selection[j]))
+                ss_sel_x.append(numpy.sum(numpy.square(dist_mats[i][selection[j], :][:, selection[j]])))
+
+            # compute total within class scatter
+            tot_num_sel = numpy.sum(num_sel_x)
+            tot_sw_sel = numpy.sum(ss_sel_x) / (2 * tot_num_sel)
+
+            # compute within and between class scatter
+            sw = numpy.zeros(num_sel)
+            sb = numpy.zeros(num_sel)
+            for j in range(0, num_sel):
+                if num_sel_x[j] > 0:
+                    sw[j] = ss_sel_x[j] / (2 * num_sel_x[j])
+                    sb[j] = num_sel_x[j] * (numpy.sum(numpy.square(
+                        dist_mats[i][selection[j], :][:, tot_selection])) /
+                        (num_sel_x[j] * tot_num_sel) - sw[j] / num_sel_x[j] -
+                        tot_sw_sel / tot_num_sel)
+
+            # compute multi-class Fisher (do not divide by zero)
+            if numpy.sum(sw) > numpy.finfo(float).eps:
+                fisher_disc[i] = numpy.sum(sb) / numpy.sum(sw)
+
             else:
-                fisher_disc[i] = uxuy2
+                fisher_disc[i] = numpy.sum(sb)
 
         # scale discriminant values between 0 and 1
         fisher_min = numpy.amin(fisher_disc)
@@ -290,8 +310,7 @@ def register_slycat_plugin(context):
         return json.dumps({"fisher_disc": fisher_disc.tolist()})
 
 
-    # sub-samples time and variable data from database and pushes to "dac-sub-time-points"
-    # and "dac-sub-var-data"
+    # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
 
         # get input parameters
@@ -310,7 +329,7 @@ def register_slycat_plugin(context):
         rows.pop(0)
 
         # number of samples to return in subsample
-        num_subsample = int(kwargs["3"])
+        num_subsample = str2float(kwargs["3"])
 
         # range of samples (x-value)
         x_min = str2float(kwargs["4"])
@@ -321,20 +340,6 @@ def register_slycat_plugin(context):
         # load time points and data from database
         time_points = slycat.web.server.get_model_arrayset_data(
             database, model, "dac-time-points", "%s/0/..." % database_ind)[0]
-
-        # get desired rows of variable data from database (one at a time)
-        # var_data = []
-        # num_rows = len(rows)
-        # for i in range(0, num_rows):
-        #     if i == 0:
-        #         first_slice = slycat.web.server.get_model_arrayset_data (
-        #             database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[0]))[0]
-        #         num_cols = len(first_slice)
-        #         var_data = numpy.zeros((num_rows, num_cols))
-        #         var_data[0,:] = first_slice
-        #     else:
-        #         var_data[i,:] = slycat.web.server.get_model_arrayset_data (
-        #             database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[i]))[0]
 
         # get desired rows of variable data from database (all at once)
         num_rows = len(rows)
@@ -384,7 +389,7 @@ def register_slycat_plugin(context):
 
         # compute step size for subsample
         num_samples = len(range_inds)
-        subsample_stepsize = int(numpy.ceil(float(num_samples) / float(num_subsample)))
+        subsample_stepsize = max(1, int(numpy.ceil(float(num_samples) / num_subsample)))
         sub_inds = range_inds[0::subsample_stepsize]
 
         # add in last index, if not already present
@@ -713,11 +718,11 @@ def register_slycat_plugin(context):
             for i in range(len(metadata)):
                 meta_column_names.append(metadata[i]["name"])
 
-            # add column for model origin
-            meta_column_names.append("From Model")
+            # keep track of model origin
+            from_model = []
 
             # merge tables into new table
-            num_cols = len(meta_column_names) - 1
+            num_cols = len(meta_column_names)
             num_models = len(models_selected)
             num_rows_per_model = []
             meta_rows = []
@@ -727,6 +732,14 @@ def register_slycat_plugin(context):
                 meta_table = meta_columns = slycat.web.server.get_model_arrayset_data(database,
                                 models_selected[i], "dac-datapoints-meta", "0/.../...")
 
+                # check for existing model origin data
+                model_origin = []
+                if 'artifact:dac-model-origin' in models_selected[i]:
+
+                    # load model origin data
+                    model_origin = slycat.web.server.get_model_parameter(
+                        database, models_selected[i], "dac-model-origin")
+
                 # convert to rows and append origin model
                 num_rows = len(meta_table[0])
                 num_rows_per_model.append(num_rows)
@@ -734,12 +747,21 @@ def register_slycat_plugin(context):
                     meta_row_j = []
                     for k in range(num_cols):
                         meta_row_j.append(meta_table[k][j])
-                    meta_row_j.append(model_names[i])
+
+                    # use existing model origin, if available
+                    if len(model_origin) > 0:
+                        from_model.append(model_origin[j])
+                    else:
+                        from_model.append(model_names[i])
+
                     meta_rows.append(meta_row_j)
 
+            # save model origin column
+            slycat.web.server.put_model_parameter(database, model, "dac-model-origin", from_model)
+
             parse_error_log.append("Added new table column for model origin.")
-            parse_error_log.append("Duplicate time series in different models will be duplicated in table,")
-            parse_error_log.append("and will be plotted over each other in scatter plot and waveform plots.")
+            parse_error_log.append("Duplicate time series in different models will be duplicated in table, and")
+            parse_error_log.append("will be plotted on top of each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 53.0])
@@ -879,7 +901,7 @@ def register_slycat_plugin(context):
 
         # convert number of rows per model into cumulative index
         models_row_index = list(numpy.cumsum(num_rows_per_model))
-        num_rows = models_row_index.pop()
+        num_rows = int(models_row_index.pop())
         models_row_index.insert(0,0)
 
         # merge existing headers into unique list

@@ -9,3 +9,5 @@ configparser
 future
 routes
 scipy
+npTDMS
+pandas

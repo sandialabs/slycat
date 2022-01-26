@@ -78,8 +78,7 @@ htmlcov/*
 
 data/master_test.csv
 
-# Alex adding to handle react
-# dependencies
+# Node dependencies
 /node_modules
 
 # testing
@@ -89,7 +88,6 @@ data/master_test.csv
 /build
 
 # misc
-.DS_Store
 .env.local
 .env.development.local
 .env.test.local
@@ -98,3 +96,83 @@ data/master_test.csv
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Data file types (to prevent accidentally committing data files)
+*.avi
+*.bmp
+*.cdb
+*.cir
+*.csf
+*.csv
+*.dac
+*.dat
+*.dist
+*.e
+*.eps
+*.exo
+*.gif
+# Don't ignore GIFs anywhere inside the docs/ directory
+!docs/**/*.gif
+# Don't ignore GIFs anywhere inside the web-server/img/ directory
+!web-server/img/*.gif
+*.gz
+*.i
+*.j2k
+*.jfif
+*.jif
+*.jp2
+*.jpeg
+*.jpg
+*.jpx
+*.links
+*.log
+*.meta
+*.mp4
+*.out
+*.pcd
+*.pdf
+# Don't ignore PDFs anywhere inside the docs/ directory
+!docs/**/*.pdf
+*.png
+# Don't ignore PNGs anywhere inside the docs/ directory
+!docs/**/*.png
+# Don't ignore PNGs anywhere inside the web-server/img/ directory
+!web-server/img/*.png
+*.prn
+*.ps
+*.rgb
+*.stl
+*.tec
+*.tex
+*.tif
+*.tiff
+*.time
+*.trajectories
+*.txt
+# Don't ignore TXTs anywhere inside the docs/ directory
+!docs/**/*.txt
+*.var
+*.vmrl
+*.vtk
+*.vtp
+*.x3d
+*.xcoords
+*.xls
+*.ycoords
+*.zip
+
+# Exodus extensions (to prevent accidentally committing data files)
+*.e
+*.exo
+*.exoII
+*.ex2
+*.ex2v2
+*.g
+*.gen
+*.par
+*.0
+*.00
+*.000
+*.0000
+*.00000
+*.000000

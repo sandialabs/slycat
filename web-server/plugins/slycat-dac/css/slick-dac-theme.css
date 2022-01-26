@@ -97,6 +97,10 @@
 	background-color: cornflowerblue;
 }
 
+.slick-row.selection-3 {
+    background-color: limegreen;
+}
+
 .slick-row.focus-selection {
     background-color: grey;
 }
@@ -108,6 +112,7 @@
 /* selected text is white (dial-a-cluster) */
 .slick-row.selection-1 .slick-cell,
 .slick-row.selection-2 .slick-cell,
+.slick-row.selection-3 .slick-cell,
 .slick-row.focus-selection .slick-cell {
 	color: ghostwhite;
 }

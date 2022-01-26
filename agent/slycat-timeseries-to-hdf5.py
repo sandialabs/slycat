@@ -237,7 +237,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
             arrayset = slycat.hdf5.start_arrayset(file)
             dimensions = [dict(name="row", end=data.shape[0])]
             attributes = [dict(name=name, type=type) for name, type in
-                          zip(t_column_names, t_column_types)[1:]]  # leaves out the index column
+                          list(zip(t_column_names, t_column_types))[1:]]  # leaves out the index column
             array = arrayset.start_array(0, dimensions, attributes)
             for attribute, column in enumerate(data.T[1:]):
                 array.set_data(attribute, slice(0, column.shape[0]), column)

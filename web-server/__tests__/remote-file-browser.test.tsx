@@ -92,8 +92,9 @@ describe("when we load the RemoteFileBrowser", () =>{
       onSelectParserCallBack={onSelectParser}
       />
     );
-    DefaultInstance = component.getInstance();
-    expect(DefaultInstance).toMatchSnapshot();
+    // this causes js heap fault
+    // DefaultInstance = component.getInstance();
+    expect(component).toMatchSnapshot();
   });
   
 });

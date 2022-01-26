@@ -467,6 +467,14 @@ def put_project_data_parameter(database, project_data, aid, value, input=False):
             project_data["input-artifacts"] = list(set(project_data["input-artifacts"] + [aid]))
         database.save(project_data)
 
+def get_project_data_parameter(database, project_data, param):
+    key = "%s" % param
+    if key not in project_data:
+        cherrypy.log.error("slycat.web.server.__init__.py get_project_data_parameter", "Unknown parameter: %s" % param)
+        raise KeyError("Unknown parameter: %s" % param)
+    return project_data[key]
+        
+
 def put_model_parameter(database, model, aid, value, input=False):
     with get_model_lock(model["_id"]):
         try:
@@ -498,7 +506,6 @@ def delete_model_parameter(database, model, aid):
         del model["artifact:%s" % aid]
         del model["artifact-types"][aid]
         database.save(model)
-
 
 def create_session(hostname, username, password):
     """Create a cached remote session for the given host.

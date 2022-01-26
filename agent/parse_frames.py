@@ -2,9 +2,8 @@
 # Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government 
 # retains certain rights in this software.
 #
-#
 # This is a Python command line script which decomposes a set
-# of movies into pairwsie distance matrices and trajectories
+# of movies into pairwise distance matrices and trajectories
 # for the VideoSwarm application.  The inputs to this script are
 # a .csv file containing meta data, a column number in the .csv file
 # (indexed from 1) indicating the movie file names to use for the
@@ -13,6 +12,7 @@
 #
 # S. Martin
 # 9/15/2017
+
 
 # input parser
 import argparse
@@ -240,7 +240,7 @@ for i in range(0, num_movies):
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
-    # check for at lesat two dots in frame file name
+    # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')
     if len(frame_split) < 3:
         log("[VS-LOG] Error: incorrect frame file name format.")
@@ -266,6 +266,11 @@ for i in range(0, num_movies):
         if len(file_split) < 3:
             continue
 
+        # only consider files with same extension
+        file_ext = file_split[-1]
+        if file_ext != frame_ext:
+            continue
+
         # get file root & frame num
         file_root = ".".join(file_split[0:-2])
         file_num = file_split[-2]
@@ -286,11 +291,18 @@ for i in range(0, num_movies):
         log("[VS-LOG] Error: inconsistent number of frames for video " + str(movie_files[i]))
         sys.exit()
 
-# read in an image file and get number of pixels
-frame = cv2.imread(all_frame_files[0][0])
+# try to read image
+try:
+    frame = cv2.imread(all_frame_files[0][0])
+except:
+    log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
+    sys.exit()
+
+# may succeed and be empty
 if frame is None:
     log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
     sys.exit()
+
 num_pixels = numpy.size(frame)
 
 # get duration of video based on number of frames and fps
@@ -315,7 +327,13 @@ for i in range(num_frames-1, -1, -1):
     for j in range(0, num_movies):
 
         # get frame i
-        frame_i = cv2.imread(all_frame_files[j][i])
+        try:
+            frame_i = cv2.imread(all_frame_files[j][i])
+        except:
+            log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
+            sys.exit()
+
+        # check for empty image file
         if frame_i is None:
             log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
             sys.exit()

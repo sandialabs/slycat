@@ -26,14 +26,10 @@ ratings:
   - "**.py"
   - "**.rb"
 exclude_paths:
-- features/
-- Sample-Images/**/*
 - artwork/**/*
 - data/**/*
 - design/**/*
 - docs/**/*
-- end-to-end-tests/**/*
-- munin-plugins/**/*
 - open-source-docker/**/*
 - travis-ci/**/*
 - ubuntu/**/*

@@ -47,7 +47,7 @@ import slycat.web.server.database
 import slycat.web.server.streaming
 import slycat.web.server
 
-
+            
 def cache_object(pid, key, content_type, content):
     cherrypy.log.error("cache_object %s %s %s" % (pid, key, content_type))
     database = slycat.web.server.database.couchdb.connect()
@@ -402,7 +402,9 @@ class Session(object):
         cherrypy.log.error("writing msg: %s" % json.dumps(payload))
         stdin.write("%s\n" % json.dumps(payload))
         stdin.flush()
-        response = json.loads(stdout.readline())
+        raw_response = stdout.readline()
+        cherrypy.log.error("reading msg: %s" % raw_response)
+        response = json.loads(raw_response)
         cherrypy.log.error("response msg: %s" % response)
         if not response["ok"]:
             cherrypy.response.headers["x-slycat-message"] = response["message"]
@@ -689,13 +691,14 @@ class Session(object):
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
             try:
+                cherrypy.log.error(json.dumps({"action": "get-file", "path": path}))
                 stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
                 stdin.flush()
             except socket.error as e:
                 delete_session(self._sid)
                 raise socket.error('Socket is closed')
-            metadata = json.loads(stdout.readline())
-
+            value = stdout.readline()
+            metadata = json.loads(value)
             if metadata["message"] == "Path must be absolute.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
                     self.hostname, path)
@@ -746,9 +749,8 @@ class Session(object):
                                         " appropriate permissions on all the parent directories." % (
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
-
             content_type = metadata["content-type"]
-            content = stdout.read(metadata["size"])
+            content = base64.b64decode(metadata["content"])
 
             if cache == "project":
                 cache_object(project, key, content_type, content)
@@ -772,7 +774,6 @@ class Session(object):
 
             if cache == "project":
                 cache_object(project, key, content_type, content)
-
             cherrypy.response.headers["content-type"] = content_type
             return content
 
