@@ -126,7 +126,7 @@ const mapStateToProps = (state) => {
 
   let threeDColorBy;
   if (state.three_d_colorvars) {
-    threeDColorBy = state.three_d_colorvars[state.currentFrame.uid];
+    threeDColorBy = state.three_d_colorvars[state.currentFrame.uid] ? state.three_d_colorvars[state.currentFrame.uid] : ':';
   }
 
   return {
