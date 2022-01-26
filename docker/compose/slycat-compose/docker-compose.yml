@@ -30,38 +30,40 @@ services:
     restart: always
 
   slycat-client:
-      build:
-        context: .
-        dockerfile: ./slycat-client/DockerFile
-      working_dir: /usr/src/app/slycat
-      command:
-        - bash
-        - -c
-        - | 
-          NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
-          && npm run dev
-      ports:
-        - 9000:9000
-      networks:
-        - sly-net
-      volumes:
-        - ../../../:/usr/src/app/slycat
+    build:
+      context: .
+      dockerfile: ./slycat-client/DockerFile
+    working_dir: /usr/src/app/slycat
+    command:
+      - bash
+      - -c
+      - | 
+        NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
+        && npm run dev
+    ports:
+      - 9000:9000
+    networks:
+      - sly-net
+    volumes:
+      - ../../../:/usr/src/app/slycat
+    restart: always
 
   # http://host_os_ip/haproxy?stats  usr:admin, password:admin
   haproxy:
-      build:
-        context: .
-        dockerfile: ./haproxy/DockerFile
-      depends_on:
-        - "slycat-web-server"
-      ports:
-        - 80:80
-        - 443:443
-      expose:
-        - 80
-        - 443
-      networks:
-        - sly-net
+    build:
+      context: .
+      dockerfile: ./haproxy/DockerFile
+    depends_on:
+      - "slycat-web-server"
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 80
+      - 443
+    networks:
+      - sly-net
+    restart: always
 
   couchdb:
     image: couchdb
@@ -78,19 +80,22 @@ services:
       - couchdb-data-volume:/usr/local/var/lib/couchdb
 
   sshd:
-      build:
-        context: .
-        dockerfile: ./sshd/DockerFile
-      ports:
-        - "2222:22"
-      expose:
-        - 22
-      #          user:password:uid:gid
-      command: slycat:slycat:1001:1001
-      networks:
-        - sly-net
+    build:
+      context: .
+      dockerfile: ./sshd/DockerFile
+    ports:
+      - "2222:22"
+    expose:
+      - 22
+    #          user:password:uid:gid
+    command: slycat:slycat:1001:1001
+    networks:
+      - sly-net
+    restart: always
+
 networks:
   sly-net:
+
 volumes:
   web-data-store-volume:
   couchdb-data-volume:
