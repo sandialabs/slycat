@@ -93,7 +93,7 @@
       "label": "Apply Template"
     },
     {
-      "action": "edit",
+      "action": "info",
       "context": "model",
       "page": "reset-model-ui.html",
       "js": "reset-model-ui.js",
