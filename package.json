@@ -55,7 +55,7 @@
     "redux-thunk": "2.3.0",
     "slickgrid": "2.4.38",
     "stream-browserify": "3.0.0",
-    "three": "0.130.1",
+    "three": "0.137.0",
     "three-stl-loader": "1.0.6",
     "three-trackballcontrols": "0.9.0",
     "urijs": "1.19.7",
