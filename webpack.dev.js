@@ -6,26 +6,20 @@ module.exports = merge(common, {
   mode: 'development',
   devtool: 'eval-source-map',
   devServer: {
-    watchOptions: {
-      poll: true,
-      ignored: /node_modules/
+    devMiddleware: {
+      publicPath: '/',
+      index: 'slycat_projects.html',
     },
     // Only compiles on refresh, not on file change. But does not work, complains of running webpack twice.
     // lazy: true,
 
     // Disable live reloading. Useful when trying to run two branches side by side.
     // inline: false,
-
-    // Where non-webpack generated files are located on the filesystem.
-    // contentBase: [path.join(__dirname, 'web-server/plugins/slycat-project-wizards'), path.join(__dirname, 'web-server/plugins/slycat-model-wizards')],
     
-    // Public URL of served files. Commended out because we want them available at the root URL.
-    publicPath: '/',
     // compress: true,
     host: '0.0.0.0',
     port: 9000,
-    https: true,
-    index: 'slycat_projects.html',
+    server: 'https',
     proxy: {
       '/api': {
         target: 'https://haproxy:443',

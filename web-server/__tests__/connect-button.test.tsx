@@ -6,7 +6,7 @@ interface GlobalAny extends NodeJS.Global {
   fetch: any
 }
 function flushPromises(): any {
-  return new Promise(resolve => setImmediate(resolve));
+  return new Promise(resolve => setTimeout(resolve, 0));
 }
 const globalAny:GlobalAny = global;
 describe('when loading a nav bar',() =>{ 
