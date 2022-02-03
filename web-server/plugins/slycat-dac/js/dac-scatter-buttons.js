@@ -53,10 +53,14 @@ var num_metadata_cols = null;
 var num_origin_col = null;
 var model_origin = {};
 
+// use PCA components
+var use_PCA_comps = false;
+
 module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_flag, 
                          init_fisher_order, init_fisher_pos, init_diff_desired_state,
                          VAR_INCLUDE_COLUMNS, datapoints_meta, meta_include_columns, data_table,
-                         editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME)
+                         editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME,
+                         init_use_PCA_comps)
 {
 
     // set up selection buttons (1-2-3 subset zoom)
@@ -113,6 +117,9 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
         diff_button_used = true;
     }
     diff_desired_state = init_diff_desired_state;
+
+    // use PCA components
+    use_PCA_comps = init_use_PCA_comps;
 
     // update difference buttons
     if (diff_button_used) {
@@ -334,7 +341,8 @@ var diff_button = function()
 		command: "compute_fisher",
 		parameters: {selection: sel,
                      max_selection: max_num_plots,
-					 include_columns: var_include_columns},
+					 include_columns: var_include_columns,
+                     use_PCA_comps: use_PCA_comps},
 		success: function (result)
 			{
 

@@ -29,8 +29,8 @@ import slycat.web.server
 # landmarks is a list of integer indices (1 based) for landmarks
 def init_upload_model (database, model, dac_error, parse_error_log, meta_column_names, meta_rows,
                        meta_var_col_names, meta_vars, variable, time_steps, var_dist, proj=None,
-                       landmarks=None):
-
+                       landmarks=None, use_coordinates=False):
+    
     # convert from meta data from row-oriented to column-oriented data,
     # and convert to numeric columns where possible.
     meta_column_types = ["string" for name in meta_column_names]
@@ -64,10 +64,12 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     num_vars = len(meta_vars)
 
     # next compute initial MDS coordinates
-    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, landmarks=landmarks)
+    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, 
+        landmarks=landmarks, use_coordinates=use_coordinates)
 
     # finally compute alpha cluster values
-    alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types, landmarks=landmarks)
+    alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types, 
+        landmarks=landmarks, use_coordinates=use_coordinates)
 
     dac_error.log_dac_msg("Pushing data to database.")
 
@@ -171,6 +173,10 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
         # upload as slycat array
         slycat.web.server.put_model_array(database, model, "dac-landmarks", 0, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, "dac-landmarks", "0/0/...", [landmarks])
+
+    # store PCA use on server
+    if use_coordinates == True:
+        slycat.web.server.put_model_parameter(database, model, "dac-use-PCA-comps", use_coordinates)
 
     # create distance matrices on server
     slycat.web.server.put_model_arrayset(database, model, "dac-var-dist")

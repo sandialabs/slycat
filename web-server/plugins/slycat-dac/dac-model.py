@@ -20,6 +20,7 @@ def register_slycat_plugin(context):
     # for computations/array manipulations
     import numpy
     from scipy import spatial
+    from sklearn.decomposition import PCA
 
     # for model combination via threads
     import threading
@@ -28,6 +29,8 @@ def register_slycat_plugin(context):
     # for profiling
     import time
     from datetime import timedelta
+
+    import cherrypy
 
     def finish(database, model):
         slycat.web.server.update_model(database, model,
@@ -81,8 +84,17 @@ def register_slycat_plugin(context):
             landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-landmarks", "0/0/..."))[0]
 
+        # get use PCA components
+        use_PCA_comps = False
+        if "artifact:dac-use-PCA-comps" in model:
+
+            # load PCA comps flag
+            use_PCA_comps = slycat.web.server.get_model_parameter(
+                database, model, "dac-use-PCA-comps")
+
         # compute initial MDS coordinates
-        mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, landmarks=landmarks)
+        mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, 
+            landmarks=landmarks, use_coordinates=use_PCA_comps)
 
         # compute alpha cluster parameters
         # --------------------------------
@@ -104,7 +116,7 @@ def register_slycat_plugin(context):
 
         # compute alpha cluster values for NNLS cluster button
         alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist, meta_columns, 
-            meta_column_types, landmarks=landmarks)
+            meta_column_types, landmarks=landmarks, use_coordinates=use_PCA_comps)
 
         # re-size alpha values to actual number of variables (not just number of included variables)
         alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
@@ -163,6 +175,9 @@ def register_slycat_plugin(context):
         # get column to update
         update_col = int(kwargs["update_col"])
 
+        # get use PCA comps
+        use_PCA_comps = kwargs["use_PCA_comps"]
+
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
         num_vars = len(meta_dist)
@@ -176,7 +191,7 @@ def register_slycat_plugin(context):
 
         # compute alpha cluster values for NNLS cluster button
         alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist,
-                                                [editable_cols["data"][update_col]], ["string"])
+            [editable_cols["data"][update_col]], ["string"], use_coordinates=use_PCA_comps)
 
         # re-size alpha values to actual number of variables (not just number of included variables)
         alpha_cluster_mat = numpy.zeros((1, num_vars))
@@ -226,6 +241,9 @@ def register_slycat_plugin(context):
         # only use included variables
         include_columns = numpy.array(kwargs["include_columns"])
 
+        # use PCA components
+        use_PCA_comps = kwargs["use_PCA_comps"]
+
         # check for projection mask
         proj = numpy.ones(len(subset_mask))
         if "artifact:dac-proj-mask" in model:
@@ -254,7 +272,8 @@ def register_slycat_plugin(context):
 
         # compute new MDS coords (truncate coords for old models)
         mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns],
-                                        old_coords[:, 0:2], subset_mask, proj=proj, landmarks=landmarks)
+                                        old_coords[:, 0:2], subset_mask, proj=proj, 
+                                        landmarks=landmarks, use_coordinates=use_PCA_comps)
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords,
@@ -278,6 +297,9 @@ def register_slycat_plugin(context):
         selection = kwargs["selection"]
         selection_limit = kwargs["max_selection"]
         include_columns = numpy.array(kwargs["include_columns"])
+
+        # use PCA components
+        use_PCA_comps = kwargs["use_PCA_comps"]
 
         # get total selection, and indices into total selection
         # limited to first "max_selection" limit
@@ -323,33 +345,41 @@ def register_slycat_plugin(context):
             
             if i in include_columns:
 
-                # get landmark distance matrix
-                if landmarks is not None:
-                    landmark_rows = numpy.where(landmarks)[0]
-                    landmark_cols = numpy.arange(len(landmark_rows))
-                    D = dist_mats[i][landmark_rows[:,None], landmark_cols]
-                
-                # or full distance matrix if no landmarks
+                # if PCA components have been calculated,
+                # use first two components for coordinates
+                if use_PCA_comps:
+                    coord_mats.append(dist_mats[i][tot_selection,0:2])
+
+                # compute coordinates using landmarks
                 else:
-                    D = dist_mats[i]
 
-                # compute coordinates using landmark distance matrix
-                mds_landmark_coords, proj_inv = dac.cmdscale(numpy.sqrt(D))
-                
-                # project non-landmarks onto coordinates
-                if landmarks is not None:
+                    # get landmark distance matrix
+                    if landmarks is not None:
+                        landmark_rows = numpy.where(landmarks)[0]
+                        landmark_cols = numpy.arange(len(landmark_rows))
+                        D = dist_mats[i][landmark_rows[:,None], landmark_cols]
+                    
+                    # or full distance matrix if no landmarks
+                    else:
+                        D = dist_mats[i]
 
-                    # project selection
-                    mean_dist = numpy.mean(D, axis=1)
-                    proj_dist_mat = dist_mats[i][tot_selection[:, None], landmark_cols] ** 2
-                    proj_coords = (proj_dist_mat - mean_dist).dot(proj_inv)
+                    # compute coordinates using landmark distance matrix
+                    mds_landmark_coords, proj_inv = dac.cmdscale(numpy.sqrt(D))
+                    
+                    # project non-landmarks onto coordinates
+                    if landmarks is not None:
 
-                    # really only care about selection
-                    coord_mats.append(proj_coords)
+                        # project selection
+                        mean_dist = numpy.mean(D, axis=1)
+                        proj_dist_mat = dist_mats[i][tot_selection[:, None], landmark_cols] ** 2
+                        proj_coords = (proj_dist_mat - mean_dist).dot(proj_inv)
 
-                # if no landmarks coordinates include everything
-                else:
-                    coord_mats.append(mds_landmark_coords[tot_selection,:])
+                        # really only care about selection
+                        coord_mats.append(proj_coords)
+
+                    # if no landmarks coordinates include everything
+                    else:
+                        coord_mats.append(mds_landmark_coords[tot_selection,:])
             
             else:
                 coord_mats.append([])
@@ -1058,6 +1088,26 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 56.0])
 
+            # get PCA components
+            use_PCA_comps = False
+            if "artifact:dac-use-PCA-comps" in models_selected[0]:
+
+                # load PCA comps flag (this should always be true)
+                use_PCA_comps = slycat.web.server.get_model_parameter(
+                    database, models_selected[0], "dac-use-PCA-comps")
+
+                # get number of components
+                if use_PCA_comps:
+
+                    # get number of PCA components
+                    meta_dist = slycat.web.server.get_model_arrayset_metadata(database, 
+                        models_selected[0], "dac-var-dist")
+                    num_PCA_comps = meta_dist[0]["shape"][1]
+
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                "Progress", "Using " + str(num_PCA_comps) + 
+                                " PCA components in combined model.")
+
             # merge the variable data for all models selected
             # and compute distance matrices
             var_data = []
@@ -1068,6 +1118,7 @@ def register_slycat_plugin(context):
 
                     # get variable data for each variable
                     var_data_i = []
+                    var_dist_i = []
                     for j in range(num_models):
 
                         # get time points from database for model j
@@ -1084,64 +1135,84 @@ def register_slycat_plugin(context):
 
                         var_data_i.append(numpy.array(var_data_j)[:,int_inds_i])
 
+                        # create pairwise distance matrix, or use PCA comps
+                        if use_PCA_comps:
+                            pca = PCA(n_components=num_PCA_comps)
+                            try:
+                                dist_i = pca.fit_transform(var_data_i[-1])
+                            except ValueError:
+                                dac_error.quit_raise_exception(database, model, parse_error_log,
+                                    "Could not perform PCA, too few components.")
+
+                            # save each PCA projection separately
+                            var_dist_i.append(dist_i)
+
                     # concatenate and put into list of variables
                     var_data.append(numpy.concatenate(tuple(var_data_i)))
+                    
+                    # for PCA append distance matrices
+                    if use_PCA_comps:
+                        dist_i = numpy.concatenate(tuple(var_dist_i))
 
-                    # create pairwise distance matrix
-                    dist_i = spatial.distance.pdist(var_data[-1])
-                    var_dist.append(spatial.distance.squareform(dist_i))
+                    else:
+                        dist_i = spatial.distance.pdist(var_data[-1])
+                        dist_i = spatial.distance.squareform(dist_i)
+                    
+                    # save distance matrix/PCA projection
+                    var_dist.append(dist_i)
 
-            # get landmarks, check each model individually
+            # if not using PCA, get landmarks (potentially using every point)
             landmarks = None
+            if not use_PCA_comps:
 
-            # if projection model, use landmarks from origin model
-            if new_model_type == "proj":
+                # if projection, use landmarks from origin model
+                if new_model_type == "proj":
 
-                if "artifact:dac-landmarks" in models_selected[0]:
+                    if "artifact:dac-landmarks" in models_selected[0]:
 
-                    # load landmarks mask for origin model
-                    landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                        database, models_selected[0], "dac-landmarks", "0/0/..."))[0].astype(int)
-
-                    # convert landmarks to indices (1-based)
-                    landmarks = numpy.where(landmarks==1)[0] + 1
-
-                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                "Progress", 'Using landmarks from origin model.')
-
-            # otherwise look for landmarks in other models
-            else:
-
-                landmarks = []
-                model_ind = 0
-                for j in range(0,num_models):
-
-                    # if landmarks are present, use them
-                    if "artifact:dac-landmarks" in models_selected[j]:
-
-                        landmarks_j = numpy.array(slycat.web.server.get_model_arrayset_data(
-                            database, models_selected[j], "dac-landmarks", "0/0/..."))[0].astype(int)
+                        # load landmarks mask for origin model
+                        landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                            database, models_selected[0], "dac-landmarks", "0/0/..."))[0].astype(int)
 
                         # convert landmarks to indices (1-based)
-                        landmarks_j = numpy.where(landmarks_j==1)[0] + model_ind + 1
+                        landmarks = numpy.where(landmarks==1)[0] + 1
 
                         parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                            "Progress", "Using landmarks from model " + model_names[j] + ".")
+                                    "Progress", 'Using landmarks from origin model.')
 
-                    # otherwise use all model data points
-                    else:
-                        landmarks_j = numpy.arange(num_rows_per_model[j]) + model_ind + 1
+                # otherwise look for landmarks in other models
+                else:
 
-                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                            "Progress", "Using all data points as landmarks for " + model_names[j] + ".")
+                    landmarks = []
+                    model_ind = 0
+                    for j in range(0,num_models):
 
-                    landmarks += landmarks_j.tolist()
+                        # if landmarks are present, use them
+                        if "artifact:dac-landmarks" in models_selected[j]:
 
-                    # advance index into model data points
-                    model_ind += num_rows_per_model[j]
+                            landmarks_j = numpy.array(slycat.web.server.get_model_arrayset_data(
+                                database, models_selected[j], "dac-landmarks", "0/0/..."))[0].astype(int)
 
-                # convert landmarks back to numpy array
-                landmarks = numpy.asarray(landmarks)
+                            # convert landmarks to indices (1-based)
+                            landmarks_j = numpy.where(landmarks_j==1)[0] + model_ind + 1
+
+                            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                "Progress", "Using landmarks from model " + model_names[j] + ".")
+
+                        # otherwise use all model data points
+                        else:
+                            landmarks_j = numpy.arange(num_rows_per_model[j]) + model_ind + 1
+
+                            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                "Progress", "Using all data points as landmarks for " + model_names[j] + ".")
+
+                        landmarks += landmarks_j.tolist()
+
+                        # advance index into model data points
+                        model_ind += num_rows_per_model[j]
+
+                    # convert landmarks back to numpy array
+                    landmarks = numpy.asarray(landmarks)
 
             # remove empty time steps
             for i in reversed(range(num_vars)):
@@ -1185,7 +1256,8 @@ def register_slycat_plugin(context):
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist, proj=proj, landmarks=landmarks)
+                                    var_data, time_steps, var_dist, proj=proj, 
+                                    landmarks=landmarks, use_coordinates=use_PCA_comps)
 
             # done -- destroy the thread
             stop_event.set()
@@ -1326,7 +1398,7 @@ def register_slycat_plugin(context):
         return json.dumps(["Success", 1])
 
 
-    # thread that does actual work for combine by recomputing
+    # thread that does actual work for filtering by recomputing
     def filter_model_thread(database, model, origin_model, time_filter, stop_event):
 
         # put entire thread into a try-except block in order
@@ -1427,9 +1499,29 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Computing ...", 65.0])
 
-            # get landmarks, if available
+            # are we using PCA?
+            use_PCA_comps = False
             landmarks = None
-            if "artifact:dac-landmarks" in origin_model:
+            if "artifact:dac-use-PCA-comps" in origin_model:
+
+                # load PCA comps flag (this should always be true)
+                use_PCA_comps = slycat.web.server.get_model_parameter(
+                    database, origin_model, "dac-use-PCA-comps")
+
+                # get number of components
+                if use_PCA_comps:
+
+                    # get number of PCA components
+                    meta_dist = slycat.web.server.get_model_arrayset_metadata(database, 
+                        origin_model, "dac-var-dist")
+                    num_PCA_comps = meta_dist[0]["shape"][1]
+
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                "Progress", "Using " + str(num_PCA_comps) + 
+                                " PCA components in filtered model.")
+
+            # get landmarks, if available
+            elif "artifact:dac-landmarks" in origin_model:
 
                 # load landmarks mask
                 landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
@@ -1453,8 +1545,16 @@ def register_slycat_plugin(context):
                 # filter and put into list of variables
                 var_data.append(numpy.concatenate(tuple(var_data_i[:,time_step_inds[i]])))
 
-                # create pairwise distance matrix, using landmarks if available
-                if landmarks is None:
+                # create pairwise distance matrix, using PCA or landmarks if available
+                if use_PCA_comps:
+                    pca = PCA(n_components=num_PCA_comps)
+                    try:
+                        dist_i = pca.fit_transform(var_data[-1])
+                    except ValueError:
+                        dac_error.quit_raise_exception(database, model, parse_error_log,
+                            "Could not perform PCA, too few components.")
+
+                elif landmarks is None:
                     dist_i = spatial.distance.squareform(spatial.distance.pdist(var_data[-1]))
 
                 else:
@@ -1464,7 +1564,7 @@ def register_slycat_plugin(context):
 
             # final update of error log to reflect re-compute distance matrices
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                              "Progress", 'Recomputed distance matrices using time filters.')
+                              "Progress", 'Recomputed model using time filters.')
 
             # summarize results for user
             parse_error_log.insert(0, "Summary:")
@@ -1483,7 +1583,8 @@ def register_slycat_plugin(context):
             push.init_upload_model(database, model, dac_error, parse_error_log,
                                    meta_column_names, meta_rows,
                                    meta_var_col_names, meta_vars,
-                                   var_data, time_steps, var_dist, landmarks=landmarks)
+                                   var_data, time_steps, var_dist, 
+                                   landmarks=landmarks, use_coordinates=use_PCA_comps)
 
             # done -- destroy the thread
             stop_event.set()

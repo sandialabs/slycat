@@ -56,6 +56,7 @@ import {
   setHiddenSimulations,
   setManuallyHiddenSimulations,
   setSelectedSimulations,
+  setUserRole,
 } from './actions';
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -488,6 +489,14 @@ $(document).ready(function() {
           selected_point_size = store.getState().selected_point_size;
           selected_border_size = store.getState().selected_border_size;
           open_images = store.getState().open_media;
+
+          // Setting the user's role in redux state
+          // Get the slycat-navbar knockout component since it already calculates the user's role
+          let navbar = ko.contextFor(document.getElementById("slycat-navbar-test").children[0]).$component;
+          // Get the role from slycat-navbar component
+          const relation = navbar.relation();
+          // Save it to redux state
+          window.store.dispatch(setUserRole(relation));
 
           // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
           filter_manager.set_bookmark(bookmark);

@@ -70,7 +70,7 @@ function constructor(params)
     component.suffix_attributes = mapping.fromJS([]);
 
     // dac-generic format is selected by default
-    component.dac_format = ko.observable("dac-gen");
+    component.dac_format = ko.observable("tdms");
     component.dac_tdms_zip = ko.observable("false");
 
     // parameters for testing PTS ingestion
@@ -81,6 +81,14 @@ function constructor(params)
     // (mathematical minimum number of landmarks is 3)
     var NUM_LANDMARKS = 200
     component.num_landmarks = ko.observable(NUM_LANDMARKS);
+
+    // number of PCA components
+    var NUM_COMPS = 10
+    component.num_PCA_comps = ko.observable(NUM_COMPS);
+
+    // use coordinates only (no landmarks)
+    var CALC_TYPE = 'PCA';
+    component.dac_calc_type = ko.observable(CALC_TYPE);
 
     // TDMS defaults
     var MIN_TIME_STEPS = 10;
@@ -275,6 +283,7 @@ function constructor(params)
         var csv_parm = Math.round(Number(component.csv_min_size()));
         var dig_parm = Math.round(Number(component.min_num_dig()));
         var num_landmarks = parseInt(component.num_landmarks());
+        var num_PCA_comps = parseInt(component.num_PCA_comps());
 
         // check for input parameter errors
         var no_errors = true;
@@ -300,16 +309,42 @@ function constructor(params)
             $("#dac-min-dig").removeClass("is-invalid");
         }
 
-        if (!(num_landmarks >= 3 || num_landmarks == 0)) {
+        if (component.dac_calc_type() == 'PCA') {
 
-            $("#dac-pts-landmarks").addClass("is-invalid");
-            no_errors = false;
+            if (!(num_PCA_comps >= 2)) {
+
+                $("#dac-pts-pca-comps").addClass("is-invalid");
+                no_errors = false;
+
+            } else {
+
+                // clear error
+                $("#dac-pts-pca-comps").removeClass("is-invalid");
+            }
 
         } else {
 
             // clear error
+            $("#dac-pts-pca-comps").removeClass("is-invalid");
+        }   
+
+        if (component.dac_calc_type() == 'landmark') {
+
+            if (!(num_landmarks >= 3)) {
+
+                $("#dac-pts-landmarks").addClass("is-invalid");
+                no_errors = false;
+
+            } else {
+
+                // clear error
+                $("#dac-pts-landmarks").removeClass("is-invalid");
+            }    
+        } else {
+
+            // clear error
             $("#dac-pts-landmarks").removeClass("is-invalid");
-        }
+        } 
 
         // check for file errors
         $("#dac-pts-file-error").hide();
@@ -562,6 +597,7 @@ function constructor(params)
         var channel_parm = Math.round(Number(component.min_num_channels()));
         var shots_parm = parseInt(component.min_num_shots());
         var num_landmarks = parseInt(component.num_landmarks());
+        var num_PCA_comps = parseInt(component.num_PCA_comps());
 
         // check for input parameter errors
         var no_errors = true;
@@ -605,11 +641,37 @@ function constructor(params)
 
         }
 
-        if (!(num_landmarks >= 3 || num_landmarks == 0)) {
+        if (component.dac_calc_type() == 'PCA') {
 
-            $("#dac-tdms-landmarks").addClass("is-invalid");
-            no_errors = false;
+            if (!(num_PCA_comps >= 2)) {
 
+                $("#dac-tdms-pca-comps").addClass("is-invalid");
+                no_errors = false;
+
+            } else {
+
+                // clear error
+                $("#dac-tdms-pca-comps").removeClass("is-invalid");
+            }
+
+        } else {
+
+            // clear error
+            $("#dac-tdms-pca-comps").removeClass("is-invalid");
+        }   
+
+        if (component.dac_calc_type() == 'landmark') {
+
+            if (!(num_landmarks >= 3)) {
+
+                $("#dac-tdms-landmarks").addClass("is-invalid");
+                no_errors = false;
+
+            } else {
+
+                // clear error
+                $("#dac-tdms-landmarks").removeClass("is-invalid");
+            }    
         } else {
 
             // clear error
@@ -636,6 +698,8 @@ function constructor(params)
         component.min_num_channels(MIN_NUM_CHANNELS);
         component.min_num_shots(MIN_NUM_SHOTS);
         component.num_landmarks(NUM_LANDMARKS);
+        component.num_PCA_comps(NUM_COMPS);
+        component.dac_calc_type(CALC_TYPE);
         component.dac_tdms_type(TDMS_TYPE);
         component.dac_union_type(UNION_TYPE);
         component.dac_infer_units(INFER_UNITS);
@@ -719,9 +783,26 @@ function constructor(params)
         var csv_parm = Math.round(Number(component.csv_min_size()));
         var dig_parm = Math.round(Number(component.min_num_dig()));
         var num_landmarks = parseInt(component.num_landmarks());
+        var num_PCA_comps = parseInt(component.num_PCA_comps());
+        
+        // MDS no landmarks is the default
+        var num_pca_landmarks = 0;
+        var use_coordinates = false;
 
+        // combine num_PCA_comps and num_landmarks
+        if (component.dac_calc_type() == 'PCA') {
+
+            num_pca_landmarks = num_PCA_comps;
+            use_coordinates = true;
+
+        } else if (component.dac_calc_type() == 'landmark') {
+
+            num_pca_landmarks = num_landmarks;
+        
+        }
+        
         // parameters for call to parser
-        var aids = [[csv_parm, dig_parm, num_landmarks], ["DAC"]];
+        var aids = [[csv_parm, dig_parm, num_pca_landmarks, use_coordinates], ["DAC"]];
         var parser = "dac-zip-file-parser";
         var progress = component.browser_zip_file.progress;
 
@@ -756,7 +837,7 @@ function constructor(params)
 
             // pass user parameters to server
             aids = [[component.min_time_steps(), component.min_num_channels(),
-                     component.min_num_shots(), component.num_landmarks(),
+                     component.min_num_shots(), num_pca_landmarks, use_coordinates,
                      component.dac_tdms_type(), component.dac_union_type(), 
                      Boolean(component.dac_infer_units()), 
                      Boolean(component.dac_infer_time()), include_suffix], ["DAC"]];
@@ -828,12 +909,29 @@ function constructor(params)
         var parser = "dac-tdms-file-parser";
         var progress = component.browser_tdms_files.progress;
 
-        // get file names
-        var filenames = filelist[""]
+        // get PCA/landmark parameters
+        var num_landmarks = parseInt(component.num_landmarks());
+        var num_PCA_comps = parseInt(component.num_PCA_comps());
+        
+        // MDS no landmarks is the default
+        var num_pca_landmarks = 0;
+        var use_coordinates = false;
+
+        // combine num_PCA_comps and num_landmarks
+        if (component.dac_calc_type() == 'PCA') {
+
+            num_pca_landmarks = num_PCA_comps;
+            use_coordinates = true;
+
+        } else if (component.dac_calc_type() == 'landmark') {
+
+            num_pca_landmarks = num_landmarks;
+        
+        }
 
         // pass user parameters to server
         var aids = [[component.min_time_steps(), component.min_num_channels(),
-                     component.min_num_shots(), component.num_landmarks(),
+                     component.min_num_shots(), num_pca_landmarks, use_coordinates,
                      component.dac_tdms_type(), component.dac_union_type(), 
                      Boolean(component.dac_infer_units()), 
                      Boolean(component.dac_infer_time()), tdms_file_list], ["DAC"]];

@@ -8,6 +8,7 @@
 import csv
 import numpy
 from scipy import spatial
+from sklearn.decomposition import PCA
 import slycat.web.server
 import slycat.email
 
@@ -22,6 +23,8 @@ import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
+
+import cherrypy
 
 # CSV file parser
 def parse_csv(file):
@@ -162,6 +165,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     CSV_MIN_SIZE = int(aids[0])
     MIN_NUM_DIG = int(aids[1])
     NUM_LANDMARKS = int(aids[2])
+    USE_COORDINATES = aids[3]
 
     # push progress for wizard polling to database
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
@@ -248,18 +252,18 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
     # re-order meta files to match csv files
     meta_files = [meta_files[i] for i in meta_order]
-
+    
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_pts_thread,
                               args=(database, model, zip_ref, csv_files,
                               meta_files, csv_no_ext, dac_error, parse_error_log,
-                              CSV_MIN_SIZE, MIN_NUM_DIG, NUM_LANDMARKS, stop_event))
+                              CSV_MIN_SIZE, MIN_NUM_DIG, NUM_LANDMARKS, USE_COORDINATES, stop_event))
     thread.start()
 
 
 def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_ext,
                       dac_error, parse_error_log, CSV_MIN_SIZE, MIN_NUM_DIG, num_landmarks, 
-                      stop_event):
+                      use_coordinates, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -562,7 +566,15 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         # no landmarks needed if fewer points
         landmarks = None
-        if num_points > num_landmarks and num_landmarks != 0:
+
+        # if we are using coordinates then we use PCA
+        if use_coordinates:
+
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Using PCA intermediates for coordinates with " + str(num_landmarks) + " components.")
+
+        # otherwise, we use landmarks
+        elif num_points > num_landmarks and num_landmarks != 0:
         
             # otherwise use random sampling to get landmarks
             # random_points = numpy.random.permutation(num_points) + 1
@@ -584,8 +596,17 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         num_vars = len(meta_vars)
         for i in range(num_vars):
 
+            # compute coordinates using PCA, sort in distance matrix
+            if use_coordinates:
+                pca = PCA(n_components=num_landmarks)
+                try:
+                    dist_i = pca.fit_transform(variable[i])
+                except ValueError:
+                    dac_error.quit_raise_exception(database, model, parse_error_log,
+                        "Could not perform PCA, try fewer components.")
+
             # create pairwise distance matrix using landmarks, if requested
-            if landmarks is None:
+            elif landmarks is None:
                 dist_i = spatial.distance.squareform(spatial.distance.pdist(variable[i]))
                 
             else:
@@ -593,6 +614,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             
             # save distance matrix
             var_dist.append(dist_i)
+            cherrypy.log.error("HELLO PTS")
+            cherrypy.log.error(str(dist_i))
 
         # show which digitizers were parsed
         for i in range(num_vars):
@@ -627,7 +650,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variable, time_steps, var_dist, landmarks=landmarks)
+                                    variable, time_steps, var_dist, 
+                                    landmarks=landmarks, use_coordinates=use_coordinates)
 
             # done -- destroy the thread
             stop_event.set()
@@ -643,4 +667,3 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
 def register_slycat_plugin(context):
     context.register_parser("dac-zip-file-parser", "PTS CSV/META .zip file", ["dac-zip-file"], parse_zip)
-

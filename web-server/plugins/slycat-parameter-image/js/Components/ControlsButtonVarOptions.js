@@ -93,8 +93,18 @@ class ControlsButtonVarOptions extends React.PureComponent {
   }
 
   closeModal = (e) => {
-    // Write variable aliases to database
+    // Write variable aliases to database if user's role is not 'reader'
     let self = this;
+
+    // Alert other components that axes ranges might have updated
+    this.props.element.trigger("update_axes_ranges");
+
+    // For users with role 'reader', just close the dialog and stop.
+    if(this.props.userRole == 'reader')
+    {
+      $('#' + self.modalId).modal('hide');
+      return;
+    }
 
     // If the model has project_data, write to it
     if(this.props.model.project_data !== undefined && this.props.model.project_data[0] !== undefined)
@@ -122,8 +132,6 @@ class ControlsButtonVarOptions extends React.PureComponent {
     {
       self.writeAliasesToModelArtifact();
     }
-    // Alert other components that axes ranges might have updated
-    this.props.element.trigger("update_axes_ranges");
   }
 
   writeAliasesToModelArtifact = () => {
@@ -314,12 +322,15 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       <h5 className='mb-0'>Variable Ranges</h5>
                     </a>
                   </li>
+                  {/* Show variable alias labels UI only to non-readers  */}
+                  {this.props.userRole != 'reader' &&
                   <li className='nav-item'>
                     <a className='nav-link' id='variable-alias-tab' data-toggle='tab' 
                       href='#variable-alias-tab-content' role='tab' aria-controls='variable-alias-tab-content' aria-selected='false'>
                       <h5 className='mb-0'>Variable Alias Labels</h5>
                     </a>
                   </li>
+                  }
                   <li className='nav-item'>
                    <a className='nav-link' id='scatterplot-options-tab' data-toggle='tab' 
                      href='#scatterplot-options-tab-content' role='tab' aria-controls='scatterplot-options-tab-content' aria-selected='false'>
@@ -464,6 +475,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     </div>
                     }
                   </div>
+                  {/* Show variable alias labels UI only to non-readers  */}
+                  {this.props.userRole != 'reader' &&
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
                       variableAliases={this.props.variable_aliases}
@@ -471,6 +484,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       onChange={this.props.changeVariableAliasLabels}
                     />
                   </div>
+                  }
                   <div className='tab-pane' id='scatterplot-options-tab-content' role='tabpanel' aria-labelledby='scatterplot-options-tab'>
                     <ScatterplotOptions />
                   </div>
@@ -556,6 +570,7 @@ const mapStateToProps = (state, ownProps) => {
     numericScatterplotVariables: numericScatterplotVariables,
     threeDVariables: threeDVariables,
     three_d_variable_user_ranges: state.three_d_variable_user_ranges,
+    userRole: state.derived.userRole,
   }
 }
 

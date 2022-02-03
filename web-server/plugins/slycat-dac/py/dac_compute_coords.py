@@ -26,6 +26,9 @@ import scipy.linalg
 import scipy.optimize
 
 from scipy import spatial
+from sklearn.decomposition import PCA
+
+import cherrypy
 
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D, full=False):
@@ -188,7 +191,8 @@ def compute_coords_subset (dist_mats, alpha_values, old_coords, subset, proj=Non
     return mds_coords
 
 
-def compute_coords (dist_mats, alpha_values, old_coords, subset, 
+# this is the newer, landmark behavior
+def compute_coords_landmark (dist_mats, alpha_values, old_coords, subset, 
                     proj=None, landmarks=None):
     """
     Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
@@ -209,10 +213,6 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
     
     OUTPUTS: Y is a numpy array of coordinates (n,2) and
     """
-
-    # landmarks test on weather data
-    # test_landmarks = np.concatenate((np.ones(50), np.zeros(50)))
-    # landmarks = test_landmarks
 
     # set landmark default, vector of all ones, indicating that
     # everything is a landmark and distance matrices are square
@@ -241,8 +241,7 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
     # remove projected points from landmarks
     landmarks = np.multiply(landmarks, proj)
 
-    # get sizes of projection, subset
-    num_proj = int(np.sum(proj))
+    # get size of subset
     num_subset = int(np.sum(subset))
 
     # always use landmarks to compute basic coordinates
@@ -288,6 +287,99 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
         # put projected coords into mds coords
         mds_coords[proj_inds,:] = proj_coords
     
+    return mds_coords
+
+
+# this is the newest, coordinate only behavior
+def compute_coords (dist_mats, alpha_values, old_coords, subset, 
+                    proj=None, landmarks=None, use_coordinates=False):
+    """
+    Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
+    classical multidimensional scaling.
+    
+    INPUTS: -- dist_mats is a list of numpy arrays containing square
+               matrices (n,n) representing distances,
+            -- alpha_values is a numpy array containing a vector of 
+               alpha values between 0 and 1.
+            -- old_coords is a numpy array containing the previous coordinates.
+            -- subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            -- proj is an optional vector similar to subset, defaults to vector
+               of all 1.
+            -- landmarks is an optional vector which specifies landmark indices to use
+               in the MDS calculation using mask. if the dist_mats are not square it 
+               is required and the matrices are assumed to be size (n,k), where k is 
+               the number of landmarks
+            -- use_coordinates is an optional Boolean flag indicating distance matrices
+               are in fact just coordinates
+    
+    OUTPUTS: Y is a numpy array of coordinates (n,2) and
+    """
+
+    # if distance matrices are actual distances, use previous behavior
+    if use_coordinates == False:
+        return compute_coords_landmark(dist_mats, alpha_values, old_coords, subset,
+                                       proj, landmarks)
+
+    # number of points/components
+    [num_tests, num_comps] = dist_mats[0].shape
+
+    # number of landmarks (all points)
+    landmarks = np.ones(num_tests)
+
+    # set projection default (vector of all ones -- everything in base calculation)
+    if proj is None:
+        proj = np.ones(num_tests)
+
+    # make sure projection is an array
+    else:
+        proj = np.asarray(proj)
+
+    # remove projected points from landmarks
+    landmarks = np.multiply(landmarks, proj)
+
+    # get size of subset
+    num_subset = int(np.sum(subset))
+
+    # always use landmarks to compute basic coordinates
+    num_landmarks = int(np.sum(landmarks))
+    full_dist_mat = np.zeros((num_landmarks, num_comps))
+
+    # compute alpha-sum of distance matrices on landmarks
+    landmark_rows = np.where(landmarks)[0]
+    landmark_cols = np.arange(num_comps)
+    for i in range(len(dist_mats)):
+        full_dist_mat = full_dist_mat + alpha_values[i] * \
+                        dist_mats[i][landmark_rows[:,None], landmark_cols]
+
+    # compute 2D coordinates using PCA
+    pca = PCA(n_components=2)
+    mds_landmark_coords = pca.fit_transform(full_dist_mat)
+
+    # if not in landmarks, assign old coordinates
+    mds_coords = old_coords
+    mds_coords[landmark_rows,:] = mds_landmark_coords
+
+    # now project onto landmarks
+    if num_landmarks < num_tests:
+
+        # get points to project (subset or proj except landmarks)
+        if num_subset == num_tests:
+            proj_inds = np.where(landmarks==0)[0]
+        else:
+            proj_inds = np.where(np.logical_and(landmarks==0, subset))[0]
+        
+        # compute distance squared for each point to be projected
+        num_proj_inds = len(proj_inds)
+        proj_dist_mat = np.zeros((num_proj_inds, num_comps))
+        for i in range(len(dist_mats)):
+            proj_dist_mat = proj_dist_mat + alpha_values[i] * \
+                                            dist_mats[i][proj_inds[:, None], landmark_cols]
+
+        proj_coords = pca.transform(proj_dist_mat)
+
+        # put projected coords into mds coords
+        mds_coords[proj_inds,:] = proj_coords
+
     return mds_coords
 
 
@@ -365,13 +457,14 @@ def scale_coords (coords, full_coords, subset, center):
     return new_coords
 
 
-def init_coords (var_dist, proj=None, landmarks=None):
+def init_coords (var_dist, proj=None, landmarks=None, use_coordinates=False):
     """
     Computes initial MDS coordinates assuming alpha values are all 1.0
 
     INPUTS: - var_dist is a list of distance matrices 
             - proj is a vector mask of projected points (optional)
             - landmarks is a vector of indices of landmark points (optional)
+            - use_coordinates indicates that var_dist actually contains PCA intermediates
 
     OUTPUTS: mds_coords are the initial scaled MDS coordinates
              full_mds_coords are the unscaled version of the same coordinates
@@ -382,10 +475,10 @@ def init_coords (var_dist, proj=None, landmarks=None):
     # assume initial alpha values are all one
     alpha_values = np.ones(num_vars)
 
-    # scale distance matrices by maximum, unless maximum is zero
+    # scale distance matrices (or coordinates) by maximum, unless maximum is zero
     for i in range(0, num_vars):
 
-        coords_scale = np.amax(var_dist[i])
+        coords_scale = np.amax(np.absolute(var_dist[i]))
         if coords_scale < np.finfo(float).eps:
             coords_scale = 1.0
 
@@ -395,7 +488,7 @@ def init_coords (var_dist, proj=None, landmarks=None):
     subset_mask = np.ones(var_dist[0].shape[0])
     old_coords = np.zeros((var_dist[0].shape[0], 2))
     full_mds_coords = compute_coords(var_dist, alpha_values, old_coords, subset_mask, 
-                                     proj=proj, landmarks=landmarks)
+                                     proj=proj, landmarks=landmarks, use_coordinates=use_coordinates)
 
     # scale using full coordinates
     subset_center = np.array([.5,.5])
@@ -404,7 +497,87 @@ def init_coords (var_dist, proj=None, landmarks=None):
     return mds_coords, full_mds_coords
 
 
-def compute_alpha_clusters (var_dist, meta_columns, meta_column_types, landmarks=None):
+def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
+    """
+    Computes the alpha cluster values using PCA
+
+    INPUTS: -- var_dist is a list of distance matrices
+            -- meta_columns is a list of meta data arrays
+            -- meta_column_types is a list of the meta data array types
+
+
+    OUTPUTS: alpha_cluster_mat is a matrix containing all the alpha
+             values for clustering each meta data array
+    """
+
+    # landmarks should always be None for this calculation
+
+    # get size of data
+    num_tests = var_dist[0].shape[0]
+    num_vars = len(var_dist)
+
+    # form a matrix using only first PCA components
+    X = np.asarray([list(var_dist[i][:,0]) for i in range(num_vars)]).transpose()
+
+    # for each quantitative meta variable, compute scaled property vector
+    num_meta_cols = len(meta_column_types)
+    prop_vecs = []
+    for i in range(num_meta_cols):
+        
+        # populate property vector data
+        if meta_column_types[i] == "float64":
+            
+            prop_vec = np.asarray(meta_columns[i])
+
+        elif meta_column_types[i] == "string":
+        
+            # compute property i values
+            # using strings (sorted alphabetically and assigned
+            # values starting at 0)
+
+            # sort potential values in string metadata
+            uniq_sorted_columns = sorted(set(meta_columns[i]))
+
+            # use alphabetical order to make a vector of numbers
+            meta_column_num = np.asarray([uniq_sorted_columns.index(str_meta) 
+                for str_meta in meta_columns[i]])
+
+            prop_vec = meta_column_num
+
+        # do nothing
+        else:
+            prop_vec = 0
+
+        # scale property vector data
+        prop_scale = np.amax(np.absolute(prop_vec))
+        if prop_scale < np.finfo(float).eps:
+            prop_scale = 1.0
+        prop_vec = prop_vec / prop_scale
+
+        # save property vector
+        prop_vecs.append(prop_vec)
+
+    # compute NNLS cluster button alpha values, if more than one data point
+    alpha_cluster_mat = np.zeros((num_meta_cols, num_vars))
+    if num_tests > 1:
+        for i in range(num_meta_cols):
+            if (meta_column_types[i] == "float64") or \
+               (meta_column_types[i] == "string"):
+
+                beta_i = scipy.optimize.nnls(X, prop_vecs[i])
+                alpha_i = np.sqrt(beta_i[0])
+
+                # again don't divide by zero
+                alpha_max_i = np.amax(alpha_i)
+                if alpha_max_i <= np.finfo(float).eps:
+                    alpha_max_i = 1
+                alpha_cluster_mat[i, :] = alpha_i / alpha_max_i
+
+    return alpha_cluster_mat
+
+
+def compute_alpha_clusters (var_dist, meta_columns, meta_column_types, 
+                            landmarks=None, use_coordinates=False):
     """
     Computes the alpha cluster values.
 
@@ -412,10 +585,15 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types, landmarks
             -- meta_columns is a list of meta data arrays
             -- meta_column_types is a list of the meta data array types
             -- landmarks is a mask indicating landmarks
+            -- use_coordinates to treat distance matrices as coordinates
 
     OUTPUTS: alpha_cluster_mat is a matrix containing all the alpha
              values for clustering each meta data array
     """
+
+    # if distance matrices are PCA components, use new behavior
+    if use_coordinates == True:
+        return compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types)
 
     # if landmarks are not given, assume everything is a landmark
     num_tests = var_dist[0].shape[0]
@@ -505,6 +683,7 @@ def compute_prop_dist_vec(prop_vec, vec_length):
         prop_dist_vec_max = 1.0
 
     return prop_dist_vec / prop_dist_vec_max
+
 
 # use max-min algorithm to choose landmarks
 def select_landmarks(num_points, num_landmarks, variable):

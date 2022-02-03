@@ -41,6 +41,7 @@ import {
   TOGGLE_SYNC_SCALING,
   TOGGLE_SYNC_THREE_D_COLORVAR,
   SET_SELECTED_SIMULATIONS,
+  SET_USER_ROLE,
 } from './actions';
 
 import { 
@@ -527,6 +528,14 @@ export default function ps_reducer(state = initialState, action) {
     case SET_SELECTED_SIMULATIONS:
       return Object.assign({}, state, {
         selected_simulations: action.simulations.slice(0)
+      })
+
+    case SET_USER_ROLE:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          userRole: action.role
+        }
       })
 
     default:

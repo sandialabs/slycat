@@ -79,6 +79,9 @@ var var_include_columns = null;
 // show/hide filtered points (mask)
 var filtered_selection = [];
 
+// use PCA components
+var use_PCA_comps = false;
+
 // initial setup: read in MDS coordinates & plot
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
@@ -86,7 +89,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	COLOR_BY_LOW, COLOR_BY_HIGH, COLORMAP,
 	OUTLINE_NO_SEL, OUTLINE_SEL, VAR_INCLUDE_COLUMNS, 
 	init_alpha_values, init_color_by_col, init_zoom_extent,
-	init_subset_center)
+	init_subset_center, init_use_PCA_comps)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -125,6 +128,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// initialize curr_color_by data
 	curr_color_by_col = init_color_by_col;
 	
+	// init use PCA comps
+	use_PCA_comps = init_use_PCA_comps;
+
 	$.when (request.get_array("dac-mds-coords", 0, mid)).then(
 		function (mds_data)
 		{
@@ -148,7 +154,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                              subset: selections.get_subset(),
                              subset_center: subset_center,
                              current_coords: mds_coords,
-                             include_columns: var_include_columns},
+                             include_columns: var_include_columns,
+							 use_PCA_comps: use_PCA_comps},
                 success: function (result)
                     {
                         // record new values in mds_coords
@@ -612,7 +619,8 @@ module.update = function (alpha_values)
 						subset: selections.get_subset(),
 						subset_center: subset_center,
 						current_coords: mds_coords,
-						include_columns: var_include_columns},
+						include_columns: var_include_columns,
+						use_PCA_comps: use_PCA_comps},
 			success: function (result)
 				{
 					// record new values in mds_coords

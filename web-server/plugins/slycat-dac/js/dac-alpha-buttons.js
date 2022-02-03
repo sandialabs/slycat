@@ -22,6 +22,9 @@ var alpha_clusters = null;
 // which columns to include
 var var_include_columns = null;
 
+// use PCA components
+var use_PCA_comps = false;
+
 // zero out all alpha sliders
 var zero_button_callback = function ()
 {
@@ -83,7 +86,7 @@ var cluster_button_callback = function ()
             mid: mid,
             type: "DAC",
             command: "update_alpha_clusters",
-            parameters: {update_col: color_by_col - alpha_clusters.length},
+            parameters: {update_col: color_by_col - alpha_clusters.length, use_PCA_comps: use_PCA_comps},
             success: function (result)
                 {
                     // fire alpha value change event with pre-computed alpha values for selected column
@@ -109,7 +112,7 @@ var cluster_button_callback = function ()
 
 }
 
-module.setup = function (num_sliders, INCLUDE_COLUMNS)
+module.setup = function (num_sliders, INCLUDE_COLUMNS, init_use_PCA_comps)
 {
 
 	// determine number of alpha sliders
@@ -117,6 +120,9 @@ module.setup = function (num_sliders, INCLUDE_COLUMNS)
 
 	// which columns to use
 	var_include_columns = INCLUDE_COLUMNS;
+
+	// use PCA comps
+	use_PCA_comps = init_use_PCA_comps;
 
 	// load up cluster alpha values
 	$.when (request.get_array("dac-alpha-clusters", 0, mid)).then(
