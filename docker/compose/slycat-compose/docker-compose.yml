@@ -30,52 +30,52 @@ services:
     restart: always
 
   slycat-client:
-      build:
-        context: .
-        dockerfile: ./slycat-client/DockerFile
-      working_dir: /usr/src/app/slycat
-      command:
-        - bash
-        - -c
-        - | 
-          NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
-          && npm run myslycat
-      # Expose ports. HOST:CONTAINER
-      # Alex exposing port 80 for myslycat.com. Not using ssl for simplicity.
-      ports:
-        - "443:443"
-      # Expose ports without publishing them to the host machine - they’ll only be accessible to linked services. Only the internal port can be specified.
-      # Alex disabling becuse we are not using 9000 and no need to only expose without publishing. Not sure why this was there in the first place.
-      # expose:
-      #   - "9000"
-      networks:
-        - sly-net
-      volumes:
-        - ../../../:/usr/src/app/slycat
-      restart: always
+    build:
+      context: .
+      dockerfile: ./slycat-client/DockerFile
+    working_dir: /usr/src/app/slycat
+    command:
+      - bash
+      - -c
+      - | 
+        NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
+        && npm run myslycat
+    # Expose ports. HOST:CONTAINER
+    # Alex exposing port 80 for myslycat.com. Not using ssl for simplicity.
+    ports:
+      - "443:443"
+    # Expose ports without publishing them to the host machine - they’ll only be accessible to linked services. Only the internal port can be specified.
+    # Alex disabling becuse we are not using 9000 and no need to only expose without publishing. Not sure why this was there in the first place.
+    # expose:
+    #   - "9000"
+    networks:
+      - sly-net
+    volumes:
+      - ../../../:/usr/src/app/slycat
+    restart: always
 
 
   # http://host_os_ip/haproxy?stats  usr:admin, password:admin
   haproxy:
-      build:
-        context: .
-        dockerfile: ./haproxy/DockerFile
-      depends_on:
-        - "slycat-web-server"
-      # # Alex disabling publishing haproxy ports since they are only used internally.
-      # ports:
-      #   - "80:80"
-        # - "443:443"
-        # - "8080:8080"
-      # Alex only internally exposing 443 since that's how the client connects to the api. 
-      # 80 is myslycat.com client port, so not exposing it internally at all.
-      expose:
-        - "8080"
-        # - "80"
-        # - "443"
-      networks:
-        - sly-net
-      restart: always
+    build:
+      context: .
+      dockerfile: ./haproxy/DockerFile
+    depends_on:
+      - "slycat-web-server"
+    # # Alex disabling publishing haproxy ports since they are only used internally.
+    # ports:
+    #   - "80:80"
+      # - "443:443"
+      # - "8080:8080"
+    # Alex only internally exposing 443 since that's how the client connects to the api. 
+    # 80 is myslycat.com client port, so not exposing it internally at all.
+    expose:
+      - "8080"
+      # - "80"
+      # - "443"
+    networks:
+      - sly-net
+    restart: always
 
   couchdb:
     image: couchdb
@@ -92,20 +92,21 @@ services:
       - couchdb-data-volume:/usr/local/var/lib/couchdb
 
   sshd:
-      build:
-        context: .
-        dockerfile: ./sshd/DockerFile
-      # Alex disabling publishing ssh ports externally on myslycat.com because bots are constantly trying to log in on them.
-      # ports:
-      #   - "2222:22"
-      # Alex intnerally exposing ssh port 22 for media retrieval and remote browsing.
-      expose:
-        - "22"
-      #          user:password:uid:gid
-      command: slycat:slycat:1001:1001
-      networks:
-        - sly-net
-      restart: always
+    build:
+      context: .
+      dockerfile: ./sshd/DockerFile
+    # Alex disabling publishing ssh ports externally on myslycat.com because bots are constantly trying to log in on them.
+    # ports:
+    #   - "2222:22"
+    # Alex intnerally exposing ssh port 22 for media retrieval and remote browsing.
+    expose:
+      - "22"
+    #          user:password:uid:gid
+    command: slycat:slycat:1001:1001
+    networks:
+      - sly-net
+    restart: always
+
 networks:
   sly-net:
 
