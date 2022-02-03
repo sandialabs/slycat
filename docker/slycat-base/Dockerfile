@@ -48,7 +48,7 @@ RUN su slycat && \
 #RUN cd /home/slycat/src;GIT_TRACE=1 GIT_CURL_VERBOSE=1 git clone https://github.com/sandialabs/slycat.git
     git clone https://github.com/sandialabs/slycat.git && \
     git clone https://github.com/sandialabs/dial-a-cluster.git && \
-    git clone https://github.com/sandialabs/slycat-data.git && \
+    git clone -b dev https://github.com/sandialabs/slycat-data.git && \
 # this is the dial-a-cluster plugin code, leaving out for the moment
 # back to root, install couchdb, complete system setup
     chmod -R 755 /home/slycat/src && \
