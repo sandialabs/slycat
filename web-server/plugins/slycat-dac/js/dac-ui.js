@@ -29,7 +29,7 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
-import "layout";
+import "layout-jquery3";
 
 import React from "react";
 import ReactDOM from "react-dom";

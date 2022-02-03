@@ -22,7 +22,7 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 // resizable required for CCA barplotGroupInputs
 import "jquery-ui/ui/widgets/resizable";
-import "layout";
+import "layout-jquery3";
 
 import "js/jquery.scrollintoview.min";
 

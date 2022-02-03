@@ -30,7 +30,7 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "jquery-ui/ui/widgets/dialog";
-import "layout";
+import "layout-jquery3";
 
 // Wait for document ready
 $(document).ready(function() {

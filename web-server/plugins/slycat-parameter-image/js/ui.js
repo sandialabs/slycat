@@ -34,7 +34,7 @@ import "jquery-ui/ui/widgets/draggable";
 // resizable required for stickies.core.js
 import "jquery-ui/ui/widgets/resizable";
 import "jquery-ui/ui/widget";
-import "layout";
+import "layout-jquery3";
 import "js/slycat-range-slider"; 
 import "./category-select";
 

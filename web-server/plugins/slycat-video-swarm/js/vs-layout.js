@@ -15,7 +15,7 @@ import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
-import "layout";
+import "layout-jquery3";
 
 import scatter_plot from "./vs-scatter-plot.js";
 
