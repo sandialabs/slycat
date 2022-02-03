@@ -56,6 +56,7 @@ import {
   setHiddenSimulations,
   setManuallyHiddenSimulations,
   setSelectedSimulations,
+  setUserRole,
 } from './actions';
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -488,6 +489,14 @@ $(document).ready(function() {
           selected_point_size = store.getState().selected_point_size;
           selected_border_size = store.getState().selected_border_size;
           open_images = store.getState().open_media;
+
+          // Setting the user's role in redux state
+          // Get the slycat-navbar knockout component since it already calculates the user's role
+          let navbar = ko.contextFor(document.getElementById("slycat-navbar-test").children[0]).$component;
+          // Get the role from slycat-navbar component
+          const relation = navbar.relation();
+          // Save it to redux state
+          window.store.dispatch(setUserRole(relation));
 
           // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
           filter_manager.set_bookmark(bookmark);
@@ -1153,18 +1162,26 @@ $(document).ready(function() {
             contentType: false,
             success : function(results)
             {
-              $("#table").table("update_data");
+              // Let's pass the edited variable to the table so it knows which column's
+              // ranked_indices to invalidate
+              $("#table").table("update_data", variable);
 
               if(variable == x_index)
                 update_scatterplot_x(variable);
               if(variable == y_index)
                 update_scatterplot_y(variable);
 
-              load_table_statistics([variable], function(){
+              load_table_statistics([variable], function(new_table_statistics){
                 if(variable == v_index)
                 {
                   update_v(variable);
                 }
+                // Update filter manager with new table statistics
+                filter_manager.set_table_statistics(new_table_statistics);
+                // Let filter manager know that a variable has been changed so it can possibly
+                // update categorical unique values or numeric min/max
+                // filter_manager.load_unique_categories();
+                filter_manager.notify_variable_value_edited(variable);
               });
             },
             error : function(jqXHR, textStatus, errorThrown)
@@ -1829,7 +1846,7 @@ $(document).ready(function() {
         var statistics = metadata.statistics;
         for(var i = 0; i != statistics.length; ++i)
           table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
-        callback();
+        callback(table_statistics);
       }
     });
   }

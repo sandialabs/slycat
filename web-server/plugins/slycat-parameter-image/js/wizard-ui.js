@@ -201,17 +201,23 @@ function constructor(params)
     console.log("onReauth");
   };
 
-  const setSmbAuthValues = function(hostname, username, password, share, session_exists) {
+  const setSmbAuthValues = function(hostname, username, password, share, session_exists, last_key) {
     component.remote.hostname(hostname)
     component.remote.username(username)
     component.remote.password(password)
     component.remote.share(share)
     component.remote.session_exists(session_exists)
+    //If the user hits enter key, try to connect
+    if(last_key === 'Enter') {
+      component.connectSMB();
+    }
   }
 
   component.select_type = function() {
     var type = component.ps_type();
-
+    component.remote.username(null)
+    component.remote.password(null)
+    component.remote.hostname(null)
     if (type === "local") {
       component.tab(1);
     } else if (type === "server") {
@@ -330,10 +336,10 @@ function constructor(params)
     else
     {
       client.post_remotes_smb_fetch({
-          user_name: component.remote.username(),
+          user_name: component.remote.username().trim(),
           password: component.remote.password(),
-          server: component.remote.hostname(),
-          share: component.remote.share()
+          server: component.remote.hostname().trim(),
+          share: component.remote.share().trim()
       }).then((response) => {
           console.log("authenticated.",response);
           if(response.ok){

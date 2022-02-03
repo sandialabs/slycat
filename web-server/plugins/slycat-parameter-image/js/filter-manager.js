@@ -53,6 +53,7 @@ function FilterManager(model_id, bookmarker, layout, input_columns, output_colum
 
   // Updates allFilters with variable labels if they exist
   self.update_variable_aliases = () => {
+    // console.debug(`filter-manager.js update_variable_aliases`);
     self.allFilters().forEach(function(filter){
       filter.name(self.get_variable_label(filter.index()));
     });
@@ -80,6 +81,7 @@ FilterManager.prototype.set_table_metadata = function(table_metadata) {
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
    but it makes these dependencies explicit and thus will be easier to decouple later. */
 FilterManager.prototype.set_table_statistics = function(table_statistics) {
+  // console.debug(`FilterManager.prototype.set_table_statistics to %o`, table_statistics);
   this.table_statistics = table_statistics;
 };
 
@@ -89,11 +91,126 @@ FilterManager.prototype.notify_controls_ready = function() {
   this.controls_ready = true;
 };
 
+FilterManager.prototype.notify_variable_value_edited = function(variable) {
+  // console.debug(`FilterManager.prototype.notify_variable_value_edited %o`, variable);
+
+  let self = this;
+  // Find the affected filter
+  let edited_filter = self.allFilters().find(filter => filter.index() == variable);
+  // console.log(`Found matching filter: %o`, edited_filter);
+  // For categorical filters, update unique categories 
+  if(edited_filter.type() == 'category') {
+    self.load_unique_categories(edited_filter);
+  }
+  else if(edited_filter.type() == 'numeric'){
+    // console.debug(`Numeric variable was edited, so update numeric filters accordingly.`);
+    self.update_numeric_filter(edited_filter);
+  }
+}
+
 FilterManager.prototype.notify_store_ready = function() {
   window.store.subscribe(this.update_variable_aliases);
 };
 
+/* Loads unique categories for categorical variable from table data.
+*/
+FilterManager.prototype.load_unique_categories = function(target_filter) {
+  var self = this;
+
+  $.ajax({
+    type: "GET",
+    url : api_root + "models/" + self.model_id + "/arraysets/data-table/metadata?unique=0/" + target_filter.index() + "/...",
+    filter: target_filter,
+    success : function(result) {
+      // Get the unique values from the response
+      let currentFilterCategories = this.filter.categories.removeAll();
+      // console.debug(`currentFilterCategories is %o`, currentFilterCategories);
+      let currentFilter = this.filter;
+
+      _(result.unique[0].values[0])
+        // Sort them
+        .sort()
+        // For each one...
+        .each(function(c) { 
+          // Push an object into the targetFilter.categories array (observable?)
+          
+          let matchingCategory = _.find(currentFilterCategories, function(element){ return element.value() == c; });
+          // console.debug(`matchingCategory is %o`, matchingCategory);
+          let selected = matchingCategory ? matchingCategory.selected() : true;
+
+          currentFilter.categories.push({
+            // With its value attribute set to the unique value
+            value: ko.observable(c), 
+            // And its selected attribute set to true (selected by default) or whatever was in the target_filter
+            selected: ko.observable(selected)
+          }); 
+        })
+        ;
+      // Bookmark once all unique values are set
+      self.bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
+    },
+    error: function(result) {
+    }
+  });
+}
+
+/* Updates numeric filter to be sure it's consistent with data's min and max.
+   This is needed in case someone edited the data after a filter was used and it changed
+   the min and max.
+*/
+FilterManager.prototype.update_numeric_filter = function(target_filter) {
+  var self = this;
+
+  const filter_table_stats = self.table_statistics[target_filter.index()];
+  const min = filter_table_stats.min;
+  const max = filter_table_stats.max;
+  // Set new min and max from stats
+  target_filter.min_stats(min);
+  target_filter.max_stats(max);
+  // Make sure min, low, max, and high are within stats ranges
+  // Move up min if it's below stats min
+  if(target_filter.min() < min)
+  {
+    target_filter.min(min);
+  }
+  // Move down min if it's above stats max
+  else if(target_filter.min() > max)
+  {
+    target_filter.min(max);
+  }
+  // Do the same for low
+  if(target_filter.low() < min)
+  {
+    target_filter.low(min);
+  }
+  else if(target_filter.low() > max)
+  {
+    target_filter.low(max);
+  }
+  // Repeat for max and high, in the opposite direction
+  // Move down max if it's above stats max
+  if(target_filter.max() > max)
+  {
+    target_filter.max(max);
+  }
+  // Move up max if it's below stats min
+  else if(target_filter.max() < min)
+  {
+    target_filter.max(min);
+  }
+  // Do the same for high
+  if(target_filter.high() > max)
+  {
+    target_filter.high(max);
+  }
+  else if(target_filter.high() < min)
+  {
+    target_filter.high(min);
+  }
+}
+
 FilterManager.prototype.build_sliders = function(controls_ready) {
+  // console.debug(`filter-manager.js build_sliders()`);
   var self = this;
 
   if(!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics 
@@ -184,9 +301,12 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
 
       // Can't trust that bookmark contains accurate variable labels, so 
       // updating them here based on what's in the redux store.
+      // console.debug(`Can't trust that bookmark contains accurate variable labels, so updating them here based on what's in the redux store.`);
       self.update_variable_aliases();
 
-      // Can't trust that bookmark contains accurate categorical/numeric type information, so must verify here
+      // Can't trust that bookmark contains accurate categorical/numeric type information, so must verify here.
+      // Also can't trust that bookmark contains accurate min/max numeric info since another user could have edited table data.
+      // Also can't trust that bookmark contains accurate categorical info since another user could have edited table data.
       for(var i=self.allFilters().length-1; i >= 0; i--) 
       {
         var filter = self.allFilters()[i];
@@ -203,6 +323,22 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
           self.allFilters.splice(i, 1);
           buildCategoryFilter(filter.index());
           self.foundMismatches = true;
+        }
+
+        // For categorical, only update categories if they have already been loaded (populated)
+        // since they are empty until a filter is activated. If they are empty, they will be loaded
+        // when user activates the filter, so they will be accurate as of then. 
+        // But if they are populated, we need to check against what's in the data in case it changed.
+        else if(filter.type() == 'category' && filter.categories().length > 0)
+        {
+          // console.log(`Need to verify that categories are correct in bookmark for filter %o.`, filter.name());
+          self.load_unique_categories(filter);
+        }
+        // For numeric, update filter min and max in case it changed in the data when someone edited values.
+        else if(filter.type() == 'numeric')
+        {
+          // console.log(`Updating min and max values for numeric filter %o.`, filter.name());
+          self.update_numeric_filter(filter);
         }
       }
 
@@ -287,31 +423,31 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
       });
 
       vm.activateFilter = function(item, event) {
+        // Called when a filter is activated. Not called when a model with an activated filter is loaded.
+        // console.debug(`vm.activateFilter function in filter-manager.js`);
+
+        // Open filter pane if it's not already open (no active filters)
         if (vm.activeFilters().length === 0) {
           self.layout.open("west");
         }
         var activateFilter = event.target.dataset.value;
         var filter, targetFilter, filterType, categories;
+
+        // Iterate over all filters, backwards
         for(var i = vm.allFilters().length-1; i >= 0; i--)
         {
           filter = vm.allFilters()[i];
+          // If we are on the current filter (the one being activated)
           if (filter.index() == Number(activateFilter)) {
             filterType = filter.type();
+            // Remove it from allFilters
             targetFilter = vm.allFilters.remove(filter)[0];
-            if(filterType == 'category' && targetFilter.categories().length == 0)
+            // Get all its categories if we haven't already done that
+            if(filterType == 'category' 
+               && targetFilter.categories().length == 0
+              )
             {
-              categories = ko.observableArray();
-              $.ajax({
-                type: "GET",
-                url : api_root + "models/" + vm.model_id() + "/arraysets/data-table/metadata?unique=0/" + targetFilter.index() + "/...",
-                success : function(result) {
-                   _(result.unique[0].values[0]).sort().each(function(c) { targetFilter.categories.push({value: ko.observable(c), selected: ko.observable(true)}); }).value(); // selected by default
-                  // Bookmark once all unique values are set
-                  self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
-                },
-                error: function(result) {
-                }
-              });
+              self.load_unique_categories(targetFilter);
             }
             // Move it to the end of the array
             vm.allFilters.push( targetFilter );
@@ -322,6 +458,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
         self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
       };
+
       vm.removeFilter = function(filter, event) {
         filter.active(false);
         if (vm.activeFilters().length == 0) {
@@ -329,6 +466,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         }
         self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
       };
+
       vm.toggleAutoWidth = function(filter, event) {
         if(filter.autowidth())
         {
@@ -340,6 +478,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         }
         self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
       };
+
       vm.toggleNull = function(filter, event) {
         if(filter.nulls())
         {
@@ -351,6 +490,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         }
         self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
       };
+
       vm.invertFilter = function(filter, event) {
         if(filter.type() === 'numeric')
         {
@@ -371,16 +511,19 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
           });
         }
       };
+
       vm.selectAll = function(filter, event) {
         _.each(filter.categories(), function(category){
             category.selected(true);
         });
       };
+
       vm.selectNone = function(filter, event) {
         _.each(filter.categories(), function(category){
             category.selected(false);
         });
       };
+
       vm.maxMinKeyPress = function(filter, event) {
         // console.log("maxMin has keypress. event.which is: " + event.which);
         // Want to capture enter key on keypress and prevent it from adding new lines.
@@ -404,6 +547,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         else
           return true;
       };
+
       vm.maxMinKeyUp = function(filter, event) {
         // console.log("maxMin has keyup. event.which is: " + event.which);
         // Detecting escape key here on keyup because it doesn't work reliably on keypress.
@@ -419,6 +563,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
           return true;
         }
       };
+
       vm.maxMinFocus = function(filter, event) {
         var textContent = "";
         if( $(event.target).hasClass("max-field") )
@@ -441,6 +586,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         event.target.textContent = textContent;
         // console.log("maxMin has focus.");
       };
+
       vm.maxMinBlur = function(filter, event) {
         var newValue = Number(event.target.textContent);
         var max_limit, min_limit;
@@ -501,6 +647,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         }
         // console.log("maxMin lost focus.");
       };
+
       vm.highLowBlur = function(filter, event) {
         var newValue = Number(event.target.textContent);
         var max_limit, min_limit;
@@ -547,14 +694,17 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         }
         // console.log("high or low lost focus.");
       };
+
       vm.maxMinMouseOver = function(filter, event) {
         $(event.target).toggleClass("hover", true);
         // console.log("maxMin mouse over.");
       };
+
       vm.maxMinMouseOut = function(filter, event) {
         $(event.target).toggleClass("hover", false);
         // console.log("maxMin mouse out.");
       };
+
       vm.maxMinReset = function(filter, event) {
         if( $(event.target).hasClass("max-reset") )
         {

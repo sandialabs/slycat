@@ -200,8 +200,9 @@ export default class SmbAuthentication extends React.Component<any,any> {
    */
   handleKeyDown = (e) => {
     if (e.key === 'Enter') {
+      let last_key = e.key;
       this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists, last_key);
     }
   }
 

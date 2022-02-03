@@ -110,7 +110,8 @@ with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5"), "w") as 
 
 # Convert each prn timeseries.
 def convert_timeseries(timeseries_index, eval_id):
-  timeseries_path = os.path.join(arguments.input_directory, "workdir.%s" % eval_id, arguments.timeseries_file)
+  timeseries_path = os.path.join(arguments.input_directory, arguments.timeseries_file)
+  timeseries_path = timeseries_path.replace("workdir.1", ("workdir.%s" % eval_id))
   with log_lock:
     log.info("Reading %s", timeseries_path)
   with open(timeseries_path, "r") as stream:

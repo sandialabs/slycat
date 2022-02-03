@@ -63,20 +63,22 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * @memberof LoadingPage
    */
   private updateProgress = (): void => {
-    client
-      .get_model_fetch(this.props.modelId)
-      .then((model: any) => {
-        if (model.hasOwnProperty("progress") && model.hasOwnProperty("state")) {
-          this.setState({ progressBarProgress: model.progress, modelState: model.state }, () => {
-            if (this.state.progressBarProgress === 100) {
-              window.location.reload(true);
-            }
-          });
-        }
-      })
-      .catch((err: any) => {
-        alert(`error retrieving the model ${err}`);
-      });
+    if(this.state.jobStatus != "FAILED") {
+      client
+        .get_model_fetch(this.props.modelId)
+        .then((model: any) => {
+          if (model.hasOwnProperty("progress") && model.hasOwnProperty("state")) {
+            this.setState({ progressBarProgress: model.progress, modelState: model.state }, () => {
+              if (this.state.progressBarProgress === 100) {
+                window.location.reload(true);
+              }
+            });
+          }
+        })
+        .catch((err: any) => {
+          alert(`error retrieving the model ${err}`);
+        });
+    }
   };
   /**
    * callback for the model that establishes connection to the remote server
@@ -161,6 +163,8 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           this.setState({ pullCalled: 1 }, () => this.pullHPCData());
         }
         break;
+      case "FAILED":
+        this.cancelJob();
       default:
         console.log("Unknown state");
         break;
@@ -183,7 +187,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           if (!this.state.sessionExists) {
             this.setState({ modelShow: true });
             ($(`#${this.state.modalId}`) as any).modal("show");
-          } else if (this.state.progressBarProgress < 50) {
+          } else if (this.state.progressBarProgress < 50 && this.state.jobStatus != "FAILED") {
             this.checkRemoteJob();
           }
         }

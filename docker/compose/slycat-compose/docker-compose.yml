@@ -108,6 +108,7 @@ services:
       restart: always
 networks:
   sly-net:
+
 volumes:
   web-data-store-volume:
   couchdb-data-volume:

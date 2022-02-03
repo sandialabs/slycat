@@ -40,7 +40,7 @@ export const SET_ACTIVE_FILTERS = 'SET_ACTIVE_FILTERS'
 export const TOGGLE_SYNC_SCALING = 'TOGGLE_SYNC_SCALING'
 export const TOGGLE_SYNC_THREE_D_COLORVAR = 'TOGGLE_SYNC_THREE_D_COLORVAR'
 export const SET_SELECTED_SIMULATIONS = 'SET_SELECTED_SIMULATIONS'
-
+export const SET_USER_ROLE = 'SET_USER_ROLE'
 
 export function changeFontSize(event) {
   return { 
@@ -301,4 +301,8 @@ export function setSelectedSimulations(simulations) {
     type: SET_SELECTED_SIMULATIONS,
     simulations,
   }
+}
+
+export function setUserRole(role) {
+  return { type: SET_USER_ROLE, role }
 }
