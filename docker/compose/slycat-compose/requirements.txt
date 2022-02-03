@@ -9,6 +9,7 @@ configparser
 future
 routes
 scipy
+sklearn
 npTDMS
 pandas
 pysmb

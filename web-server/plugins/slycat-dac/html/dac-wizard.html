@@ -28,11 +28,11 @@ S. Martin
     <div class="tab-content">
     <div data-bind="visible:tab() == 0">
         <div class="form-check" style="margin-left: 15px;">
-        <label>
-            <input type="radio" name="local-or-remote-radios" value="dac-gen" data-bind="checked: dac_format">
-            Dial-A-Cluster Generic Zip Format
-        </label>
-        </div>
+            <label>
+                <input type="radio" name="local-or-remote-radios" value="tdms" data-bind="checked: dac_format">
+                Switchtube TDMS Format
+            </label>
+            </div>
         <div class="form-check" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" value="pts" data-bind="checked: dac_format">
@@ -40,10 +40,10 @@ S. Martin
         </label>
         </div>
         <div class="form-check" style="margin-left: 15px;">
-        <label>
-            <input type="radio" name="local-or-remote-radios" value="tdms" data-bind="checked: dac_format">
-            Switchtube TDMS Format
-        </label>
+            <label>
+                <input type="radio" name="local-or-remote-radios" value="dac-gen" data-bind="checked: dac_format">
+                Dial-A-Cluster Generic Zip Format
+            </label>
         </div>
         <label id="dac-load-model-error" style="margin-top:20px; display:none" class="invalid-text small text-danger">
             Load model error.
@@ -111,15 +111,40 @@ S. Martin
         </div>
 
         <div style="margin-top: 20px; margin-bottom: 20px">
-            <label>Number of landmark points to use in coordinate calculations:
+            <label>Number of PCA components to use in coordinate calculations:
             <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Landmarks points are used for coodinate calculation in large models.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite.  Use a value of zero if you want to do use the full dataset for coordinate calculation."></i>
+            title="Number of PCA components to use as intermediates in coordinate calculations."></i>
             </label>
-            <input id="dac-pts-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks">
+            <input id="dac-pts-pca-comps" class="form-control" type="number" min="2" data-bind="value: num_PCA_comps, enable:dac_calc_type()=='PCA'">
              <div class="invalid-feedback">
-                 Three landmarks is the mathematical minimum for coordinate calculations (enter zero to use full dataset for calcutions).
+                 Minimum number of PCA components is 2.
              </div>
-          </div>
+        </div>
+
+        <div style="margin-top: 20px; margin-bottom: 20px">
+            <label>Number of landmarks to use in coordinate calculations:
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="Number of landmarks points to use in MDS calculation.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."></i>         
+            </label>
+            <input id="dac-pts-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks, enable:dac_calc_type()=='landmark'">
+             <div class="invalid-feedback">
+                 Minimum number of landmarks is 3.
+             </div>
+        </div>
+
+        <div style="margin-top: 20px">
+            <label>
+            Use
+            <input type="radio" name="dac-pts-calc-type" value="PCA" data-bind="checked: dac_calc_type">
+            PCA components,
+            <input type="radio" name="dac-pts-calc-type" value="MDS" data-bind="checked: dac_calc_type">
+            MDS, or
+            <input type="radio" name="dac-pts-calc-type" value="landmark" data-bind="checked: dac_calc_type">
+            landmarks for coordinate calculation.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                title="Use PCA components, MDS (traditional calculation) or MDS w/ landmarks for coordinate calculations."></i>
+            </label>
+        </div>
 
     </div>
 
@@ -192,16 +217,41 @@ S. Martin
             </div>
         </div>
 
-        <div style="margin-top: 20px; margin-bottom: 30px">
-            <label>Number of landmark points to use in coordinate calculations:
+        <div style="margin-top: 20px; margin-bottom: 20px">
+            <label>Number of PCA components to use in coordinate calculations:
             <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Landmarks points are used for coodinate calculation in large models.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite.  Use a value of zero if you want to do use the full dataset for coordinate calculation."></i>
+            title="Number of PCA components to use as intermediates in coordinate calculations."></i>
             </label>
-            <input id="dac-tdms-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks">
+            <input id="dac-tdms-pca-comps" class="form-control" type="number" min="2" data-bind="value: num_PCA_comps, enable:dac_calc_type()=='PCA'">
              <div class="invalid-feedback">
-                 Three landmarks is the mathematical minimum for coordinate calculations (enter zero to use full dataset for calcutions).
+                 Minimum number of PCA components is 2.
              </div>
-          </div>
+        </div>
+
+        <div style="margin-top: 20px; margin-bottom: 20px">
+            <label>Number of landmarks to use in coordinate calculations:
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="Number of landmarks points to use in MDS calculation.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."></i>         
+            </label>
+            <input id="dac-tdms-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks, enable:dac_calc_type()=='landmark'">
+             <div class="invalid-feedback">
+                 Minimum number of landmarks is 3.
+             </div>
+        </div>
+
+        <div style="margin-top: 20px; margin-bottom:20px">
+            <label>
+            Use
+            <input type="radio" name="dac-tdms-calc-type" value="PCA" data-bind="checked: dac_calc_type">
+            PCA components,
+            <input type="radio" name="dac-tdms-calc-type" value="MDS" data-bind="checked: dac_calc_type">
+            MDS, or
+            <input type="radio" name="dac-tdms-calc-type" value="landmark" data-bind="checked: dac_calc_type">
+            landmarks for coordinate calculation.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                title="Use PCA components, MDS (traditional calculation) or MDS w/ landmarks for coordinate calculations."></i>
+            </label>
+        </div>
 
         <div>
             <label>

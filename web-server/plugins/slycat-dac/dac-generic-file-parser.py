@@ -21,6 +21,9 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
+# for error logging
+import cherrypy
+
 # note this version assumes the first row is a header row, and keeps only the header
 # and data (called by the generic zip parser)
 def parse_table_file(file):
@@ -121,7 +124,7 @@ def parse_mat_file(file):
     # parse file using comma delimiter
     rows = [row for row in csv.reader(file.decode().splitlines(), delimiter=",", doublequote=True,
             escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
-
+    
     # check that we have a matrix
     num_rows = len(rows)
     num_cols = len(rows[0])
@@ -287,6 +290,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
     # look for one occurrence (only) of .dac file and var, dist, and time directories
     dac_file = ""
     landmarks_file = ""
+    pca_file = ""
     var_meta_file = ""
     var_files = []
     dist_files = []
@@ -307,6 +311,10 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
             # is it "landmarks.csv"?
             if zip_file == "landmarks.csv":
                 landmarks_file = zip_file
+
+            # is is "pca.csv"?
+            if zip_file == "pca.csv":
+                pca_file = zip_file
 
         # found a directory -- is it "var/"?
         elif head == "var":
@@ -395,7 +403,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
         # check var file names
         num_vars = len(meta_vars)
-        check_file_names(database, model, parse_error_log, dac_error,
+        check_file_names(database, model, dac_error, parse_error_log,
                         "var/variable_", ".var", num_vars, var_files,
                         "missing variable_*.var file(s).")
 
@@ -403,7 +411,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                                             "Checked DAC variable file names.")
 
         # check time file names
-        check_file_names(database, model, parse_error_log, dac_error,
+        check_file_names(database, model, dac_error, parse_error_log,
                          "time/variable_", ".time", num_vars, time_files,
                          "missing variable_*.time file(s).")
 
@@ -411,7 +419,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                                             "Checked DAC time file names.")
 
         # check dist file names
-        check_file_names(database, model, parse_error_log, dac_error,
+        check_file_names(database, model, dac_error, parse_error_log,
                          "dist/variable_", ".dist", num_vars, dist_files,
                          "missing variable_*.dist file(s).")
 
@@ -428,7 +436,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
     landmarks = None
     if landmarks_file != "":
 
-        # parse variables.meta file
+        # parse landmarks.csv file
         attr, dim, landmarks = parse_mat_file(zip_ref.read(landmarks_file))
 
     else:
@@ -436,11 +444,24 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
         parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
             "No landmarks.csv file found, using all data points.")
 
+    # load pca-comps file
+    pca_comps = None
+    if pca_file != "":
+
+        # parse pca.csv file
+        attr, dim, pca_comps = parse_mat_file(zip_ref.read(pca_file))
+
+    else:
+
+        parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
+            "No pca.csv file found, using MDS algorithm.")
+
     # now start thread to prevent timing out on large files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_gen_zip_thread,
                               args=(database, model, zip_ref, dac_error, parse_error_log,
-                              meta_var_col_names, meta_vars, landmarks, dac_file, stop_event))
+                              meta_var_col_names, meta_vars, landmarks, pca_comps, 
+                              dac_file, stop_event))
     thread.start()
 
 
@@ -463,7 +484,8 @@ def check_file_names (database, model, dac_error, parse_error_log,
 
 # gen zip parsing thread to prevent time outs by browser
 def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
-                         meta_var_col_names, meta_vars, landmarks, dac_file, stop_event):
+                         meta_var_col_names, meta_vars, landmarks, pca_comps,
+                         dac_file, stop_event):
 
     # put entire thread into a try-except block in order report errors
     try:
@@ -480,8 +502,27 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
         # number of data points
         num_datapoints = len(meta_rows)
 
+        # do pca check (pca over-rides landmarks)
+        use_coordinates=False
+        if pca_comps is not None:
+
+            num_pca_comps = int(numpy.round(pca_comps[0]))
+
+            # check that pca comps is at least two
+            if num_pca_comps < 2:
+                
+                dac_error.quit_raise_exception(database, model, parse_error_log,
+                            'Number of PCA components must be at least two.')
+
+            # set as number of landmarks
+            num_landmarks = num_pca_comps
+            use_coordinates = True
+
+            parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress", 
+                                    "Using " + str(num_pca_comps) + " PCA components.")
+
         # do landmark checks
-        if landmarks is not None:
+        elif landmarks is not None:
         
             num_landmarks = len(landmarks)
 
@@ -589,7 +630,8 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
         push.init_upload_model(database, model, dac_error, parse_error_log,
                                meta_column_names, meta_rows,
                                meta_var_col_names, meta_vars,
-                               variable, time_steps, var_dist, landmarks=landmarks)
+                               variable, time_steps, var_dist, 
+                               landmarks=landmarks, use_coordinates=use_coordinates)
 
         # done -- destroy the thread
         stop_event.set()

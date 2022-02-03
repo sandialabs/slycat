@@ -100,6 +100,9 @@ $(document).ready(function() {
     var model_origin = [];
     var num_origin_cols = 0;
 
+    // use PCA components
+    var use_PCA_comps = false;
+
     // model name (for downloading tables)
     var MODEL_NAME = "";
 
@@ -427,8 +430,8 @@ $(document).ready(function() {
                             bookmarker.updateState ({"dac-editable-cols-attributes": editable_columns["attributes"],
                                                      "dac-editable-cols-categories": editable_columns["categories"]});
 
-                            // continue to model
-                            launch_model();
+                            // setup PCA flag
+                            setup_PCA_comps();
 
 
                         },
@@ -438,8 +441,8 @@ $(document).ready(function() {
                             dialog.ajax_error('Server error: could not load editable column data.')
                             ("","","")
 
-                            // continue to model
-                            launch_model();
+                            // setup PCA flag
+                            setup_PCA_comps();
                         }
                     });
 
@@ -499,8 +502,8 @@ $(document).ready(function() {
 
                                         // initialize table with templated editable columns
 
-                                        // continue to model
-                                        launch_model();
+                                        // setup PCA flag
+                                        setup_PCA_comps();
 
                                     },
                                     error: function () {
@@ -513,8 +516,8 @@ $(document).ready(function() {
                                             categories: [],
                                             data: []};
 
-                                        // continue to model
-                                        launch_model();
+                                        // setup PCA flag
+                                        setup_PCA_comps();
 
                                     },
                                 })},
@@ -528,16 +531,16 @@ $(document).ready(function() {
                                         categories: [],
                                         data: []};
 
-                                    // continue to model
-                                    launch_model();
+                                    // setup PCA flag
+                                    setup_PCA_comps();
                                 });
 
                             } else {
 
                                 // initialize table with no editable columns
 
-                                // continue to model
-                                launch_model();
+                                // setup PCA flag
+                                setup_PCA_comps();
 
                             }
 
@@ -545,13 +548,34 @@ $(document).ready(function() {
 
                         // initialize table with no editable columns
 
-                        // continue to model
-                        launch_model();
+                        // setup PCA flag
+                        setup_PCA_comps();
                     }
                 }
             }
         });
 
+    }
+
+    // set up PCA flag
+    function setup_PCA_comps () {
+
+        // get model data
+        client.get_model(
+            {
+                mid: mid,
+                success: function (result)
+                {
+                    // check for PCA flag
+                    if ('artifact:dac-use-PCA-comps' in result)
+                    {
+                        use_PCA_comps = true;
+                    }
+
+                    // continue to model
+                    launch_model();
+                }        
+            });
     }
 
     // setup and launch model
@@ -917,7 +941,7 @@ $(document).ready(function() {
                     );
 
                     // set up the alpha buttons
-                    alpha_buttons.setup(num_vars, var_include_columns);
+                    alpha_buttons.setup(num_vars, var_include_columns, use_PCA_comps);
 
                     // set up the time series plots
                     plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
@@ -927,13 +951,13 @@ $(document).ready(function() {
                       init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
                       init_link_plots
                     );
-
+                    
                     // set up MDS scatter plot buttons
                     scatter_buttons.setup(SELECTION_COLOR, MAX_NUM_PLOTS, init_subset_flag, 
                       init_zoom_flag, init_fisher_order, init_fisher_pos, 
                       init_diff_desired_state, var_include_columns, data_table_meta[0], 
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
-                      init_color_by_sel, MAX_COLOR_NAME
+                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps
                     );
 
                     // set up the MDS scatter plot
@@ -956,7 +980,8 @@ $(document).ready(function() {
                       init_alpha_values, 
                       init_color_by_col, 
                       init_zoom_extent, 
-                      init_subset_center
+                      init_subset_center,
+                      use_PCA_comps
                     );
                         
                     // remove loading spinner

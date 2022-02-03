@@ -8,6 +8,9 @@
 # S. Martin
 # 11/12/2014
 
+# This code is out of date and untested, so it might not work.
+# 1/26/2022
+
 """Uploads comma-delimited files from a dial-a-cluster data directory
 to the Slycat Web Server."""
 

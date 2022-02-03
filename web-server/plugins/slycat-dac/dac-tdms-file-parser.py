@@ -8,6 +8,7 @@
 # computation and array manipulation
 import numpy
 from scipy import spatial
+from sklearn.decomposition import PCA
 
 # web server interaction
 import slycat.web.server
@@ -27,6 +28,8 @@ import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
+
+import cherrypy
 
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
@@ -561,8 +564,8 @@ def infer_channel_time_units (database, model, dac_error, parse_error_log, base_
 
 # construct DAC variables to match time steps
 def construct_variables (database, model, dac_error, parse_error_log, shot_data,
-                         num_landmarks, channel_names, channel_ind, shot_names, time_steps,
-                         start_progress, end_progress):
+                         num_landmarks, use_coordinates, channel_names, channel_ind, 
+                         shot_names, time_steps, start_progress, end_progress):
 
     # import dac_compute_coords
     compute_coords = imp.load_source('dac_compute_coords', 
@@ -653,7 +656,15 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
     
     # no landmarks needed if fewer points
     landmarks = None
-    if num_points > num_landmarks and num_landmarks != 0:
+
+    # if we are using coordinates then we use PCA
+    if use_coordinates:
+
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                "Using PCA intermediates for coordinates with " + str(num_landmarks) + " components.")
+
+    # otherwise, we use landmarks
+    elif num_points > num_landmarks and num_landmarks != 0:
     
         # otherwise use random sampling to get landmarks
         # random_points = numpy.random.permutation(num_points) + 1
@@ -670,12 +681,21 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
         parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                 "Using full dataset for coordinate calculations.")
 
-    # create pairwise diatnce matrices
+    # create pairwise distance matrices
     var_dist = []
     for i in range(len(variables)):
         
+        # compute coordinates using PCA, sort in distance matrix
+        if use_coordinates:
+            pca = PCA(n_components=num_landmarks)
+            try:
+                dist_i = pca.fit_transform(variables[i])
+            except ValueError:
+                dac_error.quit_raise_exception(database, model, parse_error_log,
+                    "Could not perform PCA, try fewer components.")
+
         # create pairwise distance matrix using landmarks, if requested
-        if landmarks is None:
+        elif landmarks is None:
             dist_i = spatial.distance.squareform(spatial.distance.pdist(variables[i]))
             
         else:
@@ -712,11 +732,12 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     MIN_CHANNELS = int(aids[1])
     MIN_SHOTS = int(aids[2])
     NUM_LANDMARKS = int(aids[3])
-    SHOT_TYPE = aids[4]
-    TIME_STEP_TYPE = aids[5]
-    INFER_CHANNEL_UNITS = aids[6]
-    INFER_SECONDS = aids[7]
-    FILE_NAMES = aids[8]
+    USE_COORDINATES = aids[4]
+    SHOT_TYPE = aids[5]
+    TIME_STEP_TYPE = aids[6]
+    INFER_CHANNEL_UNITS = aids[7]
+    INFER_SECONDS = aids[8]
+    FILE_NAMES = aids[9]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -755,15 +776,15 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     # start actual parsing as a thread
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, SHOT_TYPE, 
-                              TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
+                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, USE_COORDINATES,
+                              SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
                               dac_error, parse_error_log, stop_event))
     thread.start()
 
 
 def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS,
-                       num_landmarks, SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
-                       dac_error, parse_error_log, stop_event):
+                       num_landmarks, use_PCA_comps, SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, 
+                       INFER_SECONDS, dac_error, parse_error_log, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -773,7 +794,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
     # put entire thread into a try-except block in order catch errors
     try:
-
+        
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
@@ -830,8 +851,8 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
         # construct DAC variables and distance matrices to match time steps
         parse_error_log, variables, var_dist, landmarks = construct_variables(database, model,
-            dac_error, parse_error_log, shot_data, num_landmarks, channel_names, channel_ind, 
-            shot_names, time_steps, 55.0, 65.0)
+            dac_error, parse_error_log, shot_data, num_landmarks, use_PCA_comps, 
+            channel_names, channel_ind, shot_names, time_steps, 55.0, 65.0)
 
         # finalize time units
         shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
@@ -901,7 +922,8 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variables, time_steps, var_dist, landmarks=landmarks)
+                                    variables, time_steps, var_dist, 
+                                    landmarks=landmarks, use_coordinates=use_PCA_comps)
 
             # done -- destroy the thread
             stop_event.set()
@@ -938,11 +960,12 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     MIN_CHANNELS = int(aids[1])
     MIN_SHOTS = int(aids[2])
     NUM_LANDMARKS = int(aids[3])
-    SHOT_TYPE = aids[4]
-    TIME_STEP_TYPE = aids[5]
-    INFER_CHANNEL_UNITS = aids[6]
-    INFER_SECONDS = aids[7]
-    SUFFIX_LIST = aids[8]
+    USE_COORDINATES = aids[4]
+    SHOT_TYPE = aids[5]
+    TIME_STEP_TYPE = aids[6]
+    INFER_CHANNEL_UNITS = aids[7]
+    INFER_SECONDS = aids[8]
+    SUFFIX_LIST = aids[9]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -1009,8 +1032,8 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     # launch thread to read actual tdms files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, SHOT_TYPE, TIME_STEP_TYPE,
-        INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
+        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, USE_COORDINATES, SHOT_TYPE, 
+        TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
     thread.start()
 
 
