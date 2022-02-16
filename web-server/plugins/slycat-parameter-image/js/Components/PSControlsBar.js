@@ -380,7 +380,6 @@ class ControlsBar extends React.Component {
             <ControlsButtonVarOptions 
               model={this.props.model}
               metadata={this.props.metadata}
-              table_statistics={this.props.table_statistics}
               axes_variables={this.props.axes_variables}
               button_style={button_style}
               element={this.props.element}

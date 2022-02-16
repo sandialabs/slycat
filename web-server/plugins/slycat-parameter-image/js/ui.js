@@ -57,6 +57,7 @@ import {
   setManuallyHiddenSimulations,
   setSelectedSimulations,
   setUserRole,
+  setTableStatistics,
 } from './actions';
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -364,10 +365,14 @@ $(document).ready(function() {
           table_metadata["column-types"].push("int64");
 
           filter_manager.set_table_metadata(table_metadata);
-          load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
-            table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
-            metadata_loaded();
-          });
+          // console.debug(`Loading table statistics for all columns after table metadata has been loaded.`);
+          load_table_statistics(
+            d3.range(table_metadata["column-count"]-1), 
+            function(){
+              table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+              metadata_loaded();
+            }
+          );
         },
         error: artifact_missing
       });
@@ -1171,18 +1176,25 @@ $(document).ready(function() {
               if(variable == y_index)
                 update_scatterplot_y(variable);
 
-              load_table_statistics([variable], function(new_table_statistics){
-                if(variable == v_index)
-                {
-                  update_v(variable);
+              // console.debug(`Loading table statistics after a variable has been edited.`);
+              load_table_statistics(
+                [variable], 
+                function(new_table_statistics){
+                  // Not sure why we wait for new table statistics before calling
+                  // update_v since we don't do that for updating x and y.
+                  // But it's been in the code for very long so I'm leaving it as is.
+                  if(variable == v_index)
+                  {
+                    update_v(variable);
+                  }
+                  // Update filter manager with new table statistics
+                  filter_manager.set_table_statistics(new_table_statistics);
+                  // Let filter manager know that a variable has been changed so it can possibly
+                  // update categorical unique values or numeric min/max
+                  // filter_manager.load_unique_categories();
+                  filter_manager.notify_variable_value_edited(variable);
                 }
-                // Update filter manager with new table statistics
-                filter_manager.set_table_statistics(new_table_statistics);
-                // Let filter manager know that a variable has been changed so it can possibly
-                // update categorical unique values or numeric min/max
-                // filter_manager.load_unique_categories();
-                filter_manager.notify_variable_value_edited(variable);
-              });
+              );
             },
             error : function(jqXHR, textStatus, errorThrown)
             {
@@ -1845,7 +1857,14 @@ $(document).ready(function() {
         }
         var statistics = metadata.statistics;
         for(var i = 0; i != statistics.length; ++i)
+        {
           table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
+        }
+        // Wait until the redux store has been created
+        createReduxStorePromise.then(() => {
+          // Update table_statistics in Redux
+          window.store.dispatch(setTableStatistics(table_statistics));
+        });
         callback(table_statistics);
       }
     });

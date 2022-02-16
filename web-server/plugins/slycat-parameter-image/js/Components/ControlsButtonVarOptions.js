@@ -541,8 +541,8 @@ const mapStateToProps = (state, ownProps) => {
           key: index,
           index: indexCounter++,
           name: getVariableAlias(index),
-          min: ownProps.table_statistics[index].min,
-          max: ownProps.table_statistics[index].max,
+          min: state.derived.table_statistics ? state.derived.table_statistics[index].min : undefined,
+          max: state.derived.table_statistics ? state.derived.table_statistics[index].max : undefined,
         }];
       }
       return [];
@@ -571,6 +571,7 @@ const mapStateToProps = (state, ownProps) => {
     threeDVariables: threeDVariables,
     three_d_variable_user_ranges: state.three_d_variable_user_ranges,
     userRole: state.derived.userRole,
+    table_statistics: state.derived.table_statistics,
   }
 }
 
