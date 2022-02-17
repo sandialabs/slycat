@@ -204,14 +204,17 @@ class ControlsButtonVarOptions extends React.PureComponent {
 
   render() {
     let axes_variables = [];
-    for(let [index, axes_variable] of this.props.axes_variables.entries())
+    let disabledLogVariables = [];
+    for(let axes_variable of this.props.axes_variables)
     {
+      const index = axes_variable.key;
       let scale_type = 'Linear';
       if(this.props.axes_variables_scale[index] !== undefined)
       {
         scale_type = this.props.axes_variables_scale[index];
       }
       axes_variables.push({
+        "index": index,
         "Axis Type": scale_type,
         // 'Alex Testing Bool True': true,
         // 'Alex Testing Bool False': false,
@@ -222,6 +225,13 @@ class ControlsButtonVarOptions extends React.PureComponent {
         "selected": false,
         "tooltip": '',
       });
+      // Find variables with a min of 0 or less so we don't allow them
+      // for log scales.
+      // console.debug(`table_statistics is %o`, this.props.table_statistics);
+      if(this.props.table_statistics && this.props.table_statistics[index].min <= 0)
+      {
+        disabledLogVariables.push(index);
+      }
     }
     // Testing various properties
     // axes_variables[1].disabled = true;
@@ -230,7 +240,10 @@ class ControlsButtonVarOptions extends React.PureComponent {
 
     let axes_properties = [{name: 'Axis Type', 
                             type: 'select', 
-                            values: ['Linear','Date & Time','Log']
+                            values: ['Linear','Date & Time','Log'],
+                            disabledValues: {
+                              'Log': disabledLogVariables,
+                            }
                           }];
     // // Testing boolean property
     // axes_properties.push({
