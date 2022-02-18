@@ -754,13 +754,13 @@ class Session(object):
         except Exception as e:
             cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
 
-            if str(e) == "Garbage packet received":
+            if "Garbage packet received" in str(e):
                 cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
                 cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 500 remote access failed: %s" % str(e))
                 raise cherrypy.HTTPError("500 Remote access failed.")
 
-            if str(e) == "No such file":
+            if "No such file" in str(e):
                 # Ideally this would be a 404, but we already use
                 # 404 to handle an unknown sessions, and clients need to make the distinction.
                 cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
@@ -770,7 +770,7 @@ class Session(object):
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 File not found.")
 
-            if str(e) == "Permission denied":
+            if "Permission denied" in str(e):
                 # The file exists, but is not available due to access controls
                 cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
                     self.hostname, path)
