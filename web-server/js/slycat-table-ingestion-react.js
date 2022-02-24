@@ -32,8 +32,11 @@ export default function SlycatTableIngestion(props) {
       {
         // Find the radio button that needs to be selected based on its name and value attributes
         let radio = document.querySelector(`.${props.uniqueID} input[value='${property}'][name='${index}']`);
-        // Fire the onChange handler
-        props.onChange({currentTarget: radio});
+        // Fire the onChange handler only if radio button is not disabled
+        if(!radio.disabled)
+        {
+          props.onChange({currentTarget: radio});
+        }
       }
     }
   }
