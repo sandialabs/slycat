@@ -260,6 +260,10 @@ class VariableRangesRow extends React.PureComponent {
   }
 
   render() {
+    // Don't render if we don't have a data_min or data_max
+    if (!this.props.data_min || !this.props.data_max) {
+      return null;
+    }
     return (
       <tr key={this.props.index}>
         <th scope='row' 

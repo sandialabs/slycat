@@ -42,6 +42,7 @@ import {
   TOGGLE_SYNC_THREE_D_COLORVAR,
   SET_SELECTED_SIMULATIONS,
   SET_USER_ROLE,
+  SET_TABLE_STATISTICS,
 } from './actions';
 
 import { 
@@ -535,6 +536,14 @@ export default function ps_reducer(state = initialState, action) {
         derived: {
           ...state.derived,
           userRole: action.role
+        }
+      })
+
+    case SET_TABLE_STATISTICS:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          table_statistics: action.table_statistics.slice(0)
         }
       })
 

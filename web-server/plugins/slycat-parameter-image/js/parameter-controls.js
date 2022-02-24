@@ -143,7 +143,6 @@ $.widget("parameter_image.controls",
         model={self.options.model}
         model_name={self.options.model_name}
         metadata={self.options.metadata}
-        table_statistics={self.options.table_statistics}
         indices={self.options.indices}
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}

@@ -32,8 +32,11 @@ export default function SlycatTableIngestion(props) {
       {
         // Find the radio button that needs to be selected based on its name and value attributes
         let radio = document.querySelector(`.${props.uniqueID} input[value='${property}'][name='${index}']`);
-        // Fire the onChange handler
-        props.onChange({target: radio});
+        // Fire the onChange handler only if radio button is not disabled
+        if(!radio.disabled)
+        {
+          props.onChange({currentTarget: radio});
+        }
       }
     }
   }
@@ -123,6 +126,14 @@ export default function SlycatTableIngestion(props) {
     
   });
 
+  // Figure out if radio button should be disabled
+  function disabledRadioButton(property, value, variable) {
+    // Check if we have a disabledValue defined for this radio button
+    let disabledValue = property.disabledValues && property.disabledValues[value] && property.disabledValues[value].indexOf(variable.index) > -1;
+    // Also return disabled if the entire variable is disabled
+    return variable.disabled || disabledValue ? 'disabled' : false;
+  }
+
   const variablesItems = props.variables.map((variable, indexVars, arrayVars) => {
     return (
     <tr key={indexVars}
@@ -144,7 +155,7 @@ export default function SlycatTableIngestion(props) {
                 key={property.name + indexProps}
               >
                 <input type='checkbox'
-                  name={indexVars}
+                  name={variable.index}
                   value='true'
                   disabled={variable.disabled ? 'disabled' : false}
                   defaultChecked={variable[property.name] ? 'checked' : false}
@@ -165,9 +176,9 @@ export default function SlycatTableIngestion(props) {
                   >
                     <input 
                       type='radio'
-                      name={indexVars}
+                      name={variable.index}
                       value={value}
-                      disabled={variable.disabled ? 'disabled' : false}
+                      disabled={disabledRadioButton(property, value, variable)}
                       checked={value == variable[property.name] ? 'checked' : false}
                       onChange={props.onChange}
                     />
