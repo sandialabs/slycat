@@ -8,5 +8,7 @@ setup(
   version = "1.1.0",
   package_dir = {"" : "packages"},
   packages = find_packages("packages", exclude=[]),
-  install_requires=['cherrypy', 'numpy']
+  # adding hard requirement for numpy since read the docs uses python 3.7 by default
+  # second possible fix is to add read the docs yaml
+  install_requires=['cherrypy', 'numpy==1.21.0']
 )
