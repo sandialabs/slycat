@@ -602,6 +602,11 @@ function constructor(params)
   component.back = function() {
     var target = component.tab();
 
+    // Need to unmount smb remote file browser on back button. 
+    if(component.tab() == 3) {
+      ReactDOM.unmountComponentAtNode(document.querySelector(".smb-wizard-browse"));
+    }
+
     // Need to clean up project data if backing from tab 4
     if(component.tab() == 4)
     {

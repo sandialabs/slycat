@@ -2692,6 +2692,11 @@ $.widget("parameter_image.scatterplot",
         {
           // console.debug(`opening a vtp or stl`);
 
+          // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
+          // other media, but caused 3D frame to grow by 20px each time the page is refreshed. So this
+          // adjustment fixes that.
+          frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
+
           // This is a VTP or STL file, so use the VTK 3d viewer
           let vtk = frame_html
             .append("div")

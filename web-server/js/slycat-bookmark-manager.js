@@ -84,29 +84,48 @@ module.create = function(pid, mid)
   // Updates the bookmark state (privileged)
   manager.updateState = function(params)
   {
+    // State needs to be updated each time updateState is called
     $.extend(state, params); // Consider using deep merge by adding true as the first parameter. However, deep merging does not work with bookmarking of expanded and collapsed dendrogram nodes since they are passed as arrays
-
-    // Store bookmark and update the bid
-    if(req)
-      req.abort();
-
-    req = $.ajax({
-      type : "POST",
-      url : api_root + "projects/" + pid + "/bookmarks",
-      contentType : "application/json",
-      data: JSON.stringify(state),
-      processData: false,
-      success: function(result)
-      {
-        bid = result.id;
-        updateURL(bid);
-        // Store latest bid in local storage
-        if(mid != null)
-          localStorage[mid] = bid;
-        req = null;
-      },
-    });
+    
+    // But we don't have to post the bookmark each time, so calling a seaparte postBookmark
+    // function that is debounced (or throttled in the future?) to limit number of POSTs to the backend
+    manager.postBookmark();
   }
+
+  // Using debounce to only POST bookmark every 1/3 second (333 ms) so we don't 
+  // inundate the server with dozens of requests per second when user does something
+  // that updates state often, like drag a pin around the screen.
+  manager.postBookmark = _.debounce(
+    // This is the function that POSTs a bookmark to the server
+    function(params)
+    {
+      // Store bookmark and update the bid
+      if(req)
+        req.abort();
+
+      req = $.ajax({
+        type : "POST",
+        url : api_root + "projects/" + pid + "/bookmarks",
+        contentType : "application/json",
+        data: JSON.stringify(state),
+        processData: false,
+        success: function(result)
+        {
+          bid = result.id;
+          updateURL(bid);
+          // Store latest bid in local storage
+          if(mid != null)
+            localStorage[mid] = bid;
+          req = null;
+        },
+      });
+    }, 
+    // How long to wait before actually running that function. 
+    // Debounce just waits this long and then executes the last call to postBookmark.
+    // But in the future we might want to use throttle function instead, which
+    // would call postBookmark every 333 seconds.
+    333
+  );
 
   // Retrieves the state for the current bookmark id (asynchronous)
   manager.getState = function(callback)

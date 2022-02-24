@@ -454,7 +454,7 @@ component.reauth = function() {
           $(".remote-browser-continue").toggleClass("disabled", false);
 
           // note that table has been uploaded
-          remote_table_uploaded = true;
+          remote_table_uploaded = false;
 
           // update movie links part of model, go to tab 5
           upload_media_columns(5);
@@ -1031,6 +1031,11 @@ component.reauth = function() {
     // Skip remote ui tabs if we are local
     if (component.vs_type() === "local" && component.tab() === 7) {
       target = target - 4;
+    }
+
+    // Reset the media columns so user can select a new file
+    if (component.tab() === 5) {
+      component.vs_media_columns = ko.observableArray([]);
     }
 
     target--;
