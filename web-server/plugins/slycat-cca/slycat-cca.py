@@ -15,7 +15,6 @@ def register_slycat_plugin(context):
   import numpy
   import scipy.linalg
   import scipy.stats
-  import slycat.email
   import threading
   import traceback
   import time
