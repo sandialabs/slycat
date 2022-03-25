@@ -79,7 +79,7 @@ class Agent(agent.Agent):
                 self.run_shell_command("mkdir -p %s" % working_dir)
             except Exception as e:
                 output[0] = e.message
-            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode="w")
             self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                                 time_seconds, run_commands,
                                 tmp_file)
