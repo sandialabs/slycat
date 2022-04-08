@@ -13,6 +13,7 @@ import SlycatTimeInput from 'components/SlycatTimeInput.tsx';
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
 import ConnectButton from 'components/ConnectButton.tsx';
 import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
+import RemoteFileBrowserNoSelector from 'components/RemoteFileBrowserNoSelector.tsx'
 import SlycatSelector from 'components/SlycatSelector.tsx';
 import server_root from "js/slycat-server-root";
 import cloneDeep from "lodash";
@@ -202,7 +203,7 @@ export default class TimeseriesWizard extends React.Component<
           : null}
         {this.state.visibleTab === "3" ?
           <div>
-            <RemoteFileBrowser
+            <RemoteFileBrowserNoSelector
               selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTimeseriesFile}
               onReauthCallBack={this.onReauth}
