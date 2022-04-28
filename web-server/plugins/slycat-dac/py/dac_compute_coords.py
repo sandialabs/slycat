@@ -28,6 +28,8 @@ import scipy.optimize
 from scipy import spatial
 from sklearn.decomposition import PCA
 
+from natsort import natsorted
+
 import cherrypy
 
 # cmdscale translation from Matlab by Francis Song 
@@ -536,7 +538,7 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
             # values starting at 0)
 
             # sort potential values in string metadata
-            uniq_sorted_columns = sorted(set(meta_columns[i]))
+            uniq_sorted_columns = natsorted(set(meta_columns[i]))
 
             # use alphabetical order to make a vector of numbers
             meta_column_num = np.asarray([uniq_sorted_columns.index(str_meta) 
@@ -549,7 +551,7 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
             prop_vec = 0
 
         # scale property vector data
-        prop_scale = np.amax(np.absolute(prop_vec))
+        prop_scale = np.nanmax(np.absolute(prop_vec))
         if prop_scale < np.finfo(float).eps:
             prop_scale = 1.0
         prop_vec = prop_vec / prop_scale
@@ -564,14 +566,22 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
             if (meta_column_types[i] == "float64") or \
                (meta_column_types[i] == "string"):
 
-                beta_i = scipy.optimize.nnls(X, prop_vecs[i])
-                alpha_i = np.sqrt(beta_i[0])
+                # remove NaNs
+                nan_mask = np.logical_not(np.isnan(prop_vecs[i]))
+                nan_prop = prop_vecs[i][nan_mask]
+                nan_X = X[nan_mask, :]
 
-                # again don't divide by zero
-                alpha_max_i = np.amax(alpha_i)
-                if alpha_max_i <= np.finfo(float).eps:
-                    alpha_max_i = 1
-                alpha_cluster_mat[i, :] = alpha_i / alpha_max_i
+                # if nothing left then return zero
+                if nan_X.shape[0] > 1:
+
+                    beta_i = scipy.optimize.nnls(nan_X, nan_prop)
+                    alpha_i = np.sqrt(beta_i[0])
+
+                    # again don't divide by zero
+                    alpha_max_i = np.amax(alpha_i)
+                    if alpha_max_i <= np.finfo(float).eps:
+                        alpha_max_i = 1
+                    alpha_cluster_mat[i, :] = alpha_i / alpha_max_i
 
     return alpha_cluster_mat
 
@@ -636,7 +646,7 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types,
             # values starting at 0)
 
             # sort potential values in string metadata
-            uniq_sorted_columns = sorted(set(meta_columns[i]))
+            uniq_sorted_columns = natsorted(set(meta_columns[i]))
 
             # use alphabetical order to make a vector of numbers
             meta_column_num = np.asarray([uniq_sorted_columns.index(str_meta) 
@@ -656,14 +666,22 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types,
             if (meta_column_types[i] == "float64") or \
                (meta_column_types[i] == "string"):
 
-                beta_i = scipy.optimize.nnls(all_dist_mat, prop_dist_mats[i])
-                alpha_i = np.sqrt(beta_i[0])
+                # remove NaNs
+                nan_mask = np.logical_not(np.isnan(prop_dist_mats[i]))
+                nan_prop = prop_dist_mats[i][nan_mask]
+                nan_dist_mat = all_dist_mat[nan_mask, :]
 
-                # again don't divide by zero
-                alpha_max_i = np.amax(alpha_i)
-                if alpha_max_i <= np.finfo(float).eps:
-                    alpha_max_i = 1
-                alpha_cluster_mat[i, :] = alpha_i / alpha_max_i
+                # if nothing left then return zero
+                if nan_dist_mat.shape[0] > 1:
+
+                    beta_i = scipy.optimize.nnls(all_dist_mat, prop_dist_mats[i])
+                    alpha_i = np.sqrt(beta_i[0])
+
+                    # again don't divide by zero
+                    alpha_max_i = np.amax(alpha_i)
+                    if alpha_max_i <= np.finfo(float).eps:
+                        alpha_max_i = 1
+                    alpha_cluster_mat[i, :] = alpha_i / alpha_max_i
 
     return alpha_cluster_mat
 
@@ -678,7 +696,7 @@ def compute_prop_dist_vec(prop_vec, vec_length):
     prop_dist_vec = np.squeeze(np.reshape(prop_dist_mat, (vec_length * vec_length, 1)))
 
     # make sure we don't divide by 0
-    prop_dist_vec_max = np.amax(prop_dist_vec)
+    prop_dist_vec_max = np.nanmax(prop_dist_vec)
     if prop_dist_vec_max <= np.finfo(float).eps:
         prop_dist_vec_max = 1.0
 
