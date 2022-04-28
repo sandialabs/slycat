@@ -709,7 +709,7 @@ def compute_prop_dist_vec(prop_vec, vec_length):
 
 # helper function for compute alpha to do natural sort
 # taken from Ned Batchelder's blog
-def natsorted( l ):
+def natsorted(l):
 
     convert = lambda text: int(text) if text.isdigit() else text
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
