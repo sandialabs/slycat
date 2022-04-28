@@ -17,9 +17,7 @@
   },
   "pre-commit": [
     "precommit-msg",
-    "test",
-    "stats-prod",
-    "stats"
+    "test"
   ],
   "main": "index.js",
   "repository": "git@github.com:sandialabs/slycat.git",
