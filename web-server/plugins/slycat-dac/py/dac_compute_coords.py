@@ -28,7 +28,11 @@ import scipy.optimize
 from scipy import spatial
 from sklearn.decomposition import PCA
 
-from natsort import natsorted
+# better version of natural sort
+# from natsort import natsorted
+
+# for natural sort function
+import re
 
 import cherrypy
 
@@ -701,6 +705,16 @@ def compute_prop_dist_vec(prop_vec, vec_length):
         prop_dist_vec_max = 1.0
 
     return prop_dist_vec / prop_dist_vec_max
+
+
+# helper function for compute alpha to do natural sort
+# taken from Ned Batchelder's blog
+def natsorted( l ):
+
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+
+    return sorted(l, key=alphanum_key)
 
 
 # use max-min algorithm to choose landmarks
