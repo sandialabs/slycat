@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "node --trace-deprecation --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.dev.js",
     "prod.dev": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.prod.dev.js",
-    "prod": "webpack --config webpack.prod.js",
+    "prod": "node ./run_prod_write_versions.js",
     "stats-prod": "webpack --config webpack.prod.js --json=compilation-stats-prod.json",
     "stats-dev": "webpack --config webpack.dev.js --json=compilation-stats-dev.json",
     "test": "./node_modules/.bin/jest",
@@ -12,8 +12,7 @@
     "clean": "rm -rf node_modules/",
     "update-tests": "./node_modules/.bin/jest -u",
     "test-coverage": "./node_modules/.bin/jest --coverage",
-    "precommit-msg": "echo 'Pre-commit checks...' && exit 0",
-    "stats": "node ./stats.js"
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
   "pre-commit": [
     "precommit-msg",

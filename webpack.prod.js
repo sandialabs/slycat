@@ -1,35 +1,12 @@
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // Commenting out ExportNodeModules plugin because it crashes with Babel7
 // const ExportNodeModules = require('webpack-node-modules-list');
 
 module.exports = merge(common, {
   mode: 'production',
-  stats: {
-    // this is the big one, adds info about modules
-    modules: true,
-    modulesSpace: 9999,
-
-    // adds more details about modules
-    nestedModules: true,
-    nestedModulesSpace: 9999,
-
-    // shows orpan modules, which seem to be used. need to look into this more.
-    orphanModules: true,
-
-    // hide warnings for prod build
-    warningsCount: false,
-    warnings: false,
-
-    // adds hash of the compilation
-    hash: true,
-
-    // adds tons more info about reason for each module included. defaults to false.
-    reasons: false,
-  },
   devtool: 'source-map',
   plugins: [
     // Don't need to add UglifyJSPlugin here because production mode automatically does that
