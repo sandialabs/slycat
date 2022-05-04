@@ -98,5 +98,5 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
   // fs.writeFileSync('stats_no_file-slycat_production_node_modules_debug.json', JSON.stringify(js_modules_from_stats, null, 2));
 
   // Write out file listing all node_module modules used in production Slycat build and their versions
-  fs.writeFileSync('docs/javascript_dependencies_in_node_modules.txt', JSON.stringify(slycat_node_modules, null, 2));
+  fs.writeFileSync('docs/javascript_dependencies_in_node_modules.json', JSON.stringify(slycat_node_modules, null, 2));
 });
