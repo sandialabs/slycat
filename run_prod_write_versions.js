@@ -10,9 +10,36 @@ const _ = require('lodash');
 
 // Run webpack using the prod config file
 webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
-  if (err || stats.hasErrors()) {
-    // [Handle errors here](#error-handling)
-  }
+    // Handling errors and warnings
+    // err is fatal webpack error, stats.hasErrors() tells us if there were compilation errors.
+    
+    // If we had a fatal webpack error, log it to the console and exit. 
+    if(err) {
+      console.error(err.stack || err);
+      if (err.details) {
+        console.error(err.details);
+      }
+      console.error('STOP. There were fatal webpack errors, see above. This build did not succeed, do not deploy it.');
+      return;
+    }
+
+    // Display stats on console in color
+    console.log(stats.toString({
+      colors: true    // Shows colors in the console
+    }));
+
+    // Display messages at end of console if there were warnings or errors.
+    if(stats.hasWarnings())
+    {      
+      console.log('WATCH OUT. There were warnings, see above.');
+    }
+    // stats.hasErrors() tells us if there were compilation errors.
+    if(stats.hasErrors())
+    {
+      console.error('STOP. There were compliation errors, see above. This build did not succeed, do not deploy it.');
+      // Exit if there were compilation errors, without updating JS modules docs.
+      return;
+    }
 
   // Convert stats to Json using config that drops most data except module info we are interest in.
   // And grab the modules attribute from it.
@@ -136,8 +163,14 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
   // Write out a debug file
   // fs.writeFileSync('stats_no_file-slycat_production_node_modules_debug.json', JSON.stringify(node_modules_from_stats, null, 2));
 
-  // Write out file listing all node_module modules used in production Slycat build and their versions
-  fs.writeFileSync('docs/javascript_dependencies_in_node_modules.json', JSON.stringify(slycat_node_modules, null, 2));
+  const JS_NODE_FILENAME = 'docs/javascript_dependencies_in_node_modules.json';
+  const JS_WEBSERVER_FILENAME = 'docs/javascript_dependencies_in_web_server.json';
 
-  fs.writeFileSync('docs/javascript_dependencies_in_web_server.json', JSON.stringify(slycat_modules, null, 2));
+  // Write out file listing all node_module modules used in production Slycat build and their versions
+  fs.writeFileSync(JS_NODE_FILENAME, JSON.stringify(slycat_node_modules, null, 2));
+  fs.writeFileSync(JS_WEBSERVER_FILENAME, JSON.stringify(slycat_modules, null, 2));
+
+  console.log(`CONGRATULATIONS. It seems that the build was successful. The following files were written out:`);
+  console.log(JS_NODE_FILENAME);
+  console.log(JS_WEBSERVER_FILENAME);
 });
