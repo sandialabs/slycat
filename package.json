@@ -5,6 +5,7 @@
     "dev": "node --trace-deprecation --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.dev.js",
     "prod.dev": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.prod.dev.js",
     "prod": "node ./run_prod_write_versions.js",
+    "prod-no-version": "webpack --config webpack.prod.js",
     "stats-prod": "webpack --config webpack.prod.js --json=compilation-stats-prod.json",
     "stats-dev": "webpack --config webpack.dev.js --json=compilation-stats-dev.json",
     "test": "./node_modules/.bin/jest",
