@@ -2838,7 +2838,7 @@ def get_time_series_names(hostname, path, **kwargs):
     """
     sid, session_type = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
-        csv_file = str(session.get_file(path, **kwargs))
+        csv_file = str(session.get_file(path, **kwargs).decode("utf-8"))
     csv_file = csv_file.replace("\\r\\n","\r\n")
     rows = [row.split(",") for row in csv_file.splitlines()]
     column_names = [name.strip() for name in rows[0]]
