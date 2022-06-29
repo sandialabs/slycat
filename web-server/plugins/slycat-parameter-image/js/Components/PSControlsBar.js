@@ -360,6 +360,22 @@ class ControlsBar extends React.Component {
         <React.Fragment>
           <React.StrictMode>
             <ControlsGroup id={this.scatterplot_id} class="btn-group ml-3">
+              {this.props.xy_pairs_items.length > 0 && (
+                <ControlsDropdown
+                  key="xypair-dropdown"
+                  id="xypair-dropdown"
+                  label="Surface Metrics"
+                  title="Change Surface Matrics Variables"
+                  state_label="xypair_variables"
+                  trigger="xypair_selection_changed"
+                  items={this.props.xy_pairs_items}
+                  selected={this.props.xy_pair_selected}
+                  set_selected={(state_label, key, trigger, e) =>
+                    this.props.element.trigger(trigger, key)
+                  }
+                  button_style={button_style}
+                />
+              )}
               {dropdowns}
               <ControlsButtonVarOptions
                 model={this.props.model}
@@ -460,6 +476,13 @@ class ControlsBar extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
+  const xy_pairs_items = state.derived.xy_pairs.map((xy_pair) => ({
+    // keys need to be a string, so stingify'ing here and parsing later when we need to get at data
+    key: JSON.stringify({ x: xy_pair.x, y: xy_pair.y }),
+    name: xy_pair.label,
+  }));
+  const xy_pair_selected = JSON.stringify({ x: state.x_index, y: state.y_index });
+
   return {
     variableRanges: state.variableRanges,
     x_index: state.x_index,
@@ -471,6 +494,8 @@ const mapStateToProps = (state, ownProps) => {
     active_filters: state.active_filters,
     sync_scaling: state.sync_scaling,
     selected_simulations: state.selected_simulations,
+    xy_pairs_items: xy_pairs_items,
+    xy_pair_selected: xy_pair_selected,
   };
 };
 
