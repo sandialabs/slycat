@@ -141,6 +141,47 @@ def register_slycat_plugin(context):
     :param database:
       our connection to couch db
     """
+
+        prefix = '[XYpair]'
+        suffix_x = 'X'
+        suffix_y = 'Y'
+
+        # Get metadata for data-table
+        metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
+        # Get metadata's attributes, which contain info about each column
+        attributes = metadata[0]['attributes']
+        xy_pairs = {}
+
+        # Iterate over columns and pull out any xy pairs
+        for index, attribute in enumerate(attributes):
+            name = attribute['name'].decode("utf-8") 
+            XYpair = name.startswith(prefix)
+            X = name.endswith(suffix_x)
+            Y = name.endswith(suffix_y)
+            validXYpair = XYpair and (X or Y)
+            if(validXYpair):
+                # Remove prefix
+                label = name[len(prefix):]
+                # Remove suffix
+                label = label[:-len(suffix_x)] if X else label[:-len(suffix_y)]
+                # Remove whitespace
+                label = label.strip()
+                # Add entry for current label if one doesn't already exist
+                if(label not in xy_pairs):
+                    xy_pairs[label] = {'x': [], 'y': []}
+                # Add x or y column index
+                xy_pairs[label]['x' if X else 'y'].append(index)
+        
+        xy_pairs_verified = []
+        # Iterate over xy_pairs and pull out only ones with a single x and single y
+        for label, indices in xy_pairs.items():
+            if(len(indices['x']) == 1 and len(indices['y']) == 1):
+                xy_pairs_verified.append({'label': label, 'x': indices['x'][0], 'y': indices['y'][0]})
+        
+        # Save xy_pairs as a model parameter, if we have any
+        if xy_pairs_verified:
+            slycat.web.server.put_model_parameter(database, model, 'xy-pairs', xy_pairs_verified)
+
         slycat.web.server.update_model(database, model, state="finished", result="succeeded",
                                        finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
