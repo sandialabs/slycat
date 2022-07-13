@@ -142,7 +142,8 @@ def register_slycat_plugin(context):
       our connection to couch db
     """
 
-        prefix = '[XYpair]'
+        prefix_x = '[XYpair X]'
+        prefix_y = '[XYpair Y]'
         suffix_x = 'X'
         suffix_y = 'Y'
 
@@ -155,15 +156,14 @@ def register_slycat_plugin(context):
         # Iterate over columns and pull out any xy pairs
         for index, attribute in enumerate(attributes):
             name = attribute['name'].decode("utf-8") 
-            XYpair = name.startswith(prefix)
-            X = name.endswith(suffix_x)
-            Y = name.endswith(suffix_y)
-            validXYpair = XYpair and (X or Y)
+            X = name.startswith(prefix_x)
+            Y = name.startswith(prefix_y)
+            validXYpair = X or Y
             if(validXYpair):
                 # Remove prefix
-                label = name[len(prefix):]
+                label = name[len(prefix_x if X else prefix_y):]
                 # Remove suffix
-                label = label[:-len(suffix_x)] if X else label[:-len(suffix_y)]
+                label = label[:-len(suffix_x if X else suffix_y)]
                 # Remove whitespace
                 label = label.strip()
                 # Add entry for current label if one doesn't already exist
@@ -173,14 +173,28 @@ def register_slycat_plugin(context):
                 xy_pairs[label]['x' if X else 'y'].append(index)
         
         xy_pairs_verified = []
+        variable_aliases = {}
         # Iterate over xy_pairs and pull out only ones with a single x and single y
         for label, indices in xy_pairs.items():
             if(len(indices['x']) == 1 and len(indices['y']) == 1):
                 xy_pairs_verified.append({'label': label, 'x': indices['x'][0], 'y': indices['y'][0]})
-        
+                # Create aliases for xy_pairs
+                variable_aliases[indices['x'][0]] = f"{label} X"
+                variable_aliases[indices['y'][0]] = f"{label} Y"
+
         # Save xy_pairs as a model parameter, if we have any
         if xy_pairs_verified:
             slycat.web.server.put_model_parameter(database, model, 'xy-pairs', xy_pairs_verified)
+            
+            # Get the project data id if we have one for this model
+            did = model["project_data"][0] if model["project_data"] else False
+            # If we have a project data id, write variable-aliases to project data
+            if did:
+                project_data = database.get("project_data", did)
+                slycat.web.server.put_project_data_parameter(database, project_data, 'variable_aliases', variable_aliases)
+            # Otherwise write to the model's artifact:variable_aliases attribute
+            else:
+                slycat.web.server.put_model_parameter(database, model, 'variable_aliases', variable_aliases)
 
         slycat.web.server.update_model(database, model, state="finished", result="succeeded",
                                        finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
