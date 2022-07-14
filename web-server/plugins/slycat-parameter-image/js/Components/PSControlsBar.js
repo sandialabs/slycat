@@ -268,7 +268,7 @@ class ControlsBar extends React.Component {
     const button_style = "btn-outline-dark";
 
     // Update dropdowns with variable aliases when they exist
-    const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
+    const aliased_dropdowns = _.cloneDeep(this.props.dropdowns).map((dropdown) => {
       dropdown.items = dropdown.items.map((item) => {
         // Don't try to update variable names for keys less than 0, because those are not
         // real variables. For example, the "None" first item in the Media Set dropdown.
@@ -279,6 +279,23 @@ class ControlsBar extends React.Component {
       });
       return dropdown;
     });
+
+    // If we have xy_pairs, move them to the bottom of the x and y dropdowns
+    if (this.props.xy_pairs_items.length > 0) {
+      const move_xy_pairs = (items) => {
+        items.push({ type: "divider" });
+        items.push({ type: "header", name: "Surface Metrics" });
+        this.props.xy_pairs_indexes.forEach((index) => {
+          const items_index = _.findIndex(items, { key: index });
+          items.push(items.splice(items_index, 1)[0]);
+        });
+      };
+
+      let x_items = _.find(aliased_dropdowns, { id: "x-axis-dropdown" }).items;
+      let y_items = _.find(aliased_dropdowns, { id: "y-axis-dropdown" }).items;
+      move_xy_pairs(x_items);
+      move_xy_pairs(y_items);
+    }
 
     const dropdowns = aliased_dropdowns.map((dropdown) => {
       if (dropdown.items.length > 1) {
@@ -476,11 +493,17 @@ class ControlsBar extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const xy_pairs_items = state.derived.xy_pairs.map((xy_pair) => ({
-    // keys need to be a string, so stingify'ing here and parsing later when we need to get at data
-    key: JSON.stringify({ x: xy_pair.x, y: xy_pair.y }),
-    name: xy_pair.label,
-  }));
+  let xy_pairs_indexes = [];
+  let xy_pairs_items = [];
+  state.derived.xy_pairs.forEach((xy_pair) => {
+    xy_pairs_indexes.push(xy_pair.x);
+    xy_pairs_indexes.push(xy_pair.y);
+    xy_pairs_items.push({
+      // keys need to be a string, so stingify'ing here and parsing later when we need to get at data
+      key: JSON.stringify({ x: xy_pair.x, y: xy_pair.y }),
+      name: xy_pair.label,
+    });
+  });
   const xy_pair_selected = JSON.stringify({ x: state.x_index, y: state.y_index });
 
   return {
@@ -495,6 +518,7 @@ const mapStateToProps = (state, ownProps) => {
     sync_scaling: state.sync_scaling,
     selected_simulations: state.selected_simulations,
     xy_pairs_items: xy_pairs_items,
+    xy_pairs_indexes: xy_pairs_indexes,
     xy_pair_selected: xy_pair_selected,
   };
 };
