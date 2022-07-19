@@ -1653,7 +1653,7 @@ module.post_upload_finished = function(params)
     data: JSON.stringify(
     {
       "uploaded": params.uploaded,
-      "useProjectData": params.useProjectData
+      "useProjectData": params.useProjectData ?? false
     }),
     type: "POST",
     url: api_root + "uploads/" + params.uid + "/finished",

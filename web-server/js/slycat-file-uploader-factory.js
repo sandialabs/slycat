@@ -487,7 +487,7 @@ function uploadFile(pid, mid, uid, file, fileObject, useProjectData)
         {
           fileObject.progress(fileObject.progress() + progressIncreasePerSlice);
         }
-        finishUpload(pid, mid, uid, file, 1, fileObject);
+        finishUpload(pid, mid, uid, file, 1, fileObject, useProjectData);
       },
       error: function(){
         if(fileObject.error) {
@@ -519,7 +519,7 @@ function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject, u
   client.post_upload_finished({
     uid: uid,
     uploaded: [numberOfUploadedSlices],
-    projectData: useProjectData,
+    useProjectData: useProjectData,
     success: function()
     {
       // console.log("Upload session finished.");
