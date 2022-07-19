@@ -31,6 +31,7 @@ function constructor(params)
   component.current_aids = ko.observable("");
   component.csv_data = ko.observableArray();
   component.error_messages = ko.observable("");
+  component.useProjectData = ko.observable("");
   // Alex removing default model name per team meeting discussion
   // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
   component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
@@ -82,20 +83,20 @@ function constructor(params)
     component.browser.progress(10);
     component.browser.progress_status("Parsing...");
 
-    client.put_project_csv_data({
-        pid: component.project._id(),
-        file_key: component.selected_file(),
-        parser: component.parser(),
-        mid: component.model._id(),
-        aids: 'data-table',
+    // client.put_project_csv_data({
+    //     pid: component.project._id(),
+    //     file_key: component.selected_file(),
+    //     parser: component.parser(),
+    //     mid: component.model._id(),
+    //     aids: 'data-table',
 
-        success: function(response) {
-          var data = JSON.stringify(response);
-          component.csv_data.push(data);
-          upload_success(component.browser);
-        },
-          error: dialog.ajax_error("There was an error retrieving the CSV data."),
-      });
+    //     success: function(response) {
+    //       var data = JSON.stringify(response);
+    //       component.csv_data.push(data);
+    //       upload_success(component.browser);
+    //     },
+    //       error: dialog.ajax_error("There was an error retrieving the CSV data."),
+    //   });
     };
 
   component.get_server_file_names = function() {
@@ -308,7 +309,7 @@ function constructor(params)
         component.browser.progress_status('');
       }
     };
-    fileUploader.uploadFile(fileObject);
+    fileUploader.uploadFile(fileObject, component.useProjectData());
   };
   component.connectSMB = function() {
     component.remote.enable(false);

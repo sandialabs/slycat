@@ -971,7 +971,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
-        create_project_data(mid, aids, files)
+        # create_project_data(mid, aids, files)
     except Exception as e:
         cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
@@ -1047,8 +1047,9 @@ def post_upload_finished(uid):
     :return: status of upload
     """
     uploaded = require_integer_array_json_parameter("uploaded")
+    useProjectData = require_boolean_json_parameter("useProjectData")
     with slycat.web.server.upload.get_session(uid) as session:
-        return session.post_upload_finished(uploaded)
+        return session.post_upload_finished(uploaded, useProjectData)
 
 
 def delete_upload(uid):

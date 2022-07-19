@@ -1652,7 +1652,8 @@ module.post_upload_finished = function(params)
     contentType: "application/json",
     data: JSON.stringify(
     {
-      "uploaded": params.uploaded
+      "uploaded": params.uploaded,
+      "useProjectData": params.useProjectData
     }),
     type: "POST",
     url: api_root + "uploads/" + params.uid + "/finished",

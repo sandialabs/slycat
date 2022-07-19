@@ -24,7 +24,7 @@ module.MEGABYTE = 10000000;//the number of bytes we will split large files on
  *      success: function called if upload is successful
  *    }
  */
-module.uploadFile = function (fileObject)
+module.uploadFile = function (fileObject, useProjectData)
 {
   if(fileObject.hostname && fileObject.paths){
     // console.log("creating remote file upload session");
@@ -47,7 +47,7 @@ module.uploadFile = function (fileObject)
       aids: fileObject.aids,
       success: function (uid) {
         // console.log("Upload session created.");
-        uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject);
+        uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject, useProjectData);
       }
     });
   }
@@ -421,7 +421,7 @@ function uploadFileSlice(uid, sliceNumber, file){
  * @param fileObject
  *  json object that contains the file info
  */
-function uploadFile(pid, mid, uid, file, fileObject)
+function uploadFile(pid, mid, uid, file, fileObject, useProjectData)
 {
   // Make sure we actually have a file first
   if(file == undefined)
@@ -514,11 +514,12 @@ function uploadFile(pid, mid, uid, file, fileObject)
  * @param fileObject
  *  json object that contains the file info
  */
-function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
+function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject, useProjectData)
 {
   client.post_upload_finished({
     uid: uid,
     uploaded: [numberOfUploadedSlices],
+    projectData: useProjectData,
     success: function()
     {
       // console.log("Upload session finished.");
@@ -544,11 +545,11 @@ function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
         missingElements.forEach(function(missingElement){
           console.log("missing element " + missingElement[1] + " for file" + missingElement[0]);
           uploadFileSlice(uid, missingElement[1], file);
-          finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject);
+          finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject, useProjectData);
         });
       }else if(request.status === 423){
         setTimeout(function(){
-          finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
+          finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject, useProjectData)
         }, 5000);
       }
       else{
