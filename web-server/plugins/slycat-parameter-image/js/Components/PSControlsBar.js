@@ -284,7 +284,7 @@ class ControlsBar extends React.Component {
     if (this.props.xy_pairs_items.length > 0) {
       const move_xy_pairs = (items) => {
         items.push({ type: "divider" });
-        items.push({ type: "header", name: "Surface Metrics" });
+        items.push({ type: "header", name: "XY Pair" });
         this.props.xy_pairs_indexes.forEach((index) => {
           const items_index = _.findIndex(items, { key: index });
           items.push(items.splice(items_index, 1)[0]);
@@ -381,8 +381,8 @@ class ControlsBar extends React.Component {
                 <ControlsDropdown
                   key="xypair-dropdown"
                   id="xypair-dropdown"
-                  label="Surface Metrics"
-                  title="Change Surface Matrics Variables"
+                  label="XY Pair"
+                  title="Change XY Pair Variables"
                   state_label="xypair_variables"
                   trigger="xypair_selection_changed"
                   items={this.props.xy_pairs_items}
