@@ -104,6 +104,7 @@ $(document).ready(function() {
   var rating_columns = null;
   var category_columns = null;
   var other_columns = null;
+  var xy_pairs = null;
 
   var bookmarker = null;
   var bookmark = null;
@@ -232,6 +233,7 @@ $(document).ready(function() {
         image_columns = model["artifact:image-columns"];
         rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
         category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
+        xy_pairs = model["artifact:xy-pairs"] == undefined ? [] : model["artifact:xy-pairs"];
         filter_manager = new FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns);
         if(filter_manager.active_filters_ready())
         {
@@ -464,6 +466,7 @@ $(document).ready(function() {
                 three_d_colorby_range: {},
                 three_d_colorby_legends: {},
                 media_columns: image_columns,
+                xy_pairs: xy_pairs,
               }
             },
             applyMiddleware(...middlewares)
@@ -1106,6 +1109,18 @@ $(document).ready(function() {
         "threeD_sync" : threeD_sync,
       });
 
+      // Changing the xypair selection trigger change of x and y variables...
+      $("#controls").bind("xypair_selection_changed", function(event, xy_pair){
+        // xy_pair is JSON.stringify'ed, so need to parse it first
+        const xy = JSON.parse(xy_pair);
+        // Trigger x and y selection changes
+        $("#controls").trigger("x-selection-changed", xy.x);
+        $("#controls").trigger("y-selection-changed", xy.y);
+        // Update x and y variable in controls
+        $("#controls").controls("option", "x-variable", xy.x);
+        $("#controls").controls("option", "y-variable", xy.y);
+
+      });
       // Changing the x variable updates the controls ...
       $("#table").bind("x-selection-changed", function(event, variable)
       {
