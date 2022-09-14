@@ -27,8 +27,6 @@ $(document).ready(function() {
     // Once the navbar is loaded, we render it and load the rest of the model.
     .then(navbar => {
       navbar.renderNavBar();
-      // Loading slycat-ga module here because it makes API calls, and these need to happen after get_user_fetch
-      import(/* webpackChunkName: "slycat-ga" */ 'js/slycat-ga');
 
       var mid = URI(window.location).segment(-1);
       var page = {};
