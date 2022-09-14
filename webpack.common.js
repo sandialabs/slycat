@@ -184,37 +184,29 @@ module.exports = {
           'less-loader' // compiles Less to CSS
         ]
       },
-      // This handles SCSS files
+      // This handles SCSS and SASS files
       {
-        test: /\.(scss)$/,
+        test: /\.s[ac]ss$/i,
         use: [
+          // Creates `style` nodes from JS strings
           {
             loader: 'style-loader', // inject CSS to page
           }, 
+          // Translates CSS into CommonJS
           {
             loader: 'css-loader', // translates CSS into CommonJS modules
             options: {
               sourceMap: true,
             },
           },
-          {
-            loader: 'postcss-loader', // Run post css actions
-            options: {
-              postcssOptions: {
-                plugins: [
-                  require('precss'),
-                  require('autoprefixer')
-                ]
-              }
-            }
-          }, 
+          // Compiles Sass to CSS
           {
             loader: 'sass-loader', // compiles Sass to CSS
             options: {
               sourceMap: true,
             },
           },
-        ]
+        ],
       },
     ]
     // Adding vtk rules
