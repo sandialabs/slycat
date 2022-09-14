@@ -7,11 +7,16 @@
     "watch": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js --config webpack.watch.js --watch",
     "prod": "webpack --config webpack.prod.js",
     "test": "./node_modules/.bin/jest",
-    "update-tests": "./node_modules/.bin/jest -u",
     "docs": "cd docs; make html",
     "clean": "rm -rf node_modules/",
+    "update-tests": "./node_modules/.bin/jest -u",
+    "test-coverage": "./node_modules/.bin/jest --coverage",
     "modules": "webpack --display-modules --config webpack.prod.js",
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
+  "pre-commit": [
+    "precommit-msg"
+  ],
   "main": "index.js",
   "repository": "git@github.com:sandialabs/slycat.git",
   "author": "Alex M. Sielicki <alex@techmilo.com>",
@@ -90,6 +95,7 @@
     "less": "^4.0.0",
     "less-loader": "^11",
     "node-fetch-polyfill": "^2.0.6",
+    "pre-commit": "^1.2.2",
     "prettier": "^2",
     "react-test-renderer": "^18",
     "sass": "^1",
