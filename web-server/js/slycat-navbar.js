@@ -24,8 +24,7 @@ import 'js/slycat-plugins';
 // which are dynamically imported and also contain bootstrap, and it seemed to clash with this one.
 // However, we were able to import bootstrap's modal js file, since the navbar uses it to create dialogs for wizards.
 // import "bootstrap/js/dist/modal";
-// Under Bootstrap 4, we seem to be able to import it here and need it along with popper to create popovers on the breadcrumbs.
-import "popper.js";
+// Under Bootstrap 4, we seem to be able to import it here and need it to create popovers on the breadcrumbs.
 import "bootstrap";
 
 import config from 'config.json';
