@@ -36,6 +36,7 @@ import time
 import uuid
 import functools
 import datetime
+import h5py
 from urllib.parse import urlparse, urlencode, parse_qs
 
 # decode base64 byte streams for file upload
@@ -511,7 +512,7 @@ def post_project_models(pid):
 
 # @cherrypy.tools.json_in(on=True)
 # @cherrypy.tools.json_out(on=True)
-def create_project_data_from_pid(pid, file=None, file_name=None):
+def create_project_data_from_pid(pid, file=None):
     """
     creates a project level data object from a project id 
     that can be used to create new
@@ -521,31 +522,60 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     :return: not used
     """
 
-    database = slycat.web.server.database.couchdb.connect()
-    project = database.get("project", pid)
-    slycat.web.server.authentication.require_project_writer(project)
+    def isNumeric(some_thing):
+        """
+        Check if input is numeric
 
-    csv_data = str(file.file.read(), 'utf-8')
+        :param some_thing: object
+        :return: boolean
+        """
+        try:
+            x = float(some_thing)
+        except ValueError:
+            return False
+        return True
 
-    content_type = "text/csv"
-    timestamp = time.time()
-    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    did = uuid.uuid4().hex
+    rows = []
+    file = file.file.read().decode('utf-8')
+    split_file = file.split('\r\n')
+    for attribute in split_file:
+        rows.append(attribute)
 
-    data = {
-        "_id": did,
-        "type": "project_data",
-        "file_name": formatted_timestamp + "_" + file_name,
-        "data_table": "data-table",
-        "project": pid,
-        "mid": [""],
-        "created": datetime.datetime.utcnow().isoformat(),
-        "creator": cherrypy.request.login,
-    }
+    columns = list(*rows)
 
-    database.save(data)
-    database.put_attachment(data, filename="content", content_type=content_type, content=csv_data)
-    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
+    column_names = [name.strip() for name in rows[0]]
+    column_names = ["%eval_id"] + column_names
+    column_types = ["string" for name in column_names]
+
+    column_types[0] = "int64"
+
+    for index in range(1, len(columns)):  # repack data cols as numpy arrays
+        try:
+            if isNumeric(columns[index][0]):
+                columns[index] = numpy.array(columns[index], dtype="float64")
+                column_types[index] = "float64"
+            else:
+                stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
+                columns[index] = numpy.array(columns[index], dtype=stringType)
+                column_types[index] = "string"
+        except:
+            pass
+
+    dimensions = [dict(name="row", end=3)]
+    attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
+
+    # Edit with path to store HDF5
+    hdf5_path = ""
+    # Edit with name for HDF5 file
+    hdf5_name = "project_data.hdf5"
+
+    with h5py.File(os.path.join(hdf5_path, hdf5_name), "w") as outFile:
+        arrayset = slycat.hdf5.start_arrayset(outFile)
+        array = arrayset.start_array(0, dimensions, attributes)
+        for attribute, column in enumerate(columns):
+            array.set_data(attribute, slice(0, column.shape[0]), column)
+
+    cherrypy.log.error("[MICROSERVICE] Saved project data as HDF5.")
 
 def create_project_data(mid, aid, file):
     """

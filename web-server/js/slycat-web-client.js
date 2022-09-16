@@ -229,6 +229,30 @@ module.put_project_csv_data = function(params)
       });
 };
 
+module.post_project_data = function(params)
+{
+  var formData = new FormData();
+  formData.append('file', params.file);
+  $.ajax(
+    {
+      type: "POST",
+      data: formData,
+      url: URI(api_root + "projects/data/" + params.pid),
+      contentType: false,
+      processData: false,
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+}
+
 module.get_project_data = function(params)
 {
   $.ajax(
