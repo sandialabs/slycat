@@ -11,7 +11,7 @@ import client from "js/slycat-web-client";
 import ko from "knockout";
 import URI from "urijs";
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import UnrecognizedMarkingWarning from 'components/UnrecognizedMarkingWarning.tsx';
 import Spinner from 'components/Spinner.tsx';
 
@@ -49,11 +49,8 @@ $(document).ready(function() {
 
           let slycat_content = document.querySelector(".slycat-content");
 
-          // Show spinner
-          ReactDOM.render(
-            <Spinner />,
-            slycat_content
-          );
+          const slycat_content_root = createRoot(slycat_content);
+          slycat_content_root.render(<Spinner />);
 
           // Importing slycat-plugins here because it also makes API calls and these can't happen before get_user_fetch
           import(/* webpackChunkName: "slycat-plugins" */ 'js/slycat-plugins').then(slycatPlugins => {
@@ -61,7 +58,7 @@ $(document).ready(function() {
             let loadMarkingPromise = client.get_configuration_markings_fetch();
             let loadTemplateFinish = (values) => {
               // Remove spinner
-              ReactDOM.unmountComponentAtNode(slycat_content);
+              slycat_content_root.unmount();
 
               // Match the model's marking with the ones currently registered
               let current_marking = values[1].find(obj => obj.type == page.marking);
@@ -97,10 +94,8 @@ $(document).ready(function() {
                 warning_element.setAttribute('id', 'unrecognized-marking-warning');
                 warning_element.setAttribute('class', 'w-100 h-100');
                 slycat_content.appendChild( warning_element );
-                ReactDOM.render(
-                  <UnrecognizedMarkingWarning marking={page.marking} project_id={page.project_id} warning_element={warning_element} />,
-                  warning_element
-                );
+                const warning_element_root = createRoot(warning_element);
+                warning_element_root.render(<UnrecognizedMarkingWarning marking={page.marking} project_id={page.project_id} warning_element={warning_element} />);
               }
             }
 

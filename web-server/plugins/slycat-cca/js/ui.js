@@ -29,7 +29,6 @@ import "js/jquery.scrollintoview.min";
 // These need to imported after jquery-ui's CSS because they import their own CSS,
 // which needs to override the CSS from jquery-ui.
 import React from "react";
-import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import CCAControlsBar from "./components/CCAControlsBar";
 import CCABarplot from "./components/CCABarplot";
