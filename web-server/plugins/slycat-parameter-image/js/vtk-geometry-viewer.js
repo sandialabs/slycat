@@ -349,7 +349,12 @@ export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
 
   const interactor = vtkRenderWindowInteractor.newInstance();
-  interactor.setView(openglRenderWindow);
+  interactor.setView(openglRenderWindow);// Preventing devault event when mouse is grabbing shape and rotating it,
+  // otherwise the whole frame moves insetad. This change was required as of vtk.js
+  // version 24.17.0 due to this commit:
+  // https://github.com/kitware/vtk-js/commit/fb883e89521412ae986db272022b6de658406033
+  interactor.setPreventDefaultOnPointerDown(true);
+  interactor.setPreventDefaultOnPointerUp(true);
   interactor.initialize();
   interactor.bindEvents(container);
 
