@@ -31,12 +31,9 @@ $.widget("parameter_image.controls", {
     rating_variables: [],
     category_variables: [],
     selection: [],
-    hidden_simulations: [],
     indices: [],
-    disable_hide_show: false,
     "video-sync": false,
     "video-sync-time": 0,
-    threeD_sync: false,
   },
 
   _create: function () {
@@ -132,8 +129,6 @@ $.widget("parameter_image.controls", {
         dropdowns={dropdowns}
         axes_variables={axes_items}
         auto_scale={self.options["auto-scale"]}
-        hidden_simulations={self.options.hidden_simulations}
-        disable_hide_show={self.options.disable_hide_show}
         selection={self.options.selection}
         pid={self.options.pid}
         mid={self.options.mid}
@@ -173,8 +168,6 @@ $.widget("parameter_image.controls", {
     this.options[key] = value;
     if (key == "nothing") {
       return;
-    } else if (key == "disable_hide_show") {
-      self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
     } else if (key == "video-sync-time") {
       self.ControlsBarComponent.setState({
         video_sync_time: self.options["video-sync-time"],

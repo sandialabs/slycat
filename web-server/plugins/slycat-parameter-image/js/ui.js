@@ -1931,16 +1931,6 @@ $(document).ready(function() {
         filters_changed(newValue);
       });
     }
-
-    $("#controls").controls("option", "disable_hide_show", filter_manager.active_filters().length > 0);
-
-    filter_manager.active_filters.subscribe(function(newValue) {
-      filters_changed(newValue);
-      if($("#controls").data("parameter_image-controls"))
-      {
-        $("#controls").controls("option", "disable_hide_show", newValue.length > 0);
-      }
-    });
   }
 
   function filters_changed(newValue)
