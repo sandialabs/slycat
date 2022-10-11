@@ -88,7 +88,7 @@ $.widget("parameter_image.controls", {
         id: "x-axis-dropdown",
         label: "X",
         title: "Change X Axis Variable",
-        state_label: "x_variable",
+        state_label: "x_index",
         trigger: "x-selection-changed",
         items: x_axis_dropdown_items,
         selected: self.options["x-variable"],
@@ -97,7 +97,7 @@ $.widget("parameter_image.controls", {
         id: "y-axis-dropdown",
         label: "Y",
         title: "Change Y Axis Variable",
-        state_label: "y_variable",
+        state_label: "y_index",
         trigger: "y-selection-changed",
         items: y_axis_dropdown_items,
         selected: self.options["y-variable"],
@@ -106,7 +106,7 @@ $.widget("parameter_image.controls", {
         id: "color-dropdown",
         label: "Point Color",
         title: "Change Point Color",
-        state_label: "color_variable",
+        state_label: "v_index",
         trigger: "color-selection-changed",
         items: color_variable_dropdown_items,
         selected: self.options["color-variable"],
@@ -115,7 +115,7 @@ $.widget("parameter_image.controls", {
         id: "image-dropdown",
         label: "Media",
         title: "Change Media Set Variable",
-        state_label: "media_variable",
+        state_label: "media_index",
         trigger: "images-selection-changed",
         items: media_variable_dropdown_items,
         selected: self.options["image-variable"],
@@ -145,7 +145,6 @@ $.widget("parameter_image.controls", {
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}
-        threeD_sync={self.options.threeD_sync}
       />
     );
     ReactDOM.render(controls_bar, document.getElementById("react-controls"));
@@ -172,34 +171,15 @@ $.widget("parameter_image.controls", {
 
     //console.log("parameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
-
-    // if (key == "x-variable") {
-    //   self.ControlsBarComponent.setState({ x_variable: Number(self.options["x-variable"]) });
-    // } else if (key == "y-variable") {
-    //   self.ControlsBarComponent.setState({ y_variable: Number(self.options["y-variable"]) });
-    // } else if (key == "image-variable") {
-    //   self.ControlsBarComponent.setState({
-    //     media_variable: Number(self.options["image-variable"]),
-    //   });
-    // } else if (key == "color-variable") {
-    //   self.ControlsBarComponent.setState({
-    //     color_variable: Number(self.options["color-variable"]),
-    //   });
-    // } else if (key == "selection") {
-    //   self.ControlsBarComponent.setState({ selection: self.options.selection.slice() });
-    // } else if (key == "hidden_simulations") {
-    //   self.ControlsBarComponent.setState({
-    //     hidden_simulations: self.options.hidden_simulations.slice(),
-    //   });
-    // } else if (key == "disable_hide_show") {
-    //   self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
-    // } else if (key == "video-sync-time") {
-    //   self.ControlsBarComponent.setState({
-    //     video_sync_time: self.options["video-sync-time"],
-    //     video_sync_time_value: self.options["video-sync-time"],
-    //   });
-    // } else if (key == "threeD_sync") {
-    //   self.ControlsBarComponent.setState({ threeD_sync: self.options.threeD_sync });
-    // }
+    if (key == "nothing") {
+      return;
+    } else if (key == "disable_hide_show") {
+      self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
+    } else if (key == "video-sync-time") {
+      self.ControlsBarComponent.setState({
+        video_sync_time: self.options["video-sync-time"],
+        video_sync_time_value: self.options["video-sync-time"],
+      });
+    }
   },
 });

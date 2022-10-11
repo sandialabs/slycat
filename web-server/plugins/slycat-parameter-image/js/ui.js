@@ -44,7 +44,6 @@ import { createLogger } from 'redux-logger';
 import throttle from "redux-throttle";
 import ps_reducer from './reducers';
 import { 
-  updateThreeDSync,
   setXValues,
   setYValues,
   setVValues,
@@ -58,6 +57,7 @@ import {
   setSelectedSimulations,
   setUserRole,
   setTableStatistics,
+  setTableMetadata,
 } from './actions';
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -326,6 +326,7 @@ $(document).ready(function() {
   }
 
   var createReduxStorePromise;
+  var getTableMetadataPromise;
 
   function model_loaded()
   {
@@ -339,8 +340,7 @@ $(document).ready(function() {
     // Display progress as the load happens ...
     $(".load-status").text("Loading data.");
 
-    // Load data table metadata.
-    createReduxStorePromise = new Promise((resolve, reject) => {
+    getTableMetadataPromise = new Promise((resolve, reject) => {
       $.ajax({
         url : api_root + "models/" + model_id + "/arraysets/data-table/metadata?arrays=0",
         contentType : "application/json",
@@ -375,9 +375,15 @@ $(document).ready(function() {
               metadata_loaded();
             }
           );
+          console.debug(`about to call resolve`);
+          resolve();
         },
         error: artifact_missing
       });
+    });
+
+    // Load data table metadata.
+    createReduxStorePromise = new Promise((resolve, reject) => {
 
       // Retrieve bookmarked state information ...
       bookmarker.getState(function(state)
@@ -429,7 +435,7 @@ $(document).ready(function() {
             fontSize: DEFAULT_FONT_SIZE,
             fontFamily: DEFAULT_FONT_FAMILY,
             axesVariables: {},
-            threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
+            threeD_sync: false,
             // First colormap is default
             threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
             threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
@@ -467,6 +473,7 @@ $(document).ready(function() {
                 three_d_colorby_legends: {},
                 media_columns: image_columns,
                 xy_pairs: xy_pairs,
+                table_metadata: {},
               }
             },
             applyMiddleware(...middlewares)
@@ -519,6 +526,13 @@ $(document).ready(function() {
         note_manager = new NoteManager(model_id, bookmarker, bookmark);
       });
     });
+
+    Promise.all([getTableMetadataPromise, createReduxStorePromise]).then(() => {
+      // Dispatch update to table_metadata in Redux
+      // console.debug(`getTableMetadataPromise`);
+      window.store.dispatch(setTableMetadata(table_metadata));
+    });
+
   }
 
   function artifact_missing()
@@ -622,11 +636,11 @@ $(document).ready(function() {
       {
         video_sync_time = bookmark["video-sync-time"];
       }
-
+      
       threeD_sync = false;
-      if("threeD_sync" in bookmark)
+      if("threeD_sync" in window.store.getState())
       {
-        threeD_sync = bookmark["threeD_sync"];
+        threeD_sync = window.store.getState().threeD_sync;
       }
       setSyncCameras(threeD_sync);
 
@@ -1785,14 +1799,11 @@ $(document).ready(function() {
     threeD_sync = threeD_sync_value;
     $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
     setSyncCameras(threeD_sync);
-    // Update Redux state
-    window.store.dispatch(updateThreeDSync(threeD_sync_value));
     $.ajax(
     {
       type : "POST",
       url : api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync
     });
-    bookmarker.updateState( {"threeD_sync" : threeD_sync} );
   }
 
   function hidden_simulations_changed()
