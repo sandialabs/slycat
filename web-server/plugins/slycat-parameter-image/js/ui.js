@@ -1537,7 +1537,6 @@ $(document).ready(function () {
       // console.log(`update_current_colorscale for not strings`);
       colorscale = $("#color-switcher").colorswitcher(
         get_color_scale_function,
-        undefined,
         custom_color_variable_range.min != undefined
           ? custom_color_variable_range.min
           : d3.min(filtered_v),
@@ -1549,7 +1548,6 @@ $(document).ready(function () {
       var uniqueValues = d3.set(filtered_v).values().sort();
       colorscale = $("#color-switcher").colorswitcher(
         "get_color_scale_ordinal",
-        undefined,
         uniqueValues
       );
     }

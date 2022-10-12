@@ -10,7 +10,7 @@ certain rights in this software.
 import d3 from "d3";
 import "jquery-ui";
 import React from "react";
-import ReactDOM from 'react-dom';
+import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import ControlsDropdownColor from "./Components/ControlsDropdownColor";
 import COLOR_MAP from "./Components/color-map.js";
@@ -57,22 +57,14 @@ $.widget("slycat.colorswitcher", {
       />
     );
 
-    self.color_bar = ReactDOM.render(color_bar, document.getElementById("color-switcher"));
-    // React 18 createRoot conversion breaks here 
-    // const color_switcher_root = createRoot(document.getElementById("color-switcher"));
-    // color_switcher_root.render(color_bar);
+    const color_switcher_root = createRoot(document.getElementById("color-switcher"));
+    color_switcher_root.render(color_bar);
   },
 
   _setOption: function (key, value) {
     let self = this;
     // console.log(`_setOption in color-switcher.js`);
     self.options[key] = value;
-
-    if (key === "color") {
-      self.color_bar.setState({
-        colormap: Number(self.options.colormap),
-      });
-    }
   },
 
   // Return a d3 rgb object with the suggested
@@ -103,11 +95,10 @@ $.widget("slycat.colorswitcher", {
 
   // Return a d3 linear color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
-  get_color_scale: function (name, min, max) {
+  get_color_scale: function (min, max) {
     rangeMin = min === undefined ? 0.0 : min;
     rangeMax = max === undefined ? 1.0 : max;
-    let colorMapName =
-      name === undefined ? this.options.colormap : this.color_bar.get_selected_colormap();
+    let colorMapName = this.options.colormap;
 
     let domain = [];
     let domain_scale = d3.scale
@@ -125,11 +116,10 @@ $.widget("slycat.colorswitcher", {
 
   // Return a d3 log color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
-  get_color_scale_log: function (name, min, max) {
+  get_color_scale_log: function (min, max) {
     rangeMin = min === undefined ? 0.0 : min;
     rangeMax = max === undefined ? 1.0 : max;
-    let colorMapName =
-      name === undefined ? this.options.colormap : this.color_bar.get_selected_colormap();
+    let colorMapName = this.options.colormap;
 
     let domain = [];
     let domain_scale = d3.scale
@@ -144,22 +134,16 @@ $.widget("slycat.colorswitcher", {
 
   // Return a d3 ordinal color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing an array of values to suit their own needs.
-  get_color_scale_ordinal: function (name, values) {
-    if (name === undefined) name = this.options.colormap;
+  get_color_scale_ordinal: function (values) {
     if (values === undefined) values = [0, 1];
 
     let tempOrdinal = d3.scale.ordinal().domain(values).rangePoints([0, 100], 0);
-    let tempColorscale = this.get_color_scale(name, 0, 100);
+    let tempColorscale = this.get_color_scale(this.options.colormap, 0, 100);
     let rgbRange = [];
     for (let i = 0; i < values.length; i++) {
       rgbRange.push(tempColorscale(tempOrdinal(values[i])));
     }
     return d3.scale.ordinal().domain(values).range(rgbRange);
-  },
-
-  // Deprecated
-  get_color_map_ordinal: function (name, values) {
-    return this.get_color_scale_ordinal(name, values);
   },
 
   get_gradient_data: function (name) {
