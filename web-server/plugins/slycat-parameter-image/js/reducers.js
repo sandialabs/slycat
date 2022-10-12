@@ -44,6 +44,7 @@ import {
   SET_USER_ROLE,
   SET_TABLE_STATISTICS,
   SET_TABLE_METADATA,
+  SET_VIDEO_SYNC_TIME
 } from './actions';
 
 import { 
@@ -554,6 +555,11 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           table_metadata: _.cloneDeep(action.table_metadata)
         }
+      })
+
+    case SET_VIDEO_SYNC_TIME:
+      return Object.assign({}, state, {
+        video_sync_time: action.video_sync_time
       })
 
     default:

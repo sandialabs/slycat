@@ -13,7 +13,7 @@ import ControlsButtonVarOptions from "./ControlsButtonVarOptions";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import $ from "jquery";
-import { toggleSyncScaling, toggleSyncThreeDColorvar } from "../actions";
+import { toggleSyncScaling, toggleSyncThreeDColorvar, setVideoSyncTime } from "../actions";
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -21,8 +21,6 @@ class ControlsBar extends React.Component {
     this.state = {
       auto_scale: this.props.auto_scale,
       video_sync: this.props.video_sync,
-      video_sync_time: this.props.video_sync_time,
-      video_sync_time_value: this.props.video_sync_time,
       var_settings: this.props.var_settings,
     };
     this.scatterplot_id = "scatterplot-controls";
@@ -137,23 +135,8 @@ class ControlsBar extends React.Component {
   };
 
   set_video_sync_time = (value) => {
-    const new_video_sync_time = value;
-    this.setState((prevState, props) => {
-      this.props.element.trigger("video-sync-time", value);
-      // Setting both video_sync_time, which tracks the validated video_sync_time, and
-      // video_sync_time_value, which tracks the value of the input field and can contain invalidated data (letters, negatives, etc.)
-      return {
-        video_sync_time: value,
-        video_sync_time_value: value,
-      };
-    });
-  };
-
-  set_video_sync_time_value = (e) => {
-    const new_video_sync_time = e.target.value;
-    this.setState((prevState, props) => {
-      return { video_sync_time_value: new_video_sync_time };
-    });
+    this.props.setVideoSyncTime(value);
+    this.props.element.trigger("video-sync-time", value);
   };
 
   trigger_show_all = (e) => {
@@ -435,8 +418,7 @@ class ControlsBar extends React.Component {
                 <ControlsVideo
                   video_sync={this.state.video_sync}
                   set_video_sync={this.set_video_sync}
-                  video_sync_time_value={this.state.video_sync_time_value}
-                  set_video_sync_time_value={this.set_video_sync_time_value}
+                  video_sync_time={this.props.video_sync_time}
                   set_video_sync_time={this.set_video_sync_time}
                   any_video_open={any_video_open}
                   button_style={button_style}
@@ -502,6 +484,7 @@ const mapStateToProps = (state, ownProps) => {
     xy_pair_selected: xy_pair_selected,
     selection: state.selected_simulations,
     hidden_simulations: state.hidden_simulations,
+    video_sync_time: state.video_sync_time,
   };
 };
 
@@ -510,6 +493,7 @@ export default connect(
   {
     toggleSyncScaling,
     toggleSyncThreeDColorvar,
+    setVideoSyncTime,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this

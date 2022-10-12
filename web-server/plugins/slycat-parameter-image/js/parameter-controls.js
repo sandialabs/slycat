@@ -3,7 +3,6 @@
    Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 import React from "react";
-import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import "jquery-ui";
 import ControlsBar from "./Components/PSControlsBar";
@@ -139,15 +138,10 @@ $.widget("parameter_image.controls", {
         indices={self.options.indices}
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
-        video_sync_time={self.options["video-sync-time"]}
       />
     );
-    ReactDOM.render(controls_bar, document.getElementById("react-controls"));
-    // React 18 createRoot conversion breaks here 
-    // const react_controls_root = createRoot(document.getElementById("react-controls"));
-    // react_controls_root.render(controls_bar);
-
-    self.ControlsBarComponent = controls_bar_ref.current;
+    const react_controls_root = createRoot(document.getElementById("react-controls"));
+    react_controls_root.render(controls_bar);
 
     $("#controls-pane").on("show.bs.dropdown", function (event) {
       // Get all dropdown menus inside this element
@@ -163,16 +157,7 @@ $.widget("parameter_image.controls", {
 
   _setOption: function (key, value) {
     var self = this;
-
     //console.log("parameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
-    if (key == "nothing") {
-      return;
-    } else if (key == "video-sync-time") {
-      self.ControlsBarComponent.setState({
-        video_sync_time: self.options["video-sync-time"],
-        video_sync_time_value: self.options["video-sync-time"],
-      });
-    }
   },
 });
