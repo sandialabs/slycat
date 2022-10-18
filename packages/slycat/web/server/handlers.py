@@ -566,15 +566,14 @@ def create_project_data(mid, aid, file):
         except:
             pass
 
-    dimensions = [dict(name="row", end=3)]
-    attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
-
     # Edit with path to store HDF5
     hdf5_path = "/var/lib/slycat/data-store/project_data_test"
     # Edit with name for HDF5 file
-    hdf5_name = "project_data.hdf5"
+    unique_name = uuid.uuid4().hex
+    hdf5_name = f"{unique_name}.hdf5"
+    hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
 
-    h5f = h5py.File(os.path.join(hdf5_path, hdf5_name), "w")
+    h5f = h5py.File((hdf5_file_path), "w")
     h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
     h5f.close()
 
@@ -607,6 +606,7 @@ def create_project_data(mid, aid, file):
         data = {
             "_id": did,
             "type": "project_data",
+            "hdf5_name": hdf5_name,
             "file_name": formatted_timestamp + "_" + aid[1],
             "data_table": aid[0],
             "project": pid,
