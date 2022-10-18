@@ -510,14 +510,12 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
-# @cherrypy.tools.json_in(on=True)
-# @cherrypy.tools.json_out(on=True)
-def create_project_data_from_pid(pid, file=None):
+def create_project_data(mid, aid, file):
     """
-    creates a project level data object from a project id 
-    that can be used to create new
+    creates a project level data object that can be used to create new
     models in the current project
-    :param file_name: artifact ID
+    :param mid: model ID
+    :param aid: artifact ID
     :param file: file attachment
     :return: not used
     """
@@ -536,12 +534,19 @@ def create_project_data_from_pid(pid, file=None):
         return True
 
     rows = []
-    file = file.file.read().decode('utf-8')
-    split_file = file.split('\r\n')
-    for attribute in split_file:
-        rows.append(attribute)
 
-    columns = list(*rows)
+    split_file = file[0].split('\n')
+
+    for row in split_file:
+        row_list = [row]
+        split_row = row_list[0].split(',')
+        rows.append(split_row)
+
+    columns = numpy.array(rows).T
+
+    for i, column in enumerate(columns):
+        for j, entry in enumerate(column):
+            columns[i,j] = entry.encode("utf-8")
 
     column_names = [name.strip() for name in rows[0]]
     column_names = ["%eval_id"] + column_names
@@ -565,27 +570,15 @@ def create_project_data_from_pid(pid, file=None):
     attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
 
     # Edit with path to store HDF5
-    hdf5_path = ""
+    hdf5_path = "/var/lib/slycat/data-store/project_data_test"
     # Edit with name for HDF5 file
     hdf5_name = "project_data.hdf5"
 
-    with h5py.File(os.path.join(hdf5_path, hdf5_name), "w") as outFile:
-        arrayset = slycat.hdf5.start_arrayset(outFile)
-        array = arrayset.start_array(0, dimensions, attributes)
-        for attribute, column in enumerate(columns):
-            array.set_data(attribute, slice(0, column.shape[0]), column)
+    h5f = h5py.File(os.path.join(hdf5_path, hdf5_name), "w")
+    h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
+    h5f.close()
 
-    cherrypy.log.error("[MICROSERVICE] Saved project data as HDF5.")
-
-def create_project_data(mid, aid, file):
-    """
-    creates a project level data object that can be used to create new
-    models in the current project
-    :param mid: model ID
-    :param aid: artifact ID
-    :param file: file attachment
-    :return: not used
-    """
+    # Make the entry in couch for project data
     content_type = "text/csv"
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
