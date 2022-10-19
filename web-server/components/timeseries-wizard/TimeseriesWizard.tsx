@@ -16,7 +16,7 @@ import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
 import RemoteFileBrowserNoSelector from 'components/RemoteFileBrowserNoSelector.tsx'
 import SlycatSelector from 'components/SlycatSelector.tsx';
 import server_root from "js/slycat-server-root";
-import cloneDeep from "lodash";
+import { cloneDeep } from "lodash";
 import markings from "js/slycat-markings";
 
 /**
@@ -427,8 +427,10 @@ export default class TimeseriesWizard extends React.Component<
       });
       if (markings.length) {
         const configured_markings = markings.map((marking:any) => {return {text: marking["label"], value: marking["type"]} });
-        this.setState({ marking: configured_markings });
-        this.create_model();
+        // setState is asynchronous, so have to pass create_model as callback to it instead of calling it immediately after it.
+        // This is because create_model tries to get marking from the state and sometimes just gets the initial empty array instead.
+        this.setState({ marking: configured_markings }, this.create_model);
+        // this.create_model();
       }
     });
   }
@@ -525,8 +527,10 @@ export default class TimeseriesWizard extends React.Component<
   }
 
   cleanup = () => {
-    this.setState(initialState);
+    // delete_model_fetch should be called before resetting state, otherwise the model's id might be erased 
+    // before the call to delete the model
     client.delete_model_fetch({ mid: this.state.model['id'] });
+    this.setState(initialState);    
   };
 
   create_model = () => {
