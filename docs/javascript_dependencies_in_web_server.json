@@ -51,6 +51,9 @@
     "name": "./web-server/components/RemoteFileBrowser.tsx"
   },
   {
+    "name": "./web-server/components/RemoteFileBrowserNoSelector.tsx"
+  },
+  {
     "name": "./web-server/components/ScatterplotOptions.js"
   },
   {
@@ -162,9 +165,6 @@
     "name": "./web-server/js/slycat-file-uploader-factory.js"
   },
   {
-    "name": "./web-server/js/slycat-ga.js + 13 modules"
-  },
-  {
     "name": "./web-server/js/slycat-local-browser.js"
   },
   {
@@ -198,7 +198,7 @@
     "name": "./web-server/js/slycat-parsers.js"
   },
   {
-    "name": "./web-server/js/slycat-plugins.js + 82 modules"
+    "name": "./web-server/js/slycat-plugins.js + 83 modules"
   },
   {
     "name": "./web-server/js/slycat-project-main.js"
