@@ -34,19 +34,36 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # convert from meta data from row-oriented to column-oriented data,
     # and convert to numeric columns where possible.
     meta_column_types = ["string" for name in meta_column_names]
+    alpha_column_types = ["string" for name in meta_column_names]
     meta_columns = list(zip(*meta_rows))
+    alpha_columns = list(zip(*meta_rows))
     for index in range(len(meta_columns)):
         try:
+
             meta_columns[index] = numpy.array(meta_columns[index], dtype="float64")
+            alpha_columns[index] = numpy.array(meta_columns[index], dtype="float64")
 
             # if there are any nan values using strings instead
             if numpy.any(numpy.isnan(meta_columns[index])):
+
+                # for alpha columns keep with float64
+                alpha_column_types[index] = "float64"
+
+                # for meta_columns use strings
                 meta_columns[index] = numpy.array(meta_columns[index], dtype="str")
+
+                # replace "nan" with better looking "NaN"
+                for i in range(len(meta_columns[index])):
+                    if meta_columns[index][i] == "nan":
+                        meta_columns[index][i] = "NaN"
+
             else:
                 meta_column_types[index] = "float64"
+                alpha_column_types[index] = "float64"
 
         except:
             meta_columns[index] = numpy.array(meta_columns[index], dtype="str")
+            alpha_columns[index] = meta_columns[index]
 
     # convert variable meta data from row-oriented to column-oriented data
     meta_var_cols = list(zip(*meta_vars))
@@ -68,7 +85,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
         landmarks=landmarks, use_coordinates=use_coordinates)
 
     # finally compute alpha cluster values
-    alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types, 
+    alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, alpha_columns, alpha_column_types, 
         landmarks=landmarks, use_coordinates=use_coordinates)
 
     dac_error.log_dac_msg("Pushing data to database.")

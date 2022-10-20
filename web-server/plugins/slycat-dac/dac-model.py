@@ -782,6 +782,9 @@ def register_slycat_plugin(context):
         # intersect time flag
         intersect_time = kwargs["intersect_time"]
 
+        # combine tables flag
+        combine_tables = kwargs["combine_tables"]
+
         # get models to compare from database
         model_ids_selected = kwargs["models_selected"][1:]
         models_selected = []
@@ -852,20 +855,22 @@ def register_slycat_plugin(context):
             new_metadata = slycat.web.server.get_model_arrayset_metadata(database, models_selected[i],
                             "dac-datapoints-meta")[0]["attributes"]
 
-            # same number of columns?
-            if len(origin_metadata) != len(new_metadata):
-                return json.dumps(["Error", 'model "' +
-                                   model_names[i] + '" table columns do not match existing model ("' +
-                                   model["name"] + '").'])
+            # same number of columns?  (only check if user does not want to combine tables)
+            if not combine_tables:
 
-            # compare type and name for metadata tables
-            for j in range(len(origin_metadata)):
-                if (origin_metadata[j]["type"] != new_metadata[j]["type"]) or \
-                   (origin_metadata[j]["name"] != new_metadata[j]["name"]):
-
+                if len(origin_metadata) != len(new_metadata):
                     return json.dumps(["Error", 'model "' +
-                                       model_names[i] + '" table columns do not match existing model ("' +
-                                       model["name"] + '").'])
+                                    model_names[i] + '" table columns do not match existing model ("' +
+                                    model["name"] + '").'])
+
+                # compare type and name for metadata tables
+                for j in range(len(origin_metadata)):
+                    if (origin_metadata[j]["type"] != new_metadata[j]["type"]) or \
+                    (origin_metadata[j]["name"] != new_metadata[j]["name"]):
+
+                        return json.dumps(["Error", 'model "' +
+                                        model_names[i] + '" table columns do not match existing model ("' +
+                                        model["name"] + '").'])
 
         return json.dumps(["Success", 1])
 
@@ -881,6 +886,9 @@ def register_slycat_plugin(context):
         # do we need to intersect time points?
         intersect_time = kwargs["intersect_time"]
 
+        # do we want to combine tables?
+        combine_tables = kwargs["combine_tables"]
+
         models_selected = []
         model_names = []
         for i in range(len(model_ids_selected)):
@@ -891,14 +899,15 @@ def register_slycat_plugin(context):
         stop_event = threading.Event()
         thread = threading.Thread(target=combine_models_thread,
                                   args=(database, model, models_selected,
-                                        new_model_type, model_names, intersect_time, stop_event))
+                                        new_model_type, model_names, intersect_time, 
+                                        combine_tables, stop_event))
         thread.start()
 
         return json.dumps(["Success", 1])
 
     # thread that does actual work for combine by recomputing
     def combine_models_thread(database, model, models_selected, new_model_type,
-                                        model_names, intersect_time, stop_event):
+                                        model_names, intersect_time, combine_tables, stop_event):
 
         # put entire thread into a try-except block in order
         # to log and report loading errors
@@ -917,18 +926,44 @@ def register_slycat_plugin(context):
 
             # get metadata column names/types
             meta_column_names = []
+            meta_column_types = []
             for i in range(len(metadata)):
                 meta_column_names.append(metadata[i]["name"])
+                meta_column_types.append(metadata[i]["type"])
+
+            # if we are combining non-matching tables, add additional columns
+            num_models = len(models_selected)
+            if combine_tables:
+
+                # record combination in log.
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                    'Combined tables columns.  Values not present will be marked "Not Present" or given ' +
+                    'nan (not a number) values.')
+
+                # go through each model
+                for i in range(num_models):
+
+                    metadata = slycat.web.server.get_model_arrayset_metadata(database,
+                        models_selected[i], "dac-datapoints-meta")[0]["attributes"]
+
+                    # if new column is found, add to end of list
+                    for j in range(len(metadata)):
+                        if metadata[j]["name"] not in meta_column_names:
+                            meta_column_names.append(metadata[j]["name"])
+                            meta_column_types.append(metadata[j]["type"])
 
             # keep track of model origin
             from_model = []
 
             # merge tables into new table
             num_cols = len(meta_column_names)
-            num_models = len(models_selected)
             num_rows_per_model = []
             meta_rows = []
             for i in range(num_models):
+
+                # get table metadata
+                metadata = slycat.web.server.get_model_arrayset_metadata(database,
+                    models_selected[i], "dac-datapoints-meta")[0]["attributes"]
 
                 # get table data
                 meta_table = slycat.web.server.get_model_arrayset_data(database,
@@ -946,9 +981,21 @@ def register_slycat_plugin(context):
                 num_rows = len(meta_table[0])
                 num_rows_per_model.append(num_rows)
                 for j in range(num_rows):
+
+                    # initialize empty row to "Not Present", or NaN values
                     meta_row_j = []
                     for k in range(num_cols):
-                        meta_row_j.append(meta_table[k][j])
+                        if meta_column_types[k] == 'string' or \
+                           meta_column_types[k] == b'string':
+                            meta_row_j.append("Not Present")
+                        else:
+                            meta_row_j.append(float('nan'))
+
+                    for k in range(len(metadata)):
+
+                        # find column header exists in master list
+                        col_ind = meta_column_names.index(metadata[k]["name"])
+                        meta_row_j[col_ind] = meta_table[k][j]
 
                     # use existing model origin, if available
                     if len(model_origin) > 0:

@@ -26,7 +26,7 @@ class ControlsDropdown extends React.Component {
             href='#' 
             key={item.key} 
             className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
-            onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}
+            onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e, this.props)}
             style={item.style}
           >
             {item.name}

@@ -47,6 +47,9 @@ function constructor(params)
     // dac time intersection flag for combining models
     component.dac_intersect_time = ko.observable(false);
 
+    // dac combine tables flag
+    component.dac_combine_tables = ko.observable(false);
+
     // creates a model of type "DAC"
     component.create_model = function() {
 
@@ -251,7 +254,8 @@ function constructor(params)
                 type: "DAC",
                 command: "check_compatible_models",
                 parameters: {models_selected: models_selected,
-                             intersect_time: component.dac_intersect_time()},
+                             intersect_time: component.dac_intersect_time(),
+                             combine_tables: component.dac_combine_tables()},
 		        success: function (result)
 		        {
 		            // convert result to variable
@@ -334,7 +338,8 @@ function constructor(params)
                                 command: "combine_models",
                                 parameters: {models_selected: models_selected,
                                              model_type: component.dac_model_type(),
-                                             intersect_time: component.dac_intersect_time()},
+                                             intersect_time: component.dac_intersect_time(),
+                                             combine_tables: component.dac_combine_tables()},
                                 success: function (result)
                                 {
 

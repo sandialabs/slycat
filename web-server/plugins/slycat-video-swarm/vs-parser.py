@@ -10,7 +10,6 @@
 
 import cherrypy
 import slycat.web.server
-import slycat.email
 import time
 
 # to separate actual parsing code from code called by slycat
@@ -51,7 +50,6 @@ def parse(database, model, input, files, aids, **kwargs):
     aids = [aids[0]]
 
     if len(files) != len(aids):
-        slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
     # parse file as either table or matrix

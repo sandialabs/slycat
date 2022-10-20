@@ -1,11 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
-import { changeThreeDColormap, updateThreeDColorBy } from "../actions";
+import { changeThreeDColormap, updateThreeDColorBy, toggleThreeDSync } from "../actions";
 import ControlsGroup from "components/ControlsGroup";
 import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsDropdown from "./ControlsDropdown";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
-import ControlsDropdownColor from 'components/ControlsDropdownColor';
+import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import d3 from "d3";
 
@@ -16,6 +16,11 @@ class ControlsThreeD extends React.Component {
 
   changeThreeDColorBy = (label, key) => {
     this.props.updateThreeDColorBy(this.props.currentFrame.uid, key);
+  };
+
+  set_threeD_sync = (e) => {
+    this.props.element.trigger("threeD_sync", !window.store.getState().threeD_sync);
+    this.props.toggleThreeDSync();
   };
 
   render() {
@@ -29,19 +34,19 @@ class ControlsThreeD extends React.Component {
           title={this.props.threeD_sync ? "Unsync 3D Viewers" : "Sync 3D Viewers"}
           icon={faCubes}
           active={this.props.threeD_sync}
-          set_active_state={this.props.set_threeD_sync}
+          set_active_state={this.set_threeD_sync}
           button_style={this.props.button_style}
         />
-        <ControlsDropdownColor 
+        <ControlsDropdownColor
           button_style={this.props.button_style}
           colormaps={slycat_threeD_color_maps}
           colormap={this.props.threeDColormap}
-          key_id='threeD-color-dropdown'
-          id='threeD-color-dropdown'
-          label='3D Color'
-          title='Change 3D color'
-          state_label='threeD_color'
-          single={false} 
+          key_id="threeD-color-dropdown"
+          id="threeD-color-dropdown"
+          label="3D Color"
+          title="Change 3D color"
+          state_label="threeD_color"
+          single={false}
           setColormap={this.props.changeThreeDColormap}
           background={this.props.threeDBackground}
         />
@@ -126,7 +131,9 @@ const mapStateToProps = (state) => {
 
   let threeDColorBy;
   if (state.three_d_colorvars) {
-    threeDColorBy = state.three_d_colorvars[state.currentFrame.uid] ? state.three_d_colorvars[state.currentFrame.uid] : ':';
+    threeDColorBy = state.three_d_colorvars[state.currentFrame.uid]
+      ? state.three_d_colorvars[state.currentFrame.uid]
+      : ":";
   }
 
   return {
@@ -137,12 +144,14 @@ const mapStateToProps = (state) => {
     threeDBackground: d3.rgb(
       state.threeD_background_color[0],
       state.threeD_background_color[1],
-      state.threeD_background_color[2],
+      state.threeD_background_color[2]
     ),
+    threeD_sync: state.threeD_sync,
   };
 };
 
 export default connect(mapStateToProps, {
   changeThreeDColormap,
   updateThreeDColorBy,
+  toggleThreeDSync,
 })(ControlsThreeD);

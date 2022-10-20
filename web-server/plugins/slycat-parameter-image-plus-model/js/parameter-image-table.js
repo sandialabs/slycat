@@ -5,9 +5,7 @@
 
 import api_root from "js/slycat-api-root";
 import d3 from "d3";
-import "jquery-ui";
-import "slickgrid/lib/jquery.event.drag-2.3.0";
-import "slickgrid/lib/jquery.event.drop-2.3.0";
+import "slickgrid/slick.interactions.js";
 import "slickgrid/slick.core";
 import "slickgrid/slick.grid";
 import "slickgrid/plugins/slick.rowselectionmodel";

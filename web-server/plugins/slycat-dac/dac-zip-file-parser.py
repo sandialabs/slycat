@@ -10,7 +10,6 @@ import numpy
 from scipy import spatial
 from sklearn.decomposition import PCA
 import slycat.web.server
-import slycat.email
 
 # zip file manipulation
 import io
@@ -58,7 +57,6 @@ def parse_csv(file):
         # dimensions = [{"name":"row", "type":"int64", "begin":0, "end":1}]
 
         # old code:
-        # slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
         # raise Exception("File must contain at least two rows.")
 
     else:
@@ -90,7 +88,6 @@ def parse_csv(file):
                 # attributes.append({"name":column[0], "type":"string"})
 
         # if len(attributes) < 1:
-        #     slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         #     raise Exception("File must contain at least one column.")
 
     return data # attributes, dimensions, data

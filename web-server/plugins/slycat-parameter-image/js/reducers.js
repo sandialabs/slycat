@@ -12,7 +12,7 @@ import {
   SET_THREE_D_COLORBY_RANGE,
   SET_THREE_D_COLORBY_LEGEND,
   UPDATE_THREE_D_CAMERAS,
-  UPDATE_THREE_D_SYNC,
+  TOGGLE_THREE_D_SYNC,
   SET_UNSELECTED_POINT_SIZE,
   SET_UNSELECTED_BORDER_SIZE,
   SET_SELECTED_POINT_SIZE,
@@ -43,6 +43,8 @@ import {
   SET_SELECTED_SIMULATIONS,
   SET_USER_ROLE,
   SET_TABLE_STATISTICS,
+  SET_TABLE_METADATA,
+  SET_VIDEO_SYNC_TIME
 } from './actions';
 
 import { 
@@ -204,9 +206,9 @@ export default function ps_reducer(state = initialState, action) {
         }
       })
     
-    case UPDATE_THREE_D_SYNC:
+    case TOGGLE_THREE_D_SYNC:
       return Object.assign({}, state, {
-        threeD_sync: action.threeD_sync
+        threeD_sync: !state.threeD_sync
       })
 
     case SET_UNSELECTED_POINT_SIZE:
@@ -545,6 +547,19 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           table_statistics: action.table_statistics.slice(0)
         }
+      })
+
+    case SET_TABLE_METADATA:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          table_metadata: _.cloneDeep(action.table_metadata)
+        }
+      })
+
+    case SET_VIDEO_SYNC_TIME:
+      return Object.assign({}, state, {
+        video_sync_time: action.video_sync_time
       })
 
     default:

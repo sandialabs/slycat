@@ -7,7 +7,6 @@
 import csv
 import numpy
 import slycat.web.server
-import slycat.email
 
 # zip file manipulation
 import io

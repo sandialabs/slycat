@@ -18,8 +18,7 @@ import client from "js/slycat-web-client";
 import URI from "urijs";
 import "jquery-ui/ui/keycode";
 import * as dialog from "js/slycat-dialog";
-import "slickgrid/lib/jquery.event.drag-2.3.0";
-import "slickgrid/lib/jquery.event.drop-2.3.0";
+import "slickgrid/slick.interactions.js";
 import "slickgrid/slick.core";
 import "slickgrid/slick.grid";
 import "slickgrid/plugins/slick.rowselectionmodel";
@@ -368,9 +367,21 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
             // sort by bookmarked column
             grid_view.setSortColumn(init_sort_col, init_sort_order);
 
-            var comparer = function (a,b) {
-	        	return (a[init_sort_col] > b[init_sort_col]) ? 1 : -1;
-	        }
+			// standard ascii compare
+            // var comparer = function (a,b) {
+	        // 	 return (a[init_sort_col] > b[init_sort_col]) ? 1 : -1;
+	        // }
+			
+			// natural sort compare for strings
+			var comparer = function (a,b) {
+				if (typeof(a[init_sort_col]) == "string") {
+					return a[init_sort_col].localeCompare(b[init_sort_col], 
+						navigator.languages[0] || navigator.language,
+						{numeric: true, ignorePunctuation: true});
+				} else {
+					return (a[init_sort_col] > b[init_sort_col]) ? 1 : -1;
+				}
+			}
 
 	        data_view.sort(comparer, init_sort_order);
         }
@@ -1043,8 +1054,19 @@ function col_sort (e, args)
     }
 
     // sort table
+	// var comparer = function (a,b) {
+	// 	 return (a[args.sortCol.field] > b[args.sortCol.field]) ? 1 : -1;
+	// }
+
+	// natural sort compare for strings
 	var comparer = function (a,b) {
-		return (a[args.sortCol.field] > b[args.sortCol.field]) ? 1 : -1;
+		if (typeof(a[args.sortCol.field]) == "string") {
+			return a[args.sortCol.field].localeCompare(b[args.sortCol.field], 
+				navigator.languages[0] || navigator.language,
+				{numeric: true, ignorePunctuation: true});
+		} else {
+			return (a[args.sortCol.field] > b[args.sortCol.field]) ? 1 : -1;
+		}
 	}
 
 	data_view.sort(comparer, args.sortAsc);

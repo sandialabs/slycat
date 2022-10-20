@@ -617,16 +617,41 @@ function update_color_by_col_data (data, data_col, select_col)
     // check for string data
     if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
 
-        // use alphabetical order by number to color
-
         // get string data
         var color_by_string_data = data["data"][data_col];
-
-        // get unique sorted string data
-        var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
         
-        // set curr_color_by_col
-        set_curr_color_by_col (color_by_string_data, unique_sorted_string_data);
+        // attempt to convert strings to numbers
+        let num_array = [];
+        let any_nums = false;
+        for (let i = 0; i < color_by_string_data.length; i++) {
+            num_array.push(Number(color_by_string_data[i]));
+            if (!Number.isNaN(num_array[i])) {
+                any_nums = true;
+            }
+        }
+
+        // if there are nay numbers, use those + NaNs for the remaining strings
+        if (any_nums) {
+
+            curr_color_by_col = num_array;
+            
+        } else {
+
+            // use alphabetical order by number to color
+
+            // natural sort compare for strings
+            var comparer = function (a,b) {
+                return a.localeCompare(b, navigator.languages[0] || navigator.language,
+                        {numeric: true, ignorePunctuation: true});
+            }
+
+            // get unique sorted string data
+            var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort(comparer);
+            
+            // set curr_color_by_col
+            set_curr_color_by_col (color_by_string_data, unique_sorted_string_data);
+        
+        }
 
     // for categorical data, use given order of categories
     } else if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "categorical") {
