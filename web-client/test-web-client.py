@@ -20,6 +20,8 @@ import slycat.web.client.list_markings as list_markings
 import slycat.web.client.list_projects as list_projects
 import slycat.web.client.cca_random as cca_random
 import slycat.web.client.dac_tdms as dac_tdms
+import slycat.web.client.ps_csv as ps_csv
+import slycat.web.client.dac_gen as dac_gen
 
 # slycat connection parameters for localhost
 SLYCAT_CONNECTION = ['--user', 'slycat', '--password', 'slycat',
@@ -40,7 +42,7 @@ TEST_MARKING = ['--marking', 'faculty']
 # TEST_MARKING = ['--marking', 'ouo3']
 
 # testing project name
-# TEST_PROJECT = ['--project-name', 'Unit/Integration Testing']
+TEST_PROJECT = ['--project-name', 'Unit/Integration Testing']
 
 # test landmakrs
 TEST_LANDMARKS = ['--num-landmarks', '30']
@@ -48,6 +50,33 @@ TEST_LANDMARKS = ['--num-landmarks', '30']
 # tdms data information
 TDMS_FILE = ['../../dac-switchtubes/4A3392_99_092920_101_Setup.tdms']
 TDMS_ZIP = ['../../dac-switchtubes/2A8181_02_000001_Data Package/2A8181_02_000001_001.zip']
+
+# parameter space files
+CARS_FILE = ['../../slycat-data/cars.csv']
+PP_FILE = ['../../slycat-data/punch_plate_10_random_samples_3D.csv']
+
+# DAC PCA weather file
+DAC_PCA_FILE = ['../../slycat-data/dial-a-cluster/weather-dac-gen-pca.zip']
+
+# input/output columns for cars data file
+CARS_INPUT = ['--input-columns', 'Model', 'Cylinders', 'Displacement', 'Weight',
+              'Year', 'Origin']
+CARS_OUTPUT = ['--output-columns', 'MPG', 'Horsepower', 'Acceleration']
+
+# input/output/media for punch plate file
+PP_INPUT = ['--input-columns', 'velocity', 'friction', 
+            'density_1', 'density_2', 'density_3', 
+            'youngs_1', 'youngs_2', 'youngs_3']
+PP_OUTPUT = ['--output-columns',
+             'element_10616_punch_tip_STRESS_xx_MIN', 'element_10616_punch_tip_STRESS_xx_MAX',
+             'element_10616_punch_tip_STRESS_yy_MIN', 'element_10616_punch_tip_STRESS_yy_MAX',
+             'element_10616_punch_tip_STRESS_zz_MIN', 'element_10616_punch_tip_STRESS_zz_MAX',
+             'element_10616_punch_tip_STRESS_xy_MIN', 'element_10616_punch_tip_STRESS_xy_MAX',
+             'element_10616_punch_tip_STRESS_yz_MIN', 'element_10616_punch_tip_STRESS_yz_MAX',
+             'element_10616_punch_tip_STRESS_zx_MIN', 'element_10616_punch_tip_STRESS_zx_MAX']
+PP_MEDIA = ['--media-columns', '3D']
+PP_HOSTNAME = [] # ['--media-hostname', 'slycat']
+PP_STRIP = [] # ['--strip', '1']
 
 # turn off warnings for all tests
 def ignore_warnings(test_func):
@@ -149,6 +178,43 @@ class TestSlycatWebClient(unittest.TestCase):
         arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP +
                                            TEST_MARKING + TEST_PROJECT + TEST_LANDMARKS)
         dac_tdms.create_model(arguments, dac_tdms.log)
+
+    @ignore_warnings
+    def test_ps_cars(self):
+        """
+        Test Parameter Space loader with cars.csv file.
+        """
+
+        # create PS model from cars.csv
+        ps_parser = ps_csv.parser()
+        arguments = ps_parser.parse_args(SLYCAT_CONNECTION + CARS_FILE + CARS_INPUT + 
+                                         CARS_OUTPUT + TEST_MARKING + TEST_PROJECT)
+        ps_csv.create_model(arguments, ps_csv.log)
+
+    @ignore_warnings
+    def test_ps_punch_plate(self):
+        """
+        Test Parameter Space loader with punch_plate_10_random_samples_3D.csv file.
+        """
+
+        # create PS model from punch_plate file
+        ps_parser = ps_csv.parser()
+        arguments = ps_parser.parse_args(SLYCAT_CONNECTION + PP_FILE + PP_INPUT + 
+                                         PP_OUTPUT + PP_MEDIA + PP_HOSTNAME + PP_STRIP +
+                                         TEST_MARKING + TEST_PROJECT)
+        ps_csv.create_model(arguments, ps_csv.log)        
+
+    @ignore_warnings
+    def test_dac_gen(self):
+        """
+        Test Dial-A-Cluster generic .zip loader with weather data.
+        """
+
+        # create DAC model from weather data using PCA
+        dac_parser = dac_gen.parser()
+        arguments = dac_parser.parse_args(SLYCAT_CONNECTION + DAC_PCA_FILE + 
+                                          TEST_MARKING + TEST_PROJECT)
+        dac_gen.create_model(arguments, dac_gen.log)
 
 if __name__ == '__main__':
     unittest.main()

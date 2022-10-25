@@ -43,13 +43,17 @@ copyfile('../packages/slycat/darray.py', 'slycat/darray.py')
 copyfile('../packages/slycat/__init__.py', 'slycat/__init__.py')
 copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 
+# copy dac computations from slycat
+copyfile('../web-server/plugins/slycat-dac/py/dac_compute_coords.py', 
+         'slycat/web/client/dac_compute_coords.py')
+
 # get Slycat version
 import slycat
 VERSION = slycat.__version__
 
 # development version
 # VERSION = VERSION
-VERSION = "3.2.0"
+VERSION = "3.3.0"
 
 # get README.md
 import pathlib
@@ -88,7 +92,9 @@ setup(
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",
-            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main"
+            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main",
+            "ps_csv=slycat.web.client.ps_csv",
+            "dac_gen=slycat.web.client.dac_gen"
         ]
     },
 )
