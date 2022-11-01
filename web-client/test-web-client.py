@@ -22,6 +22,7 @@ import slycat.web.client.cca_random as cca_random
 import slycat.web.client.dac_tdms as dac_tdms
 import slycat.web.client.ps_csv as ps_csv
 import slycat.web.client.dac_gen as dac_gen
+import slycat.web.client.dac_run_chart as dac_run_chart
 
 # slycat connection parameters for localhost
 SLYCAT_CONNECTION = ['--user', 'slycat', '--password', 'slycat',
@@ -31,7 +32,7 @@ SLYCAT_CONNECTION = ['--user', 'slycat', '--password', 'slycat',
 TEST_MARKING = ['--marking', 'faculty']
 
 # slycat connection for qual
-# SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual.sandia.gov',
+# SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
 #                      '--kerberos']
 
 # slycat connection for prod2
@@ -45,11 +46,20 @@ TEST_MARKING = ['--marking', 'faculty']
 TEST_PROJECT = ['--project-name', 'Unit/Integration Testing']
 
 # test landmakrs
-TEST_LANDMARKS = ['--num-landmarks', '30']
+TEST_LANDMARKS = ['--num-landmarks', '30', '--model-name', 'DAC Landmarks']
+
+# test PCA
+TEST_PCA_COMPS = ['--num-PCA-comps', '10', '--model-name', 'DAC PCA']
 
 # tdms data information
 TDMS_FILE = ['../../dac-switchtubes/4A3392_99_092920_101_Setup.tdms']
 TDMS_ZIP = ['../../dac-switchtubes/2A8181_02_000001_Data Package/2A8181_02_000001_001.zip']
+
+# DAC run chart files
+RUN_CHART_DIR = ['../../dac-switchtubes/']
+RUN_CHART_PART_NUM = ['2A1828']
+RUN_CHART_OUTPUT = ['../../dac-switchtubes/TestRunChart.zip']
+RUN_CHART_INFER = ['--infer-last-value']
 
 # parameter space files
 CARS_FILE = ['../../slycat-data/cars.csv']
@@ -178,6 +188,33 @@ class TestSlycatWebClient(unittest.TestCase):
         arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP +
                                            TEST_MARKING + TEST_PROJECT + TEST_LANDMARKS)
         dac_tdms.create_model(arguments, dac_tdms.log)
+
+    # test dac tdms loader with PCA
+    @ignore_warnings
+    def test_dac_tdms_pca(self):
+        """
+        Test DAC TDMS zip loader using PCA.
+        """
+
+        # create TDMS model using PCA from zip file
+        tdms_parser = dac_tdms.parser()
+        arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP +
+                                           TEST_MARKING + TEST_PROJECT + TEST_PCA_COMPS)
+        dac_tdms.create_model(arguments, dac_tdms.log)
+
+    # test dac run chart loader
+    @ignore_warnings
+    def test_dac_run_chart(self):
+        """
+        Test DAC Run Chart creation script.
+        """
+
+        # create run chart model from 2A1828
+        run_chart_parser = dac_run_chart.parser()
+        arguments = run_chart_parser.parse_args(SLYCAT_CONNECTION + 
+                        RUN_CHART_DIR + RUN_CHART_PART_NUM + RUN_CHART_OUTPUT +
+                        RUN_CHART_INFER + TEST_MARKING + TEST_PROJECT)
+        dac_run_chart.create_model(arguments, dac_run_chart.log)
 
     @ignore_warnings
     def test_ps_cars(self):

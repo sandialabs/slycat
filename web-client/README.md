@@ -175,6 +175,15 @@ Dial-A-Cluster models can be loaded using different formats.  The first
 format is the generic dial-a-cluster format, described more fully in
 the Slycat user manual.
 
+To upload a DAC generic .zip file, use
+
+```sh
+$ dac_gen dac-gen.zip
+```
+
+This will create a model from a single .zip file containing the appropriate
+folders with the pre-computed distance or PCA matrices.
+
 ## Dial-A-Cluster TDMS Models
 
 To upload a DAC TDMS model, use
@@ -240,13 +249,14 @@ To create Dial-A-Cluster run chart model, use the dac_run_chart.py script.
 From the command line:
 
 ```sh
-$ python -m slycat.web.client.dac_run_chart root-data-directory part-num --output-zip-file run-charts.zip
+$ python -m slycat.web.client.dac_run_chart root-data-directory part-num run-charts.zip
 ```
 
 where root-data-directory is the root directory containing the data directories
 indexed by part number, and part-num is the prefix for the data directories and
-associated structure of sub directories.  By specifying --output-zip-file you will
-get a .zip file that can be loaded into dial-a-cluster through the wizard.
+associated structure of sub directories.  By specifying the (mandatory) output zip file you
+get a .zip file that can be loaded into dial-a-cluster through the wizard (or the dac_gen
+script).  You can later delete this file if it is not needed.
 
 ## Parameter Space Models
 

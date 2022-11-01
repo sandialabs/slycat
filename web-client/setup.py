@@ -43,10 +43,6 @@ copyfile('../packages/slycat/darray.py', 'slycat/darray.py')
 copyfile('../packages/slycat/__init__.py', 'slycat/__init__.py')
 copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 
-# copy dac computations from slycat
-copyfile('../web-server/plugins/slycat-dac/py/dac_compute_coords.py', 
-         'slycat/web/client/dac_compute_coords.py')
-
 # get Slycat version
 import slycat
 VERSION = slycat.__version__
