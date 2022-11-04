@@ -32,15 +32,15 @@ SLYCAT_CONNECTION = ['--user', 'slycat', '--password', 'slycat',
 TEST_MARKING = ['--marking', 'faculty']
 
 # slycat connection for qual
-# SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
-#                      '--kerberos']
+SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
+                     '--kerberos']
 
 # slycat connection for prod2
-# SLYCAT_CONNECTION = ['--host', 'https://slycat-prod2.sandia.gov',
-#                      '--kerberos']
+SLYCAT_CONNECTION = ['--host', 'https://slycat-prod2.sandia.gov',
+                     '--kerberos']
 
 # test marking for qual/prod2
-# TEST_MARKING = ['--marking', 'ouo3']
+TEST_MARKING = ['--marking', 'ouo3']
 
 # testing project name
 TEST_PROJECT = ['--project-name', 'Unit/Integration Testing']
