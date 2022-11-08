@@ -635,7 +635,8 @@ def create_model(arguments, log):
     dac_gen_args = Namespace(**vars(arguments), **{'dac_gen_zip': arguments.output_zip_file})
 
     # push model using dac_gen
-    dac_gen.upload_model(dac_gen_args, log)
+    if not arguments.do_not_upload:
+        dac_gen.upload_model(dac_gen_args, log)
 
     # should we erase the .zip file created
     if arguments.clean_up_output:
@@ -671,6 +672,10 @@ def parser ():
     # delete output file after successful model creation
     parser.add_argument("--clean-up-output", action="store_true",
         help="Delete output .zip file after successful model creation).")
+
+    # do not upload to slycat
+    parser.add_argument("--do-not-upload", action="stor_true",
+        help="Do not upload to slycat server.")
 
     # model and project names/descriptions
     parser.add_argument("--marking", default="ouo3", 
