@@ -277,11 +277,6 @@ def read_tdms_files(metadata, run_chart_matches, log):
                 # find numeric columns
                 numeric_group_df = group_df.select_dtypes('float64')
 
-                # check for NaNs
-                if numeric_group_df.isnull().values.any():
-                    log('Skipping NaN values in file "' + tdms_file_name + '".')
-                    exit()
-
                 # select headers that with matching run charts
                 header_matches = []
                 rc_matches = []
@@ -290,6 +285,12 @@ def read_tdms_files(metadata, run_chart_matches, log):
                         if run_chart in header:
                             header_matches.append(header)
                             rc_matches.append(run_chart)
+
+                # check that run charts have enough data
+                if any(pd.notna(numeric_group_df[header_matches]).sum()==0):
+                    log('Incomplete run chart data found for "' + tdms_file_path + '" -- ' +
+                        'skipping directory "' + metadata[row]["source"] + '".')
+                    skipped_rows[row] = 1
 
                 # get indices of sorted tdms types
                 rc_inds = np.argsort(rc_matches)
@@ -347,8 +348,6 @@ def read_metadata_table (metadata, arguments, log):
         # check if root properties have same header
         for j in range(len(root_props)):
             if list(root_props[j].columns) != root_head:
-                print(root_head)
-                print(root_props[j].columns)
                 raise TDMSUploadError('Found inconsistent root property header in "' + 
                     metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + '".')
 
@@ -484,7 +483,7 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
             k = k + 1
         max_time_steps.append(run_chart_max_time_steps)
 
-    # vartiable matrices are a list of matrices, one for each varible
+    # variable matrices are a list of matrices, one for each varible
     # rows are variable values, columns are time
     var_data = []
     inferred_variables = False
@@ -496,6 +495,15 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
                 # get run chart data
                 run_chart_data = list(metadata[row]["run_charts"][tdms_type].iloc[:,run_chart])
 
+                # check for NaN values
+                if np.isnan(run_chart_data).any():
+                    log('Skipping NaN values in file "' + metadata[row]["tdms_files"][tdms_type] +
+                        '" run chart "' + metadata[row]["run_charts"][tdms_type].columns[run_chart] + '".')
+                    
+                    # skip NaN values (we already checked that there 
+                    # are some non-nan values when first reading tdms files)
+                    run_chart_data = [x for x in run_chart_data if not np.isnan(x)]
+                
                 # extend run chart data by last value
                 if len(run_chart_data) < max_time_steps[tdms_type][run_chart]:
                     if arguments.infer_last_value:
@@ -503,7 +511,6 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
                             (max_time_steps[tdms_type][run_chart] - len(run_chart_data))
                         inferred_variables = True
                     else:
-                        print(metadata[row]["tdms_files"][tdms_type])
                         raise TDMSUploadError('Found run chart length discrepancy in file "' +
                             metadata[row]["tdms_files"][tdms_type] + '".  Use inference options' +
                             ' (e.g. --infer-last-value) to correct lengths by inferring data.')
@@ -588,7 +595,7 @@ def write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars,
 # helper function to convert a matrix to a comma separatedstring
 def mat2str (mat):
 
-    return '\n'.join([','.join([str(mat[j][k]).strip()
+    return '\n'.join([','.join([str(mat[j][k]).replace('\n', ' ').replace('\r', '').strip()
         for k in range(len(mat[j]))])
         for j in range(len(mat))])
 
