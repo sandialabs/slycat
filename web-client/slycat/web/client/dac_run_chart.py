@@ -277,6 +277,11 @@ def read_tdms_files(metadata, run_chart_matches, log):
                 # find numeric columns
                 numeric_group_df = group_df.select_dtypes('float64')
 
+                # check for NaNs
+                if numeric_group_df.isnull().values.any():
+                    log('Skipping NaN values in file "' + tdms_file_name + '".')
+                    exit()
+
                 # select headers that with matching run charts
                 header_matches = []
                 rc_matches = []
@@ -467,7 +472,7 @@ def read_timesteps (metadata):
 
 # construct variable matrices
 def read_variable_matrices (metadata, time_steps, arguments, log):
-    
+
     # put maximum number of time steps
     # in format of run chart data
     max_time_steps = []
@@ -526,7 +531,6 @@ def compute_PCA (var_data, arguments, log):
         try:
             dist_i = pca.fit_transform(var_data[i])
         except ValueError:
-            print(var_data[i])
             raise TDMSUploadError("Could not perform PCA, too few components.")
 
         # save PCA projections
