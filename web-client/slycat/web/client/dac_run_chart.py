@@ -107,6 +107,7 @@ def catalog_tdms_files (arguments, log):
 
         # skip if run_chart_dir is not an actual directory
         if not os.path.isdir(test_data_dir):
+            log('Skipping "' + test_data_dir + '" because it''s not a directory.')
             continue
 
         # each of the subdirectories of run_chart_dir will be a row in the 
@@ -674,7 +675,7 @@ def parser ():
         help="Delete output .zip file after successful model creation).")
 
     # do not upload to slycat
-    parser.add_argument("--do-not-upload", action="stor_true",
+    parser.add_argument("--do-not-upload", action="store_true",
         help="Do not upload to slycat server.")
 
     # model and project names/descriptions
