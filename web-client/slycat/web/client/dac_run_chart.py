@@ -526,6 +526,7 @@ def compute_PCA (var_data, arguments, log):
         try:
             dist_i = pca.fit_transform(var_data[i])
         except ValueError:
+            print(var_data[i])
             raise TDMSUploadError("Could not perform PCA, too few components.")
 
         # save PCA projections
