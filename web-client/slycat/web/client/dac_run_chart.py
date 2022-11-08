@@ -17,6 +17,7 @@ import slycat.web.client.dac_gen as dac_gen
 
 # file name manipulation
 import os
+import fnmatch
 
 # manipulating command line arguments
 from argparse import Namespace
@@ -69,7 +70,7 @@ def catalog_tdms_files (arguments, log):
 
     # gather data directories for given part number
     root_dir = arguments.input_data_dir
-    part_num = arguments.part_num
+    part_num_match = arguments.part_num_match
 
     # check that root dir exists
     if not os.path.isdir(root_dir):
@@ -78,16 +79,12 @@ def catalog_tdms_files (arguments, log):
     
     # look for directories containing data for part number provided
     root_subdirs = os.listdir(root_dir)
-    part_subdirs = []
-    for subdir in root_subdirs:
-        if part_num in subdir:
-            if os.path.isdir(os.path.join(root_dir, subdir)):
-                part_subdirs.append(subdir)
+    part_subdirs = fnmatch.filter(root_subdirs, part_num_match)
     
     # are there any subdirectories?
     if len(part_subdirs) == 0:
-        raise TDMSUploadError('Could not find any subdirectories for part number "' +
-              part_num + '".')
+        raise TDMSUploadError('Could not find any subdirectories for part number matching "' +
+              part_num_match + '".')
 
     # put subdirectories in order
     part_subdirs.sort()
@@ -108,11 +105,10 @@ def catalog_tdms_files (arguments, log):
         # look for test data directory
         test_data_dir = os.path.join(root_dir, subdir, 'Test Data')
 
-        # double check that run_chart_dir exists
+        # skip if run_chart_dir is not an actual directory
         if not os.path.isdir(test_data_dir):
-            raise TDMSUploadError('Unexpected subdirectory format for part number "' + 
-                  part_num + '".')
-        
+            continue
+
         # each of the subdirectories of run_chart_dir will be a row in the 
         # metadata table for the run chart model
         possible_run_chart_dirs = os.listdir(test_data_dir)
@@ -122,8 +118,8 @@ def catalog_tdms_files (arguments, log):
 
         # check that we found data directories
         if len(possible_run_chart_dirs) == 0:
-            raise TDMSUploadError('No data subdirectories found for part number "' + 
-                  part_num + '".')
+            raise TDMSUploadError('No data subdirectories found for part number match "' + 
+                  part_num_match + '".')
 
         # check that data directories conform to expected format
         for run_chart_dir in possible_run_chart_dirs:
@@ -136,11 +132,6 @@ def catalog_tdms_files (arguments, log):
                 log('Skipping run chart subdirectory "' + run_chart_dir + 
                     '" because it does not conform to "part_lot_batch_serial" string format.')
                 continue
-
-            # check that first id matches part number
-            if run_chart_ids[0] != part_num:
-                raise TDMSUploadError('Subdirectory "' + run_chart_ids[0] + '" prefix does not ' +
-                      'match part number "' + part_num + '".')
         
             # find .tdms files in run chart directory
             run_chart_files = os.listdir(os.path.join(test_data_dir, run_chart_dir))
@@ -350,6 +341,8 @@ def read_metadata_table (metadata, arguments, log):
         # check if root properties have same header
         for j in range(len(root_props)):
             if list(root_props[j].columns) != root_head:
+                print(root_head)
+                print(root_props[j].columns)
                 raise TDMSUploadError('Found inconsistent root property header in "' + 
                     metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + '".')
 
@@ -664,8 +657,11 @@ def parser ():
     parser.add_argument("input_data_dir", 
         help='Directory containing .tdms output files, organized ' +
              'according to part number.')
-    parser.add_argument("part_num",
-        help='Part number to use when creating run chart model.')
+
+    # part number specification
+    parser.add_argument("part_num_match",
+        help='Part number to match when creating run chart model, can included wildcards, ' +
+             'e.g. "XXXXXX*", or "XXXXXX_XX*".  Note you should use "" in Unix to pass wildcards.')
 
     # output file for dac generic format, mandatory
     parser.add_argument("output_zip_file",
