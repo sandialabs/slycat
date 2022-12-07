@@ -1261,8 +1261,14 @@ $.widget("parameter_image.scatterplot", {
         // Set number of ticks based on height of axis.
         .ticks(range_canvas[0] / 50);
       // Forces ticks at min and max axis values, but sometimes they collide
-      // with other ticks and sometimes they get rounded.
+      // with other ticks and sometimes they get rounded and just create duplicate ticks.
+      // Explored this again in December 2022 trying to address an issue where log scale
+      // was creating just a single tick. But noticed that the range was quite small, less than
+      // an order of magnitude. For larger ranges, the default d3 behaviors seems to work well.
+      // Even tried using D3 version 7, but bahavior was the same.
+      // So keeping this disable for now.
       // .tickValues( self.y_scale.ticks( range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
+
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
