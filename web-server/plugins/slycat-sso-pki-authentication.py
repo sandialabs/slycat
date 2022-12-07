@@ -13,7 +13,6 @@ def register_slycat_plugin(context):
     import slycat.web.server.database.couchdb
     import slycat.web.server.plugin
     import slycat.web.server.handlers
-    import slycat.email
 
     from urllib.parse import urlparse
     #from urlparse import urlparse

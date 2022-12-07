@@ -49,7 +49,7 @@ VERSION = slycat.__version__
 
 # development version
 # VERSION = VERSION
-VERSION = "3.2.0"
+VERSION = "3.3.1"
 
 # get README.md
 import pathlib
@@ -84,11 +84,14 @@ setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=["requests", "requests-kerberos",
-                      "numpy", "cherrypy"],
+                      "numpy", "cherrypy", "sklearn", 
+                      "nptdms", "pandas"],
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",
-            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main"
+            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main",
+            "ps_csv=slycat.web.client.ps_csv:main",
+            "dac_gen=slycat.web.client.dac_gen:main"
         ]
     },
 )

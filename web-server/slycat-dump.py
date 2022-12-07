@@ -69,6 +69,7 @@ for project_id in arguments.project_id:
     # dump project data
     project_datas_ids = list(row["id"] for row in couchdb.view("slycat/project_datas", startkey=project_id, endkey=project_id))
     for project_datas_id in project_datas_ids:
+        logging.info("Dumping projects-data {0} at {1}".format(project_datas_id, time.strftime('%X')))
         project_data = couchdb.get(project_datas_id, attachments=True)
         json.dump(project_data, open(os.path.join(arguments.output_dir, "projects-data-%s.json" % project_data["_id"]), "w"))
       

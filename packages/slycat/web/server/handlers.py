@@ -629,7 +629,9 @@ def post_project_bookmarks(pid):
             doc = {
                 "_id": bid,
                 "project": pid,
-                "type": "bookmark"
+                "type": "bookmark",
+                "created": datetime.datetime.utcnow().isoformat(),
+                "last_accessed": datetime.datetime.utcnow().isoformat()
             }
             database.save(doc)
             database.put_attachment(doc, filename="bookmark", content_type="application/json", content=content)
@@ -2294,6 +2296,12 @@ def get_bookmark(bid):
     bookmark = database.get("bookmark", bid)
     project = database.get("project", bookmark["project"])
     slycat.web.server.authentication.require_project_reader(project)
+
+    # Update last accessed
+    bookmark = database.get("bookmark", bid)
+    slycat.web.server.authentication.require_project_writer(project)
+    bookmark["last_accessed"] = datetime.datetime.utcnow().isoformat()
+    database.save(bookmark)
 
     cherrypy.response.headers["content-type"] = accept
     return database.get_attachment(bookmark, "bookmark")
