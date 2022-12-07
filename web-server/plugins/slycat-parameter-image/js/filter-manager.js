@@ -27,6 +27,7 @@ function FilterManager(model_id, bookmarker, layout, input_columns, output_colum
   self.sliders_ready = false;
   self.slidersPaneHeight = ko.observable();
   self.controls_ready = false;
+  self.store_ready = false;
   self.allFilters = ko.observableArray();
   self.active_filters = null;
   self.active_filters_ready = ko.observable(false);
@@ -63,19 +64,24 @@ function FilterManager(model_id, bookmarker, layout, input_columns, output_colum
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
    but it makes these dependencies explicit and thus will be easier to decouple later. */
 FilterManager.prototype.set_bookmark = function(bookmark) {
+  // console.debug(`FilterManager set_bookmark to %o`, bookmark);
   this.bookmark = bookmark;
 };
 
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
    but it makes these dependencies explicit and thus will be easier to decouple later. */
 FilterManager.prototype.set_other_columns = function(other_columns) {
+  // console.debug(`FilterManager set_other_columns to %o`, other_columns);
   this.other_columns = other_columns;
+  this.build_sliders();
 };
 
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
    but it makes these dependencies explicit and thus will be easier to decouple later. */
 FilterManager.prototype.set_table_metadata = function(table_metadata) {
+  // console.debug(`FilterManager set_table_metadata to %o`, table_metadata);
   this.table_metadata = table_metadata;
+  this.build_sliders();
 };
 
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
@@ -83,12 +89,15 @@ FilterManager.prototype.set_table_metadata = function(table_metadata) {
 FilterManager.prototype.set_table_statistics = function(table_statistics) {
   // console.debug(`FilterManager.prototype.set_table_statistics to %o`, table_statistics);
   this.table_statistics = table_statistics;
+  this.build_sliders();
 };
 
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
    but it makes these dependencies explicit and thus will be easier to decouple later. */
 FilterManager.prototype.notify_controls_ready = function() {
+  // console.debug(`FilterManager.prototype.notify_controls_ready`);
   this.controls_ready = true;
+  this.build_sliders();
 };
 
 FilterManager.prototype.notify_variable_value_edited = function(variable) {
@@ -109,7 +118,10 @@ FilterManager.prototype.notify_variable_value_edited = function(variable) {
 }
 
 FilterManager.prototype.notify_store_ready = function() {
+  // console.debug(`FilterManager notify_store_ready`);
+  this.store_ready = true;
   window.store.subscribe(this.update_variable_aliases);
+  this.build_sliders();
 };
 
 /* Loads unique categories for categorical variable from table data.
@@ -209,13 +221,21 @@ FilterManager.prototype.update_numeric_filter = function(target_filter) {
   }
 }
 
-FilterManager.prototype.build_sliders = function(controls_ready) {
-  // console.debug(`filter-manager.js build_sliders()`);
+FilterManager.prototype.build_sliders = function() {
+  // console.debug(`FilterManager build_sliders()`);
   var self = this;
 
-  if(!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics 
-    && (self.table_statistics.length == self.table_metadata["column-count"]) && self.other_columns) 
+  if(
+    !self.sliders_ready 
+    && self.controls_ready 
+    && self.table_metadata 
+    && self.table_statistics 
+    && self.store_ready
+    && (self.table_statistics.length == self.table_metadata["column-count"]) 
+    && self.other_columns
+    ) 
   {
+    // console.debug(`FilterManager about to start building sliders because all conditions have been met`);
     self.sliders_ready = true;
     $("#sliders-pane .load-status").css("display", "none");
 
@@ -255,6 +275,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     };
 
     var buildCategoryFilter = function(index){
+      // console.debug(`FilterManager buildCategoryFilter for index %o`, index);
       var categories = ko.observableArray();
       self.allFilters.push({
         name: ko.observable( self.get_variable_label(index) ),
@@ -274,6 +295,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     };
 
     var buildNumericFilter = function(index){
+      // console.debug(`FilterManager buildNumericFilter for index %o`, index);
       var high = ko.observable( self.table_statistics[index]["max"] );
       var low = ko.observable( self.table_statistics[index]["min"] );
       self.allFilters.push({
@@ -296,7 +318,9 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     };
 
     var rateLimit = 500;
+    // console.debug(`FilterManager rateLimit set to %o`, rateLimit);
     if ("allFilters" in self.bookmark) {
+      // console.debug(`FilterManager about to buildNumericFilter from bookmark`);
       self.allFilters = mapping.fromJS(self.bookmark["allFilters"]);
 
       // Can't trust that bookmark contains accurate variable labels, so 
@@ -373,8 +397,10 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
       }
     }
     else {
+      // console.debug(`FilterManager about to buildNumericFilter without bookmark`);
       _.each(self.category_columns, buildCategoryFilter);
 
+      // console.debug(`FilterManager about to buildNumericFilter without bookmark`);
       _.each(numeric_variables, buildNumericFilter);
 
       buildComputedFilters(self.allFilters);

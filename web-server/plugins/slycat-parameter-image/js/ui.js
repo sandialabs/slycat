@@ -558,7 +558,6 @@ $(document).ready(function () {
 
     setup_controls();
     filter_manager.set_table_statistics(table_statistics);
-    filter_manager.build_sliders();
 
     if (table_metadata && bookmark) {
       // Choose some columns for the X and Y axes.
@@ -758,7 +757,6 @@ $(document).ready(function () {
         setup_scatterplot();
       }
       setup_controls();
-      filter_manager.build_sliders();
     }
   }
 
