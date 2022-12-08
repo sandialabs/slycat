@@ -1544,10 +1544,7 @@ $(document).ready(function () {
       );
     } else {
       var uniqueValues = d3.set(filtered_v).values().sort();
-      colorscale = $("#color-switcher").colorswitcher(
-        "get_color_scale_ordinal",
-        uniqueValues
-      );
+      colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", uniqueValues);
     }
   }
 
@@ -1774,6 +1771,7 @@ $(document).ready(function () {
   }
 
   function active_filters_ready() {
+    // console.debug(`ui.js active_filters_ready`);
     var filter;
     var allFilters = filter_manager.allFilters;
     for (var i = 0; i < allFilters().length; i++) {
@@ -1803,9 +1801,17 @@ $(document).ready(function () {
         filters_changed(newValue);
       });
     }
+
+    // Call filters_changed whenever active_filters change.
+    // This is needed so that the scatterplot and table update each time an active filter
+    // is removed.
+    filter_manager.active_filters.subscribe(function (newValue) {
+      filters_changed(newValue);
+    });
   }
 
   function filters_changed(newValue) {
+    // console.debug(`ui.js filters_changed, newValues is %o`, newValue);
     var allFilters = filter_manager.allFilters;
     var active_filters = filter_manager.active_filters;
     var filter_var, selected_values;
