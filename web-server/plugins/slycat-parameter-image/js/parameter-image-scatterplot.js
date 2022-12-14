@@ -64,7 +64,13 @@ $.widget("parameter_image.scatterplot", {
     images: [],
     selection: [],
     colorscale: d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
-    border: 25,
+
+    // Margins around scatterplot
+    margin_top: 25,
+    margin_right: 25,
+    margin_bottom: 25,
+    margin_left: 25,
+
     open_images: [],
     gradient: null,
     hidden_simulations: [],
@@ -918,6 +924,7 @@ $.widget("parameter_image.scatterplot", {
     } else if (key == "colorscale") {
       self._schedule_update({ render_data: true, render_selection: true });
     } else if (key == "width") {
+      // console.debug(`width option set to %o: %o`, key, value);
       self._schedule_update({
         update_width: true,
         update_x: true,
@@ -1043,13 +1050,15 @@ $.widget("parameter_image.scatterplot", {
   _update: function () {
     var self = this;
 
-    //console.log("parameter_image.scatterplot._update()", self.updates);
+    // console.log("parameter_image.scatterplot._update()", self.updates);
     self.update_timer = null;
 
+    // How much to shorten the x dimension of the scatterplot?
     var xoffset = 0;
     var legend_width = 150;
 
     if (self.updates.update_datum_width_height) {
+      // console.debug(`self.updates.update_datum_width_height`);
       let total_width = self.options.width;
       let total_height = self.options.height;
       let width_height = Math.min(total_width, total_height);
@@ -1058,16 +1067,25 @@ $.widget("parameter_image.scatterplot", {
 
       d3.select(self.canvas_datum)
         .style({
-          left: width_offset + self.options.border - self.options.canvas_square_size / 2 + "px",
-          top: height_offset + self.options.border - self.options.canvas_square_size / 2 + "px",
+          left:
+            width_offset + self.options.margin_left - self.options.canvas_square_size / 2 + "px",
+          top: height_offset + self.options.margin_top - self.options.canvas_square_size / 2 + "px",
         })
         .attr(
           "width",
-          width_height - 2 * self.options.border - xoffset + self.options.canvas_square_size
+          width_height -
+            self.options.margin_left -
+            self.options.margin_right -
+            xoffset +
+            self.options.canvas_square_size
         )
         .attr(
           "height",
-          width_height - 2 * self.options.border - 40 + self.options.canvas_square_size
+          width_height -
+            self.options.margin_top -
+            self.options.margin_bottom -
+            40 +
+            self.options.canvas_square_size
         );
     }
 
@@ -1082,25 +1100,30 @@ $.widget("parameter_image.scatterplot", {
         .style({
           left:
             width_offset +
-            self.options.border -
+            self.options.margin_left -
             self.options.canvas_selected_square_size / 2 +
             "px",
           top:
             height_offset +
-            self.options.border -
+            self.options.margin_top -
             self.options.canvas_selected_square_size / 2 +
             "px",
         })
         .attr(
           "width",
           width_height -
-            2 * self.options.border -
+            self.options.margin_left -
+            self.options.margin_right -
             xoffset +
             self.options.canvas_selected_square_size
         )
         .attr(
           "height",
-          width_height - 2 * self.options.border - 40 + self.options.canvas_selected_square_size
+          width_height -
+            self.options.margin_top -
+            self.options.margin_bottom -
+            40 +
+            self.options.canvas_selected_square_size
         );
     }
 
@@ -1116,20 +1139,32 @@ $.widget("parameter_image.scatterplot", {
 
       d3.select(self.canvas_datum)
         .style({
-          left: width_offset + self.options.border - self.options.canvas_square_size / 2 + "px",
+          left:
+            width_offset + self.options.margin_left - self.options.canvas_square_size / 2 + "px",
         })
-        .attr("width", width - 2 * self.options.border - xoffset + self.options.canvas_square_size);
+        .attr(
+          "width",
+          width -
+            self.options.margin_left -
+            self.options.margin_right -
+            xoffset +
+            self.options.canvas_square_size
+        );
       d3.select(self.canvas_selected)
         .style({
           left:
             width_offset +
-            self.options.border -
+            self.options.margin_left -
             self.options.canvas_selected_square_size / 2 +
             "px",
         })
         .attr(
           "width",
-          width - 2 * self.options.border - xoffset + self.options.canvas_selected_square_size
+          width -
+            self.options.margin_left -
+            self.options.margin_right -
+            xoffset +
+            self.options.canvas_selected_square_size
         );
     }
 
@@ -1144,40 +1179,60 @@ $.widget("parameter_image.scatterplot", {
       var height_offset = (total_height - height) / 2;
       d3.select(self.canvas_datum)
         .style({
-          top: height_offset + self.options.border - self.options.canvas_square_size / 2 + "px",
+          top: height_offset + self.options.margin_top - self.options.canvas_square_size / 2 + "px",
         })
-        .attr("height", height - 2 * self.options.border - 40 + self.options.canvas_square_size);
+        .attr(
+          "height",
+          height -
+            self.options.margin_top -
+            self.options.margin_bottom -
+            40 +
+            self.options.canvas_square_size
+        );
       d3.select(self.canvas_selected)
         .style({
           top:
             height_offset +
-            self.options.border -
+            self.options.margin_top -
             self.options.canvas_selected_square_size / 2 +
             "px",
         })
         .attr(
           "height",
-          height - 2 * self.options.border - 40 + self.options.canvas_selected_square_size
+          height -
+            self.options.margin_top -
+            self.options.margin_bottom -
+            40 +
+            self.options.canvas_selected_square_size
         );
     }
 
     if (self.updates.update_x) {
-      var total_width = self.options.width;
-      var total_height = self.options.height;
-      var width = Math.min(self.options.width, self.options.height);
-      var width_offset = (total_width - width) / 2;
+      // console.debug(`updates.update_x`);
+      // Width of entire pane
+      const total_width = self.options.width;
+      // Height of entire pane
+      const total_height = self.options.height;
+      // Smaller of width or height of entire pane
+      const width = Math.min(total_width, total_height);
+      // Half of space left over between scatterplot width and pane width
+      const width_offset = (total_width - width) / 2;
 
-      var range = [
-        0 + width_offset + self.options.border,
-        total_width - width_offset - self.options.border - xoffset,
+      const x_scale_range = [
+        0 + width_offset + self.options.margin_left,
+        total_width - width_offset - self.options.margin_right - xoffset,
       ];
-      var range_canvas = [0, width - 2 * self.options.border - xoffset];
+      // console.debug(`updates.update_x range is %o`, range);
+      const range_canvas = [
+        0,
+        width - self.options.margin_left - self.options.margin_right - xoffset,
+      ];
 
       self.set_custom_axes_ranges();
       self.x_scale = self._createScale(
         self.options.x_string,
         self.options.scale_x,
-        range,
+        x_scale_range,
         false,
         self.options.x_axis_type,
         "x"
@@ -1191,9 +1246,9 @@ $.widget("parameter_image.scatterplot", {
         "x"
       );
 
-      var height = Math.min(self.options.width, self.options.height);
-      var height_offset = (total_height - height) / 2;
-      self.x_axis_offset = total_height - height_offset - self.options.border - 40;
+      const height = Math.min(self.options.width, self.options.height);
+      const height_offset = (total_height - height) / 2;
+      self.x_axis_offset = total_height - height_offset - self.options.margin_bottom - 40;
       self.x_axis = d3.svg
         .axis()
         .scale(self.x_scale)
@@ -1229,18 +1284,18 @@ $.widget("parameter_image.scatterplot", {
       var height = Math.min(self.options.width, self.options.height);
       var width_offset = (total_width - width) / 2;
       var height_offset = (total_height - height) / 2;
-      var range = [
-        total_height - height_offset - self.options.border - 40,
-        0 + height_offset + self.options.border,
+      var y_scale_range = [
+        total_height - height_offset - self.options.margin_bottom - 40,
+        0 + height_offset + self.options.margin_top,
       ];
-      var range_canvas = [height - 2 * self.options.border - 40, 0];
-      self.y_axis_offset = 0 + width_offset + self.options.border;
+      var range_canvas = [height - self.options.margin_top - self.options.margin_bottom - 40, 0];
+      self.y_axis_offset = 0 + width_offset + self.options.margin_left;
 
       self.set_custom_axes_ranges();
       self.y_scale = self._createScale(
         self.options.y_string,
         self.options.scale_y,
-        range,
+        y_scale_range,
         false,
         self.options.y_axis_type,
         "y"
@@ -1289,7 +1344,7 @@ $.widget("parameter_image.scatterplot", {
 
       // This is the horizontal offset of the x-axis label. Set to align with the end of the axis.
       var width = Math.min(self.options.width, self.options.height);
-      var x_axis_width = width - 2 * self.options.border - xoffset;
+      var x_axis_width = width - self.options.margin_left - self.options.margin_right - xoffset;
       var x_remaining_width = self.svg.attr("width") - x_axis_width;
       var x = x_remaining_width / 2 + x_axis_width + 40;
 
@@ -1440,7 +1495,7 @@ $.widget("parameter_image.scatterplot", {
     }
 
     // Used to open an initial list of images at startup only
-    if (self.updates["open_images"]) {
+    if (self.updates.open_images) {
       // Checking for missing parameters
       let missing_media_row_indexes = [];
       let open_images_indexes = [];
@@ -1530,7 +1585,7 @@ $.widget("parameter_image.scatterplot", {
     }
 
     // Update leader targets anytime we resize or change our axes ...
-    if (self.updates["update_leaders"]) {
+    if (self.updates.update_leaders) {
       $(".open-image").each(function (index, frame) {
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
@@ -1544,7 +1599,8 @@ $.widget("parameter_image.scatterplot", {
       });
     }
 
-    if (self.updates["render_legend"]) {
+    if (self.updates.render_legend) {
+      // console.debug(`render_legend`);
       var gradient = self.legend_layer.append("defs").append("linearGradient");
       gradient
         .attr("id", "color-gradient")
@@ -1563,7 +1619,7 @@ $.widget("parameter_image.scatterplot", {
         .style("fill", "url(#color-gradient)");
     }
 
-    if (self.updates["update_legend_colors"]) {
+    if (self.updates.update_legend_colors) {
       var gradient = self.legend_layer.select("#color-gradient");
       var stop = gradient.selectAll("stop").data(self.options.gradient);
       stop.exit().remove();
@@ -1577,12 +1633,14 @@ $.widget("parameter_image.scatterplot", {
         });
     }
 
-    if (self.updates["update_legend_position"]) {
+    if (self.updates.update_legend_position) {
       var total_width = Number(self.options.width);
       var total_height = Number(self.options.height);
       var width = Math.min(self.options.width, self.options.height);
       var height = Math.min(self.options.width, self.options.height);
-      var rectHeight = parseInt((height - self.options.border - 40) / 2);
+      var rectHeight = parseInt(
+        (height - self.options.margin_top - self.options.margin_bottom) / 2
+      );
       var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
       var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
       var width_offset = (total_width + x_axis_layer_width) / 2;
@@ -1599,7 +1657,7 @@ $.widget("parameter_image.scatterplot", {
       self.legend_layer.select("rect.color").attr("height", rectHeight);
     }
 
-    if (self.updates["update_legend_axis"]) {
+    if (self.updates.update_legend_axis) {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
       self.set_custom_axes_ranges();
 
@@ -1631,7 +1689,7 @@ $.widget("parameter_image.scatterplot", {
         .style("font-family", self.options.axes_font_family);
     }
 
-    if (self.updates["update_v_label"]) {
+    if (self.updates.update_v_label) {
       // console.log("updating v label.");
       self.legend_layer.selectAll(".label").remove();
 
@@ -1650,7 +1708,7 @@ $.widget("parameter_image.scatterplot", {
         .text(self.options.v_label);
     }
 
-    if (self.updates["update_video_sync_time"]) {
+    if (self.updates.update_video_sync_time) {
       self._update_video_sync_time();
     }
 
@@ -3107,11 +3165,11 @@ $.widget("parameter_image.scatterplot", {
         image_class: "hover-image",
         x: Math.min(
           self.x_scale_format(self.options.x[image_index]) + 10,
-          width - hover_width - self.options.border - 10
+          width - hover_width - self.options.margin_right - 10
         ),
         y: Math.min(
           self.y_scale_format(self.options.y[image_index]) + 10,
-          height - hover_height - self.options.border - 10
+          height - hover_height - self.options.margin_bottom - 10
         ),
         width: hover_width,
         height: hover_height,
