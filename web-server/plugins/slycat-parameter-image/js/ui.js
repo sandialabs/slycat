@@ -70,6 +70,10 @@ import {
   DEFAULT_UNSELECTED_BORDER_SIZE,
   DEFAULT_SELECTED_POINT_SIZE,
   DEFAULT_SELECTED_BORDER_SIZE,
+  DEFAULT_SCATTERPLOT_MARGIN_TOP,
+  DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
+  DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
+  DEFAULT_SCATTERPLOT_MARGIN_LEFT,
 } from "components/ScatterplotOptions";
 import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
 import d3 from "d3";
@@ -148,6 +152,11 @@ $(document).ready(function () {
   var unselected_border_size = DEFAULT_UNSELECTED_BORDER_SIZE;
   var selected_point_size = DEFAULT_SELECTED_POINT_SIZE;
   var selected_border_size = DEFAULT_SELECTED_BORDER_SIZE;
+
+  var scatterplot_margin_top = DEFAULT_SCATTERPLOT_MARGIN_TOP;
+  var scatterplot_margin_right = DEFAULT_SCATTERPLOT_MARGIN_RIGHT;
+  var scatterplot_margin_bottom = DEFAULT_SCATTERPLOT_MARGIN_BOTTOM;
+  var scatterplot_margin_left = DEFAULT_SCATTERPLOT_MARGIN_LEFT;
 
   var custom_color_variable_range = {
     min: undefined,
@@ -418,6 +427,12 @@ $(document).ready(function () {
             unselected_border_size: unselected_border_size,
             selected_point_size: selected_point_size,
             selected_border_size: selected_border_size,
+            scatterplot_margin: {
+              top: scatterplot_margin_top,
+              right: scatterplot_margin_right,
+              bottom: scatterplot_margin_bottom,
+              left: scatterplot_margin_left,
+            },
             variableRanges: {},
             three_d_cameras: {},
             three_d_colorvars: {},
@@ -480,6 +495,10 @@ $(document).ready(function () {
           unselected_border_size = store.getState().unselected_border_size;
           selected_point_size = store.getState().selected_point_size;
           selected_border_size = store.getState().selected_border_size;
+          scatterplot_margin_top = store.getState().scatterplot_margin.top;
+          scatterplot_margin_right = store.getState().scatterplot_margin.right;
+          scatterplot_margin_bottom = store.getState().scatterplot_margin.bottom;
+          scatterplot_margin_left = store.getState().scatterplot_margin.left;
           open_images = store.getState().open_media;
 
           // Setting the user's role in redux state
@@ -957,6 +976,10 @@ $(document).ready(function () {
         canvas_square_border_size: unselected_border_size,
         canvas_selected_square_size: selected_point_size,
         canvas_selected_square_border_size: selected_border_size,
+        margin_top: scatterplot_margin_top,
+        margin_right: scatterplot_margin_right,
+        margin_bottom: scatterplot_margin_bottom,
+        margin_left: scatterplot_margin_left,
       });
 
       $("#scatterplot").bind("selection-changed", function (event, selection) {

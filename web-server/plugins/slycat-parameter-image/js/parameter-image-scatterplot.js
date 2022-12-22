@@ -544,6 +544,35 @@ $.widget("parameter_image.scatterplot", {
       }
     };
 
+    const update_scatterplot_margin = () => {
+      console.debug(`update_scatterplot_margin`);
+      const previousMargins = self.previousState.scatterplot_margin;
+      const currentMargins = store.getState().scatterplot_margin;
+      const marginsSame = _.isEqual(previousMargins, currentMargins);
+      if(!marginsSame) {
+        console.debug(`Scatterplot margins changed. Need to update scatterplot.`);
+        self.options.margin_top = currentMargins.top;
+        self.options.margin_right = currentMargins.right;
+        self.options.margin_bottom = currentMargins.bottom;
+        self.options.margin_left = currentMargins.left;
+        self._schedule_update({
+          update_datum_width_height: true,
+          update_selection_width_height: true,
+          update_width: true,
+          update_height: true,
+          update_x: true,
+          update_y: true,
+          update_y_label: true,
+          update_v_label: true,
+          update_leaders: true,
+          update_legend_position: true,
+          update_legend_axis: true,
+          render_data: true,
+          render_selection: true,
+        });
+      }
+    }
+
     const update_scatterplot_labels = () => {
       const x_label_changed = self.options.x_label != get_variable_label(self.options.x_index);
       const y_label_changed = self.options.y_label != get_variable_label(self.options.y_index);
@@ -640,6 +669,7 @@ $.widget("parameter_image.scatterplot", {
     window.store.subscribe(update_point_border_size);
     window.store.subscribe(update_scatterplot_labels);
     window.store.subscribe(update_media_sizes);
+    window.store.subscribe(update_scatterplot_margin);
     // This update_previous_state needs to be the last window.store.subscribe
     // since the other callbacks rely on the previous state not being updated
     // until they are finished.
