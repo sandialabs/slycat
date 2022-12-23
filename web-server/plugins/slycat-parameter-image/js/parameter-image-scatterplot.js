@@ -549,7 +549,7 @@ $.widget("parameter_image.scatterplot", {
       const previousMargins = self.previousState.scatterplot_margin;
       const currentMargins = store.getState().scatterplot_margin;
       const marginsSame = _.isEqual(previousMargins, currentMargins);
-      if(!marginsSame) {
+      if (!marginsSame) {
         console.debug(`Scatterplot margins changed. Need to update scatterplot.`);
         self.options.margin_top = currentMargins.top;
         self.options.margin_right = currentMargins.right;
@@ -562,6 +562,7 @@ $.widget("parameter_image.scatterplot", {
           update_height: true,
           update_x: true,
           update_y: true,
+          update_x_label: true,
           update_y_label: true,
           update_v_label: true,
           update_leaders: true,
@@ -571,7 +572,7 @@ $.widget("parameter_image.scatterplot", {
           render_selection: true,
         });
       }
-    }
+    };
 
     const update_scatterplot_labels = () => {
       const x_label_changed = self.options.x_label != get_variable_label(self.options.x_index);
@@ -1094,8 +1095,7 @@ $.widget("parameter_image.scatterplot", {
 
       d3.select(self.canvas_datum)
         .style({
-          left:
-            self.options.margin_left - self.options.canvas_square_size / 2 + "px",
+          left: self.options.margin_left - self.options.canvas_square_size / 2 + "px",
           top: self.options.margin_top - self.options.canvas_square_size / 2 + "px",
         })
         .attr(
@@ -1122,14 +1122,8 @@ $.widget("parameter_image.scatterplot", {
 
       d3.select(self.canvas_selected)
         .style({
-          left:
-            self.options.margin_left -
-            self.options.canvas_selected_square_size / 2 +
-            "px",
-          top:
-            self.options.margin_top -
-            self.options.canvas_selected_square_size / 2 +
-            "px",
+          left: self.options.margin_left - self.options.canvas_selected_square_size / 2 + "px",
+          top: self.options.margin_top - self.options.canvas_selected_square_size / 2 + "px",
         })
         .attr(
           "width",
@@ -1159,8 +1153,7 @@ $.widget("parameter_image.scatterplot", {
 
       d3.select(self.canvas_datum)
         .style({
-          left:
-            self.options.margin_left - self.options.canvas_square_size / 2 + "px",
+          left: self.options.margin_left - self.options.canvas_square_size / 2 + "px",
         })
         .attr(
           "width",
@@ -1172,10 +1165,7 @@ $.widget("parameter_image.scatterplot", {
         );
       d3.select(self.canvas_selected)
         .style({
-          left:
-            self.options.margin_left -
-            self.options.canvas_selected_square_size / 2 +
-            "px",
+          left: self.options.margin_left - self.options.canvas_selected_square_size / 2 + "px",
         })
         .attr(
           "width",
@@ -1208,10 +1198,7 @@ $.widget("parameter_image.scatterplot", {
         );
       d3.select(self.canvas_selected)
         .style({
-          top:
-            self.options.margin_top -
-            self.options.canvas_selected_square_size / 2 +
-            "px",
+          top: self.options.margin_top - self.options.canvas_selected_square_size / 2 + "px",
         })
         .attr(
           "height",
@@ -1231,7 +1218,7 @@ $.widget("parameter_image.scatterplot", {
       const total_height = self.options.height;
 
       const x_scale_range = [
-        0  + self.options.margin_left,
+        0 + self.options.margin_left,
         total_width - self.options.margin_right - xoffset,
       ];
       // console.debug(`updates.update_x range is %o`, range);
@@ -1293,7 +1280,10 @@ $.widget("parameter_image.scatterplot", {
         total_height - self.options.margin_bottom - 40,
         0 + self.options.margin_top,
       ];
-      const range_canvas = [total_height - self.options.margin_top - self.options.margin_bottom - 40, 0];
+      const range_canvas = [
+        total_height - self.options.margin_top - self.options.margin_bottom - 40,
+        0,
+      ];
       self.y_axis_offset = 0 + self.options.margin_left;
 
       self.set_custom_axes_ranges();
@@ -1345,13 +1335,15 @@ $.widget("parameter_image.scatterplot", {
 
     if (self.updates.update_x_label) {
       // This is the vertical offset of the x-axis label.
-      var y = 5;
+      let y = 5;
 
       // This is the horizontal offset of the x-axis label. Set to align with the end of the axis.
-      var width = self.options.width;
-      var x_axis_width = width - self.options.margin_left - self.options.margin_right - xoffset;
-      var x_remaining_width = self.svg.attr("width") - x_axis_width;
-      var x = x_remaining_width / 2 + x_axis_width + 40;
+      let width = self.options.width;
+      let x_axis_width = width - self.options.margin_left - self.options.margin_right;
+      // let x_remaining_width = self.svg.attr("width") - x_axis_width;
+      // let x = x_remaining_width / 2 + x_axis_width + 40;
+      let x = self.options.margin_left + x_axis_width - xoffset + 40;
+      console.debug(`self.updates.update_x_label`);
 
       self.x_axis_layer.selectAll(".label").remove();
       self.x_axis_layer
@@ -1369,9 +1361,12 @@ $.widget("parameter_image.scatterplot", {
     if (self.updates.update_y_label) {
       self.y_axis_layer.selectAll(".label").remove();
 
+      let height = self.options.height;
+      let scatterplot_height = height - self.options.margin_top - self.options.margin_bottom;
       var y_axis_width = self.y_axis_layer.node().getBBox().width;
-      var x = -(y_axis_width + 15);
-      var y = self.svg.attr("height") / 2;
+
+      var x = -(y_axis_width + 25);
+      var y = self.options.margin_top + scatterplot_height / 2;
 
       self.y_axis_layer
         .append("text")
@@ -1639,25 +1634,26 @@ $.widget("parameter_image.scatterplot", {
     }
 
     if (self.updates.update_legend_position) {
-      const total_width = Number(self.options.width);
-      const total_height = Number(self.options.height);
-      const rectHeight = parseInt(
-        (total_height - self.options.margin_top - self.options.margin_bottom) / 2
-      );
-      const y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
-      const x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
-      const width_offset = (total_width + x_axis_layer_width) / 2;
-
+      // Only update legend position if it wasn't already moved by the user
       if (self.legend_layer.attr("data-status") != "moved") {
-        const transx = parseInt(y_axis_layer_width - 75 + width_offset);
-        const transy = parseInt(total_height / 2 - rectHeight / 2);
+        const total_width = Number(self.options.width);
+        const total_height = Number(self.options.height);
+        const scatterplot_height =
+          total_height - self.options.margin_top - self.options.margin_bottom;
+        const legend_height = parseInt(scatterplot_height / 2);
+
+        const transx = parseInt(total_width - self.options.margin_right + 100);
+        const transy = parseInt(
+          self.options.margin_top + scatterplot_height / 2 - legend_height / 2
+        );
+
         self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
           .attr("data-transy", transy);
-      }
 
-      self.legend_layer.select("rect.color").attr("height", rectHeight);
+        self.legend_layer.select("rect.color").attr("height", legend_height);
+      }
     }
 
     if (self.updates.update_legend_axis) {
