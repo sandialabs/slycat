@@ -107,7 +107,7 @@ class ScatterplotOptions extends React.PureComponent {
             />
           </div>
         </div>
-        <hr class="mt-4 mb-4" />
+        <hr className="mt-4 mb-4" />
         <div className="slycat-plot-margins">
           <div className="form-row mb-2">
             <div className="col-3 font-weight-bold"></div>
