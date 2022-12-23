@@ -110,14 +110,14 @@ class ScatterplotOptions extends React.PureComponent {
         <hr className="mt-4 mb-4" />
         <div className="slycat-plot-margins">
           <div className="form-row mb-2">
-            <div className="col-3 font-weight-bold"></div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Top Margin</div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
+            <div className="col-2 font-weight-bold">Margins</div>
           </div>
           <div className="form-row mb-2">
-            <div className="col-3 font-weight-bold"></div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
+            <div className="col-2 font-weight-bold"></div>
+            <div className="col-2 font-weight-bold d-flex justify-content-center">Top</div>
+          </div>
+          <div className="form-row mb-2">
+            <div className="col-2 font-weight-bold"></div>
             <SlycatNumberInput
               name={"top"}
               value={this.props.scatterplot_margin_top}
@@ -129,13 +129,11 @@ class ScatterplotOptions extends React.PureComponent {
             />
           </div>
           <div className="form-row mb-2">
-            <div className="col-3 font-weight-bold"></div>
             <div className="col-2 font-weight-bold d-flex justify-content-center">Left</div>
             <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
             <div className="col-2 font-weight-bold d-flex justify-content-center">Right</div>
           </div>
           <div className="form-row mb-2">
-            <div className="col-3 font-weight-bold"></div>
             <SlycatNumberInput
               name={"left"}
               value={this.props.scatterplot_margin_left}
@@ -157,13 +155,10 @@ class ScatterplotOptions extends React.PureComponent {
             />
           </div>
           <div className="form-row mb-2">
-            <div className="col-3 font-weight-bold"></div>
             <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
             <div className="col-2 font-weight-bold d-flex justify-content-center">Bottom</div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
           </div>
           <div className="form-row mb-4">
-            <div className="col-3 font-weight-bold"></div>
             <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
             <SlycatNumberInput
               name={"bottom"}
@@ -174,7 +169,6 @@ class ScatterplotOptions extends React.PureComponent {
               handle_change={this.handleMarginChange}
               title_reset="Reset size of bottom plot margin to default"
             />
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
           </div>
         </div>
       </div>
