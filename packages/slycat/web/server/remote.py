@@ -319,7 +319,12 @@ class Session(object):
                 cherrypy.log.error("slycat.web.server.remote.py get_user_config",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
-            return {"config": response["config"], "errors": response["errors"]}
+            if "config" in response:
+                return {"config": response["config"], "errors": response["errors"]}
+            else: 
+                cherrypy.log.error("slycat.web.server.remote.py get_user_config",
+                                    "cherrypy.HTTPError 500 no slycat rc key from agent response")
+                raise cherrypy.HTTPError(500)
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
             cherrypy.log.error("slycat.web.server.remote.py get_user_config",

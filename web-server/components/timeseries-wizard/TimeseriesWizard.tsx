@@ -347,15 +347,33 @@ export default class TimeseriesWizard extends React.Component<
       if (this.state.visibleTab === '0' && this.state.selectedOption != 'hdf5') {
         this.setState({ visibleTab: '1' }, () => {
           client.get_user_config_fetch({ hostname: this.state.hostname })
-            .then((results) => {
-              this.setState({
-                numNodes: results["config"]["slurm"]["nnodes"], cores: results["config"]["slurm"]["ntasks-per-node"],
-                partition: results["config"]["slurm"]["partition"], jobHours: results["config"]["slurm"]["time-hours"],
-                jobMin: results["config"]["slurm"]["time-minutes"], accountId: results["config"]["slurm"]["wcid"],
-                workDir: results["config"]["slurm"]["workdir"], idCol: results["config"]["timeseries-wizard"]["id-column"],
-                delimiter: results["config"]["timeseries-wizard"]["inputs-file-delimiter"],
-                timeseriesColumn: results["config"]["timeseries-wizard"]["timeseries-name"]
-              });
+            .then((results: any) => {
+              if("config" in results && "slurm" in results["config"]){
+                if("timeseries-wizard" in results["config"]){
+                  this.setState({
+                    numNodes: results["config"]["slurm"]["nnodes"] ?? null,
+                    cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
+                    partition: results["config"]["slurm"]["partition"] ?? null,
+                    jobHours: results["config"]["slurm"]["time-hours"] ?? null,
+                    jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
+                    accountId: results["config"]["slurm"]["wcid"] ?? null,
+                    workDir: results["config"]["slurm"]["workdir"] ?? null,
+                    idCol: results["config"]["timeseries-wizard"]["id-column"] ?? null,
+                    delimiter: results["config"]["timeseries-wizard"]["inputs-file-delimiter"] ?? null,
+                    timeseriesColumn: results["config"]["timeseries-wizard"]["timeseries-name"] ?? null
+                  });
+                } else {
+                  this.setState({
+                    numNodes: results["config"]["slurm"]["nnodes"] ?? null,
+                    cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
+                    partition: results["config"]["slurm"]["partition"] ?? null,
+                    jobHours: results["config"]["slurm"]["time-hours"] ?? null,
+                    jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
+                    accountId: results["config"]["slurm"]["wcid"] ?? null,
+                    workDir: results["config"]["slurm"]["workdir"] ?? null
+                  });
+                }
+            }
             });
         });
       }
