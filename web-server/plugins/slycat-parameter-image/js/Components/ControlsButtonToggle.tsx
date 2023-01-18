@@ -1,7 +1,25 @@
 import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-export default class ControlsButtonToggle extends React.PureComponent {
+export interface ControlsButtonToggleProps {
+  button_style: string,
+  active: boolean,
+  id: string,
+  title: string,
+  icon: IconProp,
+  set_active_state(event: React.MouseEvent<HTMLButtonElement>): void
+}
+
+/**
+ * react component used to create a button that has the ability to make ssh connections once
+ * it is clicked by a user
+ *
+ * @export
+ * @class ControlsButtonToggle
+ * @extends {React.PureComponent<ControlsButtonToggleProps>}
+ */
+export default class ControlsButtonToggle extends React.PureComponent<ControlsButtonToggleProps> {
   render() {
     return (
       <button 

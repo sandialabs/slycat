@@ -171,6 +171,21 @@ can also be extracted from this URL (it is the hash at the end of the URL).
 
 ## Dial-A-Cluster (DAC) Models
 
+Dial-A-Cluster models can be loaded using different formats.  The first
+format is the generic dial-a-cluster format, described more fully in
+the Slycat user manual.
+
+To upload a DAC generic .zip file, use
+
+```sh
+$ dac_gen dac-gen.zip
+```
+
+This will create a model from a single .zip file containing the appropriate
+folders with the pre-computed distance or PCA matrices.
+
+## Dial-A-Cluster TDMS Models
+
 To upload a DAC TDMS model, use
 
 ```sh
@@ -227,6 +242,50 @@ described.
 Depending on how many models are being created, it is helpful to
 use the "--log_file" flag to specify a log file for recording any
 errors in the upload process.
+
+## Dial-A-Cluster Run Chart Models
+
+To create Dial-A-Cluster run chart model, use the dac_run_chart.py script.
+From the command line:
+
+```sh
+$ python -m slycat.web.client.dac_run_chart root-data-directory part-num run-charts.zip
+```
+
+where root-data-directory is the root directory containing the data directories
+indexed by part number, and part-num is the prefix for the data directories and
+associated structure of sub directories.  By specifying the (mandatory) output zip file you
+get a .zip file that can be loaded into dial-a-cluster through the wizard (or the dac_gen
+script).  You can later delete this file if it is not needed.
+
+## Parameter Space Models
+
+A Paraneter Space model can be created from .csv file using the 
+ps_csv script.  From the command line, use:
+
+```sh
+$ python -m slycat.web.client.ps_csv slycat-data/cars.csv --input-columns Cylinders Displacement Weight Year --output-columns MPG Horsepower Acceleration
+```
+
+To push up a .csv file from a python script, use the slycat-web-client
+module.  For example:
+
+```{python}
+import slycat.web.client.ps_csv as ps_csv
+
+# parameter space file
+CARS_FILE = ['../../slycat-data/cars.csv']
+
+# input/output columns for cars data file
+CARS_INPUT = ['--input-columns', 'Model', 'Cylinders', 'Displacement', 'Weight', 'Year']
+CARS_OUTPUT = ['--output-columns', 'MPG', 'Horsepower', 'Acceleration']
+
+# create PS model from cars file
+ps_parser = ps_csv.parser()
+arguments = ps_parser.parse_args(CARS_FILE + CARS_INPUT + CARS_OUTPUT)
+ps_csv.create_model(arguments, ps_csv.log)     
+
+```
 
 ## API
 

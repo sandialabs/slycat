@@ -2,8 +2,9 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Form from './Form.js';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import Form from "./Form.js";
 
-ReactDOM.render(<Form />, document.getElementById('root'));
+const root = createRoot(document.getElementById("root"));
+root.render(<Form />);

@@ -3,9 +3,7 @@ import slick_default_theme_css from "slickgrid/slick-default-theme.css";
 import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 
-import "jquery-ui";
-import "slickgrid/lib/jquery.event.drag-2.3.0";
-import "slickgrid/lib/jquery.event.drop-2.3.0";
+import "slickgrid/slick.interactions.js";
 import "slickgrid/slick.core";
 import "slickgrid/slick.grid";
 import "slickgrid/plugins/slick.rowselectionmodel";

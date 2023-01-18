@@ -6,9 +6,7 @@
 import d3 from "d3";
 import * as chunker from "js/chunker";
 import * as table_helpers from "js/slycat-table-helpers";
-import "jquery-ui";
-import "slickgrid/lib/jquery.event.drag-2.3.0";
-import "slickgrid/lib/jquery.event.drop-2.3.0";
+import "slickgrid/slick.interactions.js";
 import "slickgrid/slick.core";
 import "slickgrid/slick.grid";
 import "slickgrid/plugins/slick.rowselectionmodel";

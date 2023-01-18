@@ -14,9 +14,9 @@ import api_root from "js/slycat-api-root";
 import * as remotes from "js/slycat-remotes";
 import client from "js/slycat-web-client";
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 // import TestReact from "../plugin-components/TestReact"
-import VSLoadingPage from "../plugin-components/VSLoadingPage"
+import VSLoadingPage from "../plugin-components/VSLoadingPage";
 import * as dialog from "js/slycat-dialog";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import ko from "knockout";
@@ -103,12 +103,8 @@ $("#vs_processing_textarea").focusout(function () {
 });
 
 const showLoadingPage = () => {
-  ReactDOM.render(
-    <VSLoadingPage
-      modelId={model._id}
-    />,
-    document.querySelector('#vs-react')
-  );
+  const vs_react_root = createRoot(document.querySelector("#vs-react"));
+  vs_react_root.render(<VSLoadingPage modelId={model._id} />);
 };
 
 // poll database for artifact "vs-loading-progress"
@@ -155,7 +151,6 @@ function poll() {
 
 // initialize poll
 poll();
-
 
 // called when done polling to launch the model
 function launch_model() {
@@ -335,13 +330,13 @@ function model_loaded() {
       $("#waveform-viewer").trajectories(trajectories_options);
 
       // Changing the waveform selection ...
-      $("#waveform-viewer").bind("waveform-selection-changed", function (
-        event,
-        highlighted_simulations
-      ) {
-        // Handle the waveform selection change
-        highlighted_simulations_changed(highlighted_simulations);
-      });
+      $("#waveform-viewer").bind(
+        "waveform-selection-changed",
+        function (event, highlighted_simulations) {
+          // Handle the waveform selection change
+          highlighted_simulations_changed(highlighted_simulations);
+        }
+      );
 
       // Changing the diagram time ...
       $("#waveform-viewer").bind("diagram_time_changed", function (event, new_diagram_time) {
@@ -433,13 +428,13 @@ function model_loaded() {
       };
 
       $("#mp-mds-scatterplot").scatterplot(scatterplot_options);
-      $("#mp-mds-scatterplot").bind("scatterplot-selection-changed", function (
-        event,
-        highlighted_simulations
-      ) {
-        // Handle the waveform selection change
-        highlighted_simulations_changed(highlighted_simulations);
-      });
+      $("#mp-mds-scatterplot").bind(
+        "scatterplot-selection-changed",
+        function (event, highlighted_simulations) {
+          // Handle the waveform selection change
+          highlighted_simulations_changed(highlighted_simulations);
+        }
+      );
 
       var controls_options = {
         model: model,
@@ -526,13 +521,13 @@ function model_loaded() {
       };
 
       $("#mp-datapoints-table").table(table_options);
-      $("#mp-datapoints-table").bind("table-selection-changed", function (
-        event,
-        highlighted_simulations
-      ) {
-        // Handle the waveform selection change
-        highlighted_simulations_changed(highlighted_simulations);
-      });
+      $("#mp-datapoints-table").bind(
+        "table-selection-changed",
+        function (event, highlighted_simulations) {
+          // Handle the waveform selection change
+          highlighted_simulations_changed(highlighted_simulations);
+        }
+      );
       $("#mp-datapoints-table").bind("color-selection-changed", function (event, newVar) {
         update_current_colorscale(table_data, newVar);
         update_coloring_var(newVar);

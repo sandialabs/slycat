@@ -7,32 +7,22 @@ import ControlsThreeD from "./ControlsThreeD";
 import ControlsSelection from "./ControlsSelection";
 import ControlsGroup from "components/ControlsGroup";
 import ControlsButtonToggle from "./ControlsButtonToggle";
-import ControlsButton from "components/ControlsButton";
-import FileSelector from "./FileSelector";
 import ControlsButtonUpdateTable from "./ControlsButtonUpdateTable.jsx";
 import ControlsButtonDownloadDataTable from "components/ControlsButtonDownloadDataTable";
 import ControlsButtonVarOptions from "./ControlsButtonVarOptions";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import $ from "jquery";
-import { toggleSyncScaling, toggleSyncThreeDColorvar } from "../actions";
+import { toggleSyncScaling, toggleSyncThreeDColorvar, setVideoSyncTime } from "../actions";
 
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       auto_scale: this.props.auto_scale,
-      hidden_simulations: this.props.hidden_simulations,
-      selection: this.props.selection,
       video_sync: this.props.video_sync,
-      video_sync_time: this.props.video_sync_time,
-      video_sync_time_value: this.props.video_sync_time,
-      threeD_sync: this.props.threeD_sync,
       var_settings: this.props.var_settings,
     };
-    for (let dropdown of this.props.dropdowns) {
-      this.state[dropdown.state_label] = dropdown.selected;
-    }
     this.scatterplot_id = "scatterplot-controls";
     this.selection_id = "selection-controls";
     this.autoScaleId = "auto-scale";
@@ -117,17 +107,12 @@ class ControlsBar extends React.Component {
     }
   };
 
-  set_selected = (state_label, key, trigger, e) => {
+  set_selected = (state_label, key, trigger, e, props) => {
     // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-    if (key === this.state[state_label]) {
+    if (key === this.props[state_label]) {
+      // console.debug(`doing nothing because state hasn't changed`);
       return;
     }
-    // That function will receive the previous state as the first argument, and the props at the time the update is applied as the
-    // second argument. This format is favored because this.props and this.state may be updated asynchronously,
-    // you should not rely on their values for calculating the next state.
-    const obj = {};
-    obj[state_label] = key;
-    this.setState((prevState, props) => obj);
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);
   };
@@ -150,31 +135,8 @@ class ControlsBar extends React.Component {
   };
 
   set_video_sync_time = (value) => {
-    const new_video_sync_time = value;
-    this.setState((prevState, props) => {
-      this.props.element.trigger("video-sync-time", value);
-      // Setting both video_sync_time, which tracks the validated video_sync_time, and
-      // video_sync_time_value, which tracks the value of the input field and can contain invalidated data (letters, negatives, etc.)
-      return {
-        video_sync_time: value,
-        video_sync_time_value: value,
-      };
-    });
-  };
-
-  set_video_sync_time_value = (e) => {
-    const new_video_sync_time = e.target.value;
-    this.setState((prevState, props) => {
-      return { video_sync_time_value: new_video_sync_time };
-    });
-  };
-
-  set_threeD_sync = (e) => {
-    this.setState((prevState, props) => {
-      const new_threeD_sync = !prevState.threeD_sync;
-      this.props.element.trigger("threeD_sync", new_threeD_sync);
-      return { threeD_sync: new_threeD_sync };
-    });
+    this.props.setVideoSyncTime(value);
+    this.props.element.trigger("video-sync-time", value);
   };
 
   trigger_show_all = (e) => {
@@ -187,7 +149,7 @@ class ControlsBar extends React.Component {
 
   trigger_hide_selection = (e) => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("hide-selection", this.state.selection);
+      this.props.element.trigger("hide-selection", this.props.selected_simulations);
     }
     // The to prevent the drop-down from closing when clicking on a disabled item
     // Unfortunately none of these work to stop the drop-down from closing. Looks like bootstrap's event is fired before this one.
@@ -204,19 +166,19 @@ class ControlsBar extends React.Component {
       // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
       // https://api.jquery.com/trigger/
       // Thus we need to wrap our selection array in another array to pass it.
-      this.props.element.trigger("hide-unselected", [this.state.selection]);
+      this.props.element.trigger("hide-unselected", [this.props.selected_simulations]);
     }
   };
 
   trigger_show_unselected = (e) => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("show-unselected", [this.state.selection]);
+      this.props.element.trigger("show-unselected", [this.props.selected_simulations]);
     }
   };
 
   trigger_show_selection = (e) => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("show-selection", [this.state.selection]);
+      this.props.element.trigger("show-selection", [this.props.selected_simulations]);
     }
   };
 
@@ -224,7 +186,7 @@ class ControlsBar extends React.Component {
     // Passing true along with selection to pin-selection trigger to make it restore the size
     // and location of pins. We only do this when pinning from the controls menu, per
     // https://github.com/sandialabs/slycat/issues/1043#issuecomment-954137333
-    this.props.element.trigger("pin-selection", [this.state.selection, true]);
+    this.props.element.trigger("pin-selection", [this.props.selected_simulations, true]);
   };
 
   trigger_select_pinned = (e) => {
@@ -301,16 +263,17 @@ class ControlsBar extends React.Component {
       if (dropdown.items.length > 1) {
         return (
           <ControlsDropdown
+            button_style={button_style}
             key={dropdown.id}
             id={dropdown.id}
             label={dropdown.label}
             title={dropdown.title}
+            items={dropdown.items}
             state_label={dropdown.state_label}
             trigger={dropdown.trigger}
-            items={dropdown.items}
-            selected={this.state[dropdown.state_label]}
+            selected={this.props[dropdown.state_label]}
             set_selected={this.set_selected}
-            button_style={button_style}
+            dispatch={dropdown.dispatch}
           />
         );
       } else {
@@ -428,11 +391,11 @@ class ControlsBar extends React.Component {
                 element={this.props.element}
                 button_style={button_style}
                 media_columns={this.props.media_columns}
-                media_variable={this.state.media_variable}
+                media_variable={this.props.media_index}
               />
               <ControlsButtonDownloadDataTable
-                selection={this.state.selection}
-                hidden_simulations={this.state.hidden_simulations}
+                selection={this.props.selected_simulations}
+                hidden_simulations={this.props.hidden_simulations}
                 aid={this.props.aid}
                 mid={this.props.mid}
                 model_name={this.props.model_name}
@@ -455,8 +418,7 @@ class ControlsBar extends React.Component {
                 <ControlsVideo
                   video_sync={this.state.video_sync}
                   set_video_sync={this.set_video_sync}
-                  video_sync_time_value={this.state.video_sync_time_value}
-                  set_video_sync_time_value={this.set_video_sync_time_value}
+                  video_sync_time={this.props.video_sync_time}
                   set_video_sync_time={this.set_video_sync_time}
                   any_video_open={any_video_open}
                   button_style={button_style}
@@ -478,10 +440,9 @@ class ControlsBar extends React.Component {
             {any_threeD_open && (
               <ControlsGroup id="threeD-controls" class="btn-group ml-3">
                 <ControlsThreeD
-                  threeD_sync={this.state.threeD_sync}
-                  set_threeD_sync={this.set_threeD_sync}
                   any_threeD_open={any_threeD_open}
                   button_style={button_style}
+                  element={this.props.element}
                 />
               </ControlsGroup>
             )}
@@ -511,6 +472,7 @@ const mapStateToProps = (state, ownProps) => {
     x_index: state.x_index,
     y_index: state.y_index,
     v_index: state.v_index,
+    media_index: state.media_index,
     media_columns: state.derived.media_columns,
     open_media: state.open_media,
     variable_aliases: state.derived.variableAliases,
@@ -520,6 +482,9 @@ const mapStateToProps = (state, ownProps) => {
     xy_pairs_items: xy_pairs_items,
     xy_pairs_indexes: xy_pairs_indexes,
     xy_pair_selected: xy_pair_selected,
+    selection: state.selected_simulations,
+    hidden_simulations: state.hidden_simulations,
+    video_sync_time: state.video_sync_time,
   };
 };
 
@@ -528,6 +493,7 @@ export default connect(
   {
     toggleSyncScaling,
     toggleSyncThreeDColorvar,
+    setVideoSyncTime,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this

@@ -174,9 +174,10 @@ try:
         key_list.append(key)
     
     for key in key_list:
-        new_key = key.decode("UTF-8")
-        clusters[new_key] = clusters[key]
-        del clusters[key]
+        if not isinstance(key, str):
+            new_key = key.decode("UTF-8")
+            clusters[new_key] = clusters[key]
+            del clusters[key]
 
     file_clusters = dict(aid="clusters", file=json.dumps(sorted(clusters.keys())), parser="slycat-blob-parser",
                          timeseries_count=str(timeseries_count))

@@ -32,7 +32,7 @@ import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import Selector from "./components/Selector";
 
 import { createStore, applyMiddleware, } from 'redux';
@@ -999,10 +999,8 @@ $(document).ready(function() {
                       )
                     ;
 
-                    self.scatter_plot_react_render = ReactDOM.render(
-                        selector,
-                      document.getElementById('dac-selector-svg-container')
-                    );
+                    const dac_selector_root = createRoot(document.getElementById('dac-selector-svg-container'));
+                    dac_selector_root.render(selector);
 
                   },
                   function () {

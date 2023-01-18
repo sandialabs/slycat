@@ -2,9 +2,7 @@ import 'vtk.js/Sources/Rendering/Profiles/All';
 import vtkActor from 'vtk.js/Sources/Rendering/Core/Actor';
 import vtkXMLPolyDataReader from 'vtk.js/Sources/IO/XML/XMLPolyDataReader';
 import vtkSTLReader from 'vtk.js/Sources/IO/Geometry/STLReader';
-import HttpDataAccessHelper from 'vtk.js/Sources/IO/Core/DataAccessHelper/HttpDataAccessHelper';
 import vtkMapper from 'vtk.js/Sources/Rendering/Core/Mapper';
-import vtkLabelWidget from 'vtk.js/Sources/Interaction/Widgets/LabelWidget';
 import vtkOpenGLRenderWindow from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow';
 import vtkRenderWindow from 'vtk.js/Sources/Rendering/Core/RenderWindow';
 import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindowInteractor';
@@ -351,7 +349,12 @@ export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
 
   const interactor = vtkRenderWindowInteractor.newInstance();
-  interactor.setView(openglRenderWindow);
+  interactor.setView(openglRenderWindow);// Preventing devault event when mouse is grabbing shape and rotating it,
+  // otherwise the whole frame moves insetad. This change was required as of vtk.js
+  // version 24.17.0 due to this commit:
+  // https://github.com/kitware/vtk-js/commit/fb883e89521412ae986db272022b6de658406033
+  interactor.setPreventDefaultOnPointerDown(true);
+  interactor.setPreventDefaultOnPointerUp(true);
   interactor.initialize();
   interactor.bindEvents(container);
 

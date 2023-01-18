@@ -2,7 +2,6 @@ import React from "react";
 import css from "css/slycat-variable-alias-labels.scss";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { render } from "enzyme";
 
 export default class VariableAliasLabels extends React.PureComponent {
 
