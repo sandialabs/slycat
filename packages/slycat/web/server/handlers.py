@@ -37,6 +37,8 @@ import uuid
 import functools
 import datetime
 import h5py
+import csv
+import tempfile
 from urllib.parse import urlparse, urlencode, parse_qs
 
 # decode base64 byte streams for file upload
@@ -388,11 +390,38 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         for item in project_datas:
             if item["project"] == pid and item["file_name"] == file_key:
                 fid = item["_id"]
-                http_response = database.get_attachment(item, "content")
-                file = http_response.read()
-                # Must convert from bytes to string
-                file = str(file, 'utf-8')
-                attachment.append(file)
+                hdf5_name = item["hdf5_name"]
+                hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + hdf5_name
+
+                # Read HDF5 file
+                decoded_data = []
+                decoded_col = []
+                with h5py.File(hdf5_path, "r") as f:
+                    data = list(f['data_table'])
+                    for col in data:
+                        for item in col:
+                            decoded_item = item.decode('utf-8')
+                            decoded_col.append(decoded_item)
+                        decoded_data.append(decoded_col)
+                        decoded_col = []
+                decoded_rows = numpy.array(decoded_data).T
+
+                giant_csv_list = []
+                temp_row = []
+                for row in decoded_rows:
+                    for i, entry in enumerate(row):
+                        if i == 0:
+                            temp_row.append(str(entry))
+                        elif i == (len(row) - 1):
+                            temp_row.append(str(entry) + '\n')
+                        else:
+                            temp_row.append(str(entry) + ',')
+                    temp_row_string = ''.join(temp_row)
+                    giant_csv_list.append(temp_row_string)
+                    temp_row = []
+                giant_csv_string = ''.join(giant_csv_list)
+                attachment.append(giant_csv_string)
+                
     # if we didnt fined the file repspond with not found
     if fid is None:
         raise cherrypy.HTTPError("404 There was no file with name %s found." % file_key)
@@ -402,19 +431,8 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         database.save(project_data)
     except Exception as e:
         cherrypy.log.error(str(e))
-    # clean up the attachment by removing white space
-    try:
-        attachment[0] = attachment[0].replace('\\n', '\n')
-        attachment[0] = attachment[0].replace('["', '')
-        attachment[0] = attachment[0].replace('"]', '')
-    except Exception as e:
-        cherrypy.log.error(str(e))
 
     model = database.get("model", mid)
-    if "project_data" not in model:
-        model["project_data"] = []
-    model["project_data"].append(project_data["_id"])
-    database.save(model)
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
@@ -567,7 +585,7 @@ def create_project_data(mid, aid, file):
             pass
 
     # Edit with path to store HDF5
-    hdf5_path = "/var/lib/slycat/data-store/project_data_test"
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
     # Edit with name for HDF5 file
     unique_name = uuid.uuid4().hex
     hdf5_name = f"{unique_name}.hdf5"
