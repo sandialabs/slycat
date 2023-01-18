@@ -20,8 +20,6 @@ def register_slycat_plugin(context):
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
         if '"' in realm:
-            slycat.email.send_error("slycat-standard-authentication.py authenticate",
-                                    "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 
         current_url = urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)

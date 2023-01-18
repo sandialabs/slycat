@@ -44,7 +44,7 @@
       <div class="form-check">
         <label class="font-weight-bold">
           <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server" data-bind="checked: ps_type">
-          Server
+          Slycat Server
         </label>
       </div>
 
@@ -73,6 +73,11 @@
         progress:browser.progress,
         progress_status:browser.progress_status"></slycat-local-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+
+      <div class="form-horizontal">
+          <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data" data-bind="checked: useProjectData">
+          Save original data to server
+      </div>
     </div>
 
     <div data-bind="visible:tab() == 2">
@@ -112,6 +117,10 @@
           progress_status:remote.progress_status,
           reauth:reauth,"></slycat-remote-browser>
         <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+        <div>
+          <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data" data-bind="checked: useProjectData">
+          <label for="matrix-local-or-remote-radios">Save original data to server</label>
+        </div>
       </div>
     </div>
 

@@ -146,7 +146,7 @@ class Session(object):
       file.write(data)
     self._received.add((fid, pid))
 
-  def post_upload_finished(self, uploaded):
+  def post_upload_finished(self, uploaded, useProjectData):
     """
     checks for missing and excess files, if neither are found moves on to
     finishing the upload and parsing the uploaded item.
@@ -169,6 +169,7 @@ class Session(object):
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
     missing = [part for part in uploaded if part not in self._received]
     excess = [part for part in self._received if part not in uploaded]
+    self.useProjectData = useProjectData
 
     if missing:
       cherrypy.response.status = "400 Upload incomplete."
@@ -250,7 +251,8 @@ class Session(object):
         else:
           slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
                                                                           files, self._aids, **self._kwargs)
-        if model["model-type"] == "parameter-image":
+        if model["model-type"] == "parameter-image" and self.useProjectData == True:
+          # Use project data
           slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
       except Exception as e:
         cherrypy.log.error("Exception parsing posted files: %s" % e)

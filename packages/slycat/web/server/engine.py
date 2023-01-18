@@ -113,7 +113,6 @@ def start(root_path, config_file):
   dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
   dispatcher.connect("get-project-data", "/projects/data/:did", slycat.web.server.handlers.get_project_data, conditions={"method": ["GET"]})
   dispatcher.connect("put-project-data-parameter", "/data/:did/aids/:aid", slycat.web.server.handlers.put_project_data_parameter, conditions={"method": ["PUT"]})
-  dispatcher.connect("post-project-data", "/projects/data/:pid", slycat.web.server.handlers.create_project_data_from_pid, conditions={"method": ["POST"]})
   dispatcher.connect("get-project-data-in-model", "/projects/data/model/:mid", slycat.web.server.handlers.get_project_data_in_model, conditions={"method": ["GET"]})
   dispatcher.connect("get-project-file-names", "/projects/:pid/name", slycat.web.server.handlers.get_project_file_names, conditions={"method": ["GET"]})
   dispatcher.connect("get-project-data-parameter", "/projects/data/:did/parameters/:param", slycat.web.server.handlers.get_project_data_parameter, conditions={"method": ["GET"]})
@@ -174,7 +173,7 @@ def start(root_path, config_file):
 
   dispatcher.connect("post-uploads", "/uploads", slycat.web.server.handlers.post_uploads, conditions={"method" : ["POST"]})
   dispatcher.connect("put-upload-file-part", "/uploads/:uid/files/:fid/parts/:pid", slycat.web.server.handlers.put_upload_file_part, conditions={"method" : ["PUT"]})
-  dispatcher.connect("post-upload-finshed", "/uploads/:uid/finished", slycat.web.server.handlers.post_upload_finished, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-upload-finished", "/uploads/:uid/finished", slycat.web.server.handlers.post_upload_finished, conditions={"method" : ["POST"]})
   
   dispatcher.connect("clean-project-data", "/clean/project-data", slycat.web.server.handlers.clean_project_data, conditions={"method" : ["GET"]})
   dispatcher.connect("clear-ssh-sessions", "/clear/ssh-sessions", slycat.web.server.handlers.clear_ssh_sessions, conditions={"method" : ["GET"]})

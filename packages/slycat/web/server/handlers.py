@@ -36,6 +36,9 @@ import time
 import uuid
 import functools
 import datetime
+import h5py
+import csv
+import tempfile
 from urllib.parse import urlparse, urlencode, parse_qs
 
 # decode base64 byte streams for file upload
@@ -387,11 +390,38 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         for item in project_datas:
             if item["project"] == pid and item["file_name"] == file_key:
                 fid = item["_id"]
-                http_response = database.get_attachment(item, "content")
-                file = http_response.read()
-                # Must convert from bytes to string
-                file = str(file, 'utf-8')
-                attachment.append(file)
+                hdf5_name = item["hdf5_name"]
+                hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + hdf5_name
+
+                # Read HDF5 file
+                decoded_data = []
+                decoded_col = []
+                with h5py.File(hdf5_path, "r") as f:
+                    data = list(f['data_table'])
+                    for col in data:
+                        for item in col:
+                            decoded_item = item.decode('utf-8')
+                            decoded_col.append(decoded_item)
+                        decoded_data.append(decoded_col)
+                        decoded_col = []
+                decoded_rows = numpy.array(decoded_data).T
+
+                giant_csv_list = []
+                temp_row = []
+                for row in decoded_rows:
+                    for i, entry in enumerate(row):
+                        if i == 0:
+                            temp_row.append(str(entry))
+                        elif i == (len(row) - 1):
+                            temp_row.append(str(entry) + '\n')
+                        else:
+                            temp_row.append(str(entry) + ',')
+                    temp_row_string = ''.join(temp_row)
+                    giant_csv_list.append(temp_row_string)
+                    temp_row = []
+                giant_csv_string = ''.join(giant_csv_list)
+                attachment.append(giant_csv_string)
+                
     # if we didnt fined the file repspond with not found
     if fid is None:
         raise cherrypy.HTTPError("404 There was no file with name %s found." % file_key)
@@ -401,19 +431,8 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         database.save(project_data)
     except Exception as e:
         cherrypy.log.error(str(e))
-    # clean up the attachment by removing white space
-    try:
-        attachment[0] = attachment[0].replace('\\n', '\n')
-        attachment[0] = attachment[0].replace('["', '')
-        attachment[0] = attachment[0].replace('"]', '')
-    except Exception as e:
-        cherrypy.log.error(str(e))
 
     model = database.get("model", mid)
-    if "project_data" not in model:
-        model["project_data"] = []
-    model["project_data"].append(project_data["_id"])
-    database.save(model)
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
@@ -509,44 +528,6 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
-# @cherrypy.tools.json_in(on=True)
-# @cherrypy.tools.json_out(on=True)
-def create_project_data_from_pid(pid, file=None, file_name=None):
-    """
-    creates a project level data object from a project id 
-    that can be used to create new
-    models in the current project
-    :param file_name: artifact ID
-    :param file: file attachment
-    :return: not used
-    """
-
-    database = slycat.web.server.database.couchdb.connect()
-    project = database.get("project", pid)
-    slycat.web.server.authentication.require_project_writer(project)
-
-    csv_data = str(file.file.read(), 'utf-8')
-
-    content_type = "text/csv"
-    timestamp = time.time()
-    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    did = uuid.uuid4().hex
-
-    data = {
-        "_id": did,
-        "type": "project_data",
-        "file_name": formatted_timestamp + "_" + file_name,
-        "data_table": "data-table",
-        "project": pid,
-        "mid": [""],
-        "created": datetime.datetime.utcnow().isoformat(),
-        "creator": cherrypy.request.login,
-    }
-
-    database.save(data)
-    database.put_attachment(data, filename="content", content_type=content_type, content=csv_data)
-    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
-
 def create_project_data(mid, aid, file):
     """
     creates a project level data object that can be used to create new
@@ -556,6 +537,65 @@ def create_project_data(mid, aid, file):
     :param file: file attachment
     :return: not used
     """
+
+    def isNumeric(some_thing):
+        """
+        Check if input is numeric
+
+        :param some_thing: object
+        :return: boolean
+        """
+        try:
+            x = float(some_thing)
+        except ValueError:
+            return False
+        return True
+
+    rows = []
+
+    split_file = file[0].split('\n')
+
+    for row in split_file:
+        row_list = [row]
+        split_row = row_list[0].split(',')
+        rows.append(split_row)
+
+    columns = numpy.array(rows).T
+
+    for i, column in enumerate(columns):
+        for j, entry in enumerate(column):
+            columns[i,j] = entry.encode("utf-8")
+
+    column_names = [name.strip() for name in rows[0]]
+    column_names = ["%eval_id"] + column_names
+    column_types = ["string" for name in column_names]
+
+    column_types[0] = "int64"
+
+    for index in range(1, len(columns)):  # repack data cols as numpy arrays
+        try:
+            if isNumeric(columns[index][0]):
+                columns[index] = numpy.array(columns[index], dtype="float64")
+                column_types[index] = "float64"
+            else:
+                stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
+                columns[index] = numpy.array(columns[index], dtype=stringType)
+                column_types[index] = "string"
+        except:
+            pass
+
+    # Edit with path to store HDF5
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+    # Edit with name for HDF5 file
+    unique_name = uuid.uuid4().hex
+    hdf5_name = f"{unique_name}.hdf5"
+    hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
+
+    h5f = h5py.File((hdf5_file_path), "w")
+    h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
+    h5f.close()
+
+    # Make the entry in couch for project data
     content_type = "text/csv"
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -584,6 +624,7 @@ def create_project_data(mid, aid, file):
         data = {
             "_id": did,
             "type": "project_data",
+            "hdf5_name": hdf5_name,
             "file_name": formatted_timestamp + "_" + aid[1],
             "data_table": aid[0],
             "project": pid,
@@ -973,7 +1014,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
-        create_project_data(mid, aids, files)
+        # create_project_data(mid, aids, files)
     except Exception as e:
         cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
@@ -1049,8 +1090,9 @@ def post_upload_finished(uid):
     :return: status of upload
     """
     uploaded = require_integer_array_json_parameter("uploaded")
+    useProjectData = require_boolean_json_parameter("useProjectData")
     with slycat.web.server.upload.get_session(uid) as session:
-        return session.post_upload_finished(uploaded)
+        return session.post_upload_finished(uploaded, useProjectData)
 
 
 def delete_upload(uid):

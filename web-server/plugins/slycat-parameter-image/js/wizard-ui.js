@@ -30,6 +30,7 @@ function constructor(params) {
   component.current_aids = ko.observable("");
   component.csv_data = ko.observableArray();
   component.error_messages = ko.observable("");
+  component.useProjectData = ko.observable(false);
   // Alex removing default model name per team meeting discussion
   // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
   component.model = mapping.fromJS({
@@ -326,7 +327,18 @@ function constructor(params) {
         component.browser.progress_status("");
       },
     };
-    fileUploader.uploadFile(fileObject);
+
+    client.post_project_data({
+      pid: component.project._id(),
+      file: file,
+      success: function(result) {
+        console.log("Success!");
+      },
+      error: function(status) {
+        console.log("Failure...");
+      }
+    })
+    fileUploader.uploadFile(fileObject, component.useProjectData());
   };
   component.connectSMB = function () {
     component.remote.enable(false);
