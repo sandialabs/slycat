@@ -12,8 +12,8 @@ export interface ControlsButtonToggleProps {
 }
 
 /**
- * react component used to create a button that has the ability to make ssh connections once
- * it is clicked by a user
+ * React component used to create a button that toggles between on and off when clicked.
+ * 
  *
  * @export
  * @class ControlsButtonToggle
