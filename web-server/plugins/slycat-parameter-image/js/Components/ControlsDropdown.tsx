@@ -5,26 +5,25 @@
 import React from "react";
 
 interface IDropdownItems {
-  key: number;
+  key: string;
   name: string;
-  type: string;
+  type?: string;
   style: {};
 }
 
 interface ControlsDropdownProps {
   items: IDropdownItems[];
-  selected: number;
+  selected: string;
   set_selected: (
     state_label: string,
-    key: number,
+    key: string,
     trigger: string,
-    e: React.MouseEvent<HTMLAnchorElement>,
-    props: {}
+    e?: React.MouseEvent<HTMLAnchorElement>,
+    props?: {}
   ) => void;
   state_label: string;
   trigger: string;
   button_style: string;
-  // active: boolean,
   id: string;
   title: string;
   label: string;

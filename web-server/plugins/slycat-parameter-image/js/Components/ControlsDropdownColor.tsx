@@ -6,32 +6,54 @@ import React from "react";
 import ControlsDropdown from './ControlsDropdown';
 import slycat_color_maps from "js/slycat-color-maps";
 
-class ControlsDropdownColor extends React.Component {
-  constructor(props) {
+interface ControlsDropdownColorProps {
+  dropdown: [
+    {
+      id: string,
+      label: string,
+      title: string,
+      state_label: string,
+      trigger: string,
+      selected: string,
+      single: boolean,
+    },
+  ],
+  element: {
+    trigger(trigger: string, key: string): void,
+  }
+}
+
+interface ControlsDropdownColorState {
+  selection: string;
+}
+
+/**
+ * React component used to create a dropdown for selecting a color scheme.
+ * 
+ *
+ * @export
+ * @class ControlsDropdownColor
+ * @extends {React.Component<ControlsDropdownColorProps, ControlsDropdownColorState>}
+ */
+
+class ControlsDropdownColor extends React.Component<ControlsDropdownColorProps, ControlsDropdownColorState> {
+  constructor(props: ControlsDropdownColorProps) {
     super(props);
 
     this.state = {
       selection: this.props.dropdown[0].selected,
     };
 
-    this.state[this.props.dropdown.state_label] = this.props.dropdown.selected;
-
     this.set_selected = this.set_selected.bind(this);
   }
 
-  set_selected(state_label, key, trigger, e) {
+  set_selected(state_label: string, key: string, trigger: string) {
     // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-    if(key == this.state[state_label])
+    if(key == this.state.selection)
     {
       return;
     }
-    // That function will receive the previous state as the first argument, and the props at the time the update is applied as the
-    // second argument. This format is favored because this.props and this.state may be updated asynchronously,
-    // you should not rely on their values for calculating the next state.
-    const obj = {};
-    obj[state_label] = key;
-    this.setState((prevState, props) => (obj));
-    this.state.selection = key;
+    this.setState({selection: key});
 
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);

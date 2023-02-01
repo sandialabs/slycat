@@ -2,7 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
-export interface ControlsButtonToggleProps {
+interface ControlsButtonToggleProps {
   button_style: string,
   active: boolean,
   id: string,
