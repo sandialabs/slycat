@@ -5,10 +5,20 @@ retains certain rights in this software. */
 import d3 from "d3";
 import slycat_color_maps_methods from 'js/slycat-color-maps-methods';
 
+interface ColorMaps {
+  [key: string]: {
+    label: string,
+    background: d3.RGBColor,
+    null_color: string,
+    opacity: string,
+    colors: d3.RGBColor[]
+  }
+}
+
 export default {
   color_maps:
   {
-    night:
+    'night':
     {
       label: "Night",
       background: d3.rgb(128, 128, 128),
@@ -51,7 +61,7 @@ export default {
         d3.rgb(180,   4,  38),
       ]
     },
-    day:
+    'day':
     {
       label: "Day",
       background: d3.rgb(255, 255, 255),
@@ -94,7 +104,7 @@ export default {
         d3.rgb(225,  57,  66),
       ]
     },
-    rainbow:
+    'rainbow':
     {
       label: "Rainbow Night",
       background: d3.rgb(128, 128, 128),
@@ -108,7 +118,7 @@ export default {
         d3.rgb(255, 0, 0),
       ]
     },
-    rainbow_day:
+    'rainbow_day':
     {
       label: "Rainbow Day",
       background: d3.rgb(255, 255, 255),
@@ -122,6 +132,6 @@ export default {
         d3.rgb(255, 0, 0),
       ]
     },
-  },
+  } as ColorMaps,
   ...slycat_color_maps_methods,
 }

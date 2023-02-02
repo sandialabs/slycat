@@ -6,7 +6,7 @@ import d3 from "d3";
 
 export default {
   // Return a d3 rgb object with the suggested background color for the given color map.
-  get_background: function(name)
+  get_background: function(name: string): d3.RGBColor
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -14,7 +14,7 @@ export default {
   },
 
   // Return the null color value for the given color map.
-  get_null_color: function(name)
+  get_null_color: function(name: string): string
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -22,7 +22,7 @@ export default {
   },
 
   // Return the suggested opacity value for the given color map.
-  get_opacity: function(name)
+  get_opacity: function(name: string): string
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -31,7 +31,7 @@ export default {
 
   // Return a d3 linear color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.  
-  get_color_scale: function(name, min, max)
+  get_color_scale: function(name: string, min: number, max: number)
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -49,14 +49,14 @@ export default {
   },
 
   // Deprecated
-  get_color_map: function(name, min, max)
+  get_color_map: function(name: string, min: number, max: number)
   {
     return this.get_color_scale(name, min, max);
   },
 
   // Return a d3 ordinal color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing an array of values to suit their own needs. 
-  get_color_scale_ordinal: function(name, values)
+  get_color_scale_ordinal: function(name: string, values: number[])
   {
     if(name === undefined)
       name = this.options.colormap;
@@ -74,12 +74,12 @@ export default {
   },
 
   // Deprecated
-  get_color_map_ordinal: function(name, values)
+  get_color_map_ordinal: function(name: string, values: number[])
   {
     return this.get_color_scale_ordinal(name, values);
   },
 
-  get_gradient_data: function(name)
+  get_gradient_data: function(name: string)
   {
     var self = this;
 
@@ -95,7 +95,7 @@ export default {
     return data;
   },
 
-  setUpColorMapsForAllColumns: function(name, columns)
+  setUpColorMapsForAllColumns: function(name: string, columns: {columnMin: number, columnMax: number, colorMap}[])
   {
     for(var j = 0; j != columns.length; ++j)
     {
