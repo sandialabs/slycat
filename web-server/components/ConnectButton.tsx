@@ -1,6 +1,6 @@
 'use strict';
 import * as React from 'react';
-import client from "../js/slycat-web-client";
+import client from "js/slycat-web-client";
 
 /**
  * @member loadingData state of weather something is loading
