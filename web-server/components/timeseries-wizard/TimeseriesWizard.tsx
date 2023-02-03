@@ -745,8 +745,9 @@ export default class TimeseriesWizard extends React.Component<
     }).then((results) => {
       const splitResult = results.errors.replace(/(\r\n\t|\n|\r\t)/gm, "").split(" ");
       const newJid = splitResult[splitResult.length - 1];
-      this.setState({ jid: newJid });
-      this.server_update_model_info(uid);
+      this.setState({jid: newJid}, () => { 
+        this.server_update_model_info(uid);
+    });
     })
   };
 
@@ -780,7 +781,7 @@ export default class TimeseriesWizard extends React.Component<
       value: this.state.jid,
       input: true
     });
-
+    
     client.post_sensitive_model_command_fetch(
       {
         mid: this.state.model["id"],
