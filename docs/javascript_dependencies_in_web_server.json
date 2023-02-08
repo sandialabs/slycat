@@ -1,8 +1,5 @@
 [
   {
-    "name": "./util.inspect (ignored)"
-  },
-  {
     "name": "./web-server/components/ConnectButton.tsx"
   },
   {
@@ -153,10 +150,10 @@
     "name": "./web-server/js/slycat-bookmark-manager.js"
   },
   {
-    "name": "./web-server/js/slycat-color-maps-methods.js"
+    "name": "./web-server/js/slycat-color-maps-methods.ts"
   },
   {
-    "name": "./web-server/js/slycat-color-maps.js"
+    "name": "./web-server/js/slycat-color-maps.ts"
   },
   {
     "name": "./web-server/js/slycat-dialog.js + 1 modules"
@@ -480,7 +477,7 @@
     "name": "./web-server/plugins/slycat-parameter-image/css/ui.css"
   },
   {
-    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsButtonToggle.js"
+    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsButtonToggle.tsx"
   },
   {
     "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsButtonUpdateTable.jsx"
@@ -489,10 +486,10 @@
     "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsButtonVarOptions.js"
   },
   {
-    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsDropdown.js"
+    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsDropdown.tsx"
   },
   {
-    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsDropdownColor.js"
+    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsDropdownColor.tsx"
   },
   {
     "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsPlayback.js"
