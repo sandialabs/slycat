@@ -121,5 +121,29 @@ const COLOR_MAP = {
             d3.rgb(255, 0, 0),
         ]
     },
+    grayscale_day:
+    {
+      label: "Grayscale Day",
+      background: d3.rgb(255, 255, 255),
+      null_color: "rgb(75,75,75)",
+      opacity: "0.6",
+      colors:
+      [
+        d3.rgb(255, 255, 255),
+        d3.rgb(0, 0, 0),
+      ]
+    },
+    grayscale_night:
+    {
+      label: "Grayscale Night",
+      background: d3.rgb(128, 128, 128),
+      null_color: "rgb(75,75,75)",
+      opacity: "0.6",
+      colors:
+      [
+        d3.rgb(255, 255, 255),
+        d3.rgb(0, 0, 0),
+      ]
+    },
 };
 export default COLOR_MAP
