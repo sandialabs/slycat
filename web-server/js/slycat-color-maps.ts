@@ -5,7 +5,7 @@ retains certain rights in this software. */
 import d3 from "d3";
 import slycat_color_maps_methods from 'js/slycat-color-maps-methods';
 
-interface ColorMaps {
+interface ColorMapsInterface {
   [key: string]: {
     label: string,
     background: d3.RGBColor,
@@ -156,6 +156,6 @@ export default {
         d3.rgb(0, 0, 0),
       ]
     },
-  } as ColorMaps,
+  } as ColorMapsInterface,
   ...slycat_color_maps_methods,
 }

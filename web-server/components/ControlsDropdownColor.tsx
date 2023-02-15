@@ -1,10 +1,32 @@
 import React from "react";
-import { connect } from "react-redux";
-import { setColormap } from "components/actionsColor";
 import ControlsDropdown from "components/ControlsDropdown";
+import ColorMaps from "js/slycat-color-maps";
 
-export default class ControlsDropdownColor extends React.Component {
-  constructor(props) {
+interface ControlsDropdownColorProps {
+  colormaps: typeof ColorMaps,
+  colormap: string,
+  key_id: string,
+  id: string,
+  label: string,
+  title: string,
+  state_label: string,
+  trigger: string,
+  single: boolean,
+  button_style: string,
+  setColormap(colormap: string): void,
+  background: d3.RGBColor,
+}
+
+/**
+ * React component used to create a dropdown for selecting a color scheme.
+ * 
+ *
+ * @export
+ * @class ControlsDropdownColor
+ * @extends {React.Component<ControlsDropdownColorProps>}
+ */
+export default class ControlsDropdownColor extends React.Component<ControlsDropdownColorProps> {
+  constructor(props: ControlsDropdownColorProps) {
     super(props);
   }
 
