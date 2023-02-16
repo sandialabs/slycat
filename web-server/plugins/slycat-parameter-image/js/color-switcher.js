@@ -138,7 +138,7 @@ $.widget("slycat.colorswitcher", {
     if (values === undefined) values = [0, 1];
 
     let tempOrdinal = d3.scale.ordinal().domain(values).rangePoints([0, 100], 0);
-    let tempColorscale = this.get_color_scale(this.options.colormap, 0, 100);
+    let tempColorscale = this.get_color_scale(0, 100);
     let rgbRange = [];
     for (let i = 0; i < values.length; i++) {
       rgbRange.push(tempColorscale(tempOrdinal(values[i])));
