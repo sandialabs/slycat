@@ -3,23 +3,23 @@ import ControlsDropdown from "components/ControlsDropdown";
 import ColorMaps from "js/slycat-color-maps";
 
 interface ControlsDropdownColorProps {
-  colormaps: typeof ColorMaps,
-  colormap: string,
-  key_id: string,
-  id: string,
-  label: string,
-  title: string,
-  state_label: string,
-  trigger: string,
-  single: boolean,
-  button_style: string,
-  setColormap(colormap: string): void,
-  background: d3.RGBColor,
+  colormaps: typeof ColorMaps;
+  colormap: string;
+  key_id: string;
+  id: string;
+  label: string;
+  title: string;
+  state_label: string;
+  trigger: string;
+  single: boolean;
+  button_style: string;
+  setColormap(colormap: string): void;
+  background: d3.RGBColor;
 }
 
 /**
  * React component used to create a dropdown for selecting a color scheme.
- * 
+ *
  *
  * @export
  * @class ControlsDropdownColor
