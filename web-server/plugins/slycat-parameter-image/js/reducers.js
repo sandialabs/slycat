@@ -46,6 +46,7 @@ import {
   SET_TABLE_METADATA,
   SET_VIDEO_SYNC_TIME,
   SET_SCATTERPLOT_MARGIN,
+  SET_COLORMAP,
 } from "./actions";
 
 import {
@@ -573,6 +574,11 @@ export default function ps_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         scatterplot_margin: Object.assign({}, state.scatterplot_margin, new_scatterplot_margin),
       });
+    
+    case SET_COLORMAP:
+      return Object.assign({}, state, {
+        colormap: action.name
+      })
 
     default:
       return state;

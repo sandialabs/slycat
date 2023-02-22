@@ -45,6 +45,14 @@ export const SET_TABLE_STATISTICS = "SET_TABLE_STATISTICS";
 export const SET_TABLE_METADATA = "SET_TABLE_METADATA";
 export const SET_VIDEO_SYNC_TIME = "SET_VIDEO_SYNC_TIME";
 export const SET_SCATTERPLOT_MARGIN = "SET_SCATTERPLOT_MARGIN";
+export const SET_COLORMAP = 'SET_COLORMAP';
+
+export function setColormap(colormap) {
+  return {
+    type: SET_COLORMAP,
+    name: colormap,
+  }
+}
 
 export function changeFontSize(event) {
   return {
