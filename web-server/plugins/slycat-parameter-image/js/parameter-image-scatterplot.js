@@ -18,7 +18,6 @@ import {
   updateClosedMedia,
 } from "./actions";
 import { get_variable_label } from "./ui";
-import { isValueInColorscaleRange } from "./color-switcher";
 import $ from "jquery";
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -26,6 +25,7 @@ import { Provider, connect } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
+import slycat_color_maps from "js/slycat-color-maps";
 
 var nodrag = d3.behavior.drag();
 
@@ -1417,9 +1417,9 @@ $.widget("parameter_image.scatterplot", {
         }
         let value = v[index];
         if (!self._validateValue(value))
-          color = $("#color-switcher").colorswitcher("get_null_color");
-        else if (!isValueInColorscaleRange(value, self.options.colorscale))
-          color = $("#color-switcher").colorswitcher("get_outofdomain_color");
+          color = slycat_color_maps.get_null_color(window.store.getState().colormap);
+        else if (!slycat_color_maps.isValueInColorscaleRange(value, self.options.colorscale))
+          color = slycat_color_maps.get_outofdomain_color(window.store.getState().colormap);
         else color = self.options.colorscale(value);
         canvas.fillStyle = color;
         cx = Math.round(self.x_scale_canvas_format(x[index]));
@@ -1475,9 +1475,9 @@ $.widget("parameter_image.scatterplot", {
         }
         let value = v[index];
         if (!self._validateValue(value))
-          color = $("#color-switcher").colorswitcher("get_null_color");
-        else if (!isValueInColorscaleRange(value, self.options.colorscale))
-          color = $("#color-switcher").colorswitcher("get_outofdomain_color");
+          color = slycat_color_maps.get_null_color(window.store.getState().colormap);
+        else if (!slycat_color_maps.isValueInColorscaleRange(value, self.options.colorscale))
+          color = slycat_color_maps.get_outofdomain_color(window.store.getState().colormap);
         else color = self.options.colorscale(value);
         canvas.fillStyle = color;
         cx = Math.round(self.x_scale_canvas_format(x[index]));

@@ -14,7 +14,7 @@ import "slickgrid/plugins/slick.headerbuttons";
 import "slickgrid/plugins/slick.autotooltips";
 import he from 'he';
 import $ from 'jquery';
-import { isValueInColorscaleRange } from './color-switcher';
+import slycat_color_maps from "js/slycat-color-maps";
 
 $.widget("parameter_image.table",
 {
@@ -50,14 +50,13 @@ $.widget("parameter_image.table",
     self.options.x_y_variables.x = self.options['x-variable'];
     self.options.x_y_variables.y = self.options['y-variable'];
 
-    function get_color(colorscale, value)
-    {
+    function get_color(colorscale, value) {
       // console.debug(`table get_color, colorscale is %o and value is %o`, colorscale, value);
       // If the value is in the color scale's domain, just return the value from the colorscale
-      if(isValueInColorscaleRange(value, self.options.colorscale))
+      if (slycat_color_maps.isValueInColorscaleRange(value, self.options.colorscale))
         return colorscale(value);
       // Otherwise return the out of domain color
-      return $("#color-switcher").colorswitcher("get_outofdomain_color");
+      return slycat_color_maps.get_outofdomain_color(window.store.getState().colormap);
     }
 
 

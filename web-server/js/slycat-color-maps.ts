@@ -23,6 +23,7 @@ export default {
       label: "Night",
       background: d3.rgb(128, 128, 128),
       null_color: "rgb(75,75,75)",
+      outofdomain_color: "black",
       opacity: "0.5",
       colors:
       [
@@ -66,6 +67,7 @@ export default {
       label: "Day",
       background: d3.rgb(255, 255, 255),
       null_color: "gray",
+      outofdomain_color: "black",
       opacity: "0.7",
       colors:
       [
@@ -109,6 +111,7 @@ export default {
       label: "Rainbow Night",
       background: d3.rgb(128, 128, 128),
       null_color: "rgb(75,75,75)",
+      outofdomain_color: "black",
       opacity: "0.6",
       colors:
       [
@@ -123,6 +126,7 @@ export default {
       label: "Rainbow Day",
       background: d3.rgb(255, 255, 255),
       null_color: "gray",
+      outofdomain_color: "black",
       opacity: "0.7",
       colors:
       [
@@ -136,7 +140,9 @@ export default {
     {
       label: "Grayscale Day",
       background: d3.rgb(255, 255, 255),
+      // ToDo: fix this, null and outofdomain colors need to be different than normal colors
       null_color: "rgb(75,75,75)",
+      outofdomain_color: "black",
       opacity: "0.6",
       colors:
       [
@@ -148,7 +154,9 @@ export default {
     {
       label: "Grayscale Night",
       background: d3.rgb(128, 128, 128),
+      // ToDo: fix this, null and outofdomain colors need to be different than normal colors
       null_color: "rgb(75,75,75)",
+      outofdomain_color: "black",
       opacity: "0.6",
       colors:
       [

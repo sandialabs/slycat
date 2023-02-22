@@ -13,7 +13,14 @@ import ControlsButtonVarOptions from "./ControlsButtonVarOptions";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import $ from "jquery";
-import { toggleSyncScaling, toggleSyncThreeDColorvar, setVideoSyncTime } from "../actions";
+import {
+  toggleSyncScaling,
+  toggleSyncThreeDColorvar,
+  setVideoSyncTime,
+  setColormap,
+} from "../actions";
+import ControlsDropdownColor from "components/ControlsDropdownColor";
+import slycat_color_maps from "js/slycat-color-maps";
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -446,6 +453,21 @@ class ControlsBar extends React.Component {
                 />
               </ControlsGroup>
             )}
+            <ControlsGroup id="color-switcher" class="btn-group ml-3">
+              <ControlsDropdownColor
+                button_style={button_style}
+                colormaps={slycat_color_maps}
+                colormap={this.props.colormap}
+                key_id="color-switcher"
+                id="color-switcher"
+                label="Color"
+                title="Change color scheme"
+                state_label="color"
+                trigger="colormap-changed"
+                single={true}
+                setColormap={this.props.setColormap}
+              />
+            </ControlsGroup>
           </React.StrictMode>
         </React.Fragment>
       </Provider>
@@ -485,6 +507,7 @@ const mapStateToProps = (state, ownProps) => {
     selection: state.selected_simulations,
     hidden_simulations: state.hidden_simulations,
     video_sync_time: state.video_sync_time,
+    colormap: state.colormap,
   };
 };
 
@@ -494,6 +517,7 @@ export default connect(
     toggleSyncScaling,
     toggleSyncThreeDColorvar,
     setVideoSyncTime,
+    setColormap,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this

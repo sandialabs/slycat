@@ -59,6 +59,7 @@ import {
   setTableStatistics,
   setTableMetadata,
   setVideoSyncTime,
+  setColormap,
 } from "./actions";
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -78,6 +79,8 @@ import {
 import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
+import slycat_color_maps from "js/slycat-color-maps";
+import watch from 'redux-watch'
 
 let table_metadata = null;
 
@@ -420,6 +423,8 @@ $(document).ready(function () {
             fontFamily: DEFAULT_FONT_FAMILY,
             axesVariables: {},
             threeD_sync: false,
+            // Try to grab current colormap from bookmark, otherwise default it to night
+            colormap: bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night",
             // First colormap is default
             threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
             threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
@@ -516,7 +521,6 @@ $(document).ready(function () {
           filter_manager.notify_store_ready();
           resolve();
           setup_controls();
-          setup_colorswitcher();
           metadata_loaded();
         });
 
@@ -529,6 +533,18 @@ $(document).ready(function () {
       // Dispatch update to table_metadata in Redux
       // console.debug(`getTableMetadataPromise`);
       window.store.dispatch(setTableMetadata(table_metadata));
+    });
+
+    // Wait until the redux store has been created
+    createReduxStorePromise.then(() => {
+      // Subscribing to changes in colormap
+      let w = watch(store.getState, "colormap");
+      store.subscribe(
+        w((newVal, oldVal, objectPath) => {
+          // console.debug(`%s changed from %s to %s`, objectPath, oldVal, newVal);
+          selected_colormap_changed(newVal)
+        })
+      );
     });
   }
 
@@ -545,16 +561,6 @@ $(document).ready(function () {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup the rest of the UI as data is received.
   //////////////////////////////////////////////////////////////////////////////////////////
-
-  function setup_colorswitcher() {
-    var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-
-    $("#color-switcher").colorswitcher({ colormap: colormap });
-
-    $("#color-switcher").bind("colormap-changed", function (event, colormap) {
-      selected_colormap_changed(colormap);
-    });
-  }
 
   function metadata_loaded() {
     if (table_metadata) {
@@ -818,10 +824,8 @@ $(document).ready(function () {
         "y-variable": y_index,
         "row-selection": selected_simulations,
         hidden_simulations: hidden_simulations,
+        colorscale: colorscale,
       };
-
-      var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-      table_options.colorscale = colorscale;
 
       if ("sort-variable" in bookmark && "sort-order" in bookmark) {
         table_options["sort-variable"] = bookmark["sort-variable"];
@@ -935,11 +939,9 @@ $(document).ready(function () {
 
       $("#scatterplot-pane .load-status").css("display", "none");
 
-      var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-
       $("#scatterplot-pane").css(
         "background",
-        $("#color-switcher").colorswitcher("get_background", colormap).toString()
+        slycat_color_maps.get_background(store.getState().colormap).toString()
       );
 
       $("#scatterplot").scatterplot({
@@ -963,7 +965,7 @@ $(document).ready(function () {
         colorscale: colorscale,
         selection: selected_simulations,
         open_images: open_images,
-        gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+        gradient: slycat_color_maps.get_gradient_data(store.getState().colormap),
         hidden_simulations: hidden_simulations,
         "auto-scale": auto_scale,
         "video-sync": video_sync,
@@ -1377,22 +1379,16 @@ $(document).ready(function () {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   function selected_colormap_changed(colormap) {
-    // Update color switcher with new colormap
-    $("#color-switcher").colorswitcher("option", "colormap", colormap);
-
     update_current_colorscale();
 
     // Changing the color map updates the table with a new color scale ...
     $("#table").table("option", "colorscale", colorscale);
 
     // Changing the color scale updates the scatterplot ...
-    $("#scatterplot-pane").css(
-      "background",
-      $("#color-switcher").colorswitcher("get_background", colormap).toString()
-    );
+    $("#scatterplot-pane").css("background", slycat_color_maps.get_background(colormap).toString());
     $("#scatterplot").scatterplot("option", {
       colorscale: colorscale,
-      gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+      gradient: slycat_color_maps.get_gradient_data(colormap),
     });
 
     $.ajax({
@@ -1551,23 +1547,28 @@ $(document).ready(function () {
     if (v_type != "string") {
       let axes_variables = store.getState().axesVariables[v_index];
       let v_axis_type = axes_variables != undefined ? axes_variables : "Linear";
-      let get_color_scale_function =
-        v_axis_type == "Log" ? "get_color_scale_log" : "get_color_scale";
       // console.log(`v_axis_type is ${v_axis_type}`);
 
-      // console.log(`update_current_colorscale for not strings`);
-      colorscale = $("#color-switcher").colorswitcher(
-        get_color_scale_function,
+      // console.debug(`store.getState().colormap is %o`, store.getState().colormap);
+      const colormap = store.getState().colormap;
+      const min =
         custom_color_variable_range.min != undefined
           ? custom_color_variable_range.min
-          : d3.min(filtered_v),
+          : d3.min(filtered_v);
+      const max =
         custom_color_variable_range.max != undefined
           ? custom_color_variable_range.max
-          : d3.max(filtered_v)
-      );
+          : d3.max(filtered_v);
+      colorscale =
+        v_axis_type == "Log"
+          ? slycat_color_maps.get_color_scale_log(colormap, min, max)
+          : slycat_color_maps.get_color_scale(colormap, min, max);
     } else {
       var uniqueValues = d3.set(filtered_v).values().sort();
-      colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", uniqueValues);
+      colorscale = slycat_color_maps.get_color_scale_ordinal(
+        store.getState().colormap,
+        uniqueValues
+      );
     }
   }
 
