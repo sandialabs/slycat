@@ -47,6 +47,7 @@
     "redux-logger": "3.0.6",
     "redux-throttle": "0.1.1",
     "redux-thunk": "^2",
+    "redux-watch": "^1.2.0",
     "slickgrid": "^3",
     "stream-browserify": "3.0.0",
     "three": "^0",
