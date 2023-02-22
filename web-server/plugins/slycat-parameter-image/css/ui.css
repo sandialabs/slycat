@@ -1,12 +1,8 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-
-
-
 /* Page header */
 
-#edit-model-button
-{
+#edit-model-button {
   float: right;
 }
 
@@ -29,14 +25,12 @@
 }
 
 .x-axis path,
-.y-axis path
-{
+.y-axis path {
   fill: none;
   stroke: black;
 }
 
-#remote-error
-{
+#remote-error {
   background-color: red;
   color: yellow;
   padding: 1em;
@@ -72,8 +66,7 @@
 .barplotHeaderColumn .wrapper {
   padding: 3px;
 }
-.mask
-{
+.mask {
   background-color: white;
   position: relative; /* needed to get this cell to cover scrolling header row */
   z-index: 1;
@@ -93,20 +86,17 @@
 .barplotHeader,
 .barplotColumn,
 .mask,
-.inputs .ui-resizable-s
-{
-  border-color: #C0C0C0;
+.inputs .ui-resizable-s {
+  border-color: #c0c0c0;
   border-style: solid;
   border-width: 0;
 }
 /*.barplotGroup.inputs,*/
-.barplotHeader
-{
+.barplotHeader {
   border-bottom-width: 1px;
 }
 .barplotColumn,
-.mask
-{
+.mask {
   border-right-width: 1px;
 }
 .inputs .ui-resizable-s {
@@ -114,10 +104,10 @@
   height: 3px;
   border-bottom-width: 1px;
   border-top-width: 1px;
-  background-color: #DDDDCC;
+  background-color: #ddddcc;
 }
 .inputs .ui-resizable-s.ui-resizable-hover {
-  background-color: #FFCC66;
+  background-color: #ffcc66;
 }
 .noVerticalResize .ui-resizable-s {
   display: none !important;
@@ -126,11 +116,11 @@
   width: 50px;
   height: 100%;
   margin: 0 auto;
-  background-color: #CCCCBB;
+  background-color: #ccccbb;
 }
 .toggle-control-s.toggle-control-hover {
   cursor: pointer;
-  background-color: #FFCC66;
+  background-color: #ffcc66;
 }
 /*.barplotGroup.inputs {
   border-bottom: 7px solid red;
@@ -155,42 +145,35 @@
   text-align: right;
 }
 .rowInput,
-.rowOutput
-{
+.rowOutput {
   cursor: pointer;
 }
 #barplot-table .inputLabel .wrapper,
-#barplot-table .outputLabel .wrapper
-{
+#barplot-table .outputLabel .wrapper {
   padding: 3px;
 }
 #barplot-table .inputLabel,
 #barplot-table .outputLabel,
 .barplotCell.col0,
-.barplotHeaderColumn
-{
+.barplotHeaderColumn {
   font-weight: bold;
   text-align: center;
 }
-#barplot-table .inputLabel
-{
+#barplot-table .inputLabel {
   background: #eeffe0;
 }
 #barplot-table .inputLabel.selected-variable,
 #barplot-table .barplotRow.rowInput.selected-variable,
-#barplot-table .barplotCell.rowInput.selected-variable
-{
+#barplot-table .barplotCell.rowInput.selected-variable {
   background: #3ca654;
   color: white;
 }
-#barplot-table .outputLabel
-{
+#barplot-table .outputLabel {
   background: #eeeeff;
 }
 #barplot-table .outputLabel.selected-variable,
 #barplot-table .barplotRow.rowOutput.selected-variable,
-#barplot-table .barplotCell.rowOutput.selected-variable
-{
+#barplot-table .barplotCell.rowOutput.selected-variable {
   background: #7767b0;
   color: white;
 }
@@ -200,19 +183,16 @@
 .barplotCellValue,
 .selected-component .spacer,
 .negative,
-.positive
-{
+.positive {
   display: inline-block;
 }
-.barplotCellValue
-{
+.barplotCellValue {
   padding: 3px 23px 3px 18px;
   width: 40px;
 }
 .selected-component .barplotCellValue,
-.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
-{
-  background-color: #DDDDDD;
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper {
+  background-color: #dddddd;
   border-width: 0px 1px;
   border-style: solid;
   border-color: #808080;
@@ -221,43 +201,35 @@
 .barplotHeaderColumn.selected-component .wrapper {
   padding: 0;
 }
-.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
-{
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper {
   padding: 3px 3px 3px 3px;
   width: 75px;
 }
-.spacer
-{
+.spacer {
   width: 100px;
   display: none;
 }
-.negativeSpacer
-{
+.negativeSpacer {
   text-align: right;
 }
-.positiveSpacer
-{
+.positiveSpacer {
   text-align: left;
 }
 .negative,
-.positive
-{
+.positive {
   height: 12px;
 }
-.negative
-{
+.negative {
   background-color: blue;
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
 }
-.positive
-{
+.positive {
   background-color: red;
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
-#barplot-table span.sortCCAComponent
-{
+#barplot-table span.sortCCAComponent {
   width: 15px;
   height: 15px;
   display: inline-block;
@@ -282,18 +254,15 @@
   background: transparent url(../../../img/sort-asc-gray.png) no-repeat center center !important;
 }
 .icon-sort-ascending:hover,
-.icon-sort-descending:hover
-{
+.icon-sort-descending:hover {
   border: 1px solid transparent;
 }
 .slick-header-button,
-.slick-header-column:hover > .slick-header-button
-{
+.slick-header-column:hover > .slick-header-button {
   width: 10px;
 }
 .slick-header-button.icon-image-on,
-.slick-header-button.icon-image-off
-{
+.slick-header-button.icon-image-off {
   right: 16px;
   top: 4px;
 }
@@ -301,13 +270,11 @@
   background: transparent url(../../../img/image-light.png) no-repeat center center;
 }
 .slick-header-button.icon-image-on,
-.slick-header-button.icon-image-off:hover
-{
+.slick-header-button.icon-image-off:hover {
   background: transparent url(../../../img/image-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
-.slick-header-button.icon-y-off
-{
+.slick-header-button.icon-y-off {
   right: 16px;
   top: 4px;
 }
@@ -315,13 +282,11 @@
   background: transparent url(../../../img/y-light.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
-.slick-header-button.icon-y-off:hover
-{
+.slick-header-button.icon-y-off:hover {
   background: transparent url(../../../img/y-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
-.slick-header-button.icon-x-off
-{
+.slick-header-button.icon-x-off {
   right: 26px;
   top: 4px;
 }
@@ -329,8 +294,7 @@
   background: transparent url(../../../img/x-light.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
-.slick-header-button.icon-x-off:hover
-{
+.slick-header-button.icon-x-off:hover {
   background: transparent url(../../../img/x-gray.png) no-repeat center center;
 }
 #page-title {
@@ -348,16 +312,14 @@
   margin-right: 5px;
 }
 #controls label.disabled,
-#controls select:disabled
-{
+#controls select:disabled {
   color: gray;
 }
 #controls select {
   margin-right: 10px;
   padding: 2px 4px;
 }
-#controls label[for="auto-scale-option"]
-{
+#controls label[for="auto-scale-option"] {
   margin-right: 10px;
 }
 #controls #filter-selector {
@@ -371,16 +333,14 @@
    like selecting points or moving pins. */
 #scatterplot,
 .slycat-pim-filter .varName,
-.category-filter .varName
-{
+.category-filter .varName {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
 #scatterplot .media-layer .frame-icon,
-#sliders-pane .frame-icon
-{
+#sliders-pane .frame-icon {
   position: absolute;
   width: 16px;
   height: 16px;
@@ -465,8 +425,8 @@
   padding: 3px 0px 4px 2px;
   font-size: 9px;
 }
-.frame-button.jump-button:hover * { 
-  color: white !important; 
+.frame-button.jump-button:hover * {
+  color: white !important;
 }
 
 #scatterplot .media-layer .reload-button {
@@ -477,19 +437,16 @@
 
 #scatterplot rect.outline:hover,
 #scatterplot g.image-frame image.image,
-#scatterplot .media-layer .image-frame
-{
+#scatterplot .media-layer .image-frame {
   cursor: move;
 }
 #scatterplot.resizing,
-#scatterplot.resizing .media-layer .image-frame
-{
+#scatterplot.resizing .media-layer .image-frame {
   cursor: nwse-resize !important;
 }
 #scatterplot .close-button,
 #scatterplot .resize-handle,
-#scatterplot .pin-button
-{
+#scatterplot .pin-button {
   visibility: hidden;
 }
 #scatterplot g.open-image:hover .close-button,
@@ -501,8 +458,7 @@
 #scatterplot .media-layer .image-frame:hover .resize-handle,
 #scatterplot .media-layer .image-frame.resizing .resize-handle,
 #scatterplot .media-layer .image-frame:hover .pin-button,
-#scatterplot .media-layer .open-image:hover .close-button
-{
+#scatterplot .media-layer .open-image:hover .close-button {
   visibility: visible;
 }
 #scatterplot g.legend:hover {
@@ -512,8 +468,7 @@
   shape-rendering: crispEdges;
 }
 .legend-axis path,
-.legend-axis line
-{
+.legend-axis line {
   fill: none;
   stroke: black;
   shape-rendering: crispEdges;
@@ -527,28 +482,23 @@
 }
 
 /* ui layout */
-.ui-layout-resizer
-{
+.ui-layout-resizer {
   background: #ddc;
 }
-.ui-layout-resizer-hover
-{
+.ui-layout-resizer-hover {
   background: #fc6;
 }
-.ui-layout-resizer-dragging
-{
+.ui-layout-resizer-dragging {
   background: #fc6;
 }
-.ui-layout-toggler
-{
+.ui-layout-toggler {
   background: #ccb;
 }
-.ui-layout-toggler-hover
-{
+.ui-layout-toggler-hover {
   background: #fc6;
 }
-.ui-layout-pane, .ui-layout-container
-{
+.ui-layout-pane,
+.ui-layout-container {
   background: white;
   padding: 0;
   border: 0;
@@ -623,8 +573,7 @@
 #sliders {
   margin: 20px 0 0 20px;
 }
-.slycat-range-slider.vertical
-{
+.slycat-range-slider.vertical {
   display: inline-block;
   margin: 28px 0 22px 0;
   left: 20px;
@@ -654,18 +603,15 @@
 .category-filter.auto-width {
   width: auto;
 }
-.slycat-pim-filter .button
-{
+.slycat-pim-filter .button {
   cursor: pointer;
   position: absolute;
 }
-.slycat-pim-filter .close-button
-{
+.slycat-pim-filter .close-button {
   top: 4px;
   left: 6px;
 }
-.slycat-pim-filter .reset-button
-{
+.slycat-pim-filter .reset-button {
   position: static;
 }
 .category-filter .auto-width-button {
@@ -677,8 +623,7 @@
 .slycat-pim-filter .select-all-button,
 .slycat-pim-filter .select-none-button,
 .slycat-pim-filter .auto-width-button,
-.slycat-pim-filter .null-button
-{
+.slycat-pim-filter .null-button {
   position: absolute;
 }
 .slycat-pim-filter .fa-arrows-v {
@@ -711,24 +656,20 @@
 .slycat-pim-filter .minMaxHighLow .max,
 .slycat-pim-filter .minMaxHighLow .min,
 .slycat-pim-filter .minMaxHighLow .high,
-.slycat-pim-filter .minMaxHighLow .low
-{
+.slycat-pim-filter .minMaxHighLow .low {
   position: absolute;
   left: 44px;
 }
 .slycat-pim-filter:hover .minMaxHighLow .low,
 .slycat-pim-filter:hover .minMaxHighLow .high,
-.slycat-pim-filter .minMaxHighLow .high_precision.editing
-{
+.slycat-pim-filter .minMaxHighLow .high_precision.editing {
   z-index: 6;
 }
-.slycat-pim-filter .minMaxHighLow .low_precision
-{
+.slycat-pim-filter .minMaxHighLow .low_precision {
   position: absolute;
   top: 0;
 }
-.slycat-pim-filter .minMaxHighLow .high_precision
-{
+.slycat-pim-filter .minMaxHighLow .high_precision {
   visibility: hidden;
   padding-right: 5px;
   background-color: white;
@@ -738,20 +679,17 @@
 /* Hovering over filter */
 .slycat-pim-filter:hover .minMaxHighLow .low_precision,
 /* Editing high precision label */
-.slycat-pim-filter .minMaxHighLow .high_precision.editing ~ .low_precision
-{
+.slycat-pim-filter .minMaxHighLow .high_precision.editing ~ .low_precision {
   visibility: hidden;
 }
 /* Show high precision label when... */
 /* Hovering over filter */
 .slycat-pim-filter:hover .minMaxHighLow .high_precision,
 /* Editing high precision label */
-.slycat-pim-filter .minMaxHighLow .high_precision.editing
-{
+.slycat-pim-filter .minMaxHighLow .high_precision.editing {
   visibility: visible;
 }
-.slycat-pim-filter .minMaxHighLow .max
-{
+.slycat-pim-filter .minMaxHighLow .max {
   top: 3px;
 }
 .slycat-pim-filter .max .editing,
@@ -763,33 +701,28 @@
 .slycat-pim-filter .high .editing,
 .slycat-pim-filter .low .editing,
 .slycat-pim-filter .high .hover,
-.slycat-pim-filter .low .hover
-{
+.slycat-pim-filter .low .hover {
   background-color: #ffc107;
-  border: 1px solid #CCC;
+  border: 1px solid #ccc;
   border-radius: 4px;
   padding: 0 3px;
   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
 }
-.slycat-pim-filter .minMax
-{
+.slycat-pim-filter .minMax {
   z-index: 20;
 }
-.slycat-pim-filter .min-max-field
-{
+.slycat-pim-filter .min-max-field {
   display: inline-block;
 }
 .slycat-pim-filter .varNameContainer,
-.category-filter .varNameContainer
-{
+.category-filter .varNameContainer {
   position: absolute;
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
 .slycat-pim-filter .varName,
-.category-filter .varName
-{
+.category-filter .varName {
   transform: rotate(270deg);
   -ms-transform: rotate(270deg);
   -webkit-transform: rotate(270deg);
@@ -834,8 +767,7 @@
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.slycat-category-filter .category-button.fresh:hover
-{
+.slycat-category-filter .category-button.fresh:hover {
   border-color: #cfcfcf;
   background-color: #e7e7e7;
   color: #8f8f8f;
@@ -853,10 +785,9 @@
   border-radius: 0 0 3px 3px;
 }
 .slycat-category-filter .category-button.active,
- .slycat-category-filter .category-button.active.fresh:hover
-{
+.slycat-category-filter .category-button.active.fresh:hover {
   background-color: #abf;
-  border-color: #97A3FE;
+  border-color: #97a3fe;
   color: #333;
   z-index: 5;
   position: relative;
@@ -878,7 +809,8 @@
   text-overflow: ellipsis;
 }
 
-.cat-button:hover, .cat-button:focus {
+.cat-button:hover,
+.cat-button:focus {
   outline: none !important;
   outline-style: none;
 }
@@ -889,7 +821,7 @@
 
 /* Note Layer */
 .ui-sticky {
-  z-index: 3
+  z-index: 3;
 }
 
 .ui-sticky-wrapper {
@@ -914,7 +846,8 @@
   padding-top: 2px;
 }
 
-.ui-sticky:hover i.fa, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
+.ui-sticky:hover i.fa,
+.ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
   visibility: visible;
 }
 
@@ -973,47 +906,42 @@ a {
   width: 85%;
 }
 .bootstrap-styles .dropdown-header {
-    display: block;
-    padding: 3px 20px;
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1.42857;
-    color: #333;
-    white-space: nowrap;
-    margin-left: -7px;
+  display: block;
+  padding: 3px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.42857;
+  color: #333;
+  white-space: nowrap;
+  margin-left: -7px;
 }
 .bootstrap-styles .dropdown-header.disabled {
   color: #6c757d;
 }
-#controls-pane .bootstrap-styles .dropdown-menu
-{
+#controls-pane .bootstrap-styles .dropdown-menu {
   max-height: 500px;
   overflow-y: auto;
 }
 .image-frame .download-link,
-.image-frame .open-link
-{
+.image-frame .open-link {
   padding: 20px;
   display: block;
   text-align: center;
   word-break: break-all;
 }
 .image-frame a.download-link,
-.image-frame a.open-link
-{
+.image-frame a.open-link {
   color: #c8c8c8;
 }
 .image-frame a.download-link:hover,
-.image-frame a.open-link:hover
-{
+.image-frame a.open-link:hover {
   color: white;
 }
 #video-controls .video-sync-time {
   width: 75px;
 }
 .playback-controls .play-button,
-.playback-controls .pause-button
-{
+.playback-controls .pause-button {
   width: 30px;
 }
 .slick-cell.flashing {
@@ -1035,8 +963,7 @@ slycat-3d-viewer .header-bar {
   display: none;
 }
 /* Making axis ticks visible by setting the stroke color */
-.tick line
-{
+.tick line {
   fill: none;
   stroke: black;
   shape-rendering: crispEdges;
@@ -1047,8 +974,8 @@ button#controls-button-var-options {
 }
 
 .legend text.label {
-  text-anchor: middle; 
-  font-weight: bold; 
+  text-anchor: middle;
+  font-weight: bold;
 }
 
 .vtp .timeLabel {
