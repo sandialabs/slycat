@@ -25,7 +25,6 @@ import * as chunker from "js/chunker";
 import "./parameter-image-scatterplot";
 import "./parameter-controls";
 import "./parameter-image-table";
-import "./color-switcher";
 import $ from "jquery";
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality

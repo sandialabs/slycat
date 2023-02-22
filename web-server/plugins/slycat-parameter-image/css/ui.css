@@ -10,8 +10,7 @@
   float: right;
 }
 
-#table
-{
+#table {
   position: absolute;
   top: 0;
   left: 0;
@@ -20,8 +19,7 @@
 }
 
 .x-axis,
-.y-axis
-{
+.y-axis {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -71,11 +69,6 @@
   cursor: pointer;
   /*outline: 1px solid red;*/
 }
-.wrapper {
-  /*No longer using box-sizing since we are sizing cells based on an wrapper div inside them*/
-/*  box-sizing: border-box;
-  -moz-box-sizing: border-box;*/
-}
 .barplotHeaderColumn .wrapper {
   padding: 3px;
 }
@@ -87,9 +80,6 @@
 }
 .mask .wrapper {
   padding: 3px;
-}
-.barplotViewport {
-
 }
 .barplotGroup {
   overflow: hidden;
@@ -353,18 +343,6 @@
 .center {
   text-align: center;
 }
-#color-switcher ul.dropdown-menu
-{
-  background-color: #F2F2F2;
-}
-.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
-{
-  background-color: #E4E4E4;
-}
-.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
-{
-  background-color: #337AB7;
-}
 #controls label {
   font-weight: bold;
   margin-right: 5px;
@@ -508,12 +486,9 @@
 {
   cursor: nwse-resize !important;
 }
-#scatterplot g.open-image image.image {
-
-}
 #scatterplot .close-button,
 #scatterplot .resize-handle,
-#scatterplot .pin-button,
+#scatterplot .pin-button
 {
   visibility: hidden;
 }
@@ -526,7 +501,7 @@
 #scatterplot .media-layer .image-frame:hover .resize-handle,
 #scatterplot .media-layer .image-frame.resizing .resize-handle,
 #scatterplot .media-layer .image-frame:hover .pin-button,
-#scatterplot .media-layer .open-image:hover .close-button,
+#scatterplot .media-layer .open-image:hover .close-button
 {
   visibility: visible;
 }
@@ -804,10 +779,6 @@
 {
   display: inline-block;
 }
-.slycat-pim-filter .min
-{
-
-}
 .slycat-pim-filter .varNameContainer,
 .category-filter .varNameContainer
 {
@@ -900,9 +871,6 @@
   background-color: #cccccc;
   border-color: #cccccc;
   color: #8f8f8f;
-}
-.slycat-category-select {
-  /*max-width: 70px;*/
 }
 .slycat-category-select button {
   /*width: 50px;*/
