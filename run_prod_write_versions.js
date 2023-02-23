@@ -100,7 +100,8 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
 
       const node_modules_path = path_array_sliced.join('/');
       const module_name = path_array_sliced.slice(1).join('/');
-      const version_from_package_lock = packageLock.packages[node_modules_path] ? packageLock.packages[node_modules_path].version : 'ERROR: MODULE VERSION NOT FOUND IN package-lock.json';
+      const version_from_package_lock = packageLock.packages[node_modules_path] ? packageLock.packages[node_modules_path].version : 'ERROR: MODULE NOT FOUND IN package-lock.json';
+      const resolved_from_package_lock = packageLock.packages[node_modules_path] ? packageLock.packages[node_modules_path].resolved : 'ERROR: MODULE NOT FOUND IN package-lock.json';
       
       node_modules_from_stats[module.name] = {
         'path_array' : path_array,
@@ -110,11 +111,13 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
         'node_modules_path' : node_modules_path,
         'module_name' : module_name,
         'version_from_package_lock' : version_from_package_lock,
+        'resolved_from_package_lock' : resolved_from_package_lock,
       };
 
       slycat_node_modules.push({
         name: module_name, 
         version: version_from_package_lock,
+        url: resolved_from_package_lock,
       });
     }
 
@@ -129,7 +132,6 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
 
       const node_modules_path = path_array_sliced.join('/');
       const module_name = path_array_sliced.slice(1).join('/');
-      // const version_from_package_lock = packageLock.packages[node_modules_path] ? packageLock.packages[node_modules_path].version : 'ERROR: MODULE VERSION NOT FOUND IN package-lock.json';
       
       slycat_modules_from_stats[module.name] = {
         'path_array' : path_array,
@@ -138,12 +140,10 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
         'path_array_sliced' : path_array_sliced,
         'node_modules_path' : node_modules_path,
         'module_name' : module_name,
-        // 'version_from_package_lock' : version_from_package_lock,
       };
 
       slycat_modules.push({
         name: module.name, 
-        // version: version_from_package_lock,
       });
     }
   }
@@ -152,6 +152,25 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
   slycat_node_modules = _.uniqWith(slycat_node_modules, _.isEqual);
   // Sort my name then version
   slycat_node_modules = _.sortBy(slycat_node_modules, ['name', 'version'])
+
+  // Find max widths of each value in slycat_node_modules so we can turn them into columns
+  let col_widths = {};
+  slycat_node_modules.forEach(element => {
+    for (const [key, value] of Object.entries(element)) {
+      col_widths[key] = Math.max(col_widths[key] ? col_widths[key] : 0, String(value).length);
+    }
+  });
+
+  // Convert slycat_node_moodules object to string of columns
+  const col_separator = 6;
+  const slycat_node_modules_columns = slycat_node_modules.reduce((accumulator, module) => {
+    let line = ``;
+    for (const [key, value] of Object.entries(module)) {
+      line += String(value).padEnd(col_widths[key] + col_separator);
+    }
+    line += `\n`;
+    return accumulator.concat(line);
+  }, "");
 
 
   // Remove duplicate modules, but only if their versions are different. _.isEqual compares entire objects.
@@ -164,13 +183,16 @@ webpack(webpack_prod_config, (err, stats) => { // [Stats Object](#stats-object)
   // fs.writeFileSync('stats_no_file-slycat_production_node_modules_debug.json', JSON.stringify(node_modules_from_stats, null, 2));
 
   const JS_NODE_FILENAME = 'docs/javascript_dependencies_in_node_modules.json';
+  const JS_NODE_COLUMNS_FILENAME = 'docs/javascript_dependencies_in_node_modules_columns.txt';
   const JS_WEBSERVER_FILENAME = 'docs/javascript_dependencies_in_web_server.json';
 
   // Write out file listing all node_module modules used in production Slycat build and their versions
   fs.writeFileSync(JS_NODE_FILENAME, JSON.stringify(slycat_node_modules, null, 2));
+  fs.writeFileSync(JS_NODE_COLUMNS_FILENAME, slycat_node_modules_columns);
   fs.writeFileSync(JS_WEBSERVER_FILENAME, JSON.stringify(slycat_modules, null, 2));
 
   console.log(`CONGRATULATIONS. It seems that the build was successful. The following files were written out:`);
   console.log(JS_NODE_FILENAME);
+  console.log(JS_NODE_COLUMNS_FILENAME);
   console.log(JS_WEBSERVER_FILENAME);
 });
