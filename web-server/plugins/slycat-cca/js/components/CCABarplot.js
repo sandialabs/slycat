@@ -12,7 +12,7 @@ import _ from "lodash";
 //   3. lacks animation when scrolling
 //   4. always scrolls to top or bottom of scroll area instead of the least amount needed to make it visible
 // The jQuery plugin solves all these issues.
-import "js/jquery.scrollintoview.min";
+import "jquery.scrollintoview";
 
 class CCABarplot extends React.Component {
   constructor(props) {

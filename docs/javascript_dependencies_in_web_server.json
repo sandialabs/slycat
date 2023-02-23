@@ -138,9 +138,6 @@
     "name": "./web-server/js/chunker.js"
   },
   {
-    "name": "./web-server/js/jquery.scrollintoview.min.js"
-  },
-  {
     "name": "./web-server/js/slycat-api-root.js"
   },
   {
