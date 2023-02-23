@@ -39,6 +39,7 @@
     "knockout-mapping": "2.6.0",
     "layout-jquery3": "1.8.5",
     "lodash": "4.17.21",
+    "@asielick/knockout-projections": "^1",
     "papaparse": "^5",
     "react": "^18",
     "react-dom": "^18",
