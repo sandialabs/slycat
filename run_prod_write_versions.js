@@ -188,6 +188,7 @@ webpack(webpack_prod_config, (err, stats) => {
 
   // Write out a debug file
   // fs.writeFileSync('stats_no_file-slycat_production_node_modules_debug.json', JSON.stringify(node_modules_from_stats, null, 2));
+  // fs.writeFileSync('stats_no_file-slycat_production_slycat_modules_debug.json', JSON.stringify(slycat_modules_from_stats, null, 2));
 
   const JS_NODE_FILENAME = "docs/javascript_dependencies_in_node_modules.json";
   const JS_NODE_COLUMNS_FILENAME = "docs/javascript_dependencies_in_node_modules_columns.txt";
