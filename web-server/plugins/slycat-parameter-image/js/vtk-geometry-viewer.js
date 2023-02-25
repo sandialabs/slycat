@@ -275,7 +275,6 @@ export function load(container, buffer, uri, uid, type) {
 
     // Set the 3D colormap to what's in the Redux state
     // each time the following parts of the Redux state change.
-    // window.store.subscribe(updateColorByIfChanged);
     // Subscribing to changes in three_d_colorvars.
     window.store.subscribe(
       watch(window.store.getState, "three_d_colorvars")(updateColorByIfChanged)
