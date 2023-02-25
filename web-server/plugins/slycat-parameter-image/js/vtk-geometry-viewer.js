@@ -34,6 +34,7 @@ import {
   adjustThreeDVariableDataRange,
 } from './actions';
 import _ from 'lodash';
+import watch from "redux-watch";
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
@@ -119,23 +120,15 @@ export function load(container, buffer, uri, uid, type) {
       renderWindow.render();
     }
 
-    function applyPresetIfChanged() {
-      if(slycat_threeD_color_maps.vtk_color_maps[window.store.getState().threeDColormap] != colormap)
-      {
-        // console.log("Colormap changed, so applying the new one.");
-        applyPreset();
-      }
-      else{
-        // console.log("Colormap did not changed, so not applying the new one.");
-      }
-    }
-
-      // Set the 3D colormap to what's currently in the Redux store
+    // Set the 3D colormap to what's currently in the Redux store
     applyPreset();
 
     // Set the 3D colormap to what's in the Redux state
-    // each time the Redux state changes.
-    window.store.subscribe(applyPresetIfChanged);
+    // each time the Redux threeDColormap state changes.
+    // Subscribing to changes in threeDColormap.
+    window.store.subscribe(
+      watch(window.store.getState, "threeDColormap")(applyPreset)
+    );
     
     // --------------------------------------------------------------------
     // ColorBy handling
@@ -299,8 +292,20 @@ export function load(container, buffer, uri, uid, type) {
     updateColorBy();
 
     // Set the 3D colormap to what's in the Redux state
-    // each time the Redux state changes.
-    window.store.subscribe(updateColorByIfChanged);
+    // each time the following parts of the Redux state change.
+    // window.store.subscribe(updateColorByIfChanged);
+    // Subscribing to changes in three_d_colorvars.
+    window.store.subscribe(
+      watch(window.store.getState, "three_d_colorvars")(updateColorByIfChanged)
+    );
+    // Subscribing to changes in three_d_variable_data_ranges.
+    window.store.subscribe(
+      watch(window.store.getState, "three_d_variable_data_ranges")(updateColorByIfChanged)
+    );
+    // Subscribing to changes in three_d_variable_user_ranges.
+    window.store.subscribe(
+      watch(window.store.getState, "three_d_variable_user_ranges")(updateColorByIfChanged)
+    );
 
   }
 
