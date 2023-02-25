@@ -277,15 +277,23 @@ export function load(container, buffer, uri, uid, type) {
     // each time the following parts of the Redux state change.
     // Subscribing to changes in three_d_colorvars.
     window.store.subscribe(
-      watch(window.store.getState, "three_d_colorvars")(updateColorByIfChanged)
+      watch(window.store.getState, "three_d_colorvars", _.isEqual)(updateColorByIfChanged)
     );
     // Subscribing to changes in three_d_variable_data_ranges.
     window.store.subscribe(
-      watch(window.store.getState, "three_d_variable_data_ranges")(updateColorByIfChanged)
+      watch(
+        window.store.getState,
+        "three_d_variable_data_ranges",
+        _.isEqual
+      )(updateColorByIfChanged)
     );
     // Subscribing to changes in three_d_variable_user_ranges.
     window.store.subscribe(
-      watch(window.store.getState, "three_d_variable_user_ranges")(updateColorByIfChanged)
+      watch(
+        window.store.getState,
+        "three_d_variable_user_ranges",
+        _.isEqual
+      )(updateColorByIfChanged)
     );
   }
 

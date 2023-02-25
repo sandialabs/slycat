@@ -125,7 +125,7 @@ FilterManager.prototype.notify_store_ready = function () {
 
   // Subscribing to changes in derived.variableAliases
   window.store.subscribe(
-    watch(window.store.getState, "derived.variableAliases")(this.update_variable_aliases)
+    watch(window.store.getState, "derived.variableAliases", _.isEqual)(this.update_variable_aliases)
   );
 
   this.build_sliders();

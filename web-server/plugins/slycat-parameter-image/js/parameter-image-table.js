@@ -16,6 +16,7 @@ import he from "he";
 import $ from "jquery";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
+import _ from "lodash";
 
 $.widget("parameter_image.table", {
   options: {
@@ -370,7 +371,7 @@ $.widget("parameter_image.table", {
 
     // Subscribing to changes in derived.variableAliases
     window.store.subscribe(
-      watch(window.store.getState, "derived.variableAliases")(update_variable_aliases)
+      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases)
     );
   },
 
