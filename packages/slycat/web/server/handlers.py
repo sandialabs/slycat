@@ -2949,6 +2949,11 @@ def get_configuration_markings():
             list(slycat.web.server.plugin.manager.markings.items()) if
             key in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]]
 
+@cherrypy.tools.json_out(on=True)
+def get_selectable_configuration_markings():
+    return [dict(list(marking.items()) + [("type", key)]) for key, marking in
+            list(slycat.web.server.plugin.manager.markings.items()) if
+            key in cherrypy.request.app.config["slycat-web-server"]["selectable-markings"]]
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_parsers():
