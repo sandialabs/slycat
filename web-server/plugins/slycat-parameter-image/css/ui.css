@@ -444,7 +444,7 @@
 #scatterplot.resizing .media-layer .image-frame {
   cursor: nwse-resize !important;
 }
-#scatterplot .close-button,
+/* #scatterplot .close-button,
 #scatterplot .resize-handle,
 #scatterplot .pin-button {
   visibility: hidden;
@@ -460,7 +460,7 @@
 #scatterplot .media-layer .image-frame:hover .pin-button,
 #scatterplot .media-layer .open-image:hover .close-button {
   visibility: visible;
-}
+} */
 #scatterplot g.legend:hover {
   cursor: move;
 }

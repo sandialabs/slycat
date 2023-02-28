@@ -15,7 +15,7 @@ import * as dialog from "js/slycat-dialog";
 import model_names from "js/slycat-model-names";
 import ko from "knockout";
 import mapping from "knockout-mapping";
-import "js/knockout-projections";
+import "@asielick/knockout-projections";
 import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import "js/slycat-nag";
 import slycatNavbar from 'templates/slycat-navbar.html';

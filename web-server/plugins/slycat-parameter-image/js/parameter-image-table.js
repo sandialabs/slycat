@@ -12,43 +12,42 @@ import "slickgrid/slick.grid";
 import "slickgrid/plugins/slick.rowselectionmodel";
 import "slickgrid/plugins/slick.headerbuttons";
 import "slickgrid/plugins/slick.autotooltips";
-import he from 'he';
-import $ from 'jquery';
+import he from "he";
+import $ from "jquery";
 import slycat_color_maps from "js/slycat-color-maps";
+import watch from "redux-watch";
+import _ from "lodash";
 
-$.widget("parameter_image.table",
-{
-  options:
-  {
-    "server-root" : "",
-    "mid" : null,
-    "aid" : null,
-    "metadata" : null,
-    "inputs" : [],
-    "outputs" : [],
-    "others" : [],
-    "images" : [],
-    "ratings" : [],
-    "categories" : [],
-    "row-selection" : [],
+$.widget("parameter_image.table", {
+  options: {
+    "server-root": "",
+    mid: null,
+    aid: null,
+    metadata: null,
+    inputs: [],
+    outputs: [],
+    others: [],
+    images: [],
+    ratings: [],
+    categories: [],
+    "row-selection": [],
     "variable-selection": [],
-    "sort-variable" : null,
-    "sort-order" : null,
-    "image-variable" : null,
-    "x-variable" : null,
-    "y-variable" : null,
-    "x_y_variables" : {x: null, y: null},
-    "colorscale" : null,
-    "hidden_simulations" : [],
+    "sort-variable": null,
+    "sort-order": null,
+    "image-variable": null,
+    "x-variable": null,
+    "y-variable": null,
+    x_y_variables: { x: null, y: null },
+    colorscale: null,
+    hidden_simulations: [],
   },
 
-  _create: function()
-  {
+  _create: function () {
     var self = this;
 
     // Initialize x_y_variables object
-    self.options.x_y_variables.x = self.options['x-variable'];
-    self.options.x_y_variables.y = self.options['y-variable'];
+    self.options.x_y_variables.x = self.options["x-variable"];
+    self.options.x_y_variables.y = self.options["y-variable"];
 
     function get_color(colorscale, value) {
       // console.debug(`table get_color, colorscale is %o and value is %o`, colorscale, value);
@@ -59,63 +58,55 @@ $.widget("parameter_image.table",
       return slycat_color_maps.get_outofdomain_color(window.store.getState().colormap);
     }
 
-
-    function value_formatter(value)
-    {
-      return value === null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    function value_formatter(value) {
+      return value === null
+        ? "&nbsp;"
+        : (value + "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    function cell_formatter(row, cell, value, columnDef, dataContext)
-    {
+    function cell_formatter(row, cell, value, columnDef, dataContext) {
       // We have a colorscale for this column, meaning we are color coding by its variable.
-      if(columnDef.colorscale)
-      {
-        let classNames = `highlightWrapper ${value===null ? "null" : ""} ${d3.hcl(get_color(columnDef.colorscale, value)).l > 50 ? "light" : "dark"}`;
+      if (columnDef.colorscale) {
+        let classNames = `highlightWrapper ${value === null ? "null" : ""} ${
+          d3.hcl(get_color(columnDef.colorscale, value)).l > 50 ? "light" : "dark"
+        }`;
         let styles = `background: ${get_color(columnDef.colorscale, value)}`;
         return `<div class="${classNames}" style="${styles}">${value_formatter(value)}</div>`;
       }
       // We don't have a color scale, meaning we are not color coding by this variable,
       // and the value is null.
-      else if(value===null)
-      {
+      else if (value === null) {
         return `<div class='highlightWrapper null'>${value_formatter(value)}</div>`;
       }
       // Finally, not color coding and not null value
       return value_formatter(value);
     }
 
-    function set_sort(column, order)
-    {
+    function set_sort(column, order) {
       self.data.set_sort(column, order);
       self.grid.invalidate();
       table_helpers._set_selected_rows_no_trigger(self);
       self.element.trigger("variable-sort-changed", [column, order]);
     }
 
-    function get_column_name(variable)
-    {
+    function get_column_name(variable) {
       let name;
-      if(window.store.getState().derived.variableAliases[variable] !== undefined)
-      {
+      if (window.store.getState().derived.variableAliases[variable] !== undefined) {
         name = window.store.getState().derived.variableAliases[variable];
-      }
-      else
-      {
+      } else {
         name = self.options.metadata["column-names"][variable];
       }
       return name;
     }
 
-    function get_column_header_title(variable)
-    {
-      // Using he package to encode header title text otherwise slickgrid will 
+    function get_column_header_title(variable) {
+      // Using he package to encode header title text otherwise slickgrid will
       // execute <scrpt> tags in it and choke on other code
       // return he.encode(label);
       return he.encode(get_column_name(variable));
     }
 
-    function get_column_header_tooltip(variable)
-    {
+    function get_column_header_tooltip(variable) {
       // Can't encode header tooltips because tooltip displays character references
       // instead of the characters themselved (e.g., &#x27; instead of apostrophe ' character).
       // Sneaky JS code does not affect tooltips like it does header titles, it's not executed
@@ -123,54 +114,74 @@ $.widget("parameter_image.table",
       return get_column_name(variable);
     }
 
-    function make_column(column_index, header_class, cell_class, formatter)
-    {
+    function make_column(column_index, header_class, cell_class, formatter) {
       var column = {
-        id : column_index,
-        field : column_index,
-        name : get_column_header_title(column_index),
-        toolTip : get_column_header_tooltip(column_index),
-        sortable : false,
-        headerCssClass : header_class,
-        cssClass : cell_class,
-        formatter : formatter,
+        id: column_index,
+        field: column_index,
+        name: get_column_header_title(column_index),
+        toolTip: get_column_header_tooltip(column_index),
+        sortable: false,
+        headerCssClass: header_class,
+        cssClass: cell_class,
+        formatter: formatter,
         width: 100,
-        header :
-        {
-          buttons :
-          [
+        header: {
+          buttons: [
             {
-              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "asc" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "asc" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "asc" ? "sort-descending" : "sort-ascending") : "sort-ascending",
+              cssClass:
+                self.options["sort-variable"] == column_index
+                  ? self.options["sort-order"] == "asc"
+                    ? "icon-sort-ascending"
+                    : "icon-sort-descending"
+                  : "icon-sort-off",
+              tooltip:
+                self.options["sort-variable"] == column_index
+                  ? self.options["sort-order"] == "asc"
+                    ? "Sort descending"
+                    : "Sort ascending"
+                  : "Sort ascending",
+              command:
+                self.options["sort-variable"] == column_index
+                  ? self.options["sort-order"] == "asc"
+                    ? "sort-descending"
+                    : "sort-ascending"
+                  : "sort-ascending",
             },
-          ]
-        }
+          ],
+        },
       };
       // Special options for image columns
-      if( self.options.images.indexOf(column_index) > -1 ) {
+      if (self.options.images.indexOf(column_index) > -1) {
         column.headerCssClass += " headerImage";
-        column.header.buttons.push(
-          {
-            cssClass : self.options["image-variable"] == column_index ? "icon-image-on" : "icon-image-off",
-            tooltip :  self.options["image-variable"] == column_index ? "Current image variable" : "Set as image variable",
-            command :  self.options["image-variable"] == column_index ? "" : "image-on",
-          }
-        );
+        column.header.buttons.push({
+          cssClass:
+            self.options["image-variable"] == column_index ? "icon-image-on" : "icon-image-off",
+          tooltip:
+            self.options["image-variable"] == column_index
+              ? "Current image variable"
+              : "Set as image variable",
+          command: self.options["image-variable"] == column_index ? "" : "image-on",
+        });
       }
       // Special options for non-image and non-index columns
-      else if( self.options.metadata["column-count"]-1 != column_index ) {
+      else if (self.options.metadata["column-count"] - 1 != column_index) {
         column.headerCssClass += " headerNumeric";
         column.header.buttons.push(
           {
-            cssClass : self.options["x-variable"] == column_index ? "icon-x-on" : "icon-x-off",
-            tooltip :  self.options["x-variable"] == column_index ? "Current x variable" : "Set as x variable",
-            command :  self.options["x-variable"] == column_index ? "" : "x-on",
+            cssClass: self.options["x-variable"] == column_index ? "icon-x-on" : "icon-x-off",
+            tooltip:
+              self.options["x-variable"] == column_index
+                ? "Current x variable"
+                : "Set as x variable",
+            command: self.options["x-variable"] == column_index ? "" : "x-on",
           },
           {
-            cssClass : self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
-            tooltip :  self.options["y-variable"] == column_index ? "Current y variable" : "Set as y variable",
-            command :  self.options["y-variable"] == column_index ? "" : "y-on",
+            cssClass: self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
+            tooltip:
+              self.options["y-variable"] == column_index
+                ? "Current y variable"
+                : "Set as y variable",
+            command: self.options["y-variable"] == column_index ? "" : "y-on",
           }
         );
       }
@@ -178,36 +189,49 @@ $.widget("parameter_image.table",
     }
 
     self.columns = [];
-    
-    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId", cell_formatter));
-    for(var i in self.options.inputs)
-      self.columns.push(make_column(self.options.inputs[i],  "headerInput",  "rowInput",  cell_formatter));
-    for(var i in self.options.outputs)
-      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter));
-    for(var i in self.options.others)
-      self.columns.push(make_column(self.options.others[i],  "headerOther",  "rowOther",  cell_formatter));
+
+    self.columns.push(
+      make_column(
+        self.options.metadata["column-count"] - 1,
+        "headerSimId",
+        "rowSimId",
+        cell_formatter
+      )
+    );
+    for (var i in self.options.inputs)
+      self.columns.push(
+        make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter)
+      );
+    for (var i in self.options.outputs)
+      self.columns.push(
+        make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter)
+      );
+    for (var i in self.options.others)
+      self.columns.push(
+        make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter)
+      );
 
     self.data = new self._data_provider({
-      api_root : self.options.api_root,
-      mid : self.options.mid,
-      aid : self.options.aid,
-      metadata : self.options.metadata,
-      sort_column : self.options["sort-variable"],
-      sort_order : self.options["sort-order"],
-      inputs : self.options.inputs,
-      outputs : self.options.outputs,
-      indexOfIndex : self.options.metadata["column-count"]-1,
-      hidden_simulations : self.options.hidden_simulations,
-      x_y_variables : self.options.x_y_variables,
-      });
+      api_root: self.options.api_root,
+      mid: self.options.mid,
+      aid: self.options.aid,
+      metadata: self.options.metadata,
+      sort_column: self.options["sort-variable"],
+      sort_order: self.options["sort-order"],
+      inputs: self.options.inputs,
+      outputs: self.options.outputs,
+      indexOfIndex: self.options.metadata["column-count"] - 1,
+      hidden_simulations: self.options.hidden_simulations,
+      x_y_variables: self.options.x_y_variables,
+    });
 
     self.trigger_row_selection = true;
 
     self.grid = new Slick.Grid(self.element, self.data, self.columns, {
-      explicitInitialization : true, 
-      enableColumnReorder : false, 
-      editable : true, 
-      editCommandHandler : self._editCommandHandler,
+      explicitInitialization: true,
+      enableColumnReorder: false,
+      editable: true,
+      editCommandHandler: self._editCommandHandler,
     });
 
     self.data.onDataLoaded.subscribe(function (e, args) {
@@ -218,16 +242,14 @@ $.widget("parameter_image.table",
     });
 
     var header_buttons = new Slick.Plugins.HeaderButtons();
-    header_buttons.onCommand.subscribe(function(e, args)
-    {
+    header_buttons.onCommand.subscribe(function (e, args) {
       var column = args.column;
       var button = args.button;
       var command = args.command;
       var grid = args.grid;
 
-      if(command == "sort-ascending" || command == "sort-descending"){
-        for(var i in self.columns)
-        {
+      if (command == "sort-ascending" || command == "sort-descending") {
+        for (var i in self.columns) {
           self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
           self.columns[i].header.buttons[0].tooltip = "Sort ascending";
           self.columns[i].header.buttons[0].command = "sort-ascending";
@@ -235,69 +257,63 @@ $.widget("parameter_image.table",
         }
       }
 
-      if(command == "sort-ascending")
-      {
-        button.cssClass = 'icon-sort-ascending';
-        button.command = 'sort-descending';
-        button.tooltip = 'Sort descending';
+      if (command == "sort-ascending") {
+        button.cssClass = "icon-sort-ascending";
+        button.command = "sort-descending";
+        button.tooltip = "Sort descending";
         set_sort(column.id, "asc");
-      }
-      else if(command == "sort-descending")
-      {
-        button.cssClass = 'icon-sort-descending';
-        button.command = 'sort-ascending';
-        button.tooltip = 'Sort ascending';
+      } else if (command == "sort-descending") {
+        button.cssClass = "icon-sort-descending";
+        button.command = "sort-ascending";
+        button.tooltip = "Sort ascending";
         set_sort(column.id, "desc");
-      }
-      else if(command == "image-on")
-      {
-        for(var i=0; i < self.options.images.length; i++)
-        {
+      } else if (command == "image-on") {
+        for (var i = 0; i < self.options.images.length; i++) {
           var index = grid.getColumnIndex(self.options.images[i]);
           self.columns[index].header.buttons[1].cssClass = "icon-image-off";
           self.columns[index].header.buttons[1].tooltip = "Set as image variable";
           self.columns[index].header.buttons[1].command = "image-on";
           grid.updateColumnHeader(self.columns[index].id);
         }
-        button.cssClass = 'icon-image-on';
-        button.command = '';
-        button.tooltip = 'Current image variable';
+        button.cssClass = "icon-image-on";
+        button.command = "";
+        button.tooltip = "Current image variable";
         self.element.trigger("images-selection-changed", column.id);
-      }
-      else if(command == "x-on")
-      {
-        for(var i in self.columns)
-        {
-          if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
+      } else if (command == "x-on") {
+        for (var i in self.columns) {
+          if (
+            self.options.images.indexOf(self.columns[i].id) == -1 &&
+            self.options.metadata["column-count"] - 1 != self.columns[i].id
+          ) {
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
             self.columns[i].header.buttons[1].tooltip = "Set as x variable";
             self.columns[i].header.buttons[1].command = "x-on";
             grid.updateColumnHeader(self.columns[i].id);
           }
         }
-        button.cssClass = 'icon-x-on';
-        button.command = '';
-        button.tooltip = 'Current x variable';
-        self.options['x-variable'] = column.id;
+        button.cssClass = "icon-x-on";
+        button.command = "";
+        button.tooltip = "Current x variable";
+        self.options["x-variable"] = column.id;
         self.options.x_y_variables.x = column.id;
         grid.invalidate();
         self.element.trigger("x-selection-changed", column.id);
-      }
-      else if(command == "y-on")
-      {
-        for(var i in self.columns)
-        {
-          if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
+      } else if (command == "y-on") {
+        for (var i in self.columns) {
+          if (
+            self.options.images.indexOf(self.columns[i].id) == -1 &&
+            self.options.metadata["column-count"] - 1 != self.columns[i].id
+          ) {
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
             self.columns[i].header.buttons[2].tooltip = "Set as y variable";
             self.columns[i].header.buttons[2].command = "y-on";
             grid.updateColumnHeader(self.columns[i].id);
           }
         }
-        button.cssClass = 'icon-y-on';
-        button.command = '';
-        button.tooltip = 'Current y variable';
-        self.options['y-variable'] = column.id;
+        button.cssClass = "icon-y-on";
+        button.command = "";
+        button.tooltip = "Current y variable";
+        self.options["y-variable"] = column.id;
         self.options.x_y_variables.y = column.id;
         grid.invalidate();
         self.element.trigger("y-selection-changed", column.id);
@@ -305,28 +321,24 @@ $.widget("parameter_image.table",
     });
 
     self.grid.registerPlugin(header_buttons);
-    self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+    self.grid.registerPlugin(new Slick.AutoTooltips({ enableForHeaderCells: true }));
 
     self.grid.setSelectionModel(new Slick.RowSelectionModel());
-    self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
-    {
+    self.grid.onSelectedRowsChanged.subscribe(function (e, selection) {
       // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
-      if(self.trigger_row_selection)
-      {
-        self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
-        {
+      if (self.trigger_row_selection) {
+        self.data.get_indices("unsorted", selection.rows, function (unsorted_rows) {
           self.options["row-selection"] = unsorted_rows;
           self.element.trigger("row-selection-changed", [unsorted_rows]);
         });
       }
       self.trigger_row_selection = true;
     });
-    self.grid.onHeaderClick.subscribe(function (e, args)
-    {
-      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && 
-          self.options.images.indexOf(args.column.field) == -1
-        )
-      {
+    self.grid.onHeaderClick.subscribe(function (e, args) {
+      if (
+        !self._array_equal([args.column.field], self.options["variable-selection"]) &&
+        self.options.images.indexOf(args.column.field) == -1
+      ) {
         self.options["variable-selection"] = [args.column.field];
         self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
       }
@@ -339,47 +351,37 @@ $.widget("parameter_image.table",
     table_helpers._set_selected_rows_no_trigger(self);
 
     const update_variable_aliases = () => {
-      // console.log('update_variable_aliases in parameter-image-table.js');
-      // Only do this if variableAliases changed
-      if(!_.isEqual(previousState.derived.variableAliases, window.store.getState().derived.variableAliases))
-      {
-        // console.log('Looks like variableAliases changed, so will update.');
-        // const t0 = performance.now();
-        let label;
-  
-        for(const [index, element] of self.columns.entries())
-        {
-          let title = get_column_header_title(self.columns[index].id);
-          let tooltip = get_column_header_tooltip(self.columns[index].id);
-          // Update column name and tooltip if it has changed
-          if(label != self.columns[index].name)
-          {
-            self.columns[index].name = title;
-            self.columns[index].tooltip = tooltip;
-            self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
-          }
+      // console.log("update_variable_aliases in parameter-image-table.js");
+      // const t0 = performance.now();
+      let label;
+
+      for (const [index, element] of self.columns.entries()) {
+        let title = get_column_header_title(self.columns[index].id);
+        let tooltip = get_column_header_tooltip(self.columns[index].id);
+        // Update column name and tooltip if it has changed
+        if (label != self.columns[index].name) {
+          self.columns[index].name = title;
+          self.columns[index].tooltip = tooltip;
+          self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
         }
-        // const t1 = performance.now();
-        // console.log(`Call to update_variable_aliases in parameter-image-table.js took ${t1 - t0} milliseconds.`);
       }
-      // Update previousState
-      previousState = window.store.getState();
+      // const t1 = performance.now();
+      // console.log(`Call to update_variable_aliases in parameter-image-table.js took ${t1 - t0} milliseconds.`);
     };
 
-    // Let's keep track of the previous state by saving it
-    let previousState = window.store.getState();
-    window.store.subscribe(update_variable_aliases);
+    // Subscribing to changes in derived.variableAliases
+    window.store.subscribe(
+      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases)
+    );
   },
 
-  resize_canvas: function()
-  {
+  resize_canvas: function () {
     var self = this;
     self.grid.resizeCanvas();
   },
 
   // This is called only when user edits the value of a table cell
-  update_data: function(edited_variable)
-  {
+  update_data: function (edited_variable) {
     // console.debug(`parameter-image-table.js update_data`);
     var self = this;
 
@@ -391,84 +393,63 @@ $.widget("parameter_image.table",
     table_helpers._set_selected_rows_no_trigger(self);
   },
 
-  _setOption: function(key, value)
-  {
+  _setOption: function (key, value) {
     // console.log("_setOption in parameter-image-table");
     var self = this;
 
-    if(key == "row-selection")
-    {
+    if (key == "row-selection") {
       self.options[key] = value;
       table_helpers._set_selected_rows_no_trigger(self);
-    }
-    else if(key == "variable-selection")
-    {
-      if(self._array_equal(self.options[key], value))
-        return;
+    } else if (key == "variable-selection") {
+      if (self._array_equal(self.options[key], value)) return;
 
       self.options[key] = value;
       self._color_variables(value);
-    }
-    else if(key == "colorscale")
-    {
+    } else if (key == "colorscale") {
       // console.debug(`table colorscale changed to: %o`, value);
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
-    }
-    else if(key == "x-variable")
-    {
+    } else if (key == "x-variable") {
       self.options[key] = value;
       self.options.x_y_variables.x = value;
       self._set_selected_x();
-    }
-    else if(key == "y-variable")
-    {
+    } else if (key == "y-variable") {
       self.options[key] = value;
       self.options.x_y_variables.y = value;
       self._set_selected_y();
-    }
-    else if(key == "image-variable")
-    {
+    } else if (key == "image-variable") {
       self.options[key] = value;
       self._set_selected_image();
-    }
-    else if(key == "metadata")
-    {
+    } else if (key == "metadata") {
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
-    }
-    else if(key == "hidden_simulations")
-    {
+    } else if (key == "hidden_simulations") {
       self.options[key] = value;
       self.data.invalidate();
       self.grid.invalidate();
-    }
-    else if(key == "jump_to_simulation")
-    {
-      self.data.get_indices("sorted", [value], function(sorted_rows)
-      {
-        if(sorted_rows.length)
-        {
+    } else if (key == "jump_to_simulation") {
+      self.data.get_indices("sorted", [value], function (sorted_rows) {
+        if (sorted_rows.length) {
           var rowIndex = Math.min.apply(Math, sorted_rows);
           self.grid.scrollRowToTop(rowIndex);
           // Get all the columns
-          self.grid.getColumns().forEach(function(col){
+          self.grid.getColumns().forEach(function (col) {
             // Flash each cell
             self.grid.flashCell(rowIndex, self.grid.getColumnIndex(col.id));
-          })
+          });
         }
-
       });
     }
   },
 
-  _set_selected_x: function()
-  {
+  _set_selected_x: function () {
     var self = this;
-    for(var i in self.columns)
-    {
-      if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
-        if( self.columns[i].id == self.options["x-variable"]){
+    for (var i in self.columns) {
+      if (
+        self.options.images.indexOf(self.columns[i].id) == -1 &&
+        self.options.metadata["column-count"] - 1 != self.columns[i].id
+      ) {
+        if (self.columns[i].id == self.options["x-variable"]) {
           self.columns[i].header.buttons[1].cssClass = "icon-x-on";
           self.columns[i].header.buttons[1].tooltip = "Current x variable";
           self.columns[i].header.buttons[1].command = "";
@@ -483,13 +464,14 @@ $.widget("parameter_image.table",
     self.grid.invalidate();
   },
 
-  _set_selected_y: function()
-  {
+  _set_selected_y: function () {
     var self = this;
-    for(var i in self.columns)
-    {
-      if(self.options.images.indexOf(self.columns[i].id) == -1 && self.options.metadata["column-count"]-1 != self.columns[i].id){
-        if( self.columns[i].id == self.options["y-variable"]){
+    for (var i in self.columns) {
+      if (
+        self.options.images.indexOf(self.columns[i].id) == -1 &&
+        self.options.metadata["column-count"] - 1 != self.columns[i].id
+      ) {
+        if (self.columns[i].id == self.options["y-variable"]) {
           self.columns[i].header.buttons[2].cssClass = "icon-y-on";
           self.columns[i].header.buttons[2].tooltip = "Current y variable";
           self.columns[i].header.buttons[2].command = "";
@@ -504,13 +486,11 @@ $.widget("parameter_image.table",
     self.grid.invalidate();
   },
 
-  _set_selected_image: function()
-  {
+  _set_selected_image: function () {
     var self = this;
-    for(var i=0; i < self.options.images.length; i++)
-    {
+    for (var i = 0; i < self.options.images.length; i++) {
       var index = self.grid.getColumnIndex(self.options.images[i]);
-      if(self.columns[index].id == self.options["image-variable"]){
+      if (self.columns[index].id == self.options["image-variable"]) {
         self.columns[index].header.buttons[1].cssClass = "icon-image-on";
         self.columns[index].header.buttons[1].tooltip = "Current image variable";
         self.columns[index].header.buttons[1].command = "";
@@ -523,21 +503,16 @@ $.widget("parameter_image.table",
     }
   },
 
-  _color_variables: function(variables)
-  {
+  _color_variables: function (variables) {
     var self = this;
     // console.debug(`_color_variables`);
 
     var columns = self.grid.getColumns();
-    for(const column of columns)
-    {
-      if(self.options.colorscale !== null && $.inArray(column.id, variables) != -1)
-      {
+    for (const column of columns) {
+      if (self.options.colorscale !== null && $.inArray(column.id, variables) != -1) {
         column.colorscale = self.options.colorscale;
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
-      }
-      else
-      {
+      } else {
         column.colorscale = null;
         column.cssClass = column.cssClass.split(" ")[0];
       }
@@ -545,18 +520,17 @@ $.widget("parameter_image.table",
     self.grid.invalidate();
   },
 
-  _editCommandHandler: function (item,column,editCommand) {
+  _editCommandHandler: function (item, column, editCommand) {
     console.log("editCommandHandler called");
     editCommand.execute();
     // To Do: Attempt to save edit and undo it if Ajax call returns error
     //editCommand.undo();
   },
 
-  _data_provider: function(parameters)
-  {
+  _data_provider: function (parameters) {
     var self = this;
 
-    self.api_root = parameters.api_root
+    self.api_root = parameters.api_root;
     self.mid = parameters.mid;
     self.aid = parameters.aid;
     self.metadata = parameters.metadata;
@@ -576,82 +550,81 @@ $.widget("parameter_image.table",
 
     self.onDataLoaded = new Slick.Event();
 
-    self.getLength = function()
-    {
+    self.getLength = function () {
       return self.metadata["row-count"];
-    }
+    };
 
-    self.getItem = function(index)
-    {
+    self.getItem = function (index) {
       var column_begin = 0;
       var column_end = self.metadata["column-count"];
       var page = Math.floor(index / self.page_size);
       var page_begin = page * self.page_size;
 
-      if(self.pages_in_progress[page])
-      {
+      if (self.pages_in_progress[page]) {
         return null;
       }
 
-      if(!(page in self.pages))
-      {
+      if (!(page in self.pages)) {
         self.pages_in_progress[page] = true;
         var row_begin = page_begin;
         var row_end = (page + 1) * self.page_size;
 
         var sort = "";
-        if(self.sort_column !== null && self.sort_order !== null)
-        {
+        if (self.sort_column !== null && self.sort_order !== null) {
           var sort_column = "a" + self.sort_column;
           var sort_order = self.sort_order;
-          if(sort_order == 'ascending')
-          {
-            sort_order = 'asc';
+          if (sort_order == "ascending") {
+            sort_order = "asc";
+          } else if (sort_order == "descending") {
+            sort_order = "desc";
           }
-          else if(sort_order == 'descending')
-          {
-            sort_order = 'desc';
-          }
-          if(self.sort_column == self.metadata["column-count"]-1)
-            sort_column = "index(0)";
+          if (self.sort_column == self.metadata["column-count"] - 1) sort_column = "index(0)";
           sort = "/order: rank(" + sort_column + ', "' + sort_order + '")';
         }
 
-        $.ajax(
-        {
-          type : "GET",
-          url : self.api_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
-          success : function(data)
-          {
+        $.ajax({
+          type: "GET",
+          url:
+            self.api_root +
+            "models/" +
+            self.mid +
+            "/arraysets/" +
+            self.aid +
+            "/data?hyperchunks=0/" +
+            column_begin +
+            ":" +
+            (column_end - 1) +
+            "|index(0)" +
+            sort +
+            "/" +
+            row_begin +
+            ":" +
+            row_end,
+          success: function (data) {
             self.pages[page] = [];
-            for(var i=0; i < data[0].length; i++)
-            {
+            for (var i = 0; i < data[0].length; i++) {
               let result = {};
-              for(var j = column_begin; j != column_end; ++j)
-              {
+              for (var j = column_begin; j != column_end; ++j) {
                 result[j] = data[j][i];
               }
               self.pages[page].push(result);
             }
             self.pages_in_progress[page] = false;
-            self.onDataLoaded.notify({from: row_begin, to: row_end});
+            self.onDataLoaded.notify({ from: row_begin, to: row_end });
           },
-          error: function(request, status, reason_phrase)
-          {
+          error: function (request, status, reason_phrase) {
             console.log("error", request, status, reason_phrase);
-          }
+          },
         });
         return null;
       }
 
       return self.pages[page][index - page_begin];
-    }
+    };
 
-    self.getItemMetadata = function(index)
-    {
+    self.getItemMetadata = function (index) {
       var page = Math.floor(index / self.page_size);
-      if((self.pages_in_progress[page]) || !(page in self.pages))
-      {
+      if (self.pages_in_progress[page] || !(page in self.pages)) {
         return null;
       }
 
@@ -660,117 +633,103 @@ $.widget("parameter_image.table",
       var column_end = self.analysis_columns.length;
       var cssClasses = "";
       // Add a hiddenRow class if the row has a null value in the currently assigned x or y variable
-      if(row[self.x_y_variables.x] == null || row[self.x_y_variables.y] == null)
-      {
+      if (row[self.x_y_variables.x] == null || row[self.x_y_variables.y] == null) {
         cssClasses += "hiddenRow ";
       }
       // Add a hiddenRow class if the row index is in the list of hidden_simulations
-      if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
+      if ($.inArray(row[self.indexOfIndex], self.hidden_simulations) != -1) {
         cssClasses += "hiddenRow ";
       }
-      if(cssClasses != "")
-        return {cssClasses : cssClasses};
+      if (cssClasses != "") return { cssClasses: cssClasses };
       return null;
-    }
+    };
 
-    self.set_sort = function(column, order)
-    {
-      if(column == self.sort_column && order == self.sort_order)
-      {
+    self.set_sort = function (column, order) {
+      if (column == self.sort_column && order == self.sort_order) {
         return;
       }
       self.sort_column = column;
       self.sort_order = order;
       self.pages = {};
-    }
+    };
 
-    self.get_indices = function(direction, rows, callback)
-    {
+    self.get_indices = function (direction, rows, callback) {
       // console.debug(`parameter-image-table.js get_indices`);
-      if(rows.length == 0)
-      {
+      if (rows.length == 0) {
         callback([]);
         return;
       }
       // We have no sort column or order, so just returning the same rows as were asked for since they're in the same order
-      if(self.sort_column == null || self.sort_order == null)
-      {
+      if (self.sort_column == null || self.sort_order == null) {
         callback(rows);
-      }
-      else
-      {
-        if(self.ranked_indices[self.sort_column])
-        {
+      } else {
+        if (self.ranked_indices[self.sort_column]) {
           // we have data for this column, so figure out what to return
           var indices = self.ranked_indices[self.sort_column];
           // Reverse response indexes for descending sort order
-          if(self.sort_order == 'desc')
-          {
+          if (self.sort_order == "desc") {
             var plain_array = [];
-            for(var i=0; i<indices.length; i++)
-            {
+            for (var i = 0; i < indices.length; i++) {
               plain_array.push(indices[i]);
             }
             indices = plain_array.reverse();
           }
-          var response = []; 
-          for(var i=0; i<rows.length; i++)
-          {
-            if(direction == "unsorted")
-            {
-              response.push( indices[ rows[i] ] );
-            }
-            else if(direction == "sorted")
-            {
-              response.push( indices.indexOf(rows[i]) );
+          var response = [];
+          for (var i = 0; i < rows.length; i++) {
+            if (direction == "unsorted") {
+              response.push(indices[rows[i]]);
+            } else if (direction == "sorted") {
+              response.push(indices.indexOf(rows[i]));
             }
           }
           callback(new Int32Array(response));
-        }
-        else
-        {
-          if( self.sort_column == self.metadata["column-count"]-1 )
-          {
+        } else {
+          if (self.sort_column == self.metadata["column-count"] - 1) {
             // we are sorting by the index column, so we can just make the data we need.
-            self.ranked_indices[self.sort_column] = new Int32Array( d3.range(self.metadata["row-count"]) );
+            self.ranked_indices[self.sort_column] = new Int32Array(
+              d3.range(self.metadata["row-count"])
+            );
             self.get_indices(direction, rows, callback);
-          }
-          else
-          {
+          } else {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", self.api_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
+            request.open(
+              "GET",
+              self.api_root +
+                "models/" +
+                self.mid +
+                "/arraysets/data-table/data?hyperchunks=0/rank(a" +
+                self.sort_column +
+                ',"asc")/...&byteorder=' +
+                (chunker.is_little_endian() ? "little" : "big")
+            );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;
             request.callback = callback;
-            request.onload = function(e)
-            {
+            request.onload = function (e) {
               var indices = [];
               var data = new Int32Array(this.response);
               // Filtering out every other element in the reponse array, because it's full of extraneous 0 (zeros) for some reason.
               // Need to figure out why, but this is a fix for now.
-              for(var i=0; i<data.length; i=i+2)
-              {
+              for (var i = 0; i < data.length; i = i + 2) {
                 indices.push(data[i]);
               }
               self.ranked_indices[self.sort_column] = new Int32Array(indices);
               self.get_indices(this.direction, this.rows, this.callback);
-            }
+            };
             request.send();
           }
         }
       }
-    }
+    };
 
-    self.invalidate = function()
-    {
+    self.invalidate = function () {
       self.pages = {};
-    }
+    };
   },
 
-  _array_equal: function(a, b)
-  {
+  _array_equal: function (a, b) {
     return $(a).not(b).length == 0 && $(b).not(a).length == 0;
   },
 });

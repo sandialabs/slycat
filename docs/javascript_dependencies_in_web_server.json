@@ -15,7 +15,7 @@
     "name": "./web-server/components/ControlsDropdown.js"
   },
   {
-    "name": "./web-server/components/ControlsDropdownColor.js"
+    "name": "./web-server/components/ControlsDropdownColor.tsx"
   },
   {
     "name": "./web-server/components/ControlsGroup.js"
@@ -136,12 +136,6 @@
   },
   {
     "name": "./web-server/js/chunker.js"
-  },
-  {
-    "name": "./web-server/js/jquery.scrollintoview.min.js"
-  },
-  {
-    "name": "./web-server/js/knockout-projections.js"
   },
   {
     "name": "./web-server/js/slycat-api-root.js"
@@ -489,9 +483,6 @@
     "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsDropdown.tsx"
   },
   {
-    "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsDropdownColor.tsx"
-  },
-  {
     "name": "./web-server/plugins/slycat-parameter-image/js/Components/ControlsPlayback.js"
   },
   {
@@ -516,16 +507,10 @@
     "name": "./web-server/plugins/slycat-parameter-image/js/Components/ScatterplotLegend.js"
   },
   {
-    "name": "./web-server/plugins/slycat-parameter-image/js/Components/color-map.js"
-  },
-  {
     "name": "./web-server/plugins/slycat-parameter-image/js/actions.js"
   },
   {
     "name": "./web-server/plugins/slycat-parameter-image/js/category-select.js"
-  },
-  {
-    "name": "./web-server/plugins/slycat-parameter-image/js/color-switcher.js"
   },
   {
     "name": "./web-server/plugins/slycat-parameter-image/js/filter-manager.js"
@@ -549,7 +534,7 @@
     "name": "./web-server/plugins/slycat-parameter-image/js/stickies.core.js"
   },
   {
-    "name": "./web-server/plugins/slycat-parameter-image/js/ui.js + 45 modules"
+    "name": "./web-server/plugins/slycat-parameter-image/js/ui.js + 42 modules"
   },
   {
     "name": "./web-server/plugins/slycat-parameter-image/js/vtk-camera-synchronizer.js"
