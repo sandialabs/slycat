@@ -26,6 +26,7 @@ import MediaLegends from "./Components/MediaLegends";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
+import watch from "redux-watch";
 
 var nodrag = d3.behavior.drag();
 
@@ -170,7 +171,6 @@ $.widget("parameter_image.scatterplot", {
   pausing_videos: [],
   playing_videos: [],
   current_frame: null,
-  previousState: null,
   custom_axes_ranges: {
     x: {
       min: undefined,
@@ -471,56 +471,46 @@ $.widget("parameter_image.scatterplot", {
     self._filterIndices();
 
     const update_axes_font_size = () => {
-      if (self.options.axes_font_size != store.getState().fontSize) {
-        // console.log('1 update_axes_font_size');
-        self.options.axes_font_size = store.getState().fontSize;
-        self.x_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
-        self.y_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
-        self.legend_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
-        self._schedule_update({ update_y_label: true });
-        self._schedule_update({ update_x_label: true });
-      }
+      // console.log('1 update_axes_font_size');
+      self.options.axes_font_size = store.getState().fontSize;
+      self.x_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
+      self.y_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
+      self.legend_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
+      self._schedule_update({ update_y_label: true });
+      self._schedule_update({ update_x_label: true });
     };
 
     const update_axes_font_family = () => {
-      if (self.options.axes_font_family != store.getState().fontFamily) {
-        // console.log('2 update_axes_font_family');
-        self.options.axes_font_family = store.getState().fontFamily;
-        self.x_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
-        self.y_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
-        self.legend_layer.selectAll("text").style("font-family", self.options.axes_font_family);
-        self._schedule_update({ update_y_label: true });
-        self._schedule_update({ update_x_label: true });
-      }
+      // console.log('2 update_axes_font_family');
+      self.options.axes_font_family = store.getState().fontFamily;
+      self.x_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
+      self.y_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
+      self.legend_layer.selectAll("text").style("font-family", self.options.axes_font_family);
+      self._schedule_update({ update_y_label: true });
+      self._schedule_update({ update_x_label: true });
     };
 
     const update_axes_variables_scale = () => {
-      if (!_.isEqual(self.options.axes_variables_scale, store.getState().axesVariables)) {
-        // console.log('3 update_axes_variables_scale');
-        self.options.axes_variables_scale = _.cloneDeep(store.getState().axesVariables);
-        self.set_x_y_v_axes_types();
-        self._schedule_update({
-          update_x: true,
-          update_x_label: true,
-          update_y: true,
-          update_y_label: true,
-          update_leaders: true,
-          render_data: true,
-          render_selection: true,
-          update_legend_axis: true,
-        });
-      }
+      // console.log('3 update_axes_variables_scale');
+      self.options.axes_variables_scale = _.cloneDeep(store.getState().axesVariables);
+      self.set_x_y_v_axes_types();
+      self._schedule_update({
+        update_x: true,
+        update_x_label: true,
+        update_y: true,
+        update_y_label: true,
+        update_leaders: true,
+        render_data: true,
+        render_selection: true,
+        update_legend_axis: true,
+      });
     };
 
-    const update_point_border_size = () => {
-      let unselected_point_size_changed =
-        self.options.canvas_square_size != store.getState().unselected_point_size;
-      let unselected_border_size_changed =
-        self.options.canvas_square_border_size != store.getState().unselected_border_size;
-      let selected_point_size_changed =
-        self.options.canvas_selected_square_size != store.getState().selected_point_size;
-      let selected_border_size_changed =
-        self.options.canvas_selected_square_border_size != store.getState().selected_border_size;
+    const update_point_border_size = (objectPath) => {
+      let unselected_point_size_changed = objectPath == "unselected_point_size";
+      let unselected_border_size_changed = objectPath == "unselected_border_size";
+      let selected_point_size_changed = objectPath == "selected_point_size";
+      let selected_border_size_changed = objectPath == "selected_border_size";
 
       if (unselected_point_size_changed || unselected_border_size_changed) {
         // console.log('4 update_point_border_size');
@@ -545,33 +535,29 @@ $.widget("parameter_image.scatterplot", {
     };
 
     const update_scatterplot_margin = () => {
-      console.debug(`update_scatterplot_margin`);
-      const previousMargins = self.previousState.scatterplot_margin;
+      // console.debug(`update_scatterplot_margin`);
+      // console.debug(`Scatterplot margins changed. Need to update scatterplot.`);
       const currentMargins = store.getState().scatterplot_margin;
-      const marginsSame = _.isEqual(previousMargins, currentMargins);
-      if (!marginsSame) {
-        console.debug(`Scatterplot margins changed. Need to update scatterplot.`);
-        self.options.margin_top = currentMargins.top;
-        self.options.margin_right = currentMargins.right;
-        self.options.margin_bottom = currentMargins.bottom;
-        self.options.margin_left = currentMargins.left;
-        self._schedule_update({
-          update_datum_width_height: true,
-          update_selection_width_height: true,
-          update_width: true,
-          update_height: true,
-          update_x: true,
-          update_y: true,
-          update_x_label: true,
-          update_y_label: true,
-          update_v_label: true,
-          update_leaders: true,
-          update_legend_position: true,
-          update_legend_axis: true,
-          render_data: true,
-          render_selection: true,
-        });
-      }
+      self.options.margin_top = currentMargins.top;
+      self.options.margin_right = currentMargins.right;
+      self.options.margin_bottom = currentMargins.bottom;
+      self.options.margin_left = currentMargins.left;
+      self._schedule_update({
+        update_datum_width_height: true,
+        update_selection_width_height: true,
+        update_width: true,
+        update_height: true,
+        update_x: true,
+        update_y: true,
+        update_x_label: true,
+        update_y_label: true,
+        update_v_label: true,
+        update_leaders: true,
+        update_legend_position: true,
+        update_legend_axis: true,
+        render_data: true,
+        render_selection: true,
+      });
     };
 
     const update_scatterplot_labels = () => {
@@ -599,55 +585,50 @@ $.widget("parameter_image.scatterplot", {
 
     const update_media_sizes = () => {
       // console.group(`update_media_sizes`);
-      // console.debug(`previous open_media is %o`, self.previousState.open_media);
       // console.debug(`new open_media is %o`, store.getState().open_media);
-      // console.debug(`Are they the same? %o`, self.previousState.open_media == store.getState().open_media);
-      // If open_media array changed, let's go through it and apply any updated sizes
-      if (self.previousState.open_media != store.getState().open_media) {
-        store.getState().open_media.forEach(function (currentMedia, index, array) {
-          const frames = $(`.media-layer div.image-frame[data-uid=${currentMedia.uid}]`);
-          let differentWidth, differentHeight;
-          // console.debug(`Checking frames %o`, frames);
-          frames.css("width", function (index, value) {
-            // console.debug(`current frame index is %o and frame is %o`, index, value);
-            differentWidth = value != `${currentMedia.width}px`;
-            if (differentWidth) {
-              // console.debug(`We have a new width value of %o while current value is %o`,
-              // currentMedia.width, value);
-              return currentMedia.width;
-            }
-            // console.debug(`We have same width value of %o while current value is %o`,
+      store.getState().open_media.forEach(function (currentMedia, index, array) {
+        const frames = $(`.media-layer div.image-frame[data-uid=${currentMedia.uid}]`);
+        let differentWidth, differentHeight;
+        // console.debug(`Checking frames %o`, frames);
+        frames.css("width", function (index, value) {
+          // console.debug(`current frame index is %o and frame is %o`, index, value);
+          differentWidth = value != `${currentMedia.width}px`;
+          if (differentWidth) {
+            // console.debug(`We have a new width value of %o while current value is %o`,
             // currentMedia.width, value);
-          });
-          frames.css("height", function (index, value) {
-            // console.debug(`current frame index is %o and frame is %o`, index, value);
-            differentHeight = value != `${currentMedia.height}px`;
-            if (differentHeight) {
-              // console.debug(`We have a new height value of %o while current value is %o`,
-              // currentMedia.height, value);
-              return currentMedia.height;
-            }
-            // console.debug(`We have same height value of %o while current value is %o`,
-            // currentMedia.height, value);
-          });
-          frames.each(function (index, element) {
-            // If we resized the frame...
-            if (differentWidth || differentHeight) {
-              // Adjust its leader line
-              self._adjust_leader_line(d3.select(element));
-
-              // Check each frame to see if it contains a VTP
-              const vtp = element.querySelector(`.vtp`);
-              // If it has a VTP and it was resized...
-              if (vtp) {
-                // Fire a custom reize event to let vtk viewers know it was resized
-                // console.debug(`Dealing with VTP %o, so need to let it know to resize`, element.dataset.uri);
-                vtp.dispatchEvent(vtkresize_event);
-              }
-            }
-          });
+            return currentMedia.width;
+          }
+          // console.debug(`We have same width value of %o while current value is %o`,
+          // currentMedia.width, value);
         });
-      }
+        frames.css("height", function (index, value) {
+          // console.debug(`current frame index is %o and frame is %o`, index, value);
+          differentHeight = value != `${currentMedia.height}px`;
+          if (differentHeight) {
+            // console.debug(`We have a new height value of %o while current value is %o`,
+            // currentMedia.height, value);
+            return currentMedia.height;
+          }
+          // console.debug(`We have same height value of %o while current value is %o`,
+          // currentMedia.height, value);
+        });
+        frames.each(function (index, element) {
+          // If we resized the frame...
+          if (differentWidth || differentHeight) {
+            // Adjust its leader line
+            self._adjust_leader_line(d3.select(element));
+
+            // Check each frame to see if it contains a VTP
+            const vtp = element.querySelector(`.vtp`);
+            // If it has a VTP and it was resized...
+            if (vtp) {
+              // Fire a custom reize event to let vtk viewers know it was resized
+              // console.debug(`Dealing with VTP %o, so need to let it know to resize`, element.dataset.uri);
+              vtp.dispatchEvent(vtkresize_event);
+            }
+          }
+        });
+      });
       // console.groupEnd();
     };
 
@@ -658,23 +639,30 @@ $.widget("parameter_image.scatterplot", {
       </Provider>
     );
 
-    const update_previous_state = () => {
-      // console.log('LAST update_previous_state');
-      self.previousState = window.store.getState();
-    };
+    // Subscribing to changes in various states
+    [
+      { objectPath: "fontSize", callback: update_axes_font_size },
+      { objectPath: "fontFamily", callback: update_axes_font_family },
+      { objectPath: "axesVariables", callback: update_axes_variables_scale },
+      { objectPath: "unselected_point_size", callback: update_point_border_size },
+      { objectPath: "unselected_border_size", callback: update_point_border_size },
+      { objectPath: "selected_point_size", callback: update_point_border_size },
+      { objectPath: "selected_border_size", callback: update_point_border_size },
+      { objectPath: "derived.variableAliases", callback: update_scatterplot_labels },
+      { objectPath: "open_media", callback: update_media_sizes },
+      { objectPath: "scatterplot_margin", callback: update_scatterplot_margin },
+    ].forEach((subscription) => {
+      window.store.subscribe(
+        watch(
+          window.store.getState,
+          subscription.objectPath,
+          _.isEqual
+        )((newVal, oldVal, objectPath) => {
+          subscription.callback(objectPath);
+        })
+      );
+    });
 
-    update_previous_state();
-    window.store.subscribe(update_axes_font_size);
-    window.store.subscribe(update_axes_font_family);
-    window.store.subscribe(update_axes_variables_scale);
-    window.store.subscribe(update_point_border_size);
-    window.store.subscribe(update_scatterplot_labels);
-    window.store.subscribe(update_media_sizes);
-    window.store.subscribe(update_scatterplot_margin);
-    // This update_previous_state needs to be the last window.store.subscribe
-    // since the other callbacks rely on the previous state not being updated
-    // until they are finished.
-    window.store.subscribe(update_previous_state);
   },
 
   update_axes_ranges: function () {
