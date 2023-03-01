@@ -16,11 +16,12 @@ ko.components.register("slycat-model-controls", {
     component.marking = params.marking;
     component.markings = selectable_markings.allowed;
 
-    // It is possible that the current marking is not a selectable marking.
+    // It is possible that the current marking is not a selectable marking but is an allowed marking.
     // In this case, we need to add it to the list of selectable markings.
     if (
       component.marking() !== null &&
-      !component.markings().some((marking) => marking.type() === component.marking())
+      !component.markings().some((marking) => marking.type() === component.marking()) &&
+      allowed_markings.allowed().some((marking) => marking.type() === component.marking())
     ) {
       // console.debug("Adding current marking to list of selectable markings.");
       // Find the matching marking in allowed_markings
