@@ -197,7 +197,8 @@ webpack(webpack_prod_config, (err, stats) => {
   // Write out file listing all node_module modules used in production Slycat build and their versions
   fs.writeFileSync(JS_NODE_FILENAME, JSON.stringify(slycat_node_modules, null, 2));
   fs.writeFileSync(JS_NODE_COLUMNS_FILENAME, slycat_node_modules_columns);
-  fs.writeFileSync(JS_WEBSERVER_FILENAME, JSON.stringify(slycat_modules, null, 2));
+  // Not writing out local modules since they are all included in our codebase already
+  // fs.writeFileSync(JS_WEBSERVER_FILENAME, JSON.stringify(slycat_modules, null, 2));
 
   console.log(
     `CONGRATULATIONS. It seems that the build was successful. The following files were written out:`
