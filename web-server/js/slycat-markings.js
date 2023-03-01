@@ -13,18 +13,14 @@ module.preselected = ko.observable(null);
 
 // For testing purposes, to simulate a slow network, uncomment this setTimeout
 // setTimeout(function () {
-        
-client.get_configuration_markings(
-{
-  success: function(markings)
-  {
-    markings.sort(function(left, right)
-    {
+
+client.get_configuration_markings({
+  success: function (markings) {
+    markings.sort(function (left, right) {
       return left.type == right.type ? 0 : left.type < right.type ? -1 : 1;
     });
     mapping.fromJS(markings, module.allowed);
-    if(markings.length)
-    {
+    if (markings.length) {
       module.preselected(markings[0].type);
     }
   },
