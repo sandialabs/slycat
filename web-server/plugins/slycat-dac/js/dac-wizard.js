@@ -5,7 +5,7 @@
 // 3/31/2017
 
 import client from "js/slycat-web-client";
-import markings from "js/slycat-markings";
+import markings from "js/slycat-selectable-markings";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";

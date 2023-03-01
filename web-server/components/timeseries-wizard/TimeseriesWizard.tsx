@@ -17,7 +17,7 @@ import RemoteFileBrowserNoSelector from 'components/RemoteFileBrowserNoSelector.
 import SlycatSelector from 'components/SlycatSelector.tsx';
 import server_root from "js/slycat-server-root";
 import { cloneDeep } from "lodash";
-import markings from "js/slycat-markings";
+import markings from "js/slycat-selectable-markings";
 
 /**
  * not used

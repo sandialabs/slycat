@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import ReactDOM from "react-dom";
 //TODO: brought warning in just to show react can render remove later
 import TimeseriesWizard from "components/timeseries-wizard/TimeseriesWizard.tsx";
-import markings from "js/slycat-markings";
+import markings from "js/slycat-selectable-markings";
 import timeseriesWizardUI from "../wizard-ui.html";
 
 function constructor(params) {
