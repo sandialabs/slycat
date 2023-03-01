@@ -28,8 +28,6 @@ ko.components.register("slycat-model-controls", {
       let allowedNotSelectableMarking = allowed_markings
         .allowed()
         .find((marking) => marking.type() === component.marking());
-      // Changed allowedNotSelectableMarking's label by appending ' - legacy' to it.
-      allowedNotSelectableMarking.label(allowedNotSelectableMarking.label() + " - legacy");
       // Push the matching marking to component.markings
       component.markings.push(allowedNotSelectableMarking);
       // console.debug(`Added marking ${allowedNotSelectableMarking.type()} to list of selectable markings.`);
