@@ -200,6 +200,7 @@ export default class VariableRanges extends React.Component {
           </thead>
           <tbody>
             {this.props.variables.map((variable, index) => {
+              // console.debug(`VariableRanges variable is ${variable.name} with index ${variable.index}, %o`, variable);
               let minName = this.getName(variable.index, true);
               let maxName = this.getName(variable.index, false);
               let minNameValid = `${minName}_valid`;
@@ -210,7 +211,7 @@ export default class VariableRanges extends React.Component {
               // but to be thorough could also check for minNameValid, maxName, and maxNameValid.
               if(!this.state.hasOwnProperty(minName))
               {
-                // console.debug(`STOP there is no state data for %s`, minName);
+                // console.debug(`VariableRanges STOP there is no state data for %s`, minName);
                 return null;
               }
 
@@ -261,7 +262,8 @@ class VariableRangesRow extends React.PureComponent {
 
   render() {
     // Don't render if we don't have a data_min or data_max
-    if (!this.props.data_min || !this.props.data_max) {
+    if (this.props.data_min == null || this.props.data_max == null) {
+      // console.debug(`VariableRangesRow STOP there is no data_min or data_max for %s`, this.props.label);
       return null;
     }
     return (
