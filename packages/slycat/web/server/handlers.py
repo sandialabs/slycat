@@ -2341,7 +2341,7 @@ def get_bookmark(bid):
 
     # Update last accessed
     bookmark = database.get("bookmark", bid)
-    slycat.web.server.authentication.require_project_writer(project)
+    slycat.web.server.authentication.require_project_reader(project)
     bookmark["last_accessed"] = datetime.datetime.utcnow().isoformat()
     database.save(bookmark)
 
