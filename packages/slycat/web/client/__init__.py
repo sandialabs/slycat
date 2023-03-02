@@ -29,6 +29,10 @@ import io
 # logging
 import logging
 
+# url/IP
+from urllib.parse import urlparse
+import socket
+
 # 3rd party libraries
 
 # http requests & kerberos
@@ -212,10 +216,17 @@ class Connection(object):
     elif not keywords.get("verify"):
       verify = False
 
+    # resolve host alias
+    host_alias = urlparse(host)
+    host_alias = host_alias.netloc
+    host_ip = socket.gethostbyname(host_alias)
+    host_name = socket.gethostbyaddr(host_ip)
+    host_name = host_name[0]
+
     # host and port
-    self.host = host
+    self.host = host.replace(host_alias, host_name)
     if port:
-      self.host = host + ':' + port
+      self.host = self.host + ':' + port
 
     # using kerberos authentication?
     self.kerberos = kerberos
