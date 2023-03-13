@@ -347,9 +347,33 @@ def read_metadata_table (metadata, arguments, log):
         
         # check if root properties have same header
         for j in range(len(root_props)):
-            if list(root_props[j].columns) != root_head:
-                raise TDMSUploadError('Found inconsistent root property header in "' + 
-                    metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + '".')
+        
+            root_props_j = list(root_props[j].columns)
+            if root_props_j != root_head:
+                
+                # switch to longer root header
+                if len(root_props_j) > len(root_head):
+                    root_head = root_props_j
+                    
+    # remove shorter root headers?
+    for i in reversed(range(len(metadata))):
+        root_props = metadata[i]["root_properties"]
+        
+        # is it a short root header?
+        delete_i = False
+        for j in range(len(root_props)):
+        
+            root_props_j = list(root_props[j].columns)
+            if root_props_j != root_head:
+               
+                log ('Removing TDMS file with inconsistent root property header: "' +
+                     metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + 
+                    '".')
+                delete_i = True
+        
+        # delete entry for any short headers
+        if delete_i:
+            metadata.pop(i)
 
     # go through and get constant values
     constants = np.ones(len(root_head))
@@ -472,23 +496,24 @@ def read_timesteps (metadata):
 # construct variable matrices
 def read_variable_matrices (metadata, time_steps, arguments, log):
 
+    
     # put maximum number of time steps
     # in format of run chart data
     max_time_steps = []
     k = 0
     for i in range(len(metadata[0]["tdms_types"])):
         run_chart_max_time_steps = []
-        for j in range(len(metadata[0]["run_charts"])):
+        for j in range(len(metadata[0]["run_chart_headers"][i])):
             run_chart_max_time_steps.append(len(time_steps[k]))
             k = k + 1
         max_time_steps.append(run_chart_max_time_steps)
 
-    # variable matrices are a list of matrices, one for each varible
+    # variable matrices are a list of matrices, one for each variable
     # rows are variable values, columns are time
     var_data = []
     inferred_variables = False
     for tdms_type in range(len(metadata[0]["tdms_types"])):
-        for run_chart in range(len(metadata[0]["run_charts"])):
+        for run_chart in range(len(metadata[0]["run_chart_headers"][tdms_type])):
             variable_i = []
             for row in range(len(metadata)):
                 
