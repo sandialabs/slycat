@@ -684,7 +684,14 @@ def create_model(arguments, log):
 
     # push model using dac_gen
     if not arguments.do_not_upload:
-        dac_gen.upload_model(dac_gen_args, log)
+        mid = dac_gen.upload_model(dac_gen_args, log)
+
+        # supply the user with a direct link to the new model.
+        host = arguments.host
+        if arguments.port:
+            host = host + ":" + arguments.port
+        log("Your new model is located at %s/models/%s" % (host, mid))
+        log('***** DAC Model Successfully Created *****')
 
     # should we erase the .zip file created
     if arguments.clean_up_output:
