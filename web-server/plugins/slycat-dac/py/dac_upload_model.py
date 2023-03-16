@@ -62,7 +62,14 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
                 alpha_column_types[index] = "float64"
 
         except:
+
             meta_columns[index] = numpy.array(meta_columns[index], dtype="str")
+
+            # "nan" can be in strings too, also replace with "NaN"
+            for i in range(len(meta_columns[index])):
+                if meta_columns[index][i] == "nan":
+                    meta_columns[index][i] = "NaN"
+                    
             alpha_columns[index] = meta_columns[index]
 
     # convert variable meta data from row-oriented to column-oriented data

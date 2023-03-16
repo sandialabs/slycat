@@ -1090,7 +1090,13 @@ def post_upload_finished(uid):
     :return: status of upload
     """
     uploaded = require_integer_array_json_parameter("uploaded")
-    useProjectData = require_boolean_json_parameter("useProjectData")
+
+    # check that useProjectData is present before using
+    # otherwise, default to False
+    useProjectData = False
+    if 'useProjectData' in cherrypy.request.json: 
+        useProjectData = require_boolean_json_parameter("useProjectData")
+
     with slycat.web.server.upload.get_session(uid) as session:
         return session.post_upload_finished(uploaded, useProjectData)
 
