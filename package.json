@@ -27,6 +27,7 @@
     "@fortawesome/fontawesome-svg-core": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0",
+    "@reduxjs/toolkit": "^1.9.3",
     "bootstrap": "^4",
     "buffer": "6.0.3",
     "d3": "^3",
