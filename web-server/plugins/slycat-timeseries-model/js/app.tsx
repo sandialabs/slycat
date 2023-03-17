@@ -1,5 +1,7 @@
 import React from "react";
+// @ts-ignore
 import initialize_timeseries_model from "./timeseries";
+import Controls from "./Controls";
 
 export default class App extends React.Component {
   componentDidMount() {
@@ -7,15 +9,17 @@ export default class App extends React.Component {
   }
 
   render() {
+    const parsedUrl = new URL(window.location.href);
+    const modelId = parsedUrl.pathname.split("/").pop();
+
+    // only continue if we have a modelId
+    if (!modelId) {
+      return null;
+    }
+
     return (
       <>
-        <div id="cluster-pane" className="ui-layout-north bootstrap-styles">
-          <div className="d-flex justify-content-center align-items-center mx-2" id="controls">
-            <div id="general-controls" className="btn-group"></div>
-            <div id="color-switcher" className="btn-group ml-3"></div>
-          </div>
-          <div className="load-status"></div>
-        </div>
+        <Controls modelId={modelId} />
         <div id="dendrogram-pane" className="ui-layout-west">
           <div id="dendrogram-sparkline-backdrop"></div>
           <div className="load-status"></div>
@@ -29,13 +33,24 @@ export default class App extends React.Component {
           </svg>
           <div id="dendrogram-controls" className="bootstrap-styles">
             <div id="dendrogram-general-controls" className="btn-group">
-              {/* <!-- The following div is only necessary when there is more than one button, so leaving commented out for when we add another button here -->
-<!-- <div className="btn-group btn-group-xs"> -->
-  <button className="outputs btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="outputs-dropdown" data-toggle="dropdown" aria-expanded="false" title="Change Outputs">
-    <span className="buttonLabel">Outputs</span>
-  </button>
-  <div className="outputs dropdown-menu" role="menu" aria-labelledby="outputs-dropdown"></div>
-<!-- </div> --> */}
+              {/* <!-- The following div is only necessary when there is more than one button, so leaving commented out for when we add another button here --> */}
+              {/* <!-- <div className="btn-group btn-group-xs"> --> */}
+              <button
+                className="outputs btn btn-outline-dark btn-sm dropdown-toggle"
+                type="button"
+                id="outputs-dropdown"
+                data-toggle="dropdown"
+                aria-expanded="false"
+                title="Change Outputs"
+              >
+                <span className="buttonLabel">Outputs</span>
+              </button>
+              <div
+                className="outputs dropdown-menu"
+                role="menu"
+                aria-labelledby="outputs-dropdown"
+              ></div>
+              {/* <!-- </div> -->  */}
             </div>
           </div>
         </div>
