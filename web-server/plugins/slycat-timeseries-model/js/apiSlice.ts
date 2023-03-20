@@ -18,8 +18,11 @@ export const apiSlice = createApi({
     getTableMetadata: builder.query({
       query: (modelId) => `models/${modelId}/tables/inputs/arrays/0/metadata?index=Index`,
     }),
+    getClusters: builder.query({
+      query: (modelId) => `models/${modelId}/files/clusters`,
+    }),
   }),
 });
 
 // Export auto-generated hooks
-export const { useGetModelQuery, useGetTableMetadataQuery } = apiSlice;
+export const { useGetModelQuery, useGetTableMetadataQuery, useGetClustersQuery } = apiSlice;

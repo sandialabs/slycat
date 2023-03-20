@@ -1,5 +1,4 @@
 import React from "react";
-import { useGetModelQuery, useGetTableMetadataQuery } from "./apiSlice";
 
 type Props = {
   modelId: string;
@@ -7,16 +6,6 @@ type Props = {
 
 export const Controls: React.FC<Props> = (props) => {
   const { modelId } = props;
-  const {
-    data: model,
-    isFetching: isFetchingModel,
-    isSuccess: isSuccessModel,
-  } = useGetModelQuery(modelId);
-  const {
-    data: tableMetadata,
-    isFetching: isFetchingTableMetadata,
-    isSuccess: isSuccessTableMetadata,
-  } = useGetTableMetadataQuery(modelId);
 
   return (
     <div id="cluster-pane" className="ui-layout-north bootstrap-styles">

@@ -33,13 +33,12 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
-export default function initialize_timeseries_model() {
+export default function initialize_timeseries_model(model, clusters, table_metadata) {
   ko.applyBindings({}, document.querySelector(".slycat-content"));
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  var model = { _id: URI(window.location).segment(-1) };
   var cluster_bin_count = null;
   var cluster_bin_type = null;
   var cluster_type = null;
@@ -47,12 +46,10 @@ export default function initialize_timeseries_model() {
   var bookmarker = null;
   var bookmark = null;
 
-  var clusters = null; // This is just the list of cluster names
   var clusters_data = null; // This holds data for each cluster
   var waveforms_data = null; // This holds the waveforms for each cluster
   var waveforms_metadata = null; // This holds the waveforms metadata for each cluster
   var cluster_index = null; // This holds the index of the currently selected cluster
-  var table_metadata = null;
 
   var color_array = null; // This holds the sorted array of values for the color scale
   var colorscale = null; // This holds the current color scale
@@ -136,86 +133,54 @@ export default function initialize_timeseries_model() {
       },
     },
   });
-  const showLoadingPage = () => {
-    client
-      .get_model_fetch(model._id)
-      .then((modelResponse) => {
-        const timeseries_model_root = createRoot(document.querySelector("#timeseries-model"));
-        timeseries_model_root.render(
-          <LoadingPage
-            modelId={modelResponse._id}
-            modelState={modelResponse["state"]}
-            jid={modelResponse["artifact:jid"]}
-            hostname={
-              modelResponse["artifact:hostname"] ? modelResponse["artifact:hostname"] : "missing"
-            }
-          />
-        );
-      })
-      .catch((msg) => {
-        // eslint-disable-next-line no-alert
-        window.alert(`Error retrieving model: ${msg}`);
-      });
-  };
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
   function loadPage() {
-    $.ajax({
-      type: "GET",
-      url: api_root + "models/" + model._id,
-      success: function (result) {
-        model = result;
-        // If the model isn't ready or failed, we're done.
-        if (model["state"] === "waiting" || model["state"] === "running") {
-          showLoadingPage();
-          return;
-        }
-        bookmarker = bookmark_manager.create(model.project, model._id);
-        cluster_bin_count = model["artifact:cluster-bin-count"];
-        cluster_bin_type = model["artifact:cluster-bin-type"];
-        cluster_type = model["artifact:cluster-type"];
+    // If the model isn't ready or failed, we're done.
+    if (model["state"] === "waiting" || model["state"] === "running") {
+      return;
+    }
+    bookmarker = bookmark_manager.create(model.project, model._id);
+    cluster_bin_count = model["artifact:cluster-bin-count"];
+    cluster_bin_type = model["artifact:cluster-bin-type"];
+    cluster_type = model["artifact:cluster-type"];
 
-        // Check if model has the image-columns artifact and create one if it doesn't
-        if (!model.hasOwnProperty("artifact:image-columns")) {
-          // Find media columns
-          // console.log("This model has no artifact:image-columns");
-          client.get_model_command({
+    // Check if model has the image-columns artifact and create one if it doesn't
+    if (!model.hasOwnProperty("artifact:image-columns")) {
+      // Find media columns
+      // console.log("This model has no artifact:image-columns");
+      client.get_model_command({
+        mid: model._id,
+        type: "timeseries",
+        command: "media-columns",
+        success: function (media_columns) {
+          // console.log("here are the media_columns: " + media_columns);
+          client.put_model_parameter({
             mid: model._id,
-            type: "timeseries",
-            command: "media-columns",
-            success: function (media_columns) {
-              // console.log("here are the media_columns: " + media_columns);
-              client.put_model_parameter({
-                mid: model._id,
-                aid: "image-columns",
-                value: media_columns,
-                input: true,
-                success: function () {
-                  // console.log("successfully saved image-columns");
-                  image_columns = media_columns;
-                },
-              });
-            },
-            error: function (error) {
-              console.log("error getting model command");
+            aid: "image-columns",
+            value: media_columns,
+            input: true,
+            success: function () {
+              // console.log("successfully saved image-columns");
+              image_columns = media_columns;
             },
           });
-        } else {
-          image_columns = model["artifact:image-columns"];
-        }
+        },
+        error: function (error) {
+          console.log("error getting model command");
+        },
+      });
+    } else {
+      image_columns = model["artifact:image-columns"];
+    }
 
-        if (model["state"] == "closed" && model["result"] === null) return;
-        if (model["result"] == "failed") return;
-        setup_page();
-      },
-      error: function (request, status, reason_phrase) {
-        window.alert("Error retrieving model: " + reason_phrase);
-      },
-    });
+    if (model["state"] == "closed" && model["result"] === null) return;
+    if (model["result"] == "failed") return;
+    setup_page();
   }
 
-  // showLoadingPage();
   loadPage();
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
@@ -236,109 +201,85 @@ export default function initialize_timeseries_model() {
     $(".load-status").text("Loading data.");
 
     // Load list of clusters.
-    $.ajax({
-      url: api_root + "models/" + model._id + "/files/clusters",
-      contentType: "application/json",
-      success: function (result) {
-        clusters = result;
-        clusters_data = new Array(clusters.length);
-        waveforms_data = new Array(clusters.length);
-        waveforms_metadata = new Array(clusters.length);
-        setup_widgets();
-        retrieve_bookmarked_state();
-      },
-      error: artifact_missing,
-    });
-
-    // Load data table metadata.
-    $.ajax({
-      url: api_root + "models/" + model._id + "/tables/inputs/arrays/0/metadata?index=Index",
-      contentType: "application/json",
-      success: function (metadata) {
-        table_metadata = metadata;
-        setup_widgets();
-        setup_colordata();
-        retrieve_bookmarked_state();
-      },
-      error: artifact_missing,
-    });
+    clusters_data = new Array(clusters.length);
+    waveforms_data = new Array(clusters.length);
+    waveforms_metadata = new Array(clusters.length);
+    setup_widgets();
+    retrieve_bookmarked_state();
+    setup_colordata();
 
     // Retrieve bookmarked state information ...
     function retrieve_bookmarked_state() {
-      if (table_metadata !== null && clusters !== null) {
-        bookmarker.getState(function (state) {
-          bookmark = state;
+      bookmarker.getState(function (state) {
+        bookmark = state;
 
-          // Set state of selected cluster
-          cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
+        // Set state of selected cluster
+        cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
-          // Set state of selected simulations
-          selected_simulations = [];
-          if ("simulation-selection" in bookmark)
-            selected_simulations = bookmark["simulation-selection"];
-          else if (
-            "cluster-index" in bookmark &&
-            bookmark["cluster-index"] + "-selected-row-simulations" in bookmark
-          ) {
-            selected_simulations =
-              bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
-          }
+        // Set state of selected simulations
+        selected_simulations = [];
+        if ("simulation-selection" in bookmark)
+          selected_simulations = bookmark["simulation-selection"];
+        else if (
+          "cluster-index" in bookmark &&
+          bookmark["cluster-index"] + "-selected-row-simulations" in bookmark
+        ) {
+          selected_simulations = bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
+        }
 
-          // Set state of selected column
-          selected_column = [];
-          selected_column_type = [];
-          selected_column_min = [];
-          selected_column_max = [];
-          for (var i = 0; i < clusters.length; i++) {
-            selected_column[i] =
-              bookmark[i + "-column-index"] !== undefined
-                ? bookmark[i + "-column-index"]
-                : table_metadata["column-count"] - 1;
-            selected_column_type[i] = table_metadata["column-types"][selected_column[i]];
-            selected_column_min[i] = table_metadata["column-min"][selected_column[i]];
-            selected_column_max[i] = table_metadata["column-max"][selected_column[i]];
-          }
+        // Set state of selected column
+        selected_column = [];
+        selected_column_type = [];
+        selected_column_min = [];
+        selected_column_max = [];
+        for (var i = 0; i < clusters.length; i++) {
+          selected_column[i] =
+            bookmark[i + "-column-index"] !== undefined
+              ? bookmark[i + "-column-index"]
+              : table_metadata["column-count"] - 1;
+          selected_column_type[i] = table_metadata["column-types"][selected_column[i]];
+          selected_column_min[i] = table_metadata["column-min"][selected_column[i]];
+          selected_column_max[i] = table_metadata["column-max"][selected_column[i]];
+        }
 
-          // Set state of color variable
-          color_variables = [];
-          for (var i = 0; i < table_metadata["column-count"]; i++) {
-            if (image_columns != undefined && image_columns.indexOf(i) == -1)
-              color_variables.push(i);
-          }
-          // Move index column to top
-          color_variables.unshift(color_variables.pop());
+        // Set state of color variable
+        color_variables = [];
+        for (var i = 0; i < table_metadata["column-count"]; i++) {
+          if (image_columns != undefined && image_columns.indexOf(i) == -1) color_variables.push(i);
+        }
+        // Move index column to top
+        color_variables.unshift(color_variables.pop());
 
-          // Set state of selected waveform indexes
-          selected_waveform_indexes = [];
-          for (var i = 0; i < clusters.length; i++) {
-            selected_waveform_indexes[i] =
-              bookmark[i + "-selected-waveform-indexes"] !== undefined
-                ? bookmark[i + "-selected-waveform-indexes"]
-                : null;
-          }
+        // Set state of selected waveform indexes
+        selected_waveform_indexes = [];
+        for (var i = 0; i < clusters.length; i++) {
+          selected_waveform_indexes[i] =
+            bookmark[i + "-selected-waveform-indexes"] !== undefined
+              ? bookmark[i + "-selected-waveform-indexes"]
+              : null;
+        }
 
-          // Set state of colormap
-          colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+        // Set state of colormap
+        colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
-          // Set sort variable and order
-          sort_variable =
-            bookmark["sort-variable"] != undefined ? bookmark["sort-variable"] : undefined;
-          sort_order = bookmark["sort-order"] != undefined ? bookmark["sort-order"] : undefined;
+        // Set sort variable and order
+        sort_variable =
+          bookmark["sort-variable"] != undefined ? bookmark["sort-variable"] : undefined;
+        sort_order = bookmark["sort-order"] != undefined ? bookmark["sort-order"] : undefined;
 
-          // Set collapsed, expanded, and selected nodes
-          collapsed_nodes = [];
-          expanded_nodes = [];
-          selected_nodes = [];
-          for (var i = 0; i < clusters.length; i++) {
-            collapsed_nodes[i] = bookmark[i + "-collapsed-nodes"];
-            expanded_nodes[i] = bookmark[i + "-expanded-nodes"];
-            selected_nodes[i] = bookmark[i + "-selected-nodes"];
-          }
+        // Set collapsed, expanded, and selected nodes
+        collapsed_nodes = [];
+        expanded_nodes = [];
+        selected_nodes = [];
+        for (var i = 0; i < clusters.length; i++) {
+          collapsed_nodes[i] = bookmark[i + "-collapsed-nodes"];
+          expanded_nodes[i] = bookmark[i + "-expanded-nodes"];
+          selected_nodes[i] = bookmark[i + "-selected-nodes"];
+        }
 
-          setup_widgets();
-          setup_colordata();
-        });
-      }
+        setup_widgets();
+        setup_colordata();
+      });
     }
   }
 
@@ -357,7 +298,7 @@ export default function initialize_timeseries_model() {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   function setup_colordata() {
-    if (bookmark && table_metadata && selected_column != null && cluster_index !== null) {
+    if (bookmark && selected_column != null && cluster_index !== null) {
       retrieve_sorted_column({
         column: selected_column[cluster_index],
         callback: function (array) {
@@ -449,7 +390,6 @@ export default function initialize_timeseries_model() {
       s_to_a(clusters) &&
       cluster_index !== null &&
       selected_simulations != null &&
-      table_metadata &&
       color_variables !== null &&
       selected_waveform_indexes !== null &&
       selected_column !== null &&
@@ -505,7 +445,6 @@ export default function initialize_timeseries_model() {
     if (
       !legend_ready &&
       bookmark &&
-      table_metadata &&
       cluster_index !== null &&
       colormap !== null &&
       selected_column !== null &&
@@ -543,7 +482,6 @@ export default function initialize_timeseries_model() {
       waveforms_data[cluster_index] !== null &&
       color_array !== null &&
       colorscale !== null &&
-      table_metadata !== null &&
       selected_simulations !== null &&
       selected_waveform_indexes !== null
     ) {
@@ -589,7 +527,6 @@ export default function initialize_timeseries_model() {
     if (
       !table_ready &&
       bookmark &&
-      table_metadata &&
       cluster_index !== null &&
       selected_simulations !== null &&
       colormap !== null &&

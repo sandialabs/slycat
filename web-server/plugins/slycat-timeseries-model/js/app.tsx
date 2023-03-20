@@ -1,89 +1,38 @@
 import React from "react";
-// @ts-ignore
-import initialize_timeseries_model from "./timeseries";
-import Controls from "./Controls";
+import TimeseriesComponents from "../plugin-components/TimeseriesComponents";
+import { useGetModelQuery, useGetTableMetadataQuery, useGetClustersQuery } from "./apiSlice";
+import { skipToken } from "@reduxjs/toolkit/query/react";
 
-export default class App extends React.Component {
-  componentDidMount() {
-    initialize_timeseries_model();
+type Props = {};
+
+const App: React.FC<Props> = () => {
+  const parsedUrl = new URL(window.location.href);
+  const modelId = parsedUrl.pathname.split("/").pop();
+
+  const {
+    data: model,
+    isFetching: fetchingModel,
+    isSuccess: successModel,
+  } = useGetModelQuery(modelId);
+  const {
+    data: tableMetadata,
+    isFetching: fetchingTableMetadata,
+    isSuccess: successTableMetadata,
+  } = useGetTableMetadataQuery(successModel ? model._id : skipToken);
+  const {
+    data: clusters,
+    isFetching: fetchingClusters,
+    isSuccess: successClusters,
+  } = useGetClustersQuery(successModel ? model._id : skipToken);
+
+  // Only continue if we fetched all the data we need
+  if (successModel && successTableMetadata && successClusters) {
+    return <TimeseriesComponents model={model} clusters={clusters} tableMetadata={tableMetadata} />;
   }
 
-  render() {
-    const parsedUrl = new URL(window.location.href);
-    const modelId = parsedUrl.pathname.split("/").pop();
+  // If we don't get model or tableMetadata, show an error page.
+  // Return null to prevent the rest of the app from rendering for now.
+  return null;
+};
 
-    // only continue if we have a modelId
-    if (!modelId) {
-      return null;
-    }
-
-    return (
-      <>
-        <Controls modelId={modelId} />
-        <div id="dendrogram-pane" className="ui-layout-west">
-          <div id="dendrogram-sparkline-backdrop"></div>
-          <div className="load-status"></div>
-          <svg id="dendrogram-viewer" width="100%" height="100%">
-            <defs>
-              <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#7767b0" stopOpacity="1" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div id="dendrogram-controls" className="bootstrap-styles">
-            <div id="dendrogram-general-controls" className="btn-group">
-              {/* <!-- The following div is only necessary when there is more than one button, so leaving commented out for when we add another button here --> */}
-              {/* <!-- <div className="btn-group btn-group-xs"> --> */}
-              <button
-                className="outputs btn btn-outline-dark btn-sm dropdown-toggle"
-                type="button"
-                id="outputs-dropdown"
-                data-toggle="dropdown"
-                aria-expanded="false"
-                title="Change Outputs"
-              >
-                <span className="buttonLabel">Outputs</span>
-              </button>
-              <div
-                className="outputs dropdown-menu"
-                role="menu"
-                aria-labelledby="outputs-dropdown"
-              ></div>
-              {/* <!-- </div> -->  */}
-            </div>
-          </div>
-        </div>
-        <div id="waveform-pane" className="ui-layout-center">
-          <div className="load-status"></div>
-          <svg
-            id="waveform-viewer"
-            width="100%"
-            height="100%"
-            style={{ position: "absolute" }}
-          ></svg>
-          <div id="waveform-progress">
-            <input className="waveformPie" value="1" readOnly />
-          </div>
-          <div id="waveform-selection-progress">
-            <input className="waveformPie" value="1" readOnly />
-          </div>
-          <div id="waveform-selector-progress-wrapper">
-            <div id="waveform-selector-progress">
-              <input className="waveformPie" value="1" readOnly />
-              Please wait while we prepare the ability to select waveforms...
-            </div>
-          </div>
-        </div>
-        <div id="legend-pane" className="ui-layout-east">
-          <div className="load-status"></div>
-          <div id="legend"></div>
-        </div>
-        <div id="table-pane" className="ui-layout-south" style={{ overflow: "auto" }}>
-          <div className="load-status"></div>
-          <div id="table"></div>
-        </div>
-      </>
-    );
-  }
-}
+export default App;
