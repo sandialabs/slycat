@@ -1,6 +1,6 @@
 import React from "react";
 import TimeseriesComponents from "../plugin-components/TimeseriesComponents";
-import { useGetModelQuery, useGetTableMetadataQuery, useGetClustersQuery } from "./apiSlice";
+import { useGetModelQuery, useGetTableMetadataQuery, useGetClustersQuery } from "../js/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query/react";
 
 type Props = {};
