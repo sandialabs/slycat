@@ -2,10 +2,15 @@ import React from "react";
 import TimeseriesComponents from "../plugin-components/TimeseriesComponents";
 import { useGetModelQuery, useGetTableMetadataQuery, useGetClustersQuery } from "../js/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query/react";
+import type { RootState, AppSubscribe, AppDispatch } from "../js/store";
 
-type Props = {};
+type Props = {
+  dispatch: AppDispatch;
+  get_state: () => RootState;
+  subscribe: AppSubscribe;
+};
 
-const App: React.FC<Props> = () => {
+const App: React.FC<Props> = (props) => {
   const parsedUrl = new URL(window.location.href);
   const modelId = parsedUrl.pathname.split("/").pop();
 
@@ -27,7 +32,16 @@ const App: React.FC<Props> = () => {
 
   // Only continue if we fetched all the data we need
   if (successModel && successTableMetadata && successClusters) {
-    return <TimeseriesComponents model={model} clusters={clusters} tableMetadata={tableMetadata} />;
+    return (
+      <TimeseriesComponents
+        model={model}
+        clusters={clusters}
+        tableMetadata={tableMetadata}
+        dispatch={props.dispatch}
+        get_state={props.get_state}
+        subscribe={props.subscribe}
+      />
+    );
   }
 
   // If we don't get model or tableMetadata, show an error page.

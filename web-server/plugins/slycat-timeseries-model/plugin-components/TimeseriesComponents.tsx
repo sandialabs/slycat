@@ -9,8 +9,12 @@ import Dendrogram from "./Dendrogram";
 import Waveforms from "./Waveforms";
 import Legend from "./Legend";
 import Table from "./Table";
+import type { RootState, AppSubscribe, AppDispatch } from "../js/store";
 
 type Props = {
+  dispatch: AppDispatch;
+  get_state: () => RootState;
+  subscribe: AppSubscribe;
   model: {
     _id: string;
     state: string;
@@ -25,12 +29,20 @@ type Props = {
 
 export default class TimeseriesComponents extends React.Component<Props> {
   componentDidMount() {
-    if (this.props.model.state == "closed")
-      initialize_timeseries_model(this.props.model, this.props.clusters, this.props.tableMetadata);
+    if (this.props.model.state == "closed") {
+      initialize_timeseries_model(
+        this.props.dispatch,
+        this.props.get_state,
+        this.props.subscribe,
+        this.props.model,
+        this.props.clusters,
+        this.props.tableMetadata
+      );
+    }
   }
 
   render() {
-    const { model, clusters, tableMetadata } = this.props;
+    const { model, clusters, tableMetadata, dispatch, get_state, subscribe } = this.props;
 
     // Show loading page if model is not ready
     if (model["state"] === "waiting" || model["state"] === "running") {

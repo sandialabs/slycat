@@ -33,7 +33,27 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
-export default function initialize_timeseries_model(model, clusters, table_metadata) {
+import { setColormap } from "../js/services/controlsSlice";
+import watch from "redux-watch";
+
+export default function initialize_timeseries_model(
+  dispatch,
+  get_state,
+  subscribe,
+  model,
+  clusters,
+  table_metadata
+) {
+
+  // Example code for using redux-watch to react to colormap changing
+  console.log(get_state().controls.colormap);
+  let watch_controls_colormap = watch(get_state, "controls.colormap");
+  subscribe(
+    watch_controls_colormap((newVal, oldVal, objectPath) => {
+      console.log("%s changed from %s to %s", objectPath, oldVal, newVal);
+    })
+  );
+
   ko.applyBindings({}, document.querySelector(".slycat-content"));
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -682,6 +702,9 @@ export default function initialize_timeseries_model(model, clusters, table_metad
 
   function selected_colormap_changed(newColormap) {
     colormap = newColormap;
+
+    // Dispatch a setColorMap event to redux
+    dispatch(setColormap(colormap));
 
     // First we change background colors, gradients, and other things that don't require recalculating the colorscale
     $("#legend-pane").css(
