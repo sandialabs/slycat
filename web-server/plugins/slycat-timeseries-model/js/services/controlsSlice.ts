@@ -1,16 +1,16 @@
-import { createSlice } from '@reduxjs/toolkit'
-import type { PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface ControlsState {
-  colormap: string
+  colormap: string;
 }
 
 const initialState: ControlsState = {
   colormap: "night",
-}
+};
 
 export const controlsSlice = createSlice({
-  name: 'controls',
+  name: "controls",
   initialState,
   reducers: {
     setColormap: (state, action: PayloadAction<string>) => {
@@ -18,12 +18,11 @@ export const controlsSlice = createSlice({
       // doesn't actually mutate the state because it uses the Immer library,
       // which detects changes to a "draft state" and produces a brand new
       // immutable state based off those changes
-      state.colormap = action.payload
+      state.colormap = action.payload;
     },
   },
-})
+});
 
 // Action creators are generated for each case reducer function
-export const { setColormap } = controlsSlice.actions
-
-export default controlsSlice.reducer
+export const { setColormap } = controlsSlice.actions;
+export default controlsSlice.reducer;
