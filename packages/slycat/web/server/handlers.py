@@ -540,6 +540,19 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     :return: not used
     """
 
+    def isNumeric(some_thing):
+        """
+        Check if input is numeric
+
+        :param some_thing: object
+        :return: boolean
+        """
+        try:
+            x = float(some_thing)
+        except ValueError:
+            return False
+        return True
+
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -551,20 +564,69 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     did = uuid.uuid4().hex
 
+    rows = []
+
+    hidden_char_removed = csv_data.replace('\r', '')
+    split_file = hidden_char_removed.split('\n')
+
+    for row in split_file:
+        row_list = [row]
+        split_row = row_list[0].split(',')
+        rows.append(split_row)
+
+    columns = numpy.array(rows).T
+
+    for i, column in enumerate(columns):
+        for j, entry in enumerate(column):
+            columns[i,j] = entry.encode("utf-8")
+
+    column_names = [name.strip() for name in rows[0]]
+    column_names = ["%eval_id"] + column_names
+    column_types = ["string" for name in column_names]
+
+    column_types[0] = "int64"
+
+    for index in range(1, len(columns)):  # repack data cols as numpy arrays
+        try:
+            if isNumeric(columns[index][0]):
+                columns[index] = numpy.array(columns[index], dtype="float64")
+                column_types[index] = "float64"
+            else:
+                stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
+                columns[index] = numpy.array(columns[index], dtype=stringType)
+                column_types[index] = "string"
+        except:
+            pass
+
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+    unique_name = uuid.uuid4().hex
+    hdf5_name = f"{unique_name}.hdf5"
+    hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
+
+    h5f = h5py.File((hdf5_file_path), "w")
+    h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
+    h5f.close()
+
+    # Make the entry in couch for project data
+    database = slycat.web.server.database.couchdb.connect()
+
+    timestamp = time.time()
+    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    did = uuid.uuid4().hex
+
     data = {
         "_id": did,
         "type": "project_data",
-        "file_name": formatted_timestamp + "_" + file_name,
-        "data_table": "data-table",
+        "hdf5_name": hdf5_name,
+        "file_name": formatted_timestamp + "_" + str(file_name),
+        "data_table": 'data-table',
         "project": pid,
-        "mid": [""],
+        "mid": [''],
         "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
     }
 
     database.save(data)
-    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
-
 
 def create_project_data(mid, aid, file):
     """
