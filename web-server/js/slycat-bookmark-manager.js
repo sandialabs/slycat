@@ -7,6 +7,7 @@ import URI from "urijs";
 import _ from "lodash";
 
 var module = {};
+let manager = null;
 
 module.current_bid = function (bid) {
   if (bid !== undefined) {
@@ -35,7 +36,12 @@ module.current_mid = function () {
 };
 
 module.create = function (pid, mid) {
-  var manager = {};
+  // Return the existing manager if it exists
+  if (manager !== null) {
+    return manager;
+  }
+
+  manager = {};
   var bid_callbacks = [];
 
   var bid = null;
@@ -131,6 +137,22 @@ module.create = function (pid, mid) {
       });
     } else {
       callback(state);
+    }
+  };
+
+  // Retrieves the state for the current bookmark id using fetch (asynchronous)
+  manager.getStateFetch = async function () {
+    if ($.isEmptyObject(state) && !(bid == null)) {
+      return fetch(api_root + "bookmarks/" + bid).then((response) => {
+        if (!response.ok) {
+          // Assume no state when we can't retrieve a bid
+          state = {};
+          return state;
+        }
+        return response.json();
+      });
+    } else {
+      return state;
     }
   };
 
