@@ -5,7 +5,7 @@ export interface ControlsState {
   colormap: string;
 }
 
-const initialState: ControlsState = {
+export const initialState: ControlsState = {
   colormap: "night",
 };
 
