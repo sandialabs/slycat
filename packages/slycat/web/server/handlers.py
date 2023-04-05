@@ -410,9 +410,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 temp_row = []
                 for row in decoded_rows:
                     for i, entry in enumerate(row):
-                        if i == 0:
-                            temp_row.append(str(entry))
-                        elif i == (len(row) - 1):
+                        if i == (len(row) - 1):
                             temp_row.append(str(entry) + '\n')
                         else:
                             temp_row.append(str(entry) + ',')
@@ -557,22 +555,10 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
 
-    csv_data = str(file.file.read(), 'utf-8')
-
-    content_type = "text/csv"
-    timestamp = time.time()
-    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    did = uuid.uuid4().hex
-
-    rows = []
-
-    hidden_char_removed = csv_data.replace('\r', '')
-    split_file = hidden_char_removed.split('\n')
-
-    for row in split_file:
-        row_list = [row]
-        split_row = row_list[0].split(',')
-        rows.append(split_row)
+    str_data = str(file.file.read(), 'utf-8')
+    rows = [row for row in
+            csv.reader(str_data.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
+                       quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
     columns = numpy.array(rows).T
 
