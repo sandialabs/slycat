@@ -33,7 +33,6 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
-import { setColormap } from "../js/services/controlsSlice";
 import watch from "redux-watch";
 
 export default function initialize_timeseries_model(
@@ -44,16 +43,6 @@ export default function initialize_timeseries_model(
   clusters,
   table_metadata
 ) {
-
-  // Example code for using redux-watch to react to colormap changing
-  console.log(get_state().controls.colormap);
-  let watch_controls_colormap = watch(get_state, "controls.colormap");
-  subscribe(
-    watch_controls_colormap((newVal, oldVal, objectPath) => {
-      console.log("%s changed from %s to %s", objectPath, oldVal, newVal);
-    })
-  );
-
   ko.applyBindings({}, document.querySelector(".slycat-content"));
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -280,7 +269,7 @@ export default function initialize_timeseries_model(
         }
 
         // Set state of colormap
-        colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+        colormap = get_state().controls.colormap;
 
         // Set sort variable and order
         sort_variable =
@@ -452,13 +441,9 @@ export default function initialize_timeseries_model(
     // Setup the color switcher ...
     if (!colorswitcher_ready && bookmark && colormap !== null) {
       colorswitcher_ready = true;
-      $("#color-switcher").colorswitcher({ colormap: colormap });
+      $("#color-switcher").colorswitcher({ colormap: colormap, dispatch: dispatch });
 
       update_current_colorscale(setup_widgets);
-
-      $("#color-switcher").bind("colormap-changed", function (event, newColormap) {
-        selected_colormap_changed(newColormap);
-      });
     }
 
     // Setup the legend ...
@@ -700,11 +685,16 @@ export default function initialize_timeseries_model(
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
 
+  // Using redux-watch to react to colormap changing
+  let watch_controls_colormap = watch(get_state, "controls.colormap");
+  subscribe(
+    watch_controls_colormap((newVal, oldVal, objectPath) => {
+      selected_colormap_changed(newVal);
+    })
+  );
+
   function selected_colormap_changed(newColormap) {
     colormap = newColormap;
-
-    // Dispatch a setColorMap event to redux
-    dispatch(setColormap(colormap));
 
     // First we change background colors, gradients, and other things that don't require recalculating the colorscale
     $("#legend-pane").css(

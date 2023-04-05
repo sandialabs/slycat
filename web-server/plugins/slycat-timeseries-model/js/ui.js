@@ -3,7 +3,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "../plugin-components/App";
 import { Provider, useDispatch } from "react-redux";
-import { store } from "./store";
+import store from "./store";
 
 // Creating this wrapper component allows us to use the useDispatch hook.
 // Need to pass this hook, along with the store's subscribe and getState functions

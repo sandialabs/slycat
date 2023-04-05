@@ -2,12 +2,14 @@
 
 import d3 from "d3";
 import "jquery-ui";
+import { setColormap } from "../js/services/controlsSlice";
 
 $.widget("slycat.colorswitcher",
 {
   options:
   {
     colormap : "day",
+    dispatch : null,
   },
 
   _create: function()
@@ -164,7 +166,9 @@ $.widget("slycat.colorswitcher",
           self.list.find(".color").removeClass("active");
           menu_item.addClass("active");
 
-          self.element.trigger("colormap-changed", [self.options.colormap]);
+          // Dispatch a setColorMap event to redux
+          self.options.dispatch(setColormap(self.options.colormap));
+
         })
         .css({
           "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",

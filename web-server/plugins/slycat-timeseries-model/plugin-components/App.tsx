@@ -3,6 +3,7 @@ import TimeseriesComponents from "../plugin-components/TimeseriesComponents";
 import { useGetModelQuery, useGetTableMetadataQuery, useGetClustersQuery } from "../js/apiSlice";
 import { skipToken } from "@reduxjs/toolkit/query/react";
 import type { RootState, AppSubscribe, AppDispatch } from "../js/store";
+import { useAppSelector } from "../js/hooks";
 
 type Props = {
   dispatch: AppDispatch;
@@ -11,9 +12,7 @@ type Props = {
 };
 
 const App: React.FC<Props> = (props) => {
-  const parsedUrl = new URL(window.location.href);
-  const modelId = parsedUrl.pathname.split("/").pop();
-
+  const modelId = useAppSelector((state) => state.model.modelId);
   const {
     data: model,
     isFetching: fetchingModel,
