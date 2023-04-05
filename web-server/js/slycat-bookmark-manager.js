@@ -142,16 +142,20 @@ module.create = function (pid, mid) {
 
   // Retrieves the state for the current bookmark id using fetch (asynchronous)
   manager.getStateFetch = async function () {
+    // If state is empty and bid is not null, then we need to fetch the state
     if ($.isEmptyObject(state) && !(bid == null)) {
-      return fetch(api_root + "bookmarks/" + bid).then((response) => {
-        if (!response.ok) {
-          // Assume no state when we can't retrieve a bid
-          state = {};
-          return state;
-        }
-        return response.json();
-      });
-    } else {
+      const response = await fetch(api_root + "bookmarks/" + bid);
+      // Assume no state when we can't retrieve a bid
+      if (!response.ok) {
+        state = {};
+        return state;
+      }
+      // If we can retrieve a bid, then we can set the state and return it
+      state = await response.json();
+      return state;
+    } 
+    // If state is not empty, then we can just return the state
+    else {
       return state;
     }
   };
