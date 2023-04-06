@@ -6,6 +6,7 @@
 import d3 from "d3";
 import * as chunker from "./chunker";
 import "bootstrap";
+import slycat_color_maps from "js/slycat-color-maps";
 
 $.widget("timeseries.dendrogram",
 {
@@ -25,6 +26,7 @@ $.widget("timeseries.dendrogram",
     dendrogram_sort_order: true,
     highlight: [],
     image_columns : [],
+    get_state: null,
   },
 
   _create: function()
@@ -489,7 +491,7 @@ $.widget("timeseries.dendrogram",
               if(value != null)
                 return self.options.color_scale(value);
               else
-                return $("#color-switcher").colorswitcher("get_null_color");
+                return slycat_color_maps.get_null_color(self.options.get_state().controls.colormap);
             }
             else
               return "black";
@@ -706,7 +708,7 @@ $.widget("timeseries.dendrogram",
           if(value != null)
             return self.options.color_scale(value);
           else
-            return $("#color-switcher").colorswitcher("get_null_color");
+            return slycat_color_maps.get_null_color(self.options.get_state().controls.colormap);
         }
         else
           return "black";

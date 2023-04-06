@@ -5,6 +5,7 @@
 
 import d3 from "d3";
 import knob from "jquery-knob";
+import slycat_color_maps from "js/slycat-color-maps";
 
 $.widget("timeseries.waveformplot",
 {
@@ -18,7 +19,8 @@ $.widget("timeseries.waveformplot",
     color_scale : null,
     nullWaveformColor: "gray",
     nullWaveformDasharray: "5,5",
-    hover : []
+    hover : [],
+    get_state: null,
   },
 
   _create: function()
@@ -305,8 +307,8 @@ $.widget("timeseries.waveformplot",
     this.canvas_picker.width = this.diagram_width;
     this.canvas_picker.height = this.diagram_height;
 
-    var fillStyle = $("#color-switcher").colorswitcher("get_background");
-    var opacity = $("#color-switcher").colorswitcher("get_opacity");
+    var fillStyle = slycat_color_maps.get_background(self.options.get_state().controls.colormap);
+    var opacity = slycat_color_maps.get_opacity(self.options.get_state().controls.colormap);
     this.canvas_hover_ctx.fillStyle = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
     this.canvas_selection_ctx.fillStyle = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
 
@@ -377,7 +379,7 @@ $.widget("timeseries.waveformplot",
       }
       else
       {
-        var strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+        var strokeStyle = slycat_color_maps.get_null_color(self.options.get_state().controls.colormap);
         self.canvas_offscreen_ctx.setLineDash([8, 4]);
       }
       self.canvas_offscreen_ctx.strokeStyle = strokeStyle;
@@ -482,7 +484,7 @@ $.widget("timeseries.waveformplot",
       }
       else
       {
-        var strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+        var strokeStyle = slycat_color_maps.get_null_color(self.options.get_state().controls.colormap);
         self.canvas_hover_ctx.setLineDash([8, 4]);
       }
 
@@ -561,7 +563,7 @@ $.widget("timeseries.waveformplot",
       }
       else
       {
-        var strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+        var strokeStyle = slycat_color_maps.get_null_color(self.options.get_state().controls.colormap);
         self.canvas_selection_ctx.setLineDash([8, 4]);
       }
       self.canvas_selection_ctx.strokeStyle = strokeStyle;

@@ -12,7 +12,9 @@ import _ from "lodash";
 // First we need to get the model because the bookmark manager needs the model ID and project ID.
 const parsedUrl = new URL(window.location.href);
 const modelId = parsedUrl.pathname.split("/").pop();
-let modelBookmarker, preloadedState: PreloadedState<RootState>;
+// @ts-ignore
+let modelBookmarker;
+let preloadedState: PreloadedState<RootState>;
 
 const store = client
   .get_model_fetch(modelId)
@@ -75,6 +77,7 @@ const store = client
 
       // Save Redux state to bookmark whenever it changes
       const bookmarkReduxStateTree = () => {
+        // @ts-ignore
         modelBookmarker.updateState({
           state:
             // Remove derived property from state tree because it should be computed

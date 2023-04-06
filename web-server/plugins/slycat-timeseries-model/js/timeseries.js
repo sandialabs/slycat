@@ -25,7 +25,6 @@ import "./timeseries-legend";
 import "./timeseries-table";
 import "./timeseries-dendrogram";
 import "./timeseries-waveformplot";
-import "./color-switcher";
 
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
@@ -34,6 +33,7 @@ import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
 import watch from "redux-watch";
+import slycat_color_maps from "js/slycat-color-maps";
 
 export default function initialize_timeseries_model(
   dispatch,
@@ -62,7 +62,6 @@ export default function initialize_timeseries_model(
 
   var color_array = null; // This holds the sorted array of values for the color scale
   var colorscale = null; // This holds the current color scale
-  var colormap = null; // This hold the current color map
   var color_variables = null; // This holds the indexes of all the color variables
   var uniqueValues = null; // This holds the column's unique values for last selected string column
 
@@ -80,7 +79,7 @@ export default function initialize_timeseries_model(
   var selected_nodes = null; // This holds the selected nodes
 
   var controls_ready = false;
-  var colorswitcher_ready = false;
+  var colorscale_ready = false;
   var dendrogram_ready = false;
   var waveformplot_ready = false;
   var table_ready = false;
@@ -268,9 +267,6 @@ export default function initialize_timeseries_model(
               : null;
         }
 
-        // Set state of colormap
-        colormap = get_state().controls.colormap;
-
         // Set sort variable and order
         sort_variable =
           bookmark["sort-variable"] != undefined ? bookmark["sort-variable"] : undefined;
@@ -438,11 +434,9 @@ export default function initialize_timeseries_model(
       });
     }
 
-    // Setup the color switcher ...
-    if (!colorswitcher_ready && bookmark && colormap !== null) {
-      colorswitcher_ready = true;
-      $("#color-switcher").colorswitcher({ colormap: colormap, dispatch: dispatch });
-
+    // // Setup the color switcher ...
+    if (!colorscale_ready && bookmark !== null) {
+      colorscale_ready = true;
       update_current_colorscale(setup_widgets);
     }
 
@@ -451,10 +445,8 @@ export default function initialize_timeseries_model(
       !legend_ready &&
       bookmark &&
       cluster_index !== null &&
-      colormap !== null &&
       selected_column !== null &&
-      selected_column_type !== null &&
-      colorscale !== null
+      selected_column_type !== null
     ) {
       legend_ready = true;
 
@@ -462,13 +454,13 @@ export default function initialize_timeseries_model(
 
       $("#legend-pane").css(
         "background",
-        $("#color-switcher").colorswitcher("get_background", colormap).toString()
+        slycat_color_maps.get_background(get_state().controls.colormap).toString()
       );
 
       $("#legend").legend({
         width: $("#legend-pane").width(),
         height: $("#legend-pane").height(),
-        gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+        gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
         label: table_metadata["column-names"][selected_column[cluster_index]],
         min: table_metadata["column-min"][selected_column[cluster_index]],
         max: table_metadata["column-max"][selected_column[cluster_index]],
@@ -495,13 +487,13 @@ export default function initialize_timeseries_model(
       $("#waveform-pane .load-status").css("display", "none");
 
       $("#waveform-pane").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
+        "background-color": slycat_color_maps
+          .get_background(get_state().controls.colormap)
           .toString(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        fill: $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", colormap),
+        fill: slycat_color_maps.get_background(get_state().controls.colormap).toString(),
+        "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
       });
 
       var waveformplot_options = {
@@ -511,6 +503,7 @@ export default function initialize_timeseries_model(
         color_array: color_array,
         highlight: selected_simulations,
         selection: selected_waveform_indexes[parseInt(cluster_index, 10)],
+        get_state: get_state,
       };
 
       $("#waveform-viewer").waveformplot(waveformplot_options);
@@ -534,7 +527,6 @@ export default function initialize_timeseries_model(
       bookmark &&
       cluster_index !== null &&
       selected_simulations !== null &&
-      colormap !== null &&
       colorscale !== null &&
       selected_column !== null &&
       selected_column_type !== null &&
@@ -554,7 +546,6 @@ export default function initialize_timeseries_model(
         aid: "inputs",
         metadata: table_metadata,
         colorscale: colorscale,
-        colormap: colormap,
         "variable-selection": [selected_column[cluster_index]],
         "row-selection": selected_simulations,
         "sort-variable": sort_variable,
@@ -606,7 +597,6 @@ export default function initialize_timeseries_model(
       color_array !== null &&
       colorscale !== null &&
       selected_simulations !== null &&
-      colormap !== null &&
       selected_column_min !== null &&
       selected_column_max !== null &&
       sort_variable !== null
@@ -616,8 +606,8 @@ export default function initialize_timeseries_model(
       $("#dendrogram-pane .load-status").css("display", "none");
 
       $("#dendrogram-sparkline-backdrop").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
+        "background-color": slycat_color_maps
+          .get_background(get_state().controls.colormap)
           .toString(),
       });
 
@@ -628,6 +618,7 @@ export default function initialize_timeseries_model(
       dendrogram_options.cluster_data = s_to_o(clusters_data[cluster_index]);
       dendrogram_options.color_scale = colorscale;
       dendrogram_options.color_array = color_array;
+      dendrogram_options.get_state = get_state;
 
       if (sort_variable != undefined) {
         dendrogram_options.dendrogram_sort_order = false;
@@ -694,27 +685,29 @@ export default function initialize_timeseries_model(
   );
 
   function selected_colormap_changed(newColormap) {
-    colormap = newColormap;
-
     // First we change background colors, gradients, and other things that don't require recalculating the colorscale
     $("#legend-pane").css(
       "background",
-      $("#color-switcher").colorswitcher("get_background", colormap).toString()
+      slycat_color_maps.get_background(get_state().controls.colormap).toString()
     );
     $("#legend").legend("option", {
-      gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+      gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
     });
 
     $("#dendrogram-sparkline-backdrop").css({
-      "background-color": $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+      "background-color": slycat_color_maps
+        .get_background(get_state().controls.colormap)
+        .toString(),
     });
 
     $("#waveform-pane").css({
-      "background-color": $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+      "background-color": slycat_color_maps
+        .get_background(get_state().controls.colormap)
+        .toString(),
     });
     $("#waveform-viewer rect.selectionMask").css({
-      fill: $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-      "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", colormap),
+      fill: slycat_color_maps.get_background(get_state().controls.colormap).toString(),
+      "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
     });
 
     // Now we get the new colorscale and update components
@@ -722,9 +715,9 @@ export default function initialize_timeseries_model(
 
     $.ajax({
       type: "POST",
-      url: api_root + "events/models/" + model._id + "/select/colormap/" + colormap,
+      url: api_root + "events/models/" + model._id + "/select/colormap/" + newColormap,
     });
-    bookmarker.updateState({ colormap: colormap });
+    bookmarker.updateState({ colormap: newColormap });
   }
 
   function selected_cluster_changed(cluster) {
@@ -837,9 +830,8 @@ export default function initialize_timeseries_model(
 
   function update_current_colorscale(callback) {
     if (selected_column_type[cluster_index] != "string") {
-      colorscale = $("#color-switcher").colorswitcher(
-        "get_color_scale",
-        undefined,
+      colorscale = slycat_color_maps.get_color_scale(
+        get_state().controls.colormap,
         selected_column_min[cluster_index],
         selected_column_max[cluster_index]
       );
@@ -856,9 +848,8 @@ export default function initialize_timeseries_model(
           "/...",
         success: function (result) {
           uniqueValues = result.unique[0].values[0];
-          colorscale = $("#color-switcher").colorswitcher(
-            "get_color_scale_ordinal",
-            undefined,
+          colorscale = slycat_color_maps.get_color_scale_ordinal(
+            get_state().controls.colormap,
             uniqueValues
           );
           callback(colorscale);
