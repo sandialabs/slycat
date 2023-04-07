@@ -1,6 +1,6 @@
 Slycat software resource and dependency list
 
-Software dependencies for:  Slycat Release 3.3
+Software dependencies for:  Slycat Release 3.4
 
 -Python-
 # Name                    Version                   Build    Channel
@@ -154,39 +154,14 @@ zstd                      1.4.9                haebb681_0    https://anaconda.or
 NPM https://www.npmjs.com that are included in production Slycat.
 
 2. Directly included in Slycat in slycat/docs/html/_static:
-jquery                               3.5.1   https://jquery.org/
-There are also other libraries in that directory (ex: underscore)
+jquery                    3.5.1   https://jquery.org/
+underscore                1.3.1   https://underscorejs.org/
+sphinx-js doctools        2.8     https://github.com/mozilla/sphinx-js
 
 
 -System Services-
-Apache CouchDB      2.3.1   https://couchdb.apache.org/
-couch-js            1.8.5   http://www.mozilla.org/js/
-couch-js-devel      1.8.5   http://www.mozilla.org/js/
-python-progressbar  2.3     
-python-requests     2.6.0   
-python-urllib3      1.10.2  
-
+Apache CouchDB           3.3.1   https://couchdb.apache.org/
 
 -Operating System & OS Support-
-Red Hat Enterprise Linux  7.9
-hdf5-devel           1.8.12  
-erlang               R16B    
-httpd                2.4.6   
-crypto-utils         2.4.1   
-httpd-manual         2.4.6   
-mod_fcgid            2.3.9   
-mod_ssl              2.4.6   
-httpd-devel          2.4.6   
-lapack-devel         3.4.2   
-openssl-devel        1.0.1e  
-lcms2-devel          2.6     
-tcl-devel            8.5.13  
-tkinter              2.7.5   
-libjpeg-turbo-devel  1.2.90  
-openjpeg-devel       1.5.1   
-libtiff-devel        4.0.3   
-libffi-devel         3.0.13  
-libX11-devel         1.6.3   
-libcurl-devel        7.29.0  
-js-devel             1.8.5   
-libicu-devel         50.1.2  
+Red Hat Enterprise Linux 8.7
+erlang                   22.0.7  snl_epel__EPEL_8_Extra_Packages_for_Enterprise_Linux
