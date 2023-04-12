@@ -11,7 +11,7 @@ so that only an analytical model -- typically orders of magnitude smaller than
 the original data -- is moved across the network to the Slycat™ host.  This
 leads to the following Slycat™ architectural design:
 
-.. image:: remote-computation.*
+.. image:: Sample-Images/design/remote-computation.*
 
 In the above case, large data on an HPC platform is analyzed in-place to
 produce greatly reduced model artifacts that are stored by the Slycat™ web
@@ -25,7 +25,7 @@ provides a remote "agent" process that can access data on an HPC platform,
 packaging and compressing it on-demand for live delivery to interactive
 clients:
 
-.. image:: remote-retrieval.*
+.. image:: Sample-Images/design/remote-retrieval.*
 
 As an example, this mode of interaction is ideal for browsing through output
 image series on a remote server - in addition to delivering individual images,

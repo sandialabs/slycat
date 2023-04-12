@@ -23,3 +23,4 @@ wizard’s popup window.
   NameModel.rst
   LoadData.rst
   ModelParseLog.rst
+  PushScripts.rst
