@@ -23,6 +23,7 @@
   "author": "Alex M. Sielicki <alex@techmilo.com>",
   "license": "MIT",
   "dependencies": {
+    "@asielick/knockout-projections": "^1",
     "@fortawesome/fontawesome-svg-core": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0",
@@ -35,6 +36,7 @@
     "jquery": "^3",
     "jquery-knob": "1.2.11",
     "jquery-ui": "1.13.2",
+    "jquery.scrollintoview": "^1.9.4",
     "knockout": "3.5.1",
     "knockout-mapping": "2.6.0",
     "layout-jquery3": "1.8.5",
@@ -47,6 +49,7 @@
     "redux-logger": "3.0.6",
     "redux-throttle": "0.1.1",
     "redux-thunk": "^2",
+    "redux-watch": "^1.2.0",
     "slickgrid": "^3",
     "stream-browserify": "3.0.0",
     "three": "^0",

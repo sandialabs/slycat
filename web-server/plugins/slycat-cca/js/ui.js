@@ -24,8 +24,6 @@ import "jquery-ui/ui/widgets/draggable";
 import "jquery-ui/ui/widgets/resizable";
 import "layout-jquery3";
 
-import "js/jquery.scrollintoview.min";
-
 // These need to imported after jquery-ui's CSS because they import their own CSS,
 // which needs to override the CSS from jquery-ui.
 import React from "react";

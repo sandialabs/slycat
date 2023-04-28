@@ -347,26 +347,60 @@ def read_metadata_table (metadata, arguments, log):
         
         # check if root properties have same header
         for j in range(len(root_props)):
-            if list(root_props[j].columns) != root_head:
-                raise TDMSUploadError('Found inconsistent root property header in "' + 
-                    metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + '".')
+        
+            root_props_j = list(root_props[j].columns)
+            if root_props_j != root_head:
+                
+                # switch to longer root header
+                if len(root_props_j) > len(root_head):
+                    root_head = root_props_j
+                    
+    # remove shorter root headers?
+    for i in reversed(range(len(metadata))):
+        root_props = metadata[i]["root_properties"]
+
+        # is it a short root header?
+        delete_i = False
+        for j in range(len(root_props)):
+        
+            root_props_j = list(root_props[j].columns)
+            if root_props_j != root_head:
+               
+                # fill in missing columns with NaNs
+                for k in range(len(root_head)):
+                    if root_head[k] not in root_props_j:
+                        root_props[j][root_head[k]] = np.nan
+
+                log ('Found TDMS file with inconsistent root property header: "' +
+                     metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + 
+                    '" -- using NaN values for missing columns.')
+                delete_i = True
+        
+        # delete entry for any short headers
+        # if delete_i:
+        #     metadata.pop(i)
 
     # go through and get constant values
     constants = np.ones(len(root_head))
     for i in range(len(metadata)):
         root_props = metadata[i]["root_properties"]
 
-        # check for constant values
+        # check for constant values/nans
         for k in range(len(root_head)):
-            const_val = root_props[0].iloc[0][root_head[k]]
+        
+            const_val = root_props[0].iloc[0][root_head[k]]     
             for j in range(len(root_props)):
-                if root_props[j].iloc[0][root_head[k]] != const_val:
+            
+                # check for constant value
+                curr_val = root_props[j].iloc[0][root_head[k]]
+                if curr_val != const_val:
                     constants[k] = 0
-
-    # collect constant/variable columns
+                    
+    
+    # collect constant/variable/nan columns
     const_cols = list(np.asarray(root_head)[np.where(constants)[0]])
     var_cols = list(np.asarray(root_head)[np.where(constants==0)[0]])
-
+    
     # exclude "Configuration Data XML" column by default
     if not arguments.include_configuration_XML:
 
@@ -398,7 +432,7 @@ def read_metadata_table (metadata, arguments, log):
         # data from tdms files
         root_props = metadata[row]["root_properties"]
 
-        # constant root properties
+        # constant root properties        
         meta_row = meta_row + list(root_props[0].iloc[0][const_cols].values)
 
         # variable root properties
@@ -472,23 +506,24 @@ def read_timesteps (metadata):
 # construct variable matrices
 def read_variable_matrices (metadata, time_steps, arguments, log):
 
+    
     # put maximum number of time steps
     # in format of run chart data
     max_time_steps = []
     k = 0
     for i in range(len(metadata[0]["tdms_types"])):
         run_chart_max_time_steps = []
-        for j in range(len(metadata[0]["run_charts"])):
+        for j in range(len(metadata[0]["run_chart_headers"][i])):
             run_chart_max_time_steps.append(len(time_steps[k]))
             k = k + 1
         max_time_steps.append(run_chart_max_time_steps)
 
-    # variable matrices are a list of matrices, one for each varible
+    # variable matrices are a list of matrices, one for each variable
     # rows are variable values, columns are time
     var_data = []
     inferred_variables = False
     for tdms_type in range(len(metadata[0]["tdms_types"])):
-        for run_chart in range(len(metadata[0]["run_charts"])):
+        for run_chart in range(len(metadata[0]["run_chart_headers"][tdms_type])):
             variable_i = []
             for row in range(len(metadata)):
                 
@@ -649,7 +684,14 @@ def create_model(arguments, log):
 
     # push model using dac_gen
     if not arguments.do_not_upload:
-        dac_gen.upload_model(dac_gen_args, log)
+        mid = dac_gen.upload_model(dac_gen_args, log)
+
+        # supply the user with a direct link to the new model.
+        host = arguments.host
+        if arguments.port:
+            host = host + ":" + arguments.port
+        log("Your new model is located at %s/models/%s" % (host, mid))
+        log('***** DAC Model Successfully Created *****')
 
     # should we erase the .zip file created
     if arguments.clean_up_output:

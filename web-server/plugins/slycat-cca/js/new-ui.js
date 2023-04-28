@@ -3,7 +3,7 @@
 import server_root from "js/slycat-server-root";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
-import markings from "js/slycat-markings";
+import markings from "js/slycat-selectable-markings";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
@@ -22,6 +22,8 @@ function constructor(params)
   // Alex removing default model name per team meeting discussion
   // component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: markings.preselected()});
   component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
+  console.debug(`CCA: new-ui.js: markings is: %o and markings.preselected() is: ${markings.preselected()} and markings.allowed() is: %o`, markings, markings.allowed());
+  console.debug("CCA: new-ui.js: constructor: component.model: ", component.model);
   component.remote = mapping.fromJS({
     hostname: null, 
     username: null, 

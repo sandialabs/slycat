@@ -611,8 +611,6 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             
             # save distance matrix
             var_dist.append(dist_i)
-            cherrypy.log.error("HELLO PTS")
-            cherrypy.log.error(str(dist_i))
 
         # show which digitizers were parsed
         for i in range(num_vars):

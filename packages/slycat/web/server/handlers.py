@@ -410,9 +410,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 temp_row = []
                 for row in decoded_rows:
                     for i, entry in enumerate(row):
-                        if i == 0:
-                            temp_row.append(str(entry))
-                        elif i == (len(row) - 1):
+                        if i == (len(row) - 1):
                             temp_row.append(str(entry) + '\n')
                         else:
                             temp_row.append(str(entry) + ',')
@@ -528,6 +526,94 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
+# @cherrypy.tools.json_in(on=True)
+# @cherrypy.tools.json_out(on=True)
+def create_project_data_from_pid(pid, file=None, file_name=None):
+    """
+    creates a project level data object from a project id 
+    that can be used to create new
+    models in the current project
+    :param file_name: artifact ID
+    :param file: file attachment
+    :return: not used
+    """
+
+    def isNumeric(some_thing):
+        """
+        Check if input is numeric
+
+        :param some_thing: object
+        :return: boolean
+        """
+        try:
+            x = float(some_thing)
+        except ValueError:
+            return False
+        return True
+
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_writer(project)
+
+    str_data = str(file.file.read(), 'utf-8')
+    rows = [row for row in
+            csv.reader(str_data.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
+                       quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+
+    columns = numpy.array(rows).T
+
+    for i, column in enumerate(columns):
+        for j, entry in enumerate(column):
+            columns[i,j] = entry.encode("utf-8")
+
+    column_names = [name.strip() for name in rows[0]]
+    column_names = ["%eval_id"] + column_names
+    column_types = ["string" for name in column_names]
+
+    column_types[0] = "int64"
+
+    for index in range(1, len(columns)):  # repack data cols as numpy arrays
+        try:
+            if isNumeric(columns[index][0]):
+                columns[index] = numpy.array(columns[index], dtype="float64")
+                column_types[index] = "float64"
+            else:
+                stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
+                columns[index] = numpy.array(columns[index], dtype=stringType)
+                column_types[index] = "string"
+        except:
+            pass
+
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+    unique_name = uuid.uuid4().hex
+    hdf5_name = f"{unique_name}.hdf5"
+    hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
+
+    h5f = h5py.File((hdf5_file_path), "w")
+    h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
+    h5f.close()
+
+    # Make the entry in couch for project data
+    database = slycat.web.server.database.couchdb.connect()
+
+    timestamp = time.time()
+    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    did = uuid.uuid4().hex
+
+    data = {
+        "_id": did,
+        "type": "project_data",
+        "hdf5_name": hdf5_name,
+        "file_name": formatted_timestamp + "_" + str(file_name),
+        "data_table": 'data-table',
+        "project": pid,
+        "mid": [''],
+        "created": datetime.datetime.utcnow().isoformat(),
+        "creator": cherrypy.request.login,
+    }
+
+    database.save(data)
+
 def create_project_data(mid, aid, file):
     """
     creates a project level data object that can be used to create new
@@ -637,7 +723,6 @@ def create_project_data(mid, aid, file):
         model["project_data"].append(did)
         database.save(model)
     database.save(data)
-    database.put_attachment(data, filename="content", content_type=content_type, content=file)
     cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
 
 @cherrypy.tools.json_in(on=True)
@@ -1090,7 +1175,13 @@ def post_upload_finished(uid):
     :return: status of upload
     """
     uploaded = require_integer_array_json_parameter("uploaded")
-    useProjectData = require_boolean_json_parameter("useProjectData")
+
+    # check that useProjectData is present before using
+    # otherwise, default to False
+    useProjectData = False
+    if 'useProjectData' in cherrypy.request.json: 
+        useProjectData = require_boolean_json_parameter("useProjectData")
+
     with slycat.web.server.upload.get_session(uid) as session:
         return session.post_upload_finished(uploaded, useProjectData)
 
@@ -2341,7 +2432,7 @@ def get_bookmark(bid):
 
     # Update last accessed
     bookmark = database.get("bookmark", bid)
-    slycat.web.server.authentication.require_project_writer(project)
+    slycat.web.server.authentication.require_project_reader(project)
     bookmark["last_accessed"] = datetime.datetime.utcnow().isoformat()
     database.save(bookmark)
 
@@ -2949,6 +3040,11 @@ def get_configuration_markings():
             list(slycat.web.server.plugin.manager.markings.items()) if
             key in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]]
 
+@cherrypy.tools.json_out(on=True)
+def get_selectable_configuration_markings():
+    return [dict(list(marking.items()) + [("type", key)]) for key, marking in
+            list(slycat.web.server.plugin.manager.markings.items()) if
+            key in cherrypy.request.app.config["slycat-web-server"]["selectable-markings"]]
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_parsers():

@@ -1,21 +1,34 @@
 <div class="form-group row required">
   <label for="slycat-model-name" class="col-sm-2 col-form-label">Name</label>
   <div class="col-sm-10">
-    <input id="slycat-model-name" class="form-control" type="text" data-bind="value:name" required></input>
-    <div class="invalid-feedback">
-      Please enter a model name.
-    </div>
+    <input
+      id="slycat-model-name"
+      class="form-control"
+      type="text"
+      data-bind="value:name"
+      required
+    />
+    <div class="invalid-feedback">Please enter a model name.</div>
   </div>
 </div>
 <div class="form-group row">
   <label for="slycat-model-description" class="col-sm-2 col-form-label">Description</label>
   <div class="col-sm-10">
-    <textarea id="slycat-model-description" class="form-control" rows="5" data-bind="value:description"></textarea>
+    <textarea
+      id="slycat-model-description"
+      class="form-control"
+      rows="5"
+      data-bind="value:description"
+    ></textarea>
   </div>
 </div>
 <div class="form-group row">
   <label for="slycat-model-marking" class="col-sm-2 col-form-label">Marking</label>
   <div class="col-sm-10">
-    <select id="slycat-model-marking" class="form-control" data-bind="options:markings,optionsValue:'type',optionsText:'label',value:marking,valueAllowUnset:true"></select>
+    <select
+      id="slycat-model-marking"
+      class="form-control"
+      data-bind="options:markings,optionsValue:'type',optionsText:'label',value:marking,valueAllowUnset:true"
+    ></select>
   </div>
 </div>

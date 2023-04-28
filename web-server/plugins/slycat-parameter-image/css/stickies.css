@@ -3,42 +3,42 @@
  * @VERSION 0.0.5
  */
 .ui-sticky-header {
-	height: 16px;
-	left: 0;
-	position: absolute;
-	right: 0;
-	top: 0;
+  height: 16px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .ui-sticky-close-button {
-	cursor: pointer;
-	position: absolute;
-	right: 0;
-	top: 0;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 .ui-sticky-pin {
-	left: 0;
-	position: absolute;
-	top: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
 }
 
 .ui-sticky-text {
-	font-size: 1em;
-	height: 100%;
-	outline: none;
-	padding: 0.25em;
-	resize: none;
-	width: 100%;
+  font-size: 1em;
+  height: 100%;
+  outline: none;
+  padding: 0.25em;
+  resize: none;
+  width: 100%;
 }
 
 .ui-sticky-wrapper {
-	border: 1px solid #555;
-	height: 8em;
-	padding: 1em 0 0;
-	position: absolute;
-	width: 10em;
+  border: 1px solid #555;
+  height: 8em;
+  padding: 1em 0 0;
+  position: absolute;
+  width: 10em;
 }
 
 .ui-sticky-pinned {
-	position: fixed;
+  position: fixed;
 }

@@ -338,7 +338,7 @@ def parser ():
              'e.g. "file name with spaces.tdms".')
 
     # model and project names/descriptions
-    parser.add_argument("--marking", default="ouo3", 
+    parser.add_argument("--marking", default="cui", 
         help="Marking type.  Default: %(default)s")
     parser.add_argument("--model-description", default="", 
         help="New model description.  Default: %(default)s")

@@ -5,7 +5,7 @@
   display: inline-block;
 }
 .font-family-dropdown .btn .caret {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 /* Accordion Styles */
@@ -28,17 +28,14 @@
   margin-right: -1rem;
 }
 .bi-caret-right-fill,
-.bi-caret-down-fill
-{
+.bi-caret-down-fill {
   font-size: 1rem;
 }
 .collapsed .bi-caret-right-fill,
-.bi-caret-down-fill
-{
+.bi-caret-down-fill {
   display: inline-block;
 }
 .collapsed .bi-caret-down-fill,
-.bi-caret-right-fill
-{
+.bi-caret-right-fill {
   display: none;
 }
