@@ -1,4 +1,4 @@
-'use strict';
+
 import server_root from "js/slycat-server-root";
 import * as React from 'react';
 /**
@@ -31,17 +31,30 @@ export interface ProjectState {
 export default class Project extends React.Component<ProjectProps, ProjectState> {
   render() {
     return (
-      <a className="list-group-item list-group-item-action" href={server_root + 'projects/' + this.props.id}>
-        <div className="h6">
-          <span className="badge badge-secondary mr-1">project</span> {this.props.name}
-        </div>
-        <p className="mb-2">{this.props.description}</p>
-        <small>
-          <em>
-          Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
-          </em>
-        </small>
-      </a>
+      <div className='list-group-item list-group-item-action'>
+        <a href={server_root + 'projects/' + this.props.id} style={{ color: 'inherit', textDecoration: 'inherit'}}>
+          <div className='h6'>
+            <span className='badge badge-secondary mr-1'>project</span> {this.props.name}
+          </div>
+          <p className='mb-2'>{this.props.description}</p>
+          <small>
+            <em>
+            Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
+            </em>
+          </small>
+        </a>
+        <span className='float-right'>
+            <button
+                type='button'
+                className='btn btn-sm btn-danger'
+                name={this.props.id}
+                onClick={() => console.log('delete')}
+                title='Delete this template'
+            >
+                <span className='fa fa-trash-o' />
+            </button>
+        </span>
+      </div>
     );
   }
 }
