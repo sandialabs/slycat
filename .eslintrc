@@ -46,7 +46,7 @@
     //
     // The following rules point out areas where you might have made mistakes.
     //
-    "quotemark": [true, "double", "avoid-escape"],
+    "quotemark": ["warn", "double", "avoid-escape"],
     "comma-dangle": 0, // disallow or enforce trailing commas
     "no-cond-assign": 2, // disallow assignment in conditional expressions
     "no-console": ["error", { "allow": ["warn", "error", "log"] }], // disallow use of console (off by default in the node environment)
