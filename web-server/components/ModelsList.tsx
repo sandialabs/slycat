@@ -77,9 +77,9 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
 
     if (models.length > 0) {
       return (
-        <div className="container pt-0">
-          <div className="card">
-            <div className="list-group list-group-flush">{models}</div>
+        <div className='container pt-0'>
+          <div className='card'>
+            <div className='list-group list-group-flush'>{models}</div>
           </div>
         </div>
       );

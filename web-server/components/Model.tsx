@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React from "react";
 import server_root from "./../js/slycat-server-root";
 import model_names from "./../js/slycat-model-names";
@@ -21,12 +22,15 @@ interface ModelProps {
  * @returns JSX model for the model list
  */
 const Model = (props: ModelProps) => {
-    let recognized_marking = props.markings.find((obj) => obj.type == props.marking);const cssClasses = `list-group-item list-group-item-action 
+    let recognized_marking = props.markings.find((obj) => obj.type == props.marking);
+    const cssClasses = `list-group-item list-group-item-action 
+        // eslint-disable-next-line no-undefined
         ${recognized_marking === undefined ? "list-group-item-warning" : ""}`
     return (
+        <div className={cssClasses}>
         <a 
-            className={cssClasses}
             href={server_root + "models/" + props.id}
+            style={{ color: 'inherit', textDecoration: 'inherit'}}
         >
             <div className='h6'>
                 <span className='badge badge-secondary mr-1'>
@@ -48,6 +52,18 @@ const Model = (props: ModelProps) => {
                 </em>
             </small>
         </a>
+        <span className='float-right'>
+                <button
+                    type='button'
+                    className='btn btn-sm btn-danger'
+                    name={props.id}
+                    onClick={() => console.log('delete')}
+                    title='Delete this template'
+                >
+                    <span className='fa fa-trash-o' />
+                </button>
+            </span>
+        </div>
     );
 }
 export default Model;
