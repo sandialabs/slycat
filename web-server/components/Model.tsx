@@ -3,6 +3,8 @@ import React from "react";
 import server_root from "./../js/slycat-server-root";
 import model_names from "./../js/slycat-model-names";
 import MarkingsBadge from "./MarkingsBadge";
+import client from '../js/slycat-web-client';
+import * as dialog from '../js/slycat-dialog';
 
 interface ModelProps {
     markings: any[];
@@ -16,6 +18,24 @@ interface ModelProps {
     created: string;
     creator: string;
 }
+
+/**
+ * Delete a model, with a modal warning, given the name and model ID.
+ */
+const delete_model = (name: string, id: string) => {
+    dialog.dialog({
+        title: 'Delete Model?',
+        message: `The model "${name}" will be deleted immediately and there is no undo.`,
+        buttons: [
+            { className: 'btn-light', label: 'Cancel' },
+            { className: 'btn-danger', label: 'OK' }
+        ],
+        callback(button: any) {
+            if (button.label !== 'OK') {return;}
+            client.delete_model({ mid: id, success: () => location.reload() })
+        }
+    });
+}
 /**
  * Takes a json object of a model and create a model list JSX element from that data and returns it
  * @param props a model json meta data
@@ -24,7 +44,6 @@ interface ModelProps {
 const Model = (props: ModelProps) => {
     let recognized_marking = props.markings.find((obj) => obj.type == props.marking);
     const cssClasses = `list-group-item list-group-item-action 
-        // eslint-disable-next-line no-undefined
         ${recognized_marking === undefined ? "list-group-item-warning" : ""}`
     return (
         <div className={cssClasses}>
@@ -57,7 +76,7 @@ const Model = (props: ModelProps) => {
                     type='button'
                     className='btn btn-sm btn-danger'
                     name={props.id}
-                    onClick={() => console.log('delete')}
+                    onClick={() => delete_model(props.name, props.id)}
                     title='Delete this template'
                 >
                     <span className='fa fa-trash-o' />

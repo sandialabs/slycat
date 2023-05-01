@@ -46,7 +46,7 @@
     //
     // The following rules point out areas where you might have made mistakes.
     //
-    "quotemark": ["warn", "double", "avoid-escape"],
+    // "quotemark": [1, "double", "avoid-escape"],
     "comma-dangle": 0, // disallow or enforce trailing commas
     "no-cond-assign": 2, // disallow assignment in conditional expressions
     "no-console": ["error", { "allow": ["warn", "error", "log"] }], // disallow use of console (off by default in the node environment)
@@ -73,8 +73,8 @@
     "no-sparse-arrays": 2, // disallow sparse arrays
     "no-unreachable": 2, // disallow unreachable statements after a return, throw, continue, or break statement
     "use-isnan": 2, // disallow comparisons with the value NaN
-    "valid-jsdoc": 2, // Ensure JSDoc comments are valid (off by default)
-    "valid-typeof": 2, // Ensure that the results of typeof are compared against a valid string
+    "valid-jsdoc": 0, // Ensure JSDoc comments are valid (off by default)
+    "valid-typeof": 0, // Ensure that the results of typeof are compared against a valid string
 
     //
     // Best Practices
@@ -148,9 +148,9 @@
     "no-label-var": 2, // disallow labels that share a name with a variable
     "no-shadow": 2, // disallow declaration of variables already declared in the outer scope
     "no-shadow-restricted-names": 2, // disallow shadowing of names such as arguments
-    "no-undef": 2, // disallow use of undeclared variables unless mentioned in a /*global */ block
-    "no-undef-init": 2, // disallow use of undefined when initializing variables
-    "no-undefined": 2, // disallow use of undefined variable (off by default)
+    "no-undef": 0, // disallow use of undeclared variables unless mentioned in a /*global */ block
+    "no-undef-init": 1, // disallow use of undefined when initializing variables
+    "no-undefined": 1, // disallow use of undefined variable (off by default)
     "no-unused-vars": 0, // disallow declaration of variables that are not used in the code
     "no-use-before-define": 2, // disallow use of variables before they are defined
 

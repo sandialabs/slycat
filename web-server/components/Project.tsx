@@ -1,26 +1,41 @@
 
 import server_root from "js/slycat-server-root";
 import * as React from 'react';
-/**
- * @member name string name of the project
- * @member id string id of the project
- * @member description string description for the project
- * @member creator string name of the creator
- * @member created string representation of the creation time
- */
-export interface ProjectProps { 
-  name: string
-  id: string
-  description: string
-  creator: string
-  created: string
+import client from '../js/slycat-web-client';
+import * as dialog from '../js/slycat-dialog';
+
+interface ProjectProps { 
+  name: string;
+  id: string;
+  description: string;
+  creator: string;
+  created: string;
 }
 
 /**
  * not used
  */
-export interface ProjectState {
+interface ProjectState {
 }
+
+/**
+ * Delete a model, with a modal warning, given the name and model ID.
+ */
+const delete_project = (name: string, id: string) => {
+  dialog.dialog({
+      title: 'Delete Project?',
+      message: `The Project "${name}" will be deleted immediately and there is no undo.`,
+      buttons: [
+          { className: 'btn-light', label: 'Cancel' },
+          { className: 'btn-danger', label: 'OK' }
+      ],
+      callback(button: any) {
+          if (button.label !== 'OK') {return;}
+          client.delete_project({ pid: id, success: () => location.reload() })
+      }
+  });
+}
+
 /**
  * react component for project info on the project list
  *
@@ -48,7 +63,7 @@ export default class Project extends React.Component<ProjectProps, ProjectState>
                 type='button'
                 className='btn btn-sm btn-danger'
                 name={this.props.id}
-                onClick={() => console.log('delete')}
+                onClick={() => delete_project(this.props.name, this.props.id)}
                 title='Delete this template'
             >
                 <span className='fa fa-trash-o' />
