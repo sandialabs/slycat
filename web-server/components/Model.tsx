@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import React from "react";
 import server_root from "./../js/slycat-server-root";
 import model_names from "./../js/slycat-model-names";
@@ -47,40 +46,40 @@ const Model = (props: ModelProps) => {
         ${recognized_marking === undefined ? "list-group-item-warning" : ""}`
     return (
         <div className={cssClasses}>
-        <a 
-            href={server_root + "models/" + props.id}
-            style={{ color: 'inherit', textDecoration: 'inherit'}}
-        >
-            <div className='h6'>
-                <span className='badge badge-secondary mr-1'>
-                {model_names.translate_model_type(props.model_type) + " model"}
-                </span>
-                &nbsp;
-                <strong>{props.name}</strong>
-            </div>
-            <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
-            {props.result == "failed" && (
-                <span className='badge badge-danger' title={props.message}>
-                Failed
-                </span>
-            )}
-            <p className='mb-2'>{props.description}</p>
-            <small>
-                <em>
-                Created <span>{props.created}</span> by <span>{props.creator}</span>
-                </em>
-            </small>
-        </a>
-        <span className='float-right'>
-                <button
-                    type='button'
-                    className='btn btn-sm btn-danger'
-                    name={props.id}
-                    onClick={() => delete_model(props.name, props.id)}
-                    title='Delete this template'
-                >
-                    <span className='fa fa-trash-o' />
-                </button>
+            <a 
+                href={server_root + "models/" + props.id}
+                style={{ color: 'inherit', textDecoration: 'inherit'}}
+            >
+                <div className='h6'>
+                    <span className='badge badge-secondary mr-1'>
+                        {model_names.translate_model_type(props.model_type) + " model"}
+                    </span>
+                    &nbsp;
+                    <strong>{props.name}</strong>
+                </div>
+                <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
+                {props.result == "failed" && (
+                    <span className='badge badge-danger' title={props.message}>
+                        Failed
+                    </span>
+                )}
+                <p className='mb-2'>{props.description}</p>
+                <small>
+                    <em>
+                        Created <span>{props.created}</span> by <span>{props.creator}</span>
+                    </em>
+                </small>
+            </a>
+            <span className='float-right'>
+                    <button
+                        type='button'
+                        className='btn btn-sm btn-danger'
+                        name={props.id}
+                        onClick={() => delete_model(props.name, props.id)}
+                        title='Delete this template'
+                    >
+                        <span className='fa fa-trash-o' />
+                    </button>
             </span>
         </div>
     );
