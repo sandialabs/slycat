@@ -24,7 +24,6 @@ $.widget("timeseries.table",
     "variable-selection": [],
     "sort-variable" : null,
     "sort-order" : null,
-    colormap : null,
     colorscale : null,
     table_filter : [],
     waveform_indexes : [],
@@ -403,28 +402,6 @@ $.widget("timeseries.table",
         column.colorscale = null;
         column.cssClass = column.cssClass.split(" ")[0];
       }
-      // if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
-      // {
-      //   // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
-      //   column.colormap = self.options.colormap.copy();
-
-      //   var new_domain = []
-      //   var domain_scale = d3.scale.linear()
-      //     .domain([0, column.colormap.range().length - 1])
-      //     .range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
-      //   for(var i in column.colormap.range())
-      //     new_domain.push(domain_scale(i));
-      //   column.colormap.domain(new_domain);
-
-      //   column.cssClass = column.cssClass.split(" ")[0] + " highlight";
-      //   column.highlighted = true;
-      // }
-      // else
-      // {
-      //   column.colormap = null;
-      //   column.cssClass = column.cssClass.split(" ")[0];
-      //   column.highlighted = false;
-      // }
     }
 
     self.grid.invalidate();

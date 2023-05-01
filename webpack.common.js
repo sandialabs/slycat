@@ -19,6 +19,11 @@ const branch = execSync('git rev-parse --abbrev-ref HEAD')
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
 
 module.exports = {
+  experiments: {
+    // Support the Top Level Await Stage 3 proposal, it makes the module an async module when await is used on the top-level.
+    // This is used by Redux store store.ts to load the initial state from the server before the store is created.
+    topLevelAwait: true
+  },
   // mode is now specified in webpack.dev.js and webpack.prod.js
   // mode: 'production',
   // mode: 'development',

@@ -1,6 +1,8 @@
 import React from "react";
+// @ts-ignore
 import ControlsDropdown from "components/ControlsDropdown";
 import ColorMaps from "js/slycat-color-maps";
+import d3 from "d3";
 
 interface ControlsDropdownColorProps {
   colormaps: typeof ColorMaps;
@@ -14,7 +16,7 @@ interface ControlsDropdownColorProps {
   single: boolean;
   button_style: string;
   setColormap(colormap: string): void;
-  background: d3.RGBColor;
+  background?: d3.RGBColor;
 }
 
 /**
@@ -43,7 +45,7 @@ export default class ControlsDropdownColor extends React.Component<ControlsDropd
       }
       let background_color = colormap.background;
       if (background_color === undefined) {
-        background_color = this.props.background;
+        background_color = this.props.background ? this.props.background : d3.rgb(255, 255, 255);
       }
       const width = 250;
       const right_margin = 5;
