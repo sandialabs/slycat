@@ -24,13 +24,13 @@ interface ModelProps {
 const delete_model = (name: string, id: string) => {
     dialog.dialog({
         title: 'Delete Model?',
-        message: `The model "${name}" will be deleted immediately and there is no undo.`,
+        message: `The model "${name}" will be deleted immediately. This action cannot be undone.`,
         buttons: [
             { className: 'btn-light', label: 'Cancel' },
-            { className: 'btn-danger', label: 'OK' }
+            { className: 'btn-danger', label: 'Delete' }
         ],
         callback(button: any) {
-            if (button.label !== 'OK') {return;}
+            if (button.label !== 'Delete') {return;}
             client.delete_model({ mid: id, success: () => location.reload() })
         }
     });
@@ -73,10 +73,10 @@ const Model = (props: ModelProps) => {
             <span className='float-right'>
                     <button
                         type='button'
-                        className='btn btn-sm btn-danger'
+                        className='btn btn-sm btn-outline-danger'
                         name={props.id}
                         onClick={() => delete_model(props.name, props.id)}
-                        title='Delete this template'
+                        title='Delete this model'
                     >
                         <span className='fa fa-trash-o' />
                     </button>

@@ -24,13 +24,13 @@ interface ProjectState {
 const delete_project = (name: string, id: string) => {
   dialog.dialog({
       title: 'Delete Project?',
-      message: `The Project "${name}" will be deleted immediately and there is no undo.`,
+      message: `The Project "${name}" will be deleted immediately. This action cannot be undone.`,
       buttons: [
           { className: 'btn-light', label: 'Cancel' },
-          { className: 'btn-danger', label: 'OK' }
+          { className: 'btn-danger', label: 'Delete' }
       ],
       callback(button: any) {
-          if (button.label !== 'OK') {return;}
+          if (button.label !== 'Delete') {return;}
           client.delete_project({ pid: id, success: () => location.reload() })
       }
   });
@@ -61,10 +61,10 @@ export default class Project extends React.Component<ProjectProps, ProjectState>
         <span className='float-right'>
             <button
                 type='button'
-                className='btn btn-sm btn-danger'
+                className='btn btn-sm btn-outline-danger'
                 name={this.props.id}
                 onClick={() => delete_project(this.props.name, this.props.id)}
-                title='Delete this template'
+                title='Delete this project'
             >
                 <span className='fa fa-trash-o' />
             </button>
