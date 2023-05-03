@@ -5,26 +5,24 @@ export default class MarkingsBadge extends React.Component<any,any> {
   
       if (this.props.recognized_marking === undefined) {
         return (
-          <div className="float-right marking-badge" style={{ display: "inline-block" }}>
-            <span className="badge badge-danger">
+          <div className='float-right marking-badge' style={{ display: "inline-block" }}>
+            <span className='badge badge-danger'>
               Unrecognized Marking
               {this.props.marking && <span>: </span>}
               {this.props.marking}
             </span>
           </div>
         );
-      } else {
-        {
-          /* badge() function returns HTML, which React escapes, so we need to use
-            dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml */
-        }
+      } 
+        // badge() function returns HTML, which React escapes, so we need to use
+        // dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml
         return (
           <div
-            className="float-right marking-badge"
+            className='float-right marking-badge'
             style={{ display: "inline-block" }}
             dangerouslySetInnerHTML={{ __html: this.props.recognized_marking.badge }}
-          ></div>
+           />
         );
-      }
+      
     }
   }

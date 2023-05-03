@@ -57,7 +57,6 @@ const Model = (props: ModelProps) => {
                     &nbsp;
                     <strong>{props.name}</strong>
                 </div>
-                <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
                 {props.result == "failed" && (
                     <span className='badge badge-danger' title={props.message}>
                         Failed
@@ -81,6 +80,7 @@ const Model = (props: ModelProps) => {
                         <span className='fa fa-trash-o' />
                     </button>
             </span>
+            <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
         </div>
     );
 }

@@ -63,7 +63,7 @@ class Template extends React.Component<TemplateProps> {
           {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
           <button
             type="button"
-            className="btn btn-sm btn-danger"
+            className="btn btn-sm btn-outline-danger"
             name={this.props.id}
             onClick={() => this.delete_template()}
             title="Delete this template"

@@ -24,7 +24,7 @@ interface ProjectState {
 const delete_project = (name: string, id: string) => {
   dialog.dialog({
       title: 'Delete Project?',
-      message: `The Project "${name}" will be deleted immediately. This action cannot be undone.`,
+      message: `The Project "${name}" and every model in the project will be deleted immediately. This action cannot be undone.`,
       buttons: [
           { className: 'btn-light', label: 'Cancel' },
           { className: 'btn-danger', label: 'Delete' }
