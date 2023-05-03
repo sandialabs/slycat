@@ -70,11 +70,19 @@
 			this.uiStickyCloseButton = $('<i title="Close">')
 				.addClass("fa fa-close float-right")
 				.appendTo(this.uiStickyHeader);
-			// End Slycat changing format of Close button
+			// End Slycat modification
 			
 			this._on( this.uiStickyCloseButton, {
-				"click": function() {
-					this._destroy();
+				"click": function(e) {
+					// Slycat disabling _destroy custom, widget-specific, cleanup because this is
+					// causing a "maximum call stack size exceeded" error. Instead, we are calling
+					// this.uiSticky.remove() here and then calling this.destroy() to remove the
+					// widget functionality completely.
+
+					// this._destroy();
+					this.uiSticky.remove();
+					this.destroy();
+					// End Slycat modification
 				}
 			});
 		},
@@ -122,9 +130,13 @@
 			}
 
 		},
-		_destroy: function() {
-			this.uiSticky.remove();
-		}
+		// Slycat disabling _destroy custom, widget-specific, cleanup because this is 
+		// causing a "maximum call stack size exceeded" error. Instead, we are calling
+		// this.uiSticky.remove() in the _createCloseButton function.
+		// _destroy: function() {
+			// this.uiSticky.remove();
+		// }
+		// End Slycat modification
 	});
 
 }));
