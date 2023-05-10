@@ -21,20 +21,12 @@ import { get_variable_label } from "./ui";
 import $ from "jquery";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Provider, connect } from "react-redux";
+import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
-
-var nodrag = d3.behavior.drag();
-
-// Commenting this out Nov 20 1017 because I have no idea what it does and I rewrote much of the dragging code. If still no problems after a few months, just delete it.
-nodrag.on("dragstart", function () {
-  // console.log("nodrag.on('dragstart'...");
-  // d3.event.sourceEvent.stopPropagation();
-});
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -662,7 +654,6 @@ $.widget("parameter_image.scatterplot", {
         })
       );
     });
-
   },
 
   update_axes_ranges: function () {
