@@ -30,6 +30,7 @@ export default class ScatterplotGrid extends React.PureComponent {
   render() {
     return (
       // Create a g element that will contain the scatterplot grid
+      // Need to fix z-order issues
       <g id="grid_container" />
     );
   }
