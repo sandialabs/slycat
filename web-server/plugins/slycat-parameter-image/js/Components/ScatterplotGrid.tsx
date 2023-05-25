@@ -13,9 +13,8 @@ type ScatterplotGridProps = {
 };
 
 export default class ScatterplotGrid extends React.PureComponent<ScatterplotGridProps> {
-
-  componentDidMount = () => {
-    console.debug("ScatterplotGrid.componentDidMount()");
+  private updateGrid = () => {
+    console.debug("ScatterplotGrid.updateGrid()");
     const xScale = d3
       .scaleLinear()
       .range(this.props.x_scale_range)
@@ -31,6 +30,16 @@ export default class ScatterplotGrid extends React.PureComponent<ScatterplotGrid
       .xTicks(this.props.x_ticks)
       .yTicks(this.props.y_ticks);
     d3.select("#grid").call(gridline);
+  };
+
+  componentDidMount = () => {
+    console.debug("ScatterplotGrid.componentDidMount()");
+    this.updateGrid();
+  };
+
+  componentDidUpdate = () => {
+    console.debug("ScatterplotGrid.componentDidUpdate()");
+    this.updateGrid();
   };
 
   render() {
