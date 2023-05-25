@@ -1,9 +1,8 @@
 export const x_scale_range = (
   margin_left: number,
   margin_right: number,
-  width: number,
-  xoffset: number
-): number[] => [0 + margin_left, width - margin_right - xoffset];
+  width: number
+): number[] => [0 + margin_left, width - margin_right];
 
 export const y_scale_range = (
   margin_top: number,
@@ -14,9 +13,8 @@ export const y_scale_range = (
 export const x_range_canvas = (
   margin_left: number,
   margin_right: number,
-  width: number,
-  xoffset: number
-): number[] => [0, width - margin_left - margin_right - xoffset];
+  width: number
+): number[] => [0, width - margin_left - margin_right];
 
 export const y_range_canvas = (
   margin_top: number,

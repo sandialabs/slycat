@@ -184,19 +184,15 @@ $.widget("parameter_image.scatterplot", {
   _create: function () {
     var self = this;
 
-    // How much to shorten the x dimension of the scatterplot?
-    self.xoffset = 0;
     self.x_scale_range = helpers.x_scale_range(
       self.options.margin_left,
       self.options.margin_right,
-      self.options.width,
-      self.xoffset
+      self.options.width
     );
     self.x_range_canvas = helpers.x_range_canvas(
       self.options.margin_left,
       self.options.margin_right,
-      self.options.width,
-      self.xoffset
+      self.options.width
     );
     self.y_scale_range = helpers.y_scale_range(
       self.options.margin_top,
@@ -1128,8 +1124,7 @@ $.widget("parameter_image.scatterplot", {
           "width",
           total_width -
             self.options.margin_left -
-            self.options.margin_right -
-            self.xoffset +
+            self.options.margin_right +
             self.options.canvas_square_size
         )
         .attr(
@@ -1155,8 +1150,7 @@ $.widget("parameter_image.scatterplot", {
           "width",
           total_width -
             self.options.margin_left -
-            self.options.margin_right -
-            self.xoffset +
+            self.options.margin_right +
             self.options.canvas_selected_square_size
         )
         .attr(
@@ -1185,8 +1179,7 @@ $.widget("parameter_image.scatterplot", {
           "width",
           total_width -
             self.options.margin_left -
-            self.options.margin_right -
-            self.xoffset +
+            self.options.margin_right +
             self.options.canvas_square_size
         );
       d3.select(self.canvas_selected)
@@ -1197,8 +1190,7 @@ $.widget("parameter_image.scatterplot", {
           "width",
           total_width -
             self.options.margin_left -
-            self.options.margin_right -
-            self.xoffset +
+            self.options.margin_right +
             self.options.canvas_selected_square_size
         );
     }
@@ -1242,14 +1234,12 @@ $.widget("parameter_image.scatterplot", {
       self.x_scale_range = helpers.x_scale_range(
         self.options.margin_left,
         self.options.margin_right,
-        self.options.width,
-        self.xoffset
+        self.options.width
       );
       self.x_range_canvas = helpers.x_range_canvas(
         self.options.margin_left,
         self.options.margin_right,
-        self.options.width,
-        self.xoffset
+        self.options.width
       );
 
       self.set_custom_axes_ranges();
@@ -1369,7 +1359,7 @@ $.widget("parameter_image.scatterplot", {
       let x_axis_width = width - self.options.margin_left - self.options.margin_right;
       // let x_remaining_width = self.svg.attr("width") - x_axis_width;
       // let x = x_remaining_width / 2 + x_axis_width + 40;
-      let x = self.options.margin_left + x_axis_width - self.xoffset + 40;
+      let x = self.options.margin_left + x_axis_width + 40;
       console.debug(`self.updates.update_x_label`);
 
       self.x_axis_layer.selectAll(".label").remove();
