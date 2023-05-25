@@ -3,10 +3,16 @@ import * as d3 from "d3v7";
 import * as fc from "d3fc";
 import _ from "lodash";
 
-export default class ScatterplotGrid extends React.PureComponent {
-  constructor(props) {
-    super(props);
-  }
+type ScatterplotGridProps = {
+  x_scale_range: [number, number];
+  y_scale_range: [number, number];
+  x_values: number[];
+  y_values: number[];
+  x_ticks: number;
+  y_ticks: number;
+};
+
+export default class ScatterplotGrid extends React.PureComponent<ScatterplotGridProps> {
 
   componentDidMount = () => {
     console.debug("ScatterplotGrid.componentDidMount()");
@@ -24,14 +30,13 @@ export default class ScatterplotGrid extends React.PureComponent {
       .yScale(yScale)
       .xTicks(this.props.x_ticks)
       .yTicks(this.props.y_ticks);
-    d3.select("#grid_container").call(gridline);
+    d3.select("#grid").call(gridline);
   };
 
   render() {
     return (
       // Create a g element that will contain the scatterplot grid
-      // Need to fix z-order issues
-      <g id="grid_container" />
+      <g id="grid" />
     );
   }
 }

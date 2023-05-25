@@ -5,6 +5,7 @@
 
 import api_root from "js/slycat-api-root";
 import d3 from "d3";
+import * as d3v7 from "d3v7";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
@@ -23,10 +24,12 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
+import ScatterplotGrid from "./Components/ScatterplotGrid";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
+import * as helpers from "./parameter-image-scatterplot-helpers";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -181,6 +184,31 @@ $.widget("parameter_image.scatterplot", {
   _create: function () {
     var self = this;
 
+    // How much to shorten the x dimension of the scatterplot?
+    self.xoffset = 0;
+    self.x_scale_range = helpers.x_scale_range(
+      self.options.margin_left,
+      self.options.margin_right,
+      self.options.width,
+      self.xoffset
+    );
+    self.x_range_canvas = helpers.x_range_canvas(
+      self.options.margin_left,
+      self.options.margin_right,
+      self.options.width,
+      self.xoffset
+    );
+    self.y_scale_range = helpers.y_scale_range(
+      self.options.margin_top,
+      self.options.margin_bottom,
+      self.options.height
+    );
+    self.y_range_canvas = helpers.y_range_canvas(
+      self.options.margin_top,
+      self.options.margin_bottom,
+      self.options.height
+    );
+
     if (self.options["auto-scale"]) {
       self.options.filtered_x = self._filterValues(self.options.x);
       self.options.filtered_y = self._filterValues(self.options.y);
@@ -226,14 +254,21 @@ $.widget("parameter_image.scatterplot", {
       event.preventDefault();
     });
 
+    self.svg_grid = d3
+      .select(self.element.get(0))
+      .append("svg")
+      .style({
+        opacity: ".99",
+      })
+      .attr("id", "scatterplot-grid-svg");
     self.svg = d3
       .select(self.element.get(0))
       .append("svg")
       .style({
         opacity: ".99",
-        // "position": "absolute", // Setting position to absolute also brings the svg element in front of .media-layer but keeps .image-frames on top of everything
       })
       .attr("class", "scatterplot-svg");
+
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
@@ -628,6 +663,20 @@ $.widget("parameter_image.scatterplot", {
     threeD_legends_root.render(
       <Provider store={window.store}>
         <MediaLegends />
+      </Provider>
+    );
+
+    const grid_root = createRoot(document.getElementById("scatterplot-grid-svg"));
+    grid_root.render(
+      <Provider store={window.store}>
+        <ScatterplotGrid
+          x_scale_range={self.x_scale_range}
+          y_scale_range={self.y_scale_range}
+          x_ticks={self.x_range_canvas[1] / 85}
+          y_ticks={self.y_range_canvas[0] / 50}
+          x_values={self.options.scale_x}
+          y_values={self.options.scale_y}
+        />
       </Provider>
     );
 
@@ -1063,8 +1112,6 @@ $.widget("parameter_image.scatterplot", {
     // console.log("parameter_image.scatterplot._update()", self.updates);
     self.update_timer = null;
 
-    // How much to shorten the x dimension of the scatterplot?
-    var xoffset = 0;
     var legend_width = 150;
 
     if (self.updates.update_datum_width_height) {
@@ -1082,7 +1129,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right -
-            xoffset +
+            self.xoffset +
             self.options.canvas_square_size
         )
         .attr(
@@ -1109,7 +1156,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right -
-            xoffset +
+            self.xoffset +
             self.options.canvas_selected_square_size
         )
         .attr(
@@ -1139,7 +1186,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right -
-            xoffset +
+            self.xoffset +
             self.options.canvas_square_size
         );
       d3.select(self.canvas_selected)
@@ -1151,7 +1198,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right -
-            xoffset +
+            self.xoffset +
             self.options.canvas_selected_square_size
         );
     }
@@ -1191,26 +1238,25 @@ $.widget("parameter_image.scatterplot", {
 
     if (self.updates.update_x) {
       // console.debug(`updates.update_x`);
-      // Width of entire pane
-      const total_width = self.options.width;
-      // Height of entire pane
-      const total_height = self.options.height;
 
-      const x_scale_range = [
-        0 + self.options.margin_left,
-        total_width - self.options.margin_right - xoffset,
-      ];
-      // console.debug(`updates.update_x range is %o`, range);
-      const range_canvas = [
-        0,
-        total_width - self.options.margin_left - self.options.margin_right - xoffset,
-      ];
+      self.x_scale_range = helpers.x_scale_range(
+        self.options.margin_left,
+        self.options.margin_right,
+        self.options.width,
+        self.xoffset
+      );
+      self.x_range_canvas = helpers.x_range_canvas(
+        self.options.margin_left,
+        self.options.margin_right,
+        self.options.width,
+        self.xoffset
+      );
 
       self.set_custom_axes_ranges();
       self.x_scale = self._createScale(
         self.options.x_string,
         self.options.scale_x,
-        x_scale_range,
+        self.x_scale_range,
         false,
         self.options.x_axis_type,
         "x"
@@ -1218,22 +1264,22 @@ $.widget("parameter_image.scatterplot", {
       self.x_scale_canvas = self._createScale(
         self.options.x_string,
         self.options.scale_x,
-        range_canvas,
+        self.x_range_canvas,
         false,
         self.options.x_axis_type,
         "x"
       );
 
-      self.x_axis_offset = total_height - self.options.margin_bottom - 40;
+      self.x_axis_offset = self.options.height - self.options.margin_bottom - 40;
       self.x_axis = d3.svg
         .axis()
         .scale(self.x_scale)
         .orient("bottom")
         // Set number of ticks based on width of axis.
-        .ticks(range_canvas[1] / 85);
+        .ticks(self.x_range_canvas[1] / 85);
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded.
-      // .tickValues( self.x_scale.ticks( range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
+      // .tickValues( self.x_scale.ticks( self.x_range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
       // .tickSize(15)
       self.x_axis_layer
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
@@ -1254,22 +1300,24 @@ $.widget("parameter_image.scatterplot", {
     }
 
     if (self.updates.update_y) {
-      const total_height = self.options.height;
-      const y_scale_range = [
-        total_height - self.options.margin_bottom - 40,
-        0 + self.options.margin_top,
-      ];
-      const range_canvas = [
-        total_height - self.options.margin_top - self.options.margin_bottom - 40,
-        0,
-      ];
       self.y_axis_offset = 0 + self.options.margin_left;
+
+      self.y_scale_range = helpers.y_scale_range(
+        self.options.margin_top,
+        self.options.margin_bottom,
+        self.options.height
+      );
+      self.y_range_canvas = helpers.y_range_canvas(
+        self.options.margin_top,
+        self.options.margin_bottom,
+        self.options.height
+      );
 
       self.set_custom_axes_ranges();
       self.y_scale = self._createScale(
         self.options.y_string,
         self.options.scale_y,
-        y_scale_range,
+        self.y_scale_range,
         false,
         self.options.y_axis_type,
         "y"
@@ -1277,7 +1325,7 @@ $.widget("parameter_image.scatterplot", {
       self.y_scale_canvas = self._createScale(
         self.options.y_string,
         self.options.scale_y,
-        range_canvas,
+        self.y_range_canvas,
         false,
         self.options.y_axis_type,
         "y"
@@ -1288,7 +1336,7 @@ $.widget("parameter_image.scatterplot", {
         .scale(self.y_scale)
         .orient("left")
         // Set number of ticks based on height of axis.
-        .ticks(range_canvas[0] / 50);
+        .ticks(self.y_range_canvas[0] / 50);
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded and just create duplicate ticks.
       // Explored this again in December 2022 trying to address an issue where log scale
@@ -1296,7 +1344,7 @@ $.widget("parameter_image.scatterplot", {
       // an order of magnitude. For larger ranges, the default d3 behaviors seems to work well.
       // Even tried using D3 version 7, but bahavior was the same.
       // So keeping this disable for now.
-      // .tickValues( self.y_scale.ticks( range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
+      // .tickValues( self.y_scale.ticks( self.y_range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
 
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
@@ -1321,7 +1369,7 @@ $.widget("parameter_image.scatterplot", {
       let x_axis_width = width - self.options.margin_left - self.options.margin_right;
       // let x_remaining_width = self.svg.attr("width") - x_axis_width;
       // let x = x_remaining_width / 2 + x_axis_width + 40;
-      let x = self.options.margin_left + x_axis_width - xoffset + 40;
+      let x = self.options.margin_left + x_axis_width - self.xoffset + 40;
       console.debug(`self.updates.update_x_label`);
 
       self.x_axis_layer.selectAll(".label").remove();

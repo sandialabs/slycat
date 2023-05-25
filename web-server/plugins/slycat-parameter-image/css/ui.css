@@ -988,3 +988,17 @@ button#controls-button-var-options {
   font-size: var(--custom-font-size, 15px);
   font-family: var(--custom-font-family, Arial);
 }
+
+/* Scatterplot Grid */
+#scatterplot-grid-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Sends the grid behind everything else. Canvas points are -1, so this moves the grid behind them. */
+  z-index: -2;
+}
+#scatterplot-grid-svg #grid line {
+  stroke: #666666;
+}
