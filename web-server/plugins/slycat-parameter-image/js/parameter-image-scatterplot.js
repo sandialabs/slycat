@@ -28,7 +28,7 @@ import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
-import * as helpers from "./parameter-image-scatterplot-helpers";
+import * as selectors from "./selectors";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -183,10 +183,10 @@ $.widget("parameter_image.scatterplot", {
   _create: function () {
     var self = this;
 
-    self.x_scale_range = helpers.selectXScaleRange(window.store.getState());
-    self.x_range_canvas = helpers.selectXRangeCanvas(window.store.getState());
-    self.y_scale_range = helpers.selectYScaleRange(window.store.getState());
-    self.y_range_canvas = helpers.selectYRangeCanvas(window.store.getState());
+    self.x_scale_range = selectors.selectXScaleRange(window.store.getState());
+    self.x_range_canvas = selectors.selectXRangeCanvas(window.store.getState());
+    self.y_scale_range = selectors.selectYScaleRange(window.store.getState());
+    self.y_range_canvas = selectors.selectYRangeCanvas(window.store.getState());
 
     if (self.options["auto-scale"]) {
       self.options.filtered_x = self._filterValues(self.options.x);
@@ -1207,8 +1207,8 @@ $.widget("parameter_image.scatterplot", {
     if (self.updates.update_x) {
       // console.debug(`updates.update_x`);
 
-      self.x_scale_range = helpers.selectXScaleRange(window.store.getState());
-      self.x_range_canvas = helpers.selectXRangeCanvas(window.store.getState());
+      self.x_scale_range = selectors.selectXScaleRange(window.store.getState());
+      self.x_range_canvas = selectors.selectXRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
       self.x_scale = self._createScale(
@@ -1260,8 +1260,8 @@ $.widget("parameter_image.scatterplot", {
     if (self.updates.update_y) {
       self.y_axis_offset = 0 + self.options.margin_left;
 
-      self.y_scale_range = helpers.selectYScaleRange(window.store.getState());
-      self.y_range_canvas = helpers.selectYRangeCanvas(window.store.getState());
+      self.y_scale_range = selectors.selectYScaleRange(window.store.getState());
+      self.y_range_canvas = selectors.selectYRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
       self.y_scale = self._createScale(

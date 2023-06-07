@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import * as d3 from "d3v7";
 import * as fc from "d3fc";
 import _ from "lodash";
-import * as helpers from "../parameter-image-scatterplot-helpers";
+import * as selectors from "../selectors";
 
 type ScatterplotGridProps = {};
 
@@ -11,13 +11,13 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
   const gridRef = useRef<SVGGElement>(null);
 
   // Select values from the state with `useSelector`
-  const x_scale_range = useSelector(helpers.selectXScaleRange);
-  const y_scale_range = useSelector(helpers.selectYScaleRange);
-  const x_values = useSelector(helpers.selectXValues);
-  const y_values = useSelector(helpers.selectYValues);
-  const x_range_canvas = useSelector(helpers.selectXRangeCanvas);
-  const y_range_canvas = useSelector(helpers.selectYRangeCanvas);
-  
+  const x_scale_range = useSelector(selectors.selectXScaleRange);
+  const y_scale_range = useSelector(selectors.selectYScaleRange);
+  const x_values = useSelector(selectors.selectXValues);
+  const y_values = useSelector(selectors.selectYValues);
+  const x_range_canvas = useSelector(selectors.selectXRangeCanvas);
+  const y_range_canvas = useSelector(selectors.selectYRangeCanvas);
+
   const x_ticks = x_range_canvas[1] / 85;
   const y_ticks = y_range_canvas[0] / 50;
 
