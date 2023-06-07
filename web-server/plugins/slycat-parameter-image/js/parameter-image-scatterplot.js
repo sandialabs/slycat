@@ -1320,7 +1320,7 @@ $.widget("parameter_image.scatterplot", {
       // let x_remaining_width = self.svg.attr("width") - x_axis_width;
       // let x = x_remaining_width / 2 + x_axis_width + 40;
       let x = self.options.margin_left + x_axis_width + 40;
-      console.debug(`self.updates.update_x_label`);
+      // console.debug(`self.updates.update_x_label`);
 
       self.x_axis_layer.selectAll(".label").remove();
       self.x_axis_layer

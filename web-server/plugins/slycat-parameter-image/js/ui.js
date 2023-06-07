@@ -271,7 +271,7 @@ $(document).ready(function () {
           if (project_data["artifact:variable_aliases"]) {
             variable_aliases = project_data["artifact:variable_aliases"];
           }
-          console.log("Set aliases from project_data");
+          // console.log("Set aliases from project_data");
           resolve();
         })
         .catch(() => {
@@ -354,7 +354,7 @@ $(document).ready(function () {
             };
             metadata_loaded();
           });
-          console.debug(`about to call resolve`);
+          // console.debug(`about to call resolve`);
           resolve();
         },
         error: artifact_missing,
