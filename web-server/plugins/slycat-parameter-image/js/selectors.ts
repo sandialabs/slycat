@@ -56,3 +56,5 @@ export const selectYRangeCanvas = createSelector(
     0,
   ]
 );
+
+export const selectColormap = (state) => state.colormap;

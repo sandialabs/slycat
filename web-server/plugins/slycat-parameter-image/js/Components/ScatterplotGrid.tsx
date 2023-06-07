@@ -4,6 +4,7 @@ import * as d3 from "d3v7";
 import * as fc from "d3fc";
 import _ from "lodash";
 import * as selectors from "../selectors";
+import slycat_color_maps from "js/slycat-color-maps";
 
 type ScatterplotGridProps = {};
 
@@ -17,9 +18,11 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
   const y_values = useSelector(selectors.selectYValues);
   const x_range_canvas = useSelector(selectors.selectXRangeCanvas);
   const y_range_canvas = useSelector(selectors.selectYRangeCanvas);
+  const colormap = useSelector(selectors.selectColormap);
 
   const x_ticks = x_range_canvas[1] / 85;
   const y_ticks = y_range_canvas[0] / 50;
+  const scatterplot_grid_color = slycat_color_maps.get_scatterplot_grid_color();
 
   useEffect(() => {
     console.debug("ScatterplotGrid.componentDidMount() updateGrid()");
@@ -40,7 +43,9 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
       .xScale(xScale)
       .yScale(yScale)
       .xTicks(x_ticks)
-      .yTicks(y_ticks);
+      .yTicks(y_ticks)
+      .xDecorate((sel) => sel.style("stroke", scatterplot_grid_color))
+      .yDecorate((sel) => sel.style("stroke", scatterplot_grid_color));
     d3.select(gridRef.current).call(gridline);
   };
 

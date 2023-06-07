@@ -999,6 +999,3 @@ button#controls-button-var-options {
   /* Sends the grid behind everything else. Canvas points are -1, so this moves the grid behind them. */
   z-index: -2;
 }
-#scatterplot-grid-svg #grid line {
-  stroke: #666666;
-}
