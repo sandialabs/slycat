@@ -13,7 +13,6 @@ import ui_css from "../css/ui.css";
 import api_root from "js/slycat-api-root";
 import _ from "lodash";
 import ko from "knockout";
-import mapping from "knockout-mapping";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
@@ -37,11 +36,10 @@ import "layout-jquery3";
 import "js/slycat-range-slider";
 import "./category-select";
 
-import { createStore, applyMiddleware } from "redux";
-import thunkMiddleware from "redux-thunk";
-import { createLogger } from "redux-logger";
 import throttle from "redux-throttle";
 import ps_reducer from "./reducers";
+import ui_reducer from "./uiSlice";
+import { setScatterplotPaneWidth, setScatterplotPaneHeight } from "./uiSlice";
 import {
   setXValues,
   setYValues,
@@ -79,7 +77,9 @@ import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsBut
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";
-import watch from 'redux-watch'
+import watch from "redux-watch";
+import combinedReduction from "combined-reduction";
+import { configureStore } from "@reduxjs/toolkit";
 
 let table_metadata = null;
 
@@ -195,17 +195,9 @@ $(document).ready(function () {
     },
   });
 
-  $("#model-pane").layout({
+  const model_pane_layout = $("#model-pane").layout({
     center: {
       resizeWhileDragging: false,
-      onresize_end: function () {
-        if ($("#scatterplot").data("parameter_image-scatterplot")) {
-          $("#scatterplot").scatterplot("option", {
-            width: $("#scatterplot-pane").width(),
-            height: $("#scatterplot-pane").height(),
-          });
-        }
-      },
     },
   });
 
@@ -377,25 +369,7 @@ $(document).ready(function () {
 
         let variable_aliases_promise = new Promise(get_variable_aliases);
         variable_aliases_promise.then(() => {
-          // Adding middlewares to redux store
-          const middlewares = [];
-          // Lets us dispatch() functions
-          middlewares.push(thunkMiddleware);
-          // Neat middleware that logs actions.
-          // Logger must be the last middleware in chain,
-          // otherwise it will log thunk and promise,
-          // not actual actions.
-          // Adding it only in development mode to reduce console messages in prod
-          if (process.env.NODE_ENV === `development`) {
-            // Create logger for redux
-            const loggerMiddleware = createLogger({
-              // Setting console level to 'debug' for logger messages
-              level: "debug",
-              // Enable diff to start showing diffs between prevState and nextState
-              // diff: true,
-            });
-            middlewares.push(loggerMiddleware);
-          }
+          // Additional middleware for redux store
           // Create throttle for redux. Allows throttling of actions.
           const defaultWait = 500;
           const defaultThrottleOption = {
@@ -404,7 +378,6 @@ $(document).ready(function () {
             trailing: true,
           };
           const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
-          middlewares.push(throttleMiddleware);
 
           // Add unique IDs to bookmarked open_media, as these are now required.
           let bookmarked_open_media = bookmark["open-images-selection"]
@@ -455,9 +428,28 @@ $(document).ready(function () {
             video_sync_time:
               bookmark["video_sync_time"] !== undefined ? bookmark["video_sync_time"] : 0,
           };
-          window.store = createStore(
-            ps_reducer,
-            {
+          // Create reducer that combines root-level ps_reducer and adds ui_reducer at ui.
+          // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
+          // createSlice ui_reducer and other new reducers.
+          const reducer = combinedReduction(ps_reducer, {
+            ui: ui_reducer,
+          });
+
+          window.store = configureStore({
+            reducer: reducer,
+            middleware: (getDefaultMiddleware) =>
+              getDefaultMiddleware({
+                serializableCheck: {
+                  // Ignore these action types
+                  ignoredActions: ["SET_X_VALUES", "SET_Y_VALUES", "SET_V_VALUES"],
+                  // Ignore these field paths in all actions
+                  // ignoredActionPaths: ["meta.arg", "payload.timestamp"],
+                  // Ignore these paths in the state
+                  ignoredPaths: ["derived.xValues", "derived.yValues", "derived.vValues"],
+                },
+              }).concat(throttleMiddleware),
+            devTools: process.env.NODE_ENV !== "production",
+            preloadedState: {
               ...state_tree,
               ...bookmark.state,
               derived: {
@@ -472,8 +464,7 @@ $(document).ready(function () {
                 table_metadata: {},
               },
             },
-            applyMiddleware(...middlewares)
-          );
+          });
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkReduxStateTree = () => {
@@ -486,7 +477,7 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined },
+                { ...window.store.getState(), derived: undefined, ui: undefined },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
@@ -541,9 +532,34 @@ $(document).ready(function () {
       store.subscribe(
         w((newVal, oldVal, objectPath) => {
           // console.debug(`%s changed from %s to %s`, objectPath, oldVal, newVal);
-          selected_colormap_changed(newVal)
+          selected_colormap_changed(newVal);
         })
       );
+
+      // Set size of scatterplot pane in Redux
+      window.store.dispatch(setScatterplotPaneWidth(model_pane_layout.state.center.innerWidth));
+      window.store.dispatch(setScatterplotPaneHeight(model_pane_layout.state.center.innerHeight));
+
+      // Update scatterplot and Redux each time the scatterplot pane is resized
+      model_pane_layout.center.options.onresize_end = (
+        pane_name,
+        pane_element,
+        pane_state,
+        pane_options,
+        layout_name
+      ) => {
+        const width = pane_state.innerWidth;
+        const height = pane_state.innerHeight;
+
+        if ($("#scatterplot").data("parameter_image-scatterplot")) {
+          $("#scatterplot").scatterplot("option", {
+            width: width,
+            height: height,
+          });
+        }
+        window.store.dispatch(setScatterplotPaneWidth(width));
+        window.store.dispatch(setScatterplotPaneHeight(height));
+      };
     });
   }
 

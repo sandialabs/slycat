@@ -5,7 +5,6 @@
 
 import api_root from "js/slycat-api-root";
 import d3 from "d3";
-import * as d3v7 from "d3v7";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
@@ -184,26 +183,10 @@ $.widget("parameter_image.scatterplot", {
   _create: function () {
     var self = this;
 
-    self.x_scale_range = helpers.x_scale_range(
-      self.options.margin_left,
-      self.options.margin_right,
-      self.options.width
-    );
-    self.x_range_canvas = helpers.x_range_canvas(
-      self.options.margin_left,
-      self.options.margin_right,
-      self.options.width
-    );
-    self.y_scale_range = helpers.y_scale_range(
-      self.options.margin_top,
-      self.options.margin_bottom,
-      self.options.height
-    );
-    self.y_range_canvas = helpers.y_range_canvas(
-      self.options.margin_top,
-      self.options.margin_bottom,
-      self.options.height
-    );
+    self.x_scale_range = helpers.selectXScaleRange(window.store.getState());
+    self.x_range_canvas = helpers.selectXRangeCanvas(window.store.getState());
+    self.y_scale_range = helpers.selectYScaleRange(window.store.getState());
+    self.y_range_canvas = helpers.selectYRangeCanvas(window.store.getState());
 
     if (self.options["auto-scale"]) {
       self.options.filtered_x = self._filterValues(self.options.x);
@@ -665,14 +648,7 @@ $.widget("parameter_image.scatterplot", {
     const grid_root = createRoot(document.getElementById("scatterplot-grid-svg"));
     grid_root.render(
       <Provider store={window.store}>
-        <ScatterplotGrid
-          x_scale_range={self.x_scale_range}
-          y_scale_range={self.y_scale_range}
-          x_ticks={self.x_range_canvas[1] / 85}
-          y_ticks={self.y_range_canvas[0] / 50}
-          x_values={self.options.scale_x}
-          y_values={self.options.scale_y}
-        />
+        <ScatterplotGrid />
       </Provider>
     );
 
@@ -1231,16 +1207,8 @@ $.widget("parameter_image.scatterplot", {
     if (self.updates.update_x) {
       // console.debug(`updates.update_x`);
 
-      self.x_scale_range = helpers.x_scale_range(
-        self.options.margin_left,
-        self.options.margin_right,
-        self.options.width
-      );
-      self.x_range_canvas = helpers.x_range_canvas(
-        self.options.margin_left,
-        self.options.margin_right,
-        self.options.width
-      );
+      self.x_scale_range = helpers.selectXScaleRange(window.store.getState());
+      self.x_range_canvas = helpers.selectXRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
       self.x_scale = self._createScale(
@@ -1292,16 +1260,8 @@ $.widget("parameter_image.scatterplot", {
     if (self.updates.update_y) {
       self.y_axis_offset = 0 + self.options.margin_left;
 
-      self.y_scale_range = helpers.y_scale_range(
-        self.options.margin_top,
-        self.options.margin_bottom,
-        self.options.height
-      );
-      self.y_range_canvas = helpers.y_range_canvas(
-        self.options.margin_top,
-        self.options.margin_bottom,
-        self.options.height
-      );
+      self.y_scale_range = helpers.selectYScaleRange(window.store.getState());
+      self.y_range_canvas = helpers.selectYRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
       self.y_scale = self._createScale(
