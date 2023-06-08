@@ -1959,7 +1959,7 @@ $(document).ready(function () {
       // and we don't want long calls to come back now and filter anything.
       if (filterxhr) {
         filterxhr.abort();
-        console.debug("filter xhr aborted because last filter was closed");
+        // console.debug("filter xhr aborted because last filter was closed");
       }
 
       // Clear hidden_simulations

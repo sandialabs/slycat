@@ -278,7 +278,7 @@ FilterManager.prototype.build_sliders = function () {
         .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } });
       // Update redux state each time active filters changes
       self.active_filters.subscribe(function (newValue) {
-        console.debug(`active_filters is %o`, newValue);
+        // console.debug(`active_filters is %o`, newValue);
         window.store.dispatch(setActiveFilters(newValue));
       });
       numericFilters = ko.pureComputed(function () {
