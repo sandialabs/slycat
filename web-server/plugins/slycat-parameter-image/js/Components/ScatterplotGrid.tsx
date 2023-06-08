@@ -19,25 +19,44 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
   const x_range_canvas = useSelector(selectors.selectXRangeCanvas);
   const y_range_canvas = useSelector(selectors.selectYRangeCanvas);
   const colormap = useSelector(selectors.selectColormap);
+  const x_scale_type = useSelector(selectors.selectXScaleType);
+  const y_scale_type = useSelector(selectors.selectYScaleType);
+  const x_min = useSelector(selectors.selectXMin);
+  const x_max = useSelector(selectors.selectXMax);
+  const y_min = useSelector(selectors.selectYMin);
+  const y_max = useSelector(selectors.selectYMax);
 
   const x_ticks = x_range_canvas[1] / 85;
   const y_ticks = y_range_canvas[0] / 50;
-  const scatterplot_grid_color = slycat_color_maps.get_scatterplot_grid_color();
+  const scatterplot_grid_color = slycat_color_maps.get_scatterplot_grid_color(colormap);
 
   useEffect(() => {
     console.debug("ScatterplotGrid.componentDidMount() updateGrid()");
     updateGrid();
   });
 
+  // TODO: This is just a start and currently only supports linear and log scales.
+  // TODO: This should be moved to a selector?
+  // TODO: This needs to work for string variables.
+  // TODO: This needs to work for date/time scales.
+  const getScale = (scale_type: string) => {
+    switch (scale_type) {
+      case "Log":
+        return d3.scaleLog();
+      case "Date & Time":
+        return d3.scaleTime();
+      default:
+        return d3.scaleLinear();
+    }
+  };
+
   const updateGrid = () => {
-    const xScale = d3
-      .scaleLinear()
+    const xScale = getScale(x_scale_type)
       .range(x_scale_range)
-      .domain([d3.min(x_values), d3.max(x_values)]);
-    const yScale = d3
-      .scaleLinear()
+      .domain([x_min, x_max]);
+    const yScale = getScale(y_scale_type)
       .range(y_scale_range)
-      .domain([d3.min(y_values), d3.max(y_values)]);
+      .domain([y_min, y_max]);
     const gridline = fc
       .annotationSvgGridline()
       .xScale(xScale)

@@ -789,7 +789,7 @@ $.widget("parameter_image.scatterplot", {
     return clone;
   },
 
-  _createScale: function (string, values, range, reverse, type, axis) {
+  _createScale: function (variableIsString, values, range, reverse, type, axis) {
     let self = this;
     // console.log("_createScale: " + type);
     const customMin = self.custom_axes_ranges[axis].min;
@@ -829,7 +829,7 @@ $.widget("parameter_image.scatterplot", {
       return d3.time.scale().domain(domain).range(range);
     }
     // For numeric variables
-    else if (!string) {
+    else if (!variableIsString) {
       // Use custom range for min or max if we have one
       const min = customMin != undefined ? customMin : d3.min(values);
       const max = customMax != undefined ? customMax : d3.max(values);
@@ -1637,7 +1637,6 @@ $.widget("parameter_image.scatterplot", {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
       self.set_custom_axes_ranges();
 
-      // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
       self.legend_scale = self._createScale(
         self.options.v_string,
         self.options.scale_v,
