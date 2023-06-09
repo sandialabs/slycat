@@ -38,8 +38,8 @@ import "./category-select";
 
 import throttle from "redux-throttle";
 import ps_reducer from "./reducers";
-import ui_reducer from "./uiSlice";
-import { setScatterplotPaneWidth, setScatterplotPaneHeight } from "./uiSlice";
+import scatterplot_reducer from "./scatterplotSlice";
+import { setScatterplotPaneWidth, setScatterplotPaneHeight, setShowGrid } from "./scatterplotSlice";
 import {
   setXValues,
   setYValues,
@@ -432,7 +432,7 @@ $(document).ready(function () {
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
           // createSlice ui_reducer and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
-            ui: ui_reducer,
+            scatterplot: scatterplot_reducer,
           });
 
           window.store = configureStore({

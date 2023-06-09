@@ -1,18 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-export interface UIState {
+export interface ScatterplotState {
   scatterplot_pane_width: number | undefined;
   scatterplot_pane_height: number | undefined;
+  show_grid: boolean;
 }
 
-const initialState: UIState = {
+const initialState: ScatterplotState = {
   scatterplot_pane_width: undefined,
   scatterplot_pane_height: undefined,
+  show_grid: false,
 };
 
-export const uiSlice = createSlice({
-  name: "ui",
+export const scatterplotSlice = createSlice({
+  name: "scatterplot",
   initialState,
   reducers: {
     setScatterplotPaneWidth: (state, action: PayloadAction<number>) => {
@@ -25,10 +27,14 @@ export const uiSlice = createSlice({
     setScatterplotPaneHeight: (state, action: PayloadAction<number>) => {
       state.scatterplot_pane_height = action.payload;
     },
+    setShowGrid: (state, action: PayloadAction<boolean>) => {
+      state.show_grid = action.payload;
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { setScatterplotPaneWidth, setScatterplotPaneHeight } = uiSlice.actions;
+export const { setScatterplotPaneWidth, setScatterplotPaneHeight, setShowGrid } =
+  scatterplotSlice.actions;
 
-export default uiSlice.reducer;
+export default scatterplotSlice.reducer;
