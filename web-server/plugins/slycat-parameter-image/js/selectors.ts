@@ -24,6 +24,8 @@ type TableStatisticsType = {
 
 type MinMaxType = number | string | Date | undefined;
 
+type ExtentType = [MinMaxType, MinMaxType];
+
 type AxesVariablesType = {
   [key: number]: "Linear" | "Log" | "Date & Time";
 };
@@ -93,52 +95,73 @@ export const selectVScaleType = createSelector(
   }
 );
 
-// TODO: There is probably a cleaner way of dealing with Dates using d3.
-const getMinMaxValue = (
-  minOrMax: "min" | "max",
+const getExtent = (
   values: (number | string)[],
   variableRanges: VariableRangesType,
   index: number,
   columnTypes: ColumnTypesType,
   scaleType: string,
   tableStatistics: TableStatisticsType
-): MinMaxType => {
-  // For 'Date & Time' scales...
-  if (scaleType == "Date & Time") {
-    // If we have a custom range...
-    if (variableRanges[index] !== undefined && variableRanges[index][minOrMax] !== undefined) {
-      // Convert custom range to Date object, validate it, and return it if it's valid
-      const date: Date = new Date(variableRanges[index][minOrMax].toString());
-      if (date.toString() !== "Invalid Date") {
-        return date;
+): ExtentType => {
+  const extent: ExtentType = [undefined, undefined];
+
+  switch (scaleType) {
+    // For 'Date & Time' scales...
+    case "Date & Time":
+      // Convert all values to Date objects
+      const dates = values.map((value) => new Date(value.toString()));
+
+      extent[0] = d3.min(dates);
+      extent[1] = d3.max(dates);
+
+      // If we have a custom range, try to use that instead.
+      const customRange = variableRanges[index];
+      if (customRange?.min !== undefined) {
+        const minDate = new Date(customRange.min.toString());
+        if (minDate.toString() !== "Invalid Date") {
+          extent[0] = minDate;
+        }
       }
-    }
+      if (customRange?.max !== undefined) {
+        const maxDate = new Date(customRange.max.toString());
+        if (maxDate.toString() !== "Invalid Date") {
+          extent[1] = maxDate;
+        }
+      }
 
-    // Otherwise convert all values to Date objects
-    let dates: Date[] = [];
-    for (let value of values) {
-      dates.push(new Date(value.toString()));
-    }
+      return extent;
 
-    // If we have any valid dates, return the min/max of those
-    if (dates.length > 0) {
-      return d3[minOrMax](dates);
-    }
-    // Otherwise, return undefined
-    return undefined;
+    // For all other scales...
+    default:
+      switch (columnTypes[index]) {
+        // For string values, just return the min/max of the values.
+        case "string":
+          extent[0] = d3.min(values);
+          extent[1] = d3.max(values);
+          break;
+
+        // For numeric values...
+        default:
+          // Use the min/max of the values from table statistics retrieved from server.
+          const { min, max } = tableStatistics[index] || {};
+          extent[0] = min;
+          extent[1] = max;
+
+          // If we have a custom range, use that instead.
+          const customRange = variableRanges[index];
+          if (customRange?.min !== undefined) {
+            extent[0] = customRange.min;
+          }
+          if (customRange?.max !== undefined) {
+            extent[1] = customRange.max;
+          }
+          break;
+      }
+      return extent;
   }
-  // If we have a custom range, use that.
-  if (variableRanges[index] !== undefined && variableRanges[index][minOrMax] !== undefined) {
-    return variableRanges[index][minOrMax];
-  }
-  // For numeric values, use the min/max of the values from table statistics retrieved from server.
-  if (columnTypes[index] != "string") {
-    return tableStatistics[index][minOrMax];
-  }
-  return undefined;
 };
 
-export const selectXMin = createSelector(
+const selectXExtent = createSelector(
   selectXValues,
   selectVariableRanges,
   selectXIndex,
@@ -152,31 +175,12 @@ export const selectXMin = createSelector(
     columnTypes: ColumnTypesType,
     xScaleType: string,
     tableStatistics: TableStatisticsType
-  ): MinMaxType => {
-    return getMinMaxValue("min", xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
+  ): ExtentType => {
+    return getExtent(xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
   }
 );
 
-export const selectXMax = createSelector(
-  selectXValues,
-  selectVariableRanges,
-  selectXIndex,
-  selectColumnTypes,
-  selectXScaleType,
-  selectTableStatistics,
-  (
-    xValues: (number | string)[],
-    variableRanges: VariableRangesType,
-    xIndex: number,
-    columnTypes: ColumnTypesType,
-    xScaleType: string,
-    tableStatistics: TableStatisticsType
-  ): MinMaxType => {
-    return getMinMaxValue("max", xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
-  }
-);
-
-export const selectYMin = createSelector(
+const selectYExtent = createSelector(
   selectYValues,
   selectVariableRanges,
   selectYIndex,
@@ -190,27 +194,8 @@ export const selectYMin = createSelector(
     columnTypes: ColumnTypesType,
     yScaleType: string,
     tableStatistics: TableStatisticsType
-  ): MinMaxType => {
-    return getMinMaxValue("min", yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
-  }
-);
-
-export const selectYMax = createSelector(
-  selectYValues,
-  selectVariableRanges,
-  selectYIndex,
-  selectColumnTypes,
-  selectYScaleType,
-  selectTableStatistics,
-  (
-    yValues: (number | string)[],
-    variableRanges: VariableRangesType,
-    yIndex: number,
-    columnTypes: ColumnTypesType,
-    yScaleType: string,
-    tableStatistics: TableStatisticsType
-  ): MinMaxType => {
-    return getMinMaxValue("max", yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
+  ): ExtentType => {
+    return getExtent(yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
   }
 );
 
@@ -270,51 +255,46 @@ export const selectYTicks = createSelector(selectYRangeCanvas, (yRangeCanvas: nu
 
 // TODO: selectXValues and selectYValues sometimes are out of sync with the
 // currently selected x variable and y variable. This is because they are
-// loaded asynchronously outside of Redux. 
+// loaded asynchronously outside of Redux.
 // It causes console erros that become fixed once x and y values are actually
 // loaded. We should fix this by loading x and y values in Redux.
 export const selectXScale = createSelector(
   selectXScaleType,
-  selectXMin,
-  selectXMax,
+  selectXExtent,
   selectXScaleRange,
   selectXColumnType,
   selectXValues,
   (
     xScaleType: string,
-    xMin: MinMaxType,
-    xMax: MinMaxType,
+    xExtent: ExtentType,
     xScaleRange: number[],
     xColumnType: string,
     xValues: (number | string)[]
   ): any => {
-    return getScale(xScaleType, xMin, xMax, xScaleRange, xColumnType, xValues);
+    return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues);
   }
 );
 
 export const selectYScale = createSelector(
   selectYScaleType,
-  selectYMin,
-  selectYMax,
+  selectYExtent,
   selectYScaleRange,
   selectYColumnType,
   selectYValues,
   (
     yScaleType: string,
-    yMin: MinMaxType,
-    yMax: MinMaxType,
+    yExtent: ExtentType,
     yScaleRange: number[],
     yColumnType: string,
     yValues: (number | string)[]
   ): any => {
-    return getScale(yScaleType, yMin, yMax, yScaleRange, yColumnType, yValues);
+    return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues);
   }
 );
 
 const getScale = (
   scaleType: string,
-  min: MinMaxType,
-  max: MinMaxType,
+  extent: ExtentType,
   scaleRange: number[],
   columnType: string,
   values: (number | string)[]
@@ -337,7 +317,6 @@ const getScale = (
   }
   // Domain is the min and max values for numeric values or Date & Time scales,
   // otherwise the unique values for string variables.
-  const domain =
-    columnType === "string" && scaleType !== "Date & Time" ? _.uniq(values) : [min, max];
+  const domain = columnType === "string" && scaleType !== "Date & Time" ? _.uniq(values) : extent;
   return scale.range(scaleRange).domain(domain);
 };
