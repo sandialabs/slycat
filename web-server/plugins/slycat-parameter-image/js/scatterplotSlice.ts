@@ -27,14 +27,19 @@ export const scatterplotSlice = createSlice({
     setScatterplotPaneHeight: (state, action: PayloadAction<number>) => {
       state.scatterplot_pane_height = action.payload;
     },
-    setShowGrid: (state, action: PayloadAction<boolean>) => {
-      state.show_grid = action.payload;
+    toggleShowGrid: (state) => {
+      state.show_grid = !state.show_grid;
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { setScatterplotPaneWidth, setScatterplotPaneHeight, setShowGrid } =
+export const { setScatterplotPaneWidth, setScatterplotPaneHeight, toggleShowGrid } =
   scatterplotSlice.actions;
+
+// Selectors
+export const selectScatterplotPaneWidth = (state: RootState) => state.scatterplot.scatterplot_pane_width;
+export const selectScatterplotPaneHeight = (state: RootState) => state.scatterplot.scatterplot_pane_height;
+export const selectShowGrid = (state: RootState) => state.scatterplot.show_grid;
 
 export default scatterplotSlice.reducer;

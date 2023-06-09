@@ -1,6 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import * as d3 from "d3v7";
 import _ from "lodash";
+import { selectScatterplotPaneWidth, selectScatterplotPaneHeight } from "./scatterplotSlice";
 
 // Constants
 const X_AXIS_TICK_LABEL_HEIGHT = 40;
@@ -38,8 +39,6 @@ const selectMarginLeft = (state) => state.scatterplot_margin.left;
 const selectMarginRight = (state) => state.scatterplot_margin.right;
 const selectMarginTop = (state) => state.scatterplot_margin.top;
 const selectMarginBottom = (state) => state.scatterplot_margin.bottom;
-const selectWidth = (state) => state.scatterplot.scatterplot_pane_width;
-const selectHeight = (state) => state.scatterplot.scatterplot_pane_height;
 export const selectXValues = (state) => state.derived.xValues;
 export const selectYValues = (state) => state.derived.yValues;
 const selectVariableRanges = (state) => state.variableRanges;
@@ -208,7 +207,7 @@ const selectYExtent = createSelector(
 export const selectXScaleRange = createSelector(
   selectMarginLeft,
   selectMarginRight,
-  selectWidth,
+  selectScatterplotPaneWidth,
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0 + margin_left,
     width - margin_right,
@@ -220,7 +219,7 @@ export const selectXScaleRange = createSelector(
 export const selectYScaleRange = createSelector(
   selectMarginTop,
   selectMarginBottom,
-  selectHeight,
+  selectScatterplotPaneHeight,
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, // Subtracting pixels to account for the height of the x-axis tick labels.
     0 + margin_top,
@@ -231,7 +230,7 @@ export const selectYScaleRange = createSelector(
 export const selectXRangeCanvas = createSelector(
   selectMarginLeft,
   selectMarginRight,
-  selectWidth,
+  selectScatterplotPaneWidth,
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0,
     width - margin_left - margin_right,
@@ -242,7 +241,7 @@ export const selectXRangeCanvas = createSelector(
 export const selectYRangeCanvas = createSelector(
   selectMarginTop,
   selectMarginBottom,
-  selectHeight,
+  selectScatterplotPaneHeight,
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT,
     0,
