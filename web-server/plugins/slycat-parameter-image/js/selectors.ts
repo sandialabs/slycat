@@ -30,6 +30,10 @@ type AxesVariablesType = {
   [key: number]: "Linear" | "Log" | "Date & Time";
 };
 
+type ValuesType = (number | string)[];
+
+type ScaleRangeType = [number, number];
+
 const selectMarginLeft = (state) => state.scatterplot_margin.left;
 const selectMarginRight = (state) => state.scatterplot_margin.right;
 const selectMarginTop = (state) => state.scatterplot_margin.top;
@@ -96,7 +100,7 @@ export const selectVScaleType = createSelector(
 );
 
 const getExtent = (
-  values: (number | string)[],
+  values: ValuesType,
   variableRanges: VariableRangesType,
   index: number,
   columnTypes: ColumnTypesType,
@@ -169,7 +173,7 @@ const selectXExtent = createSelector(
   selectXScaleType,
   selectTableStatistics,
   (
-    xValues: (number | string)[],
+    xValues: ValuesType,
     variableRanges: VariableRangesType,
     xIndex: number,
     columnTypes: ColumnTypesType,
@@ -188,7 +192,7 @@ const selectYExtent = createSelector(
   selectYScaleType,
   selectTableStatistics,
   (
-    yValues: (number | string)[],
+    yValues: ValuesType,
     variableRanges: VariableRangesType,
     yIndex: number,
     columnTypes: ColumnTypesType,
@@ -205,7 +209,7 @@ export const selectXScaleRange = createSelector(
   selectMarginLeft,
   selectMarginRight,
   selectWidth,
-  (margin_left: number, margin_right: number, width: number): number[] => [
+  (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0 + margin_left,
     width - margin_right,
   ]
@@ -217,7 +221,7 @@ export const selectYScaleRange = createSelector(
   selectMarginTop,
   selectMarginBottom,
   selectHeight,
-  (margin_top: number, margin_bottom: number, height: number): number[] => [
+  (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, // Subtracting pixels to account for the height of the x-axis tick labels.
     0 + margin_top,
   ]
@@ -228,7 +232,7 @@ export const selectXRangeCanvas = createSelector(
   selectMarginLeft,
   selectMarginRight,
   selectWidth,
-  (margin_left: number, margin_right: number, width: number): number[] => [
+  (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0,
     width - margin_left - margin_right,
   ]
@@ -239,17 +243,17 @@ export const selectYRangeCanvas = createSelector(
   selectMarginTop,
   selectMarginBottom,
   selectHeight,
-  (margin_top: number, margin_bottom: number, height: number): number[] => [
+  (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT,
     0,
   ]
 );
 
-export const selectXTicks = createSelector(selectXRangeCanvas, (xRangeCanvas: number[]): number => {
+export const selectXTicks = createSelector(selectXRangeCanvas, (xRangeCanvas: ScaleRangeType): number => {
   return xRangeCanvas[1] / 85;
 });
 
-export const selectYTicks = createSelector(selectYRangeCanvas, (yRangeCanvas: number[]): number => {
+export const selectYTicks = createSelector(selectYRangeCanvas, (yRangeCanvas: ScaleRangeType): number => {
   return yRangeCanvas[0] / 50;
 });
 
@@ -267,9 +271,9 @@ export const selectXScale = createSelector(
   (
     xScaleType: string,
     xExtent: ExtentType,
-    xScaleRange: number[],
+    xScaleRange: ScaleRangeType,
     xColumnType: string,
-    xValues: (number | string)[]
+    xValues: ValuesType
   ): any => {
     return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues);
   }
@@ -284,9 +288,9 @@ export const selectYScale = createSelector(
   (
     yScaleType: string,
     yExtent: ExtentType,
-    yScaleRange: number[],
+    yScaleRange: ScaleRangeType,
     yColumnType: string,
-    yValues: (number | string)[]
+    yValues: ValuesType
   ): any => {
     return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues);
   }
@@ -295,9 +299,9 @@ export const selectYScale = createSelector(
 const getScale = (
   scaleType: string,
   extent: ExtentType,
-  scaleRange: number[],
+  scaleRange: ScaleRangeType,
   columnType: string,
-  values: (number | string)[]
+  values: ValuesType
 ) => {
   let scale;
   switch (scaleType) {
