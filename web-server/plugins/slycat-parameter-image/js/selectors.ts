@@ -2,6 +2,32 @@ import { createSelector } from "@reduxjs/toolkit";
 import * as d3 from "d3v7";
 import _ from "lodash";
 
+// Constants
+const X_AXIS_TICK_LABEL_HEIGHT = 40;
+
+// Type definitions
+type VariableRangesType = {
+  [key: number]: {
+    min: number;
+    max: number;
+  };
+};
+
+type ColumnTypesType = {
+  [key: number]: "string" | "float64" | "int64";
+};
+
+type TableStatisticsType = {
+  min: number | string;
+  max: number | string;
+}[];
+
+type MinMaxType = number | string | Date | undefined;
+
+type AxesVariablesType = {
+  [key: number]: "Linear" | "Log" | "Date & Time";
+};
+
 const selectMarginLeft = (state) => state.scatterplot_margin.left;
 const selectMarginRight = (state) => state.scatterplot_margin.right;
 const selectMarginTop = (state) => state.scatterplot_margin.top;
@@ -17,11 +43,12 @@ export const selectYIndex = (state) => state.y_index;
 export const selectVIndex = (state) => state.v_index;
 export const selectAxesVariables = (state) => state.axesVariables;
 const selectColumnTypes = (state) => state.derived.table_metadata["column-types"];
+const selectTableStatistics = (state) => state.derived.table_statistics;
 
 export const selectXColumnType = createSelector(
   selectXIndex,
   selectColumnTypes,
-  (x_index: number, columnTypes: ColumnTypes): string => {
+  (x_index: number, columnTypes: ColumnTypesType): string => {
     return columnTypes[x_index] !== undefined ? columnTypes[x_index] : "";
   }
 );
@@ -29,7 +56,7 @@ export const selectXColumnType = createSelector(
 export const selectYColumnType = createSelector(
   selectYIndex,
   selectColumnTypes,
-  (y_index: number, columnTypes: ColumnTypes): string => {
+  (y_index: number, columnTypes: ColumnTypesType): string => {
     return columnTypes[y_index] !== undefined ? columnTypes[y_index] : "";
   }
 );
@@ -37,19 +64,15 @@ export const selectYColumnType = createSelector(
 export const selectVColumnType = createSelector(
   selectVIndex,
   selectColumnTypes,
-  (v_index: number, columnTypes: ColumnTypes): string => {
+  (v_index: number, columnTypes: ColumnTypesType): string => {
     return columnTypes[v_index] !== undefined ? columnTypes[v_index] : "";
   }
 );
 
-type AxesVariables = {
-  [key: number]: "Linear" | "Log" | "Date & Time";
-};
-
 export const selectXScaleType = createSelector(
   selectXIndex,
   selectAxesVariables,
-  (x_index: number, axesVariables: AxesVariables): string => {
+  (x_index: number, axesVariables: AxesVariablesType): string => {
     return axesVariables[x_index] !== undefined ? axesVariables[x_index] : "Linear";
   }
 );
@@ -57,7 +80,7 @@ export const selectXScaleType = createSelector(
 export const selectYScaleType = createSelector(
   selectYIndex,
   selectAxesVariables,
-  (y_index: number, axesVariables: AxesVariables): string => {
+  (y_index: number, axesVariables: AxesVariablesType): string => {
     return axesVariables[y_index] !== undefined ? axesVariables[y_index] : "Linear";
   }
 );
@@ -65,30 +88,21 @@ export const selectYScaleType = createSelector(
 export const selectVScaleType = createSelector(
   selectVIndex,
   selectAxesVariables,
-  (v_index: number, axesVariables: AxesVariables): string => {
+  (v_index: number, axesVariables: AxesVariablesType): string => {
     return axesVariables[v_index] !== undefined ? axesVariables[v_index] : "Linear";
   }
 );
 
-type VariableRanges = {
-  [key: number]: {
-    min: number;
-    max: number;
-  };
-};
-
-type ColumnTypes = {
-  [key: number]: "string" | "float64" | "int64";
-};
-
+// TODO: There is probably a cleaner way of dealing with Dates using d3.
 const getMinMaxValue = (
   minOrMax: "min" | "max",
   values: (number | string)[],
-  variableRanges: VariableRanges,
+  variableRanges: VariableRangesType,
   index: number,
-  columnTypes: ColumnTypes,
-  scaleType: string
-): number | Date | undefined => {
+  columnTypes: ColumnTypesType,
+  scaleType: string,
+  tableStatistics: TableStatisticsType
+): MinMaxType => {
   // For 'Date & Time' scales...
   if (scaleType == "Date & Time") {
     // If we have a custom range...
@@ -117,9 +131,9 @@ const getMinMaxValue = (
   if (variableRanges[index] !== undefined && variableRanges[index][minOrMax] !== undefined) {
     return variableRanges[index][minOrMax];
   }
-  // For numeric values, use the min/max of the values.
-  if (columnTypes[index] != "string" && values.length > 0) {
-    return d3[minOrMax](values);
+  // For numeric values, use the min/max of the values from table statistics retrieved from server.
+  if (columnTypes[index] != "string") {
+    return tableStatistics[index][minOrMax];
   }
   return undefined;
 };
@@ -130,14 +144,16 @@ export const selectXMin = createSelector(
   selectXIndex,
   selectColumnTypes,
   selectXScaleType,
+  selectTableStatistics,
   (
     xValues: (number | string)[],
-    variableRanges: VariableRanges,
+    variableRanges: VariableRangesType,
     xIndex: number,
-    columnTypes: ColumnTypes,
-    xScaleType: string
-  ): number | Date | undefined => {
-    return getMinMaxValue("min", xValues, variableRanges, xIndex, columnTypes, xScaleType);
+    columnTypes: ColumnTypesType,
+    xScaleType: string,
+    tableStatistics: TableStatisticsType
+  ): MinMaxType => {
+    return getMinMaxValue("min", xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
   }
 );
 
@@ -147,14 +163,16 @@ export const selectXMax = createSelector(
   selectXIndex,
   selectColumnTypes,
   selectXScaleType,
+  selectTableStatistics,
   (
     xValues: (number | string)[],
-    variableRanges: VariableRanges,
+    variableRanges: VariableRangesType,
     xIndex: number,
-    columnTypes: ColumnTypes,
-    xScaleType: string
-  ): number | Date | undefined => {
-    return getMinMaxValue("max", xValues, variableRanges, xIndex, columnTypes, xScaleType);
+    columnTypes: ColumnTypesType,
+    xScaleType: string,
+    tableStatistics: TableStatisticsType
+  ): MinMaxType => {
+    return getMinMaxValue("max", xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
   }
 );
 
@@ -164,14 +182,16 @@ export const selectYMin = createSelector(
   selectYIndex,
   selectColumnTypes,
   selectYScaleType,
+  selectTableStatistics,
   (
     yValues: (number | string)[],
-    variableRanges: VariableRanges,
+    variableRanges: VariableRangesType,
     yIndex: number,
-    columnTypes: ColumnTypes,
-    yScaleType: string
-  ): number | Date | undefined => {
-    return getMinMaxValue("min", yValues, variableRanges, yIndex, columnTypes, yScaleType);
+    columnTypes: ColumnTypesType,
+    yScaleType: string,
+    tableStatistics: TableStatisticsType
+  ): MinMaxType => {
+    return getMinMaxValue("min", yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
   }
 );
 
@@ -181,18 +201,18 @@ export const selectYMax = createSelector(
   selectYIndex,
   selectColumnTypes,
   selectYScaleType,
+  selectTableStatistics,
   (
     yValues: (number | string)[],
-    variableRanges: VariableRanges,
+    variableRanges: VariableRangesType,
     yIndex: number,
-    columnTypes: ColumnTypes,
-    yScaleType: string
-  ): number | Date | undefined => {
-    return getMinMaxValue("max", yValues, variableRanges, yIndex, columnTypes, yScaleType);
+    columnTypes: ColumnTypesType,
+    yScaleType: string,
+    tableStatistics: TableStatisticsType
+  ): MinMaxType => {
+    return getMinMaxValue("max", yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
   }
 );
-
-const xAxisTickLabelHeight = 40;
 
 // Returns the start and end of the scatterplot x-axis area relative
 // to the entire width of the scatterplot pane by adjusting for left and right margins.
@@ -213,7 +233,7 @@ export const selectYScaleRange = createSelector(
   selectMarginBottom,
   selectHeight,
   (margin_top: number, margin_bottom: number, height: number): number[] => [
-    height - margin_bottom - xAxisTickLabelHeight, // Subtracting pixels to account for the height of the x-axis tick labels.
+    height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, // Subtracting pixels to account for the height of the x-axis tick labels.
     0 + margin_top,
   ]
 );
@@ -235,7 +255,7 @@ export const selectYRangeCanvas = createSelector(
   selectMarginBottom,
   selectHeight,
   (margin_top: number, margin_bottom: number, height: number): number[] => [
-    height - margin_top - margin_bottom - xAxisTickLabelHeight,
+    height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT,
     0,
   ]
 );
@@ -248,6 +268,11 @@ export const selectYTicks = createSelector(selectYRangeCanvas, (yRangeCanvas: nu
   return yRangeCanvas[0] / 50;
 });
 
+// TODO: selectXValues and selectYValues sometimes are out of sync with the
+// currently selected x variable and y variable. This is because they are
+// loaded asynchronously outside of Redux. 
+// It causes console erros that become fixed once x and y values are actually
+// loaded. We should fix this by loading x and y values in Redux.
 export const selectXScale = createSelector(
   selectXScaleType,
   selectXMin,
@@ -257,8 +282,8 @@ export const selectXScale = createSelector(
   selectXValues,
   (
     xScaleType: string,
-    xMin: number | Date | undefined,
-    xMax: number | Date | undefined,
+    xMin: MinMaxType,
+    xMax: MinMaxType,
     xScaleRange: number[],
     xColumnType: string,
     xValues: (number | string)[]
@@ -276,8 +301,8 @@ export const selectYScale = createSelector(
   selectYValues,
   (
     yScaleType: string,
-    yMin: number | Date | undefined,
-    yMax: number | Date | undefined,
+    yMin: MinMaxType,
+    yMax: MinMaxType,
     yScaleRange: number[],
     yColumnType: string,
     yValues: (number | string)[]
@@ -288,8 +313,8 @@ export const selectYScale = createSelector(
 
 const getScale = (
   scaleType: string,
-  min: number | Date | undefined,
-  max: number | Date | undefined,
+  min: MinMaxType,
+  max: MinMaxType,
   scaleRange: number[],
   columnType: string,
   values: (number | string)[]
