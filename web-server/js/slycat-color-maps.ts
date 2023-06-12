@@ -121,16 +121,6 @@ export default {
       opacity: "0.7",
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
-    grayscale_day: {
-      label: "Grayscale Day",
-      background: d3.rgb(255, 255, 255),
-      // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: "rgb(75,75,75)",
-      outofdomain_color: "black",
-      scatterplot_grid_color: "rgb(80% 80% 80%)",
-      opacity: "0.6",
-      colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
-    },
     grayscale_night: {
       label: "Grayscale Night",
       background: d3.rgb(128, 128, 128),
@@ -138,6 +128,16 @@ export default {
       null_color: "rgb(75,75,75)",
       outofdomain_color: "black",
       scatterplot_grid_color: "#666666",
+      opacity: "0.6",
+      colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
+    },
+    grayscale_day: {
+      label: "Grayscale Day",
+      background: d3.rgb(255, 255, 255),
+      // ToDo: fix this, null and outofdomain colors need to be different than normal colors
+      null_color: "rgb(75,75,75)",
+      outofdomain_color: "black",
+      scatterplot_grid_color: "rgb(80% 80% 80%)",
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },
