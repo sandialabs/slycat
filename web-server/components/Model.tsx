@@ -69,7 +69,7 @@ const Model = (props: ModelProps) => {
                     </em>
                 </small>
             </a>
-            <span className='float-right'>
+            <span className='float-right ml-3'>
                     <button
                         type='button'
                         className='btn btn-sm btn-outline-danger'
