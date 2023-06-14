@@ -135,7 +135,7 @@ export default {
       label: "Grayscale Day",
       background: d3.rgb(255, 255, 255),
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: "rgb(75,75,75)",
+      null_color: "gray",
       outofdomain_color: "black",
       scatterplot_grid_color: "rgb(80% 80% 80%)",
       opacity: "0.6",
