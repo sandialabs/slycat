@@ -279,7 +279,7 @@ FilterManager.prototype.build_sliders = function () {
       // Update redux state each time active filters changes
       self.active_filters.subscribe(function (newValue) {
         // console.debug(`active_filters is %o`, newValue);
-        window.store.dispatch(setActiveFilters(JSON.stringify(newValue)));
+        window.store.dispatch(setActiveFilters(newValue.map((value) => JSON.stringify(value))));
       });
       numericFilters = ko.pureComputed(function () {
         return _.filter(filters(), function (f) {
