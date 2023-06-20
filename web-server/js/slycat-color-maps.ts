@@ -142,11 +142,11 @@ export default {
     },
     grayscale_day: {
       label: "Grayscale Day",
-      background: d3.rgb(255, 255, 255),
+      background: WHITE,
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: "gray",
-      outofdomain_color: "black",
-      scatterplot_grid_color: "rgb(80% 80% 80%)",
+      null_color: GRAY4,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY1,
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },
