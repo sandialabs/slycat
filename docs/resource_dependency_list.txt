@@ -154,7 +154,7 @@ zstd                      1.4.9                haebb681_0    https://anaconda.or
 NPM https://www.npmjs.com that are included in production Slycat.
 
 2. Directly included in Slycat in slycat/docs/html/_static:
-jquery                    3.5.1   https://jquery.org/
+jquery                    3.6.4   https://jquery.org/
 underscore                1.3.1   https://underscorejs.org/
 sphinx-js doctools        2.8     https://github.com/mozilla/sphinx-js
 
