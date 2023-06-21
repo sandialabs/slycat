@@ -305,7 +305,7 @@ export default function ps_reducer(state = initialState, action) {
       });
 
     case CLEAR_VARIABLE_RANGE:
-      let variableRangesClone = Object.assign({}, state.variableRanges);
+      let variableRangesClone = _.cloneDeep(state.variableRanges);
       if (variableRangesClone[action.index] != undefined) {
         delete variableRangesClone[action.index][action.minOrMax];
         // Delete the entire entry if there is no other value in it (min or max)
@@ -352,10 +352,7 @@ export default function ps_reducer(state = initialState, action) {
       });
 
     case CLEAR_THREE_D_VARIABLE_USER_RANGE:
-      let three_d_variable_user_ranges_clone = Object.assign(
-        {},
-        state.three_d_variable_user_ranges
-      );
+      let three_d_variable_user_ranges_clone = _.cloneDeep(state.three_d_variable_user_ranges);
       if (three_d_variable_user_ranges_clone[action.name] != undefined) {
         delete three_d_variable_user_ranges_clone[action.name][action.minOrMax];
         // Delete the entire entry if there is no other value in it (min or max)
@@ -574,11 +571,11 @@ export default function ps_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         scatterplot_margin: Object.assign({}, state.scatterplot_margin, new_scatterplot_margin),
       });
-    
+
     case SET_COLORMAP:
       return Object.assign({}, state, {
-        colormap: action.name
-      })
+        colormap: action.name,
+      });
 
     default:
       return state;

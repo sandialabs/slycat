@@ -10,6 +10,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import "css/slycat-scatterplot-options.scss";
+import ScatterplotOptionsGrid from "./ScatterplotOptionsGrid";
 
 export const DEFAULT_UNSELECTED_POINT_SIZE = 8;
 export const MIN_UNSELECTED_POINT_SIZE = 1;
@@ -169,6 +170,12 @@ class ScatterplotOptions extends React.PureComponent {
               handle_change={this.handleMarginChange}
               title_reset="Reset size of bottom plot margin to default"
             />
+          </div>
+        </div>
+        <hr className="mt-4 mb-4" />
+        <div className="slycat-scatterplot-grid">
+          <div className="form-inline">
+            <ScatterplotOptionsGrid />
           </div>
         </div>
       </div>

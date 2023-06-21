@@ -8,20 +8,30 @@ import slycat_color_maps_methods from "js/slycat-color-maps-methods";
 interface ColorMapsInterface {
   [key: string]: {
     label: string;
-    background: d3.RGBColor;
+    background: string;
     null_color: string;
+    outofdomain_color: string;
+    scatterplot_grid_color: string;
     opacity: string;
     colors: d3.RGBColor[];
   };
 }
 
+const WHITE = "rgb(255 255 255)";
+const GRAY1 = "rgb(204, 204, 204)";
+const GRAY2 = "rgb(128 128 128)";
+const GRAY3 = "rgb(102 102 102)";
+const GRAY4 = "rgb(75 75 75)";
+const BLACK = "rgb(0 0 0)";
+
 export default {
   color_maps: {
     night: {
       label: "Night",
-      background: d3.rgb(128, 128, 128),
-      null_color: "rgb(75,75,75)",
-      outofdomain_color: "black",
+      background: GRAY2,
+      null_color: GRAY4,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY3,
       opacity: "0.5",
       colors: [
         d3.rgb(59, 76, 192),
@@ -61,9 +71,10 @@ export default {
     },
     day: {
       label: "Day",
-      background: d3.rgb(255, 255, 255),
-      null_color: "gray",
-      outofdomain_color: "black",
+      background: WHITE,
+      null_color: GRAY2,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY1,
       opacity: "0.7",
       colors: [
         d3.rgb(100, 108, 234),
@@ -103,35 +114,39 @@ export default {
     },
     rainbow: {
       label: "Rainbow Night",
-      background: d3.rgb(128, 128, 128),
-      null_color: "rgb(75,75,75)",
-      outofdomain_color: "black",
+      background: GRAY2,
+      null_color: GRAY4,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY3,
       opacity: "0.6",
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
     rainbow_day: {
       label: "Rainbow Day",
-      background: d3.rgb(255, 255, 255),
-      null_color: "gray",
-      outofdomain_color: "black",
+      background: WHITE,
+      null_color: GRAY2,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY1,
       opacity: "0.7",
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
     grayscale_day: {
       label: "Grayscale Day",
-      background: d3.rgb(255, 255, 255),
+      background: WHITE,
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: "rgb(75,75,75)",
-      outofdomain_color: "black",
+      null_color: GRAY4,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY1,
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },
     grayscale_night: {
       label: "Grayscale Night",
-      background: d3.rgb(128, 128, 128),
+      background: GRAY2,
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: "rgb(75,75,75)",
-      outofdomain_color: "black",
+      null_color: GRAY4,
+      outofdomain_color: BLACK,
+      scatterplot_grid_color: GRAY3,
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },

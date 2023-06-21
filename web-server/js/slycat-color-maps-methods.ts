@@ -5,9 +5,10 @@ retains certain rights in this software. */
 import d3 from "d3";
 
 export default {
-
-  isValueInColorscaleRange: function (value: number, colorscale: d3.ScaleLinear | d3.ScaleLogarithmic | d3.ScaleOrdinal) {
-    // console.debug(`isValueInColorscaleRange with value of %o`, value);
+  isValueInColorscaleRange: function (
+    value: number,
+    colorscale: d3.ScaleLinear | d3.ScaleLogarithmic | d3.ScaleOrdinal
+  ) {
     // Check against min and max only if value is a number
     if (Number.isFinite(value)) {
       const rangeMin = colorscale.domain()[0];
@@ -34,9 +35,18 @@ export default {
 
   // Return the out of domain color value for the given color map.
   get_outofdomain_color: function (name: string): string {
-    // console.log(`get_outofdomain_color for window.store.getState().colormap`);
     if (name === undefined) name = window.store.getState().colormap;
     return this.color_maps[name]["outofdomain_color"];
+  },
+
+  // Return the scatterplot grid color value for the given color map.
+  get_scatterplot_grid_color: function (name: string): string {
+    if (name === undefined) name = window.store.getState().colormap;
+    const scatterplot_grid_color =
+      this.color_maps[name]["scatterplot_grid_color"] !== undefined
+        ? this.color_maps[name]["scatterplot_grid_color"]
+        : "black";
+    return scatterplot_grid_color;
   },
 
   // Return the suggested opacity value for the given color map.
@@ -48,8 +58,6 @@ export default {
   // Return a d3 linear color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
   get_color_scale: function (name: string, min: number, max: number) {
-    // console.debug(`get_color_scale, name is %o, min is %o, max is %o`, name, min, max);
-    // console.debug(`get_color_scale, this is %o`, this);
     if (name === undefined) name = window.store.getState().colormap;
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
