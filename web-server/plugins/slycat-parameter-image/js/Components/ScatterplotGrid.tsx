@@ -31,7 +31,6 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
   // Only execute the useEffect hook if show_grid is true
   useEffect(() => {
     if (show_grid) {
-      // console.debug("ScatterplotGrid.componentDidMount() updateGrid()");
       updateGrid();
     }
   });
