@@ -222,10 +222,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
     let disabledLogVariables = [];
     for (let axes_variable of this.props.axes_variables) {
       const index = axes_variable.key;
-      let scale_type = "Linear";
-      if (this.props.axes_variables_scale[index] !== undefined) {
-        scale_type = this.props.axes_variables_scale[index];
-      }
+      const scale_type = this.props.axes_variables_scale?.[index] ?? "Linear";
       axes_variables.push({
         index: index,
         "Axis Type": scale_type,
@@ -234,14 +231,20 @@ class ControlsButtonVarOptions extends React.PureComponent {
         disabled: false,
         hidden: false,
         lastSelected: false,
-        name: this.props.variable_aliases[index] || axes_variable.name,
+        name: this.props.variable_aliases[index] ?? axes_variable.name,
         selected: false,
         tooltip: "",
       });
-      // Find variables with a min of 0 or less so we don't allow them
-      // for log scales.
-      // console.debug(`table_statistics is %o`, this.props.table_statistics);
-      if (this.props.table_statistics && this.props.table_statistics[index].min <= 0) {
+
+      // Check if variable is numeric
+      const isNumericVariable =
+        this.props.numericScatterplotVariables.find((variable) => variable.key === index) !==
+        undefined;
+      // Check if variable is greater than zero
+      const isGreaterThanZero = this.props.table_statistics?.[index]?.min > 0;
+      // If not numeric or not greater than zero, add to disabledLogVariables
+      // so we don't allow them for log scales.
+      if (!isNumericVariable || !isGreaterThanZero) {
         disabledLogVariables.push(index);
       }
     }
@@ -638,12 +641,8 @@ const mapStateToProps = (state, ownProps) => {
           key: index,
           index: indexCounter++,
           name: getVariableAlias(index),
-          min: state.derived.table_statistics
-            ? state.derived.table_statistics[index].min
-            : undefined,
-          max: state.derived.table_statistics
-            ? state.derived.table_statistics[index].max
-            : undefined,
+          min: state.derived.table_statistics?.[index]?.min,
+          max: state.derived.table_statistics?.[index]?.max,
         },
       ];
     }
