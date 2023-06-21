@@ -24,6 +24,7 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
 import ScatterplotGrid from "./Components/ScatterplotGrid";
+import Histogram from "./Components/Histogram";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -247,6 +248,13 @@ $.widget("parameter_image.scatterplot", {
         opacity: ".99",
       })
       .attr("class", "scatterplot-svg");
+    self.svg_grid = d3
+      .select(self.element.get(0))
+      .append("svg")
+      .style({
+        opacity: ".99",
+      })
+      .attr("id", "histogram-svg");
 
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
@@ -649,6 +657,14 @@ $.widget("parameter_image.scatterplot", {
     grid_root.render(
       <Provider store={window.store}>
         <ScatterplotGrid />
+      </Provider>
+    );
+    
+
+    const histogram_root = createRoot(document.getElementById("histogram-svg"));
+    histogram_root.render(
+      <Provider store={window.store}>
+        <Histogram />
       </Provider>
     );
 

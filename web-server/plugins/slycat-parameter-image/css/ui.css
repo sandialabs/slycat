@@ -991,13 +991,17 @@ button#controls-button-var-options {
   font-family: var(--custom-font-family, Arial);
 }
 
-/* Scatterplot Grid */
+/* Histogram and Scatterplot Grid */
+#histogram-svg,
 #scatterplot-grid-svg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+}
+/* Scatterplot Grid */
+#scatterplot-grid-svg {
   /* Sends the grid behind everything else. Canvas points are -1, so this moves the grid behind them. */
   z-index: -2;
 }

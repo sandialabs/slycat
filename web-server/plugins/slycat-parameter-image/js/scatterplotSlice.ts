@@ -5,12 +5,14 @@ export interface ScatterplotState {
   scatterplot_pane_width: number | undefined;
   scatterplot_pane_height: number | undefined;
   show_grid: boolean;
+  show_histogram: boolean;
 }
 
 const initialState: ScatterplotState = {
   scatterplot_pane_width: undefined,
   scatterplot_pane_height: undefined,
   show_grid: false,
+  show_histogram: true,
 };
 
 export const scatterplotSlice = createSlice({
@@ -30,16 +32,20 @@ export const scatterplotSlice = createSlice({
     toggleShowGrid: (state) => {
       state.show_grid = !state.show_grid;
     },
+    toggleShowHistogram: (state) => {
+      state.show_histogram = !state.show_histogram;
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { setScatterplotPaneWidth, setScatterplotPaneHeight, toggleShowGrid } =
+export const { setScatterplotPaneWidth, setScatterplotPaneHeight, toggleShowGrid, toggleShowHistogram } =
   scatterplotSlice.actions;
 
 // Selectors
 export const selectScatterplotPaneWidth = (state: RootState) => state.scatterplot.scatterplot_pane_width;
 export const selectScatterplotPaneHeight = (state: RootState) => state.scatterplot.scatterplot_pane_height;
 export const selectShowGrid = (state: RootState) => state.scatterplot.show_grid;
+export const selectShowHistogram = (state: RootState) => state.scatterplot.show_histogram;
 
 export default scatterplotSlice.reducer;
