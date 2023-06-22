@@ -48,5 +48,7 @@ export const selectScatterplotPaneHeight = (state: RootState) => state.scatterpl
 export const selectShowGrid = (state: RootState) => state.scatterplot.show_grid;
 export const selectShowHistogram = (state: RootState) => state.scatterplot.show_histogram;
 export const selectUnselectedBorderSize = (state: RootState) => state.unselected_border_size;
+export const selectFontSize = (state: RootState) => state.fontSize;
+export const selectFontFamily = (state: RootState) => state.fontFamily;
 
 export default scatterplotSlice.reducer;

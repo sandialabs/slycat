@@ -992,6 +992,7 @@ button#controls-button-var-options {
 }
 
 /* Histogram and Scatterplot Grid */
+#histogram,
 #histogram-svg,
 #scatterplot-grid-svg {
   position: absolute;
@@ -1004,4 +1005,8 @@ button#controls-button-var-options {
 #scatterplot-grid-svg {
   /* Sends the grid behind everything else. Canvas points are -1, so this moves the grid behind them. */
   z-index: -2;
+}
+/* Histogram */
+#histogram {
+  color: black;
 }

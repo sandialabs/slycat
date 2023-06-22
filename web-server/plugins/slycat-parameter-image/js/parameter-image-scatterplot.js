@@ -250,11 +250,8 @@ $.widget("parameter_image.scatterplot", {
       .attr("class", "scatterplot-svg");
     self.svg_grid = d3
       .select(self.element.get(0))
-      .append("svg")
-      .style({
-        opacity: ".99",
-      })
-      .attr("id", "histogram-svg");
+      .append("div")
+      .attr("id", "histogram");
 
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
@@ -661,7 +658,7 @@ $.widget("parameter_image.scatterplot", {
     );
     
 
-    const histogram_root = createRoot(document.getElementById("histogram-svg"));
+    const histogram_root = createRoot(document.getElementById("histogram"));
     histogram_root.render(
       <Provider store={window.store}>
         <Histogram />

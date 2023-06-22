@@ -16,18 +16,21 @@ import {
   selectShowHistogram,
   selectScatterplotPaneHeight,
   selectUnselectedBorderSize,
+  selectFontSize,
+  selectFontFamily,
 } from "../scatterplotSlice";
 import slycat_color_maps from "js/slycat-color-maps";
 
 type HistogramProps = {};
 
 const Histogram: React.FC<HistogramProps> = (props) => {
-  const histogramRef = useRef<SVGGElement>(null);
+  const histogramRef = useRef<SVGSVGElement>(null);
 
   // Select values from the state with `useSelector`
   const show_histogram = useSelector(selectShowHistogram);
   const colormap = useSelector(selectColormap);
-  const x_scale = useSelector(selectXScale);
+  // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
+  const x_scale = useSelector(selectXScale).copy();
   // const y_scale = useSelector(selectYScale);
   const y_scale_range = useSelector(selectYScaleRange);
   const x_ticks = useSelector(selectXTicks);
@@ -35,6 +38,8 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const x_values = useSelector(selectXValues);
   const height = useSelector(selectScatterplotPaneHeight);
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
+  const font_size = useSelector(selectFontSize);
+  const font_family = useSelector(selectFontFamily);
 
   // const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
 
@@ -63,6 +68,9 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .scaleLinear()
       .domain([0, d3.max(bins, (d) => d.length)])
       .range(y_scale_range);
+
+    // Adjusting x_scale domain to match the bins
+    x_scale.domain([bins[0].x0, bins[bins.length - 1].x1]);
 
     // Create a color scale for y axis
     const color_scale = slycat_color_maps.get_color_scale_d3v7(
@@ -99,8 +107,14 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     // Add the x-axis and label.
     histogram
       .append("g")
+      .style("font-size", font_size + "px")
+      .style("font-family", font_family)
       .attr("transform", `translate(0,${y_scale_range[0]})`)
-      .call(d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0));
+      .call(d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0))
+      .selectAll("text")
+      .style("text-anchor", "start")
+      .attr("transform", "rotate(15)");
+      ;
     // .call((g) =>
     //   g
     //     .append("text")
@@ -110,13 +124,37 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     //     .attr("text-anchor", "end")
     //     .text("Unemployment rate (%) →")
     // )
+
+    // Add the y-axis and label, and remove the domain line.
+    histogram
+      .append("g")
+      .style("font-size", font_size + "px")
+      .style("font-family", font_family)
+      .attr("transform", `translate(${x_scale.range()[0]},0)`)
+      .call(d3.axisLeft(y_scale).ticks(y_ticks));
+    // .call((g) => g.select(".domain").remove())
+    // .call((g) =>
+    //   g
+    //     .append("text")
+    //     .attr("x", -marginLeft)
+    //     .attr("y", 10)
+    //     .attr("fill", "currentColor")
+    //     .attr("text-anchor", "start")
+    //     .text("↑ Frequency (no. of counties)")
+    // );
   };
 
   // Only render the component if show_histogram is true
   if (!show_histogram) {
     return null;
   }
-  return <g id="histogram" ref={histogramRef} />;
+  return (
+    <svg
+      id="histogram-svg"
+      ref={histogramRef}
+      style={{ background: slycat_color_maps.get_background(colormap).toString() }}
+    />
+  );
 };
 
 export default Histogram;
