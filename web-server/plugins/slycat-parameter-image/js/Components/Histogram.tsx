@@ -12,13 +12,17 @@ import {
   selectXValues,
   selectYScaleRange,
 } from "../selectors";
-import { selectShowHistogram, selectScatterplotPaneHeight } from "../scatterplotSlice";
+import {
+  selectShowHistogram,
+  selectScatterplotPaneHeight,
+  selectUnselectedBorderSize,
+} from "../scatterplotSlice";
 import slycat_color_maps from "js/slycat-color-maps";
 
 type HistogramProps = {};
 
 const Histogram: React.FC<HistogramProps> = (props) => {
-  const gridRef = useRef<SVGGElement>(null);
+  const histogramRef = useRef<SVGGElement>(null);
 
   // Select values from the state with `useSelector`
   const show_histogram = useSelector(selectShowHistogram);
@@ -30,24 +34,29 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const y_ticks = useSelector(selectYTicks);
   const x_values = useSelector(selectXValues);
   const height = useSelector(selectScatterplotPaneHeight);
+  const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
 
-  const scatterplot_grid_color = slycat_color_maps.get_scatterplot_grid_color(colormap);
+  const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
 
-  // Only execute the useEffect hook if show_grid is true
+  // Only execute the useEffect hook if show_histogram is true
   useEffect(() => {
     if (show_histogram) {
-      updateGrid();
+      updateHistogram();
     }
   });
 
-  const updateGrid = () => {
+  const updateHistogram = () => {
     const bins = d3
       .bin()
       .value((d: number | string) => d)
       // .thresholds([0, 2, 4, 6, 8, 10])
-      .domain(x_scale.domain())(x_values);
-
+      // .thresholds(x_scale.ticks())
+      .thresholds(x_ticks)(
+      // .domain(x_scale.domain())
+      x_values
+    );
     console.debug(`bins: %o`, bins);
+    console.debug(`x_scale.ticks(): %o`, x_scale.ticks());
 
     // Declare the y (vertical position) scale.
     const y_scale = d3
@@ -55,70 +64,45 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .domain([0, d3.max(bins, (d) => d.length)])
       .range(y_scale_range);
 
-    const allRects = bins.map((bin, i) => {
-      return (
-        <rect
-          key={i}
-          fill="#69b3a2"
-          stroke="black"
-          x={x_scale(bin.x0)}
-          width={x_scale(bin.x1) - x_scale(bin.x0)}
-          y={y_scale(bin.length)}
-          height={height - y_scale(bin.length)}
-        />
-      );
-    });
+    // Add a rect for each bin.
+    const histogram = d3.select(histogramRef.current);
+    histogram.selectAll("*").remove();
+    histogram
+      .append("g")
+      .attr("fill", histogram_bar_color)
+      .attr("stroke", "black")
+      .attr("stroke-width", histogram_bar_stroke_width)
+      .selectAll()
+      .data(bins)
+      .join("rect")
+      .attr("x", (d) => x_scale(d.x0) + 0)
+      .attr("width", (d) => x_scale(d.x1) - x_scale(d.x0) - 0)
+      .attr("y", (d) => y_scale(d.length))
+      .attr("height", (d) => y_scale(0) - y_scale(d.length))
+      .append("title")
+      .text((d) => `Count: ${d.length}\n\nRange: ${d.x0} (inclusive) to \n${d.x1} (exclusive, except for last bar)`);
 
-    // const setStrokeStyle = (sel: d3.Selection<SVGGElement, unknown, null, undefined>) => {
-    //   sel.style("stroke", scatterplot_grid_color);
-    // };
-
-    // const gridline = fc
-    //   .annotationSvgGridline()
-    //   .xScale(x_scale)
-    //   .yScale(y_scale)
-    //   .xTicks(x_ticks)
-    //   .yTicks(y_ticks)
-    //   .xDecorate(setStrokeStyle)
-    //   .yDecorate(setStrokeStyle);
-    // d3.select(gridRef.current).call(gridline);
+    // Add the x-axis and label.
+    histogram
+      .append("g")
+      .attr("transform", `translate(0,${y_scale_range[0]})`)
+      .call(d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0));
+    // .call((g) =>
+    //   g
+    //     .append("text")
+    //     .attr("x", width)
+    //     .attr("y", marginBottom - 4)
+    //     .attr("fill", "currentColor")
+    //     .attr("text-anchor", "end")
+    //     .text("Unemployment rate (%) →")
+    // )
   };
-
-  const bins = d3
-    .bin()
-    .value((d: number | string) => d)
-    // .thresholds([0, 2, 4, 6, 8, 10])
-    .domain(x_scale.domain())(x_values);
-
-  console.debug(`bins: %o`, bins);
-
-  // Declare the y (vertical position) scale.
-  const y_scale = d3
-    .scaleLinear()
-    .domain([0, d3.max(bins, (d) => d.length)])
-    .range(y_scale_range);
-
-  const allRects = bins.map((bin, i) => {
-    return (
-      <rect
-        key={i}
-        fill="#69b3a2"
-        stroke="black"
-        x={x_scale(bin.x0)}
-        width={x_scale(bin.x1) - x_scale(bin.x0)}
-        y={y_scale(bin.length)}
-        height={height - y_scale(bin.length)}
-      />
-    );
-  });
-
-  // return null;
 
   // Only render the component if show_histogram is true
   if (!show_histogram) {
     return null;
   }
-  return <g id="histogram" ref={gridRef}>{allRects}</g>;
+  return <g id="histogram" ref={histogramRef} />;
 };
 
 export default Histogram;
