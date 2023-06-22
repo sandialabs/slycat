@@ -36,7 +36,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const height = useSelector(selectScatterplotPaneHeight);
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
 
-  const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
+  // const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
 
   // Only execute the useEffect hook if show_histogram is true
   useEffect(() => {
@@ -64,23 +64,37 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .domain([0, d3.max(bins, (d) => d.length)])
       .range(y_scale_range);
 
+    // Create a color scale for y axis
+    const color_scale = slycat_color_maps.get_color_scale_d3v7(
+      colormap,
+      y_scale.domain()[0],
+      y_scale.domain()[1]
+    );
+
     // Add a rect for each bin.
     const histogram = d3.select(histogramRef.current);
     histogram.selectAll("*").remove();
     histogram
       .append("g")
-      .attr("fill", histogram_bar_color)
+      // .attr("fill", histogram_bar_color)
       .attr("stroke", "black")
       .attr("stroke-width", histogram_bar_stroke_width)
       .selectAll()
       .data(bins)
       .join("rect")
+      .attr("fill", (d) => {
+        const color = color_scale(d.length);
+        return `rgb(${color.r} ${color.g} ${color.b})`;
+      })
       .attr("x", (d) => x_scale(d.x0) + 0)
       .attr("width", (d) => x_scale(d.x1) - x_scale(d.x0) - 0)
       .attr("y", (d) => y_scale(d.length))
       .attr("height", (d) => y_scale(0) - y_scale(d.length))
       .append("title")
-      .text((d) => `Count: ${d.length}\n\nRange: ${d.x0} (inclusive) to \n${d.x1} (exclusive, except for last bar)`);
+      .text(
+        (d) =>
+          `Count: ${d.length}\n\nRange: ${d.x0} (inclusive) to \n${d.x1} (exclusive, except for last bar)`
+      );
 
     // Add the x-axis and label.
     histogram

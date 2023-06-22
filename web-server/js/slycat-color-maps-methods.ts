@@ -3,6 +3,7 @@ Under the terms of Contract  DE-NA0003525 with National Technology and Engineeri
 retains certain rights in this software. */
 
 import d3 from "d3";
+import * as d3v7 from "d3v7";
 
 export default {
   isValueInColorscaleRange: function (
@@ -78,6 +79,21 @@ export default {
       .range([min, max]);
     for (var i in this.color_maps[name].colors) domain.push(domain_scale(i));
     return d3.scale.linear().domain(domain).range(this.color_maps[name].colors);
+  },
+
+  // Return a d3 version 7 linear color scale with the current color map for the domain [0, 1].
+  // Callers should modify the domain by passing a min and max to suit their own needs.
+  get_color_scale_d3v7: function (name: string, min: number, max: number) {
+    if (name === undefined) name = window.store.getState().colormap;
+    if (min === undefined) min = 0.0;
+    if (max === undefined) max = 1.0;
+    var domain = [];
+    var domain_scale = d3v7
+      .scaleLinear()
+      .domain([0, this.color_maps[name].colors.length - 1])
+      .range([min, max]);
+    for (var i in this.color_maps[name].colors) domain.push(domain_scale(i));
+    return d3v7.scaleLinear().domain(domain).range(this.color_maps[name].colors);
   },
 
   // Deprecated
