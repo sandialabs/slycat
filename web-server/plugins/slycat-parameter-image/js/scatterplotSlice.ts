@@ -47,5 +47,6 @@ export const selectScatterplotPaneWidth = (state: RootState) => state.scatterplo
 export const selectScatterplotPaneHeight = (state: RootState) => state.scatterplot.scatterplot_pane_height;
 export const selectShowGrid = (state: RootState) => state.scatterplot.show_grid;
 export const selectShowHistogram = (state: RootState) => state.scatterplot.show_histogram;
+export const selectUnselectedBorderSize = (state: RootState) => state.unselected_border_size;
 
 export default scatterplotSlice.reducer;

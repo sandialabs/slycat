@@ -49,6 +49,16 @@ export default {
     return scatterplot_grid_color;
   },
 
+  // Return the histogram bar color value for the given color map.
+  get_histogram_bar_color: function (name: string): string {
+    if (name === undefined) name = window.store.getState().colormap;
+    const histogram_bar_color =
+      this.color_maps[name]["scatterplot_grid_color"] !== undefined
+        ? this.color_maps[name]["scatterplot_grid_color"]
+        : "black";
+    return histogram_bar_color;
+  },
+
   // Return the suggested opacity value for the given color map.
   get_opacity: function (name: string): string {
     if (name === undefined) name = window.store.getState().colormap;
