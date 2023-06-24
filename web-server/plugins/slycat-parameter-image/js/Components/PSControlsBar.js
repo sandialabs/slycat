@@ -117,11 +117,6 @@ class ControlsBar extends React.Component {
   };
 
   set_selected = (state_label, key, trigger, e, props) => {
-    // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-    if (key === this.props[state_label]) {
-      // console.debug(`doing nothing because state hasn't changed`);
-      return;
-    }
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);
   };

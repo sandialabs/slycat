@@ -39,7 +39,11 @@ import "./category-select";
 import throttle from "redux-throttle";
 import ps_reducer from "./reducers";
 import scatterplot_reducer from "./scatterplotSlice";
-import { setScatterplotPaneWidth, setScatterplotPaneHeight, setShowGrid } from "./scatterplotSlice";
+import {
+  setScatterplotPaneWidth,
+  setScatterplotPaneHeight,
+  toggleShowHistogram,
+} from "./scatterplotSlice";
 import {
   setXValues,
   setYValues,
@@ -56,7 +60,6 @@ import {
   setTableStatistics,
   setTableMetadata,
   setVideoSyncTime,
-  setColormap,
 } from "./actions";
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -1673,6 +1676,10 @@ $(document).ready(function () {
 
     // Dispatch update to y index in Redux
     window.store.dispatch(setYIndex(y_index));
+    // Hide histogram if it's being displayed
+    if (window.store.getState().scatterplot.show_histogram) {
+      window.store.dispatch(toggleShowHistogram());
+    }
   }
 
   function auto_scale_option_changed(auto_scale_value) {
