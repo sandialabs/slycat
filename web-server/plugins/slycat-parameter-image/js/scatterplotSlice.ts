@@ -12,7 +12,7 @@ const initialState: ScatterplotState = {
   scatterplot_pane_width: undefined,
   scatterplot_pane_height: undefined,
   show_grid: false,
-  show_histogram: true,
+  show_histogram: false,
 };
 
 export const scatterplotSlice = createSlice({

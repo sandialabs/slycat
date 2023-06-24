@@ -45,6 +45,10 @@ const Histogram: React.FC<HistogramProps> = (props) => {
 
   // Only execute the useEffect hook if show_histogram is true
   useEffect(() => {
+    // Ugly way of hiding and showing the #histogram div to prevent issues with mouse selection
+    // of points. This is only necessary while parts of PS not yet in React.
+    d3.select("#histogram").style("display", show_histogram ? "block" : "none");
+
     if (show_histogram) {
       updateHistogram();
     }
