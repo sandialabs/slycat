@@ -21,6 +21,8 @@ import {
 } from "../actions";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
+import { v4 as uuidv4 } from "uuid";
+import { toggleShowHistogram } from "../scatterplotSlice";
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -268,6 +270,35 @@ class ControlsBar extends React.Component {
 
     const dropdowns = aliased_dropdowns.map((dropdown) => {
       if (dropdown.items.length > 1) {
+        // If this dropdown is the y-axis-dropdown
+        if (dropdown.id == "y-axis-dropdown") {
+          // If show_histogram is true
+          if (this.props.show_histogram) {
+            // Iterate through each item in the dropdown
+            dropdown.items.forEach((item) => {
+              // If the item is not a divider or header
+              if (item.type != "divider" && item.type != "header") {
+                // Deselect it because we are showing the histogram, which displays a different y axis
+                item.selected = false;
+              }
+            });
+          }
+          // Add a separator and an item to display the histogram
+          const unique_histogram_dropdown_item_key = uuidv4();
+          dropdown.items.push(
+            {
+              type: "divider",
+            },
+            {
+              // key is a unique identifier to make sure it doesn't clash with any other dropdown items
+              key: unique_histogram_dropdown_item_key,
+              name: "Frequency of X Axis Variable",
+              set_selected: this.props.toggleShowHistogram,
+              selected: this.props.show_histogram,
+            }
+          );
+        }
+
         return (
           <ControlsDropdown
             button_style={button_style}
@@ -508,6 +539,7 @@ const mapStateToProps = (state, ownProps) => {
     hidden_simulations: state.hidden_simulations,
     video_sync_time: state.video_sync_time,
     colormap: state.colormap,
+    show_histogram: state.scatterplot.show_histogram,
   };
 };
 
@@ -518,6 +550,7 @@ export default connect(
     toggleSyncThreeDColorvar,
     setVideoSyncTime,
     setColormap,
+    toggleShowHistogram,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this
