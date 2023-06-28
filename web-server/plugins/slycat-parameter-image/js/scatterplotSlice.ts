@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-export interface ScatterplotState {
+interface ScatterplotState {
   scatterplot_pane_width: number | undefined;
   scatterplot_pane_height: number | undefined;
   show_grid: boolean;
@@ -39,12 +39,18 @@ export const scatterplotSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { setScatterplotPaneWidth, setScatterplotPaneHeight, toggleShowGrid, toggleShowHistogram } =
-  scatterplotSlice.actions;
+export const {
+  setScatterplotPaneWidth,
+  setScatterplotPaneHeight,
+  toggleShowGrid,
+  toggleShowHistogram,
+} = scatterplotSlice.actions;
 
 // Selectors
-export const selectScatterplotPaneWidth = (state: RootState) => state.scatterplot.scatterplot_pane_width;
-export const selectScatterplotPaneHeight = (state: RootState) => state.scatterplot.scatterplot_pane_height;
+export const selectScatterplotPaneWidth = (state: RootState) =>
+  state.scatterplot.scatterplot_pane_width;
+export const selectScatterplotPaneHeight = (state: RootState) =>
+  state.scatterplot.scatterplot_pane_height;
 export const selectShowGrid = (state: RootState) => state.scatterplot.show_grid;
 export const selectShowHistogram = (state: RootState) => state.scatterplot.show_histogram;
 export const selectUnselectedBorderSize = (state: RootState) => state.unselected_border_size;

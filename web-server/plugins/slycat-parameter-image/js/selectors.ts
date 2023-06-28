@@ -33,7 +33,7 @@ type AxesVariablesType = {
 
 type ValuesType = (number | string)[];
 
-type ScaleRangeType = [number, number];
+export type ScaleRangeType = [number, number];
 
 const selectMarginLeft = (state) => state.scatterplot_margin.left;
 const selectMarginRight = (state) => state.scatterplot_margin.right;
@@ -48,7 +48,24 @@ export const selectYIndex = (state) => state.y_index;
 export const selectVIndex = (state) => state.v_index;
 export const selectAxesVariables = (state) => state.axesVariables;
 const selectColumnTypes = (state) => state.derived.table_metadata["column-types"];
+const selectColumnNames = (state) => state.derived.table_metadata["column-names"];
 const selectTableStatistics = (state) => state.derived.table_statistics;
+
+export const selectXColumnName = createSelector(
+  selectXIndex,
+  selectColumnNames,
+  (x_index: number, columnNames: string[]): string => {
+    return columnNames[x_index] !== undefined ? columnNames[x_index] : "";
+  }
+);
+
+export const selectYColumnName = createSelector(
+  selectYIndex,
+  selectColumnNames,
+  (y_index: number, columnNames: string[]): string => {
+    return columnNames[y_index] !== undefined ? columnNames[y_index] : "";
+  }
+);
 
 export const selectXColumnType = createSelector(
   selectXIndex,
@@ -248,13 +265,19 @@ export const selectYRangeCanvas = createSelector(
   ]
 );
 
-export const selectXTicks = createSelector(selectXRangeCanvas, (xRangeCanvas: ScaleRangeType): number => {
-  return xRangeCanvas[1] / 85;
-});
+export const selectXTicks = createSelector(
+  selectXRangeCanvas,
+  (xRangeCanvas: ScaleRangeType): number => {
+    return xRangeCanvas[1] / 85;
+  }
+);
 
-export const selectYTicks = createSelector(selectYRangeCanvas, (yRangeCanvas: ScaleRangeType): number => {
-  return yRangeCanvas[0] / 50;
-});
+export const selectYTicks = createSelector(
+  selectYRangeCanvas,
+  (yRangeCanvas: ScaleRangeType): number => {
+    return yRangeCanvas[0] / 50;
+  }
+);
 
 // TODO: selectXValues and selectYValues sometimes are out of sync with the
 // currently selected x variable and y variable. This is because they are
@@ -323,3 +346,23 @@ const getScale = (
   const domain = columnType === "string" && scaleType !== "Date & Time" ? _.uniq(values) : extent;
   return scale.range(scaleRange).domain(domain);
 };
+
+// Vertical and horizontal offsets of the x-axis label.
+export const X_LABEL_VERTICAL_OFFSET = 5;
+export const X_LABEL_HORIZONTAL_OFFSET = 40;
+
+// This is the x position of the x-axis label. Set to align with the end of the axis.
+export const selectXLabelX = createSelector(
+  selectXScaleRange,
+  (xScaleRange: ScaleRangeType): number => xScaleRange[1] + X_LABEL_HORIZONTAL_OFFSET
+);
+
+// Vertical offset of the y-axis label.
+export const Y_LABEL_HORIZONTAL_OFFSET = 25;
+
+// This is the y position of the y-axis label. Set to align with the middle of the axis.
+export const selectYLabelY = createSelector(
+  selectScatterplotPaneHeight,
+  selectMarginTop,
+  (scatterplot_height: number, margin_top: number): number => margin_top + scatterplot_height / 2
+);

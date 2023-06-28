@@ -6,15 +6,18 @@ import _ from "lodash";
 import {
   selectColormap,
   selectXScale,
-  selectYScale,
   selectXTicks,
   selectYTicks,
   selectXValues,
   selectYScaleRange,
+  selectXLabelX,
+  X_LABEL_VERTICAL_OFFSET,
+  selectXColumnName,
+  Y_LABEL_HORIZONTAL_OFFSET,
+  selectYLabelY,
 } from "../selectors";
 import {
   selectShowHistogram,
-  selectScatterplotPaneHeight,
   selectUnselectedBorderSize,
   selectFontSize,
   selectFontFamily,
@@ -31,15 +34,17 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const colormap = useSelector(selectColormap);
   // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
   const x_scale = useSelector(selectXScale).copy();
-  // const y_scale = useSelector(selectYScale);
   const y_scale_range = useSelector(selectYScaleRange);
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
   const x_values = useSelector(selectXValues);
-  const height = useSelector(selectScatterplotPaneHeight);
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
   const font_size = useSelector(selectFontSize);
   const font_family = useSelector(selectFontFamily);
+  const x_label_y = X_LABEL_VERTICAL_OFFSET;
+  const x_label_x = useSelector(selectXLabelX);
+  const x_name = useSelector(selectXColumnName);
+  const y_label_y = useSelector(selectYLabelY);
 
   // const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
 
@@ -64,8 +69,6 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       // .domain(x_scale.domain())
       x_values
     );
-    console.debug(`bins: %o`, bins);
-    console.debug(`x_scale.ticks(): %o`, x_scale.ticks());
 
     // Declare the y (vertical position) scale.
     const y_scale = d3
@@ -115,19 +118,20 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .style("font-family", font_family)
       .attr("transform", `translate(0,${y_scale_range[0]})`)
       .call(d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0))
-      .selectAll("text")
+      .call((g) =>
+        g
+          .append("text")
+          .attr("class", "label")
+          .attr("x", x_label_x)
+          .attr("y", x_label_y)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .style("font-weight", "bold")
+          .text(x_name)
+      )
+      .selectAll(".tick text")
       .style("text-anchor", "start")
       .attr("transform", "rotate(15)");
-      ;
-    // .call((g) =>
-    //   g
-    //     .append("text")
-    //     .attr("x", width)
-    //     .attr("y", marginBottom - 4)
-    //     .attr("fill", "currentColor")
-    //     .attr("text-anchor", "end")
-    //     .text("Unemployment rate (%) →")
-    // )
 
     // Add the y-axis and label, and remove the domain line.
     histogram
@@ -135,17 +139,22 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .style("font-size", font_size + "px")
       .style("font-family", font_family)
       .attr("transform", `translate(${x_scale.range()[0]},0)`)
-      .call(d3.axisLeft(y_scale).ticks(y_ticks));
-    // .call((g) => g.select(".domain").remove())
-    // .call((g) =>
-    //   g
-    //     .append("text")
-    //     .attr("x", -marginLeft)
-    //     .attr("y", 10)
-    //     .attr("fill", "currentColor")
-    //     .attr("text-anchor", "start")
-    //     .text("↑ Frequency (no. of counties)")
-    // );
+      .call(d3.axisLeft(y_scale).ticks(y_ticks))
+      .call((g) => {
+        // Get the width of the y-axis element
+        const y_axis_width = g.node().getBBox().width;
+        const y_label_x = -(y_axis_width + Y_LABEL_HORIZONTAL_OFFSET)
+        return g
+          .append("text")
+          .attr("class", "label")
+          .attr("x", y_label_x)
+          .attr("y", y_label_y)
+          .attr("fill", "currentColor")
+          .attr("transform", "rotate(-90," + y_label_x + "," + y_label_y + ")")
+          .style("text-anchor", "middle")
+          .style("font-weight", "bold")
+          .text("Frequency");
+      });
   };
 
   // Only render the component if show_histogram is true
