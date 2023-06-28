@@ -144,7 +144,7 @@ export default {
       label: "Grayscale Day",
       background: WHITE,
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: GRAY4,
+      null_color: GRAY2,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY1,
       opacity: "0.6",
