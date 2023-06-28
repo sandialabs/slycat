@@ -954,6 +954,10 @@ $.widget("parameter_image.scatterplot", {
       self._schedule_update({ render_selection: true });
     } else if (key == "colorscale") {
       self._schedule_update({ render_data: true, render_selection: true });
+      // Update frame backgrounds to colormap null color
+      d3.selectAll(".image-frame").style({
+        "background-color": slycat_color_maps.get_null_color(window.store.getState().colormap),
+      });
     } else if (key == "width") {
       // console.debug(`width option set to %o: %o`, key, value);
       self._schedule_update({
@@ -1887,6 +1891,8 @@ $.widget("parameter_image.scatterplot", {
           width: img.width + "px",
           height: img.height + 20 + "px",
           "z-index": self.options.highest_z_index,
+          // Set frame background to colormap null color
+          "background-color": slycat_color_maps.get_null_color(window.store.getState().colormap),
         })
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
