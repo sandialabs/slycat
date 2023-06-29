@@ -1010,5 +1010,5 @@ button#controls-button-var-options {
 #histogram {
   color: black;
   /* Sends the histogram in front of media frames.  */
-  z-index: 2; 
+  z-index: 5; 
 }
