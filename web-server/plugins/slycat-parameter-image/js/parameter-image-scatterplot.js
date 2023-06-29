@@ -23,7 +23,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
-import ScatterplotGrid from "./Components/ScatterplotGrid";
+import PlotGrid from "./Components/PlotGrid";
 import Histogram from "./Components/Histogram";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
@@ -653,7 +653,7 @@ $.widget("parameter_image.scatterplot", {
     const grid_root = createRoot(document.getElementById("scatterplot-grid-svg"));
     grid_root.render(
       <Provider store={window.store}>
-        <ScatterplotGrid />
+        <PlotGrid />
       </Provider>
     );
     

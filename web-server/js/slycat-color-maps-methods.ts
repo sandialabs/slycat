@@ -41,7 +41,7 @@ export default {
   },
 
   // Return the scatterplot grid color value for the given color map.
-  get_scatterplot_grid_color: function (name: string): string {
+  get_plot_grid_color: function (name: string): string {
     if (name === undefined) name = window.store.getState().colormap;
     const scatterplot_grid_color = this.color_maps[name]?.scatterplot_grid_color ?? "black";
     return scatterplot_grid_color;

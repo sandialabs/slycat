@@ -13,9 +13,9 @@ import {
 import { selectShowGrid } from "../scatterplotSlice";
 import slycat_color_maps from "js/slycat-color-maps";
 
-type ScatterplotGridProps = {};
+type PlotGridProps = {};
 
-const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
+const PlotGrid: React.FC<PlotGridProps> = (props) => {
   const gridRef = useRef<SVGGElement>(null);
 
   // Select values from the state with `useSelector`
@@ -26,7 +26,7 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
 
-  const scatterplot_grid_color = slycat_color_maps.get_scatterplot_grid_color(colormap);
+  const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
 
   // Only execute the useEffect hook if show_grid is true
   useEffect(() => {
@@ -37,7 +37,7 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
 
   const updateGrid = () => {
     const setStrokeStyle = (sel: d3.Selection<SVGGElement, unknown, null, undefined>) => {
-      sel.style("stroke", scatterplot_grid_color);
+      sel.style("stroke", plot_grid_color);
     };
 
     const gridline = fc
@@ -58,4 +58,4 @@ const ScatterplotGrid: React.FC<ScatterplotGridProps> = (props) => {
   return <g id="grid" ref={gridRef} />;
 };
 
-export default ScatterplotGrid;
+export default PlotGrid;
