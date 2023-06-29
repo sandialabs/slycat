@@ -54,8 +54,8 @@ export default {
   get_histogram_bar_color: function (name: string): string {
     if (name === undefined) name = window.store.getState().colormap;
     const histogram_bar_color =
-      this.color_maps[name]["scatterplot_grid_color"] !== undefined
-        ? this.color_maps[name]["scatterplot_grid_color"]
+      this.color_maps[name]["histogram_bar_color"] !== undefined
+        ? this.color_maps[name]["histogram_bar_color"]
         : "black";
     return histogram_bar_color;
   },
