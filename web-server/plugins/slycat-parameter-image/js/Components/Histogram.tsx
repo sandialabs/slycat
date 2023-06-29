@@ -46,7 +46,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const x_name = useSelector(selectXColumnName);
   const y_label_y = useSelector(selectYLabelY);
 
-  // const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
+  const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
 
   // Only execute the useEffect hook if show_histogram is true
   useEffect(() => {
@@ -97,10 +97,12 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .selectAll()
       .data(bins)
       .join("rect")
-      .attr("fill", (d) => {
-        const color = color_scale(d.length);
-        return `rgb(${color.r} ${color.g} ${color.b})`;
-      })
+      // This colors the bars based on their length, but trying to just use one color for now.
+      // .attr("fill", (d) => {
+      //   const color = color_scale(d.length);
+      //   return `rgb(${color.r} ${color.g} ${color.b})`;
+      // })
+      .attr("fill", histogram_bar_color)
       .attr("x", (d) => x_scale(d.x0) + 0)
       .attr("width", (d) => x_scale(d.x1) - x_scale(d.x0) - 0)
       .attr("y", (d) => y_scale(d.length))
