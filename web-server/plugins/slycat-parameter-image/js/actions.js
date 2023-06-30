@@ -286,6 +286,10 @@ export function setManuallyHiddenSimulations(manually_hidden_simulations) {
 }
 
 export function setMediaSizePosition(media_size_position) {
+  // We might consider throttling this in the future,
+  // but for now it affects media legends since they move
+  // along with their pins as this is updated. So throttling this
+  // introduces a delay in the media legend movement.
   return { type: SET_MEDIA_SIZE_POSITION, media_size_position };
 }
 
