@@ -444,7 +444,7 @@ $(document).ready(function () {
               getDefaultMiddleware({
                 serializableCheck: {
                   // Ignore these action types
-                  ignoredActions: ["SET_X_VALUES", "SET_Y_VALUES", "SET_V_VALUES"],
+                  ignoredActions: ["SET_X_VALUES", "SET_Y_VALUES", "SET_V_VALUES", "UPDATE_THREE_D_CAMERAS"],
                   // Ignore these field paths in all actions
                   // ignoredActionPaths: ["meta.arg", "payload.timestamp"],
                   // Ignore these paths in the state
