@@ -279,6 +279,12 @@ export const selectYTicks = createSelector(
   }
 );
 
+export type SlycatScaleType =
+  | d3.ScaleLinear<number, number>
+  | d3.ScaleLogarithmic<number, number>
+  | d3.ScaleTime<number, number>
+  | d3.ScalePoint<string>;
+
 // TODO: selectXValues and selectYValues sometimes are out of sync with the
 // currently selected x variable and y variable. This is because they are
 // loaded asynchronously outside of Redux.
@@ -296,7 +302,7 @@ export const selectXScale = createSelector(
     xScaleRange: ScaleRangeType,
     xColumnType: string,
     xValues: ValuesType
-  ): any => {
+  ): SlycatScaleType => {
     return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues);
   }
 );
@@ -313,7 +319,7 @@ export const selectYScale = createSelector(
     yScaleRange: ScaleRangeType,
     yColumnType: string,
     yValues: ValuesType
-  ): any => {
+  ): SlycatScaleType => {
     return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues);
   }
 );
@@ -324,7 +330,7 @@ const getScale = (
   scaleRange: ScaleRangeType,
   columnType: string,
   values: ValuesType
-) => {
+): SlycatScaleType => {
   let scale;
   switch (scaleType) {
     // Log scale types always get a log scale
