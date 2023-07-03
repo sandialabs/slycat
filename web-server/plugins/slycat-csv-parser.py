@@ -9,112 +9,123 @@ import numpy
 import slycat.web.server
 import cherrypy
 
+import pandas as pd
+from io import StringIO
+
+
+# common csv parsing code used by both slycat-web-server and slycat-web-client
+# does not call slycat.web.server directly, instead returns any error messages
+# error messages are returned as a list of {'type': 'warning', 'message': 'message'}
+def parse_file_offline(file):
+    """
+    parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
+    and sets attributes (attributes)
+    :param file: csv file to be parsed
+    :returns: attributes, dimensions, data, error_messages
+    """
+
+    # initial attributes, dimensions, and data
+    # empty, but existing to avoid crashing slycat
+    dimensions = [dict(name="row", type="int64", begin=0, end=0)]
+    attributes = [dict(name="None", type="float64")]
+    data = [numpy.zeros(0)]
+
+    # keep track of errors
+    csv_read_error = []
+
+    # load input file as pandas dataframe
+    try:
+        df = pd.read_csv(StringIO(file))
+
+    # return empty values if couldn't read file
+    except Exception as e:
+        csv_read_error.append({'type': 'error', 'message': 'Could not read .csv file.\n\n' +
+                               'Pandas exception: "' + str(e) + '".'})
+        return attributes, dimensions, data, csv_read_error 
+
+    # check for at least two rows
+    if df.shape[0] < 2:
+        csv_read_error.append({'type': 'error', 'message': 'File must contains at least two rows.'})
+        return attributes, dimensions, data, csv_read_error 
+    
+    # check for at least one column
+    if df.shape[1] < 1:
+        csv_read_error.append({'type': 'error', 'message': 'File must have at least one column.'})
+        return attributes, dimensions, data, csv_read_error
+
+    # parse attributes, dimensions of data frame
+    dimensions = [dict(name="row", type="int64", begin=0, end=len(df.index))]
+    attributes = [dict(name=header, type="float64" 
+        if df[header].dtype != "object" else "string") 
+        for header in df.columns]
+    
+    # parse data
+    data = []
+    for header in df.columns.values:
+        if df[header].dtype == "object":
+            data.append(df[header].values.astype('unicode'))
+        else:
+            data.append(df[header].values)
+            
+    # check for empty headers (pandas replaced them with 'Unnamed: <Column #>')
+    empty_headers = []
+    headers = df.columns.values
+    for i in range(len(headers)):
+        if headers[i].startswith('Unnamed:'):
+            empty_headers.append(int(headers[i][8:])+1)
+
+            # rename header so index starts at 1
+            df = df.rename(columns = {headers[i]: "Unnamed: " + str(empty_headers[-1])})
+    headers = df.columns.values
+
+    # slycat warning for empty headers
+    if len(empty_headers) != 0:
+        csv_read_error.append({'type': 'warning', 'message': 'Found empty headers in columns: ' + \
+                               str(empty_headers) + '.  Using "Unnamed: <Column #>" for empty headers.'})
+    
+    # look for duplicate headers (pandas adds .# to column)
+    duplicated_headers = []
+    for i in range(len(headers)):
+        for j in range(i+1,len(headers)):
+            if headers[j].startswith(headers[i]):
+                header_j_suffix = headers[j].split('.')[-1]
+                if header_j_suffix.isnumeric():
+                    duplicated_headers.append(i+1)
+                    duplicated_headers.append(j+1)
+    duplicated_headers = pd.unique(duplicated_headers)
+
+    # slycat warning for duplicated headers
+    if len(duplicated_headers) != 0:
+        csv_read_error.append({'type': 'warning', 'message': 'Found duplicated headers in columns: ' + \
+                              str(duplicated_headers) + '.  Using "<Header>.#" for duplicate headers.'})
+
+    # headers may have been changed, need to recompute
+    attributes = [dict(name=header, type="float64" 
+        if df[header].dtype != "object" else "string") 
+        for header in df.columns]
+    
+    # return data and errors
+    return attributes, dimensions, data, csv_read_error
+
+
 def parse_file(file, model, database):
     """
-  parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
-  and sets attributes (attributes)
-  :param file: csv file to be parsed
-  :returns: attributes, dimensions, data
-  """
-    def isfloat(value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+    parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
+    and sets attributes (attributes)
+    :param file: csv file to be parsed
+    :returns: attributes, dimensions, data
+    """
 
-    invalid_csv = False  # CSV is completely missing a column header (it isn't just a blank string)
-    content = file.splitlines()
-    csv_reader = csv.reader(content)
-    headings = next(csv_reader)
-    first_line = next(csv_reader)
+    # parse file
+    attributes, dimensions, data, csv_read_errors = parse_file_offline(file)
 
-    if len(headings) != len(first_line):
-        invalid_csv = True
-
-    rows = [row for row in
-            csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
-                       quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
-    if len(rows) < 2:
-        cherrypy.log.error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
-        raise Exception("File must contain at least two rows.")
-
-    attributes = []
-    dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(rows[1:])}]
-    data = []
-    default_name_index = 0
-    duplicate_name_index = 0
-    duplicate_names = []
-    duplicate_indeces = []
-    blank_header_columns = []
-    column_headers = []
-    error_message = []
-    duplicate_headers = False
-    blank_headers = False  # Header with a blank string, i.e. ",,"
-
-    # go through the csv by column
-    for column in zip(*rows):
-        column_has_floats = False
-
-        # start from 1 to avoid the column name
-        for value in column[1:]:
-            if isfloat(value):
-                column_has_floats = True
-                try:  # note NaN's are floats
-                    output_list = ['NaN' if x == '' else x for x in column[1:]]
-                    data.append(numpy.array(output_list).astype("float64"))
-                    attributes.append({"name": column[0], "type": "float64"})
-                    column_headers.append(column[0])
-
-                # could not convert something to a float defaulting to string
-                except Exception as e:
-                    column_has_floats = False
-                    cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
-                break
-        if not column_has_floats:
-            [str(item) for item in column[1:]]
-
-            data.append(numpy.array(column[1:]))
-            attributes.append({"name": column[0], "type": "string"})
-            column_headers.append(column[0])
-
-    if len(attributes) < 1:
-        cherrypy.log.error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
-        raise Exception("File must contain at least one column.")
-
-# Adding deafult headers and making duplicates unique
-
-    for index, attribute in enumerate(attributes):
-        if attribute["name"] is "":
-            message = "Column " + str(index + 1)
-            blank_header_columns.append(message)
-            blank_headers = True
-        # Don't want to include blank headers as duplicates.
-        if column_headers.count(attribute["name"]) > 1 and attribute["name"] is not '':
-            duplicate_names.append(attribute["name"])
-            duplicate_indeces.append(str(index + 1))
-            duplicate_headers = True
-
-    if invalid_csv is True:
-        error_message.append(
-            "Your CSV is invalid because it's missing at least one column header. Please CLOSE this wizard, fix the issue, then start a new wizard. \n")
+    # pass errors on to model
+    if len(csv_read_errors) != 0:
+        slycat.web.server.put_model_parameter(database, model, "error-messages", csv_read_errors)
     else:
-        if blank_headers is True:
-            error_message.append("Your CSV file contained blank headers in: \n")
-            for message in blank_header_columns:
-                error_message.append(
-                    "%s \n" % message)
-        if duplicate_headers is True:
-            error_message.append("Your CSV file contained these identical headers: \n ")
-            for name, index in zip(duplicate_names, duplicate_indeces):
-                error_message.append(
-                    "%s \n" % str("'" + name + "' " + "in column " + index))
+        slycat.web.server.put_model_parameter(database, model, "error-messages", [])
 
-    if error_message is not "":
-        slycat.web.server.put_model_parameter(database, model, "error-messages", error_message)
-    else:
-        slycat.web.server.put_model_parameter(database, model, "error-messages", "")
-
+    # return data
     return attributes, dimensions, data
 
 
@@ -129,18 +140,26 @@ def parse(database, model, input, files, aids, **kwargs):
     :param aids: artifact ID
     :param kwargs:
     """
+
+    # keep track of processing time
     start = time.time()
+
     if len(files) != len(aids):
         cherrypy.log.error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
+    # parse files
     parsed = [parse_file(file, model, database) for file in files]
 
+    # upload data
     array_index = int(kwargs.get("array", "0"))
     for (attributes, dimensions, data), aid in zip(parsed, aids):
         slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, data)
+        slycat.web.server.put_model_arrayset_data(database, model, aid, 
+                                                    "%s/.../..." % array_index, data)
+    
+    # done processing
     end = time.time()
 
     model = database.get("model", model['_id'])
