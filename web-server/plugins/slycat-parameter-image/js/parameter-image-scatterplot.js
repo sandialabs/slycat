@@ -24,12 +24,13 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
 import PlotGrid from "./Components/PlotGrid";
-import Histogram from "./Components/Histogram";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import * as selectors from "./selectors";
+import PSHistogram from "./Components/PSHistogram";
+import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -234,24 +235,14 @@ $.widget("parameter_image.scatterplot", {
       event.preventDefault();
     });
 
-    self.svg_grid = d3
+    self.scatterplot_grid_root = d3
       .select(self.element.get(0))
-      .append("svg")
-      .style({
-        opacity: ".99",
-      })
-      .attr("id", "scatterplot-grid-svg");
+      .append("div")
+      .attr("id", "scatterplot-grid-root");
     self.svg = d3
       .select(self.element.get(0))
       .append("svg")
-      .style({
-        opacity: ".99",
-      })
       .attr("class", "scatterplot-svg");
-    self.svg_grid = d3
-      .select(self.element.get(0))
-      .append("div")
-      .attr("id", "histogram");
 
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
@@ -650,18 +641,18 @@ $.widget("parameter_image.scatterplot", {
       </Provider>
     );
 
-    const grid_root = createRoot(document.getElementById("scatterplot-grid-svg"));
+    const grid_root = createRoot(document.getElementById("scatterplot-grid-root"));
     grid_root.render(
       <Provider store={window.store}>
-        <PlotGrid />
+        <PSScatterplotGrid />
       </Provider>
     );
     
 
-    const histogram_root = createRoot(document.getElementById("histogram"));
+    const histogram_root = createRoot(document.getElementById("histogram-root"));
     histogram_root.render(
       <Provider store={window.store}>
-        <Histogram />
+        <PSHistogram />
       </Provider>
     );
 
