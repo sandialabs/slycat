@@ -49,70 +49,83 @@ export const selectVIndex = (state) => state.v_index;
 export const selectAxesVariables = (state) => state.axesVariables;
 const selectColumnTypes = (state) => state.derived.table_metadata["column-types"];
 const selectColumnNames = (state) => state.derived.table_metadata["column-names"];
+const selectVariableAliases = (state) => state.derived.variableAliases;
 const selectTableStatistics = (state) => state.derived.table_statistics;
+
+export type VariableLabels = string[];
+
+export const selectVariableLabels = createSelector(
+  selectColumnNames,
+  selectVariableAliases,
+  (columnNames: VariableLabels, variableAliases: VariableLabels): VariableLabels => {
+    return columnNames.map((columnName, index) => {
+      return variableAliases?.[index] ?? columnName;
+    });
+  },
+);
 
 export const selectXColumnName = createSelector(
   selectXIndex,
-  selectColumnNames,
-  (x_index: number, columnNames: string[]): string => {
-    return columnNames[x_index] !== undefined ? columnNames[x_index] : "";
-  }
+  selectVariableLabels,
+  (x_index: number, variableLabels: VariableLabels): string => {
+    return variableLabels?.[x_index] ?? "";
+  },
 );
 
 export const selectYColumnName = createSelector(
   selectYIndex,
-  selectColumnNames,
-  (y_index: number, columnNames: string[]): string => {
-    return columnNames[y_index] !== undefined ? columnNames[y_index] : "";
-  }
+  selectVariableLabels,
+  (y_index: number, variableLabels: VariableLabels): string => {
+    return variableLabels?.[y_index] ?? "";
+  },
 );
 
 export const selectXColumnType = createSelector(
   selectXIndex,
   selectColumnTypes,
   (x_index: number, columnTypes: ColumnTypesType): string => {
-    return columnTypes[x_index] !== undefined ? columnTypes[x_index] : "";
-  }
+    return columnTypes?.[x_index] ?? "";
+  },
 );
 
 export const selectYColumnType = createSelector(
   selectYIndex,
   selectColumnTypes,
   (y_index: number, columnTypes: ColumnTypesType): string => {
-    return columnTypes[y_index] !== undefined ? columnTypes[y_index] : "";
-  }
+    return columnTypes?.[y_index] ?? "";
+  },
 );
 
 export const selectVColumnType = createSelector(
   selectVIndex,
   selectColumnTypes,
   (v_index: number, columnTypes: ColumnTypesType): string => {
-    return columnTypes[v_index] !== undefined ? columnTypes[v_index] : "";
-  }
+    return columnTypes?.[v_index] ?? "";
+  },
 );
 
 export const selectXScaleType = createSelector(
   selectXIndex,
   selectAxesVariables,
   (x_index: number, axesVariables: AxesVariablesType): string => {
-    return axesVariables[x_index] !== undefined ? axesVariables[x_index] : "Linear";
-  }
+    return axesVariables?.[x_index] ?? "Linear";
+  },
 );
 
 export const selectYScaleType = createSelector(
   selectYIndex,
   selectAxesVariables,
   (y_index: number, axesVariables: AxesVariablesType): string => {
-    return axesVariables[y_index] !== undefined ? axesVariables[y_index] : "Linear";
-  }
+    return axesVariables?.[y_index] ?? "Linear";
+  },
 );
 
 export const selectVScaleType = createSelector(
   selectVIndex,
   selectAxesVariables,
   (v_index: number, axesVariables: AxesVariablesType): string => {
-    return axesVariables[v_index] !== undefined ? axesVariables[v_index] : "Linear";
-  }
+    return axesVariables?.[v_index] ?? "Linear";
+  },
 );
 
 const getExtent = (
@@ -121,7 +134,7 @@ const getExtent = (
   index: number,
   columnTypes: ColumnTypesType,
   scaleType: string,
-  tableStatistics: TableStatisticsType
+  tableStatistics: TableStatisticsType,
 ): ExtentType => {
   const extent: ExtentType = [undefined, undefined];
 
@@ -194,10 +207,10 @@ const selectXExtent = createSelector(
     xIndex: number,
     columnTypes: ColumnTypesType,
     xScaleType: string,
-    tableStatistics: TableStatisticsType
+    tableStatistics: TableStatisticsType,
   ): ExtentType => {
     return getExtent(xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
-  }
+  },
 );
 
 const selectYExtent = createSelector(
@@ -213,10 +226,10 @@ const selectYExtent = createSelector(
     yIndex: number,
     columnTypes: ColumnTypesType,
     yScaleType: string,
-    tableStatistics: TableStatisticsType
+    tableStatistics: TableStatisticsType,
   ): ExtentType => {
     return getExtent(yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
-  }
+  },
 );
 
 // Returns the start and end of the scatterplot x-axis area relative
@@ -228,7 +241,7 @@ export const selectXScaleRange = createSelector(
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0 + margin_left,
     width - margin_right,
-  ]
+  ],
 );
 
 // Returns the start and end of the scatterplot y-axis area relative
@@ -240,7 +253,7 @@ export const selectYScaleRange = createSelector(
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, // Subtracting pixels to account for the height of the x-axis tick labels.
     0 + margin_top,
-  ]
+  ],
 );
 
 // Returns the start and end of the scatterplot x-axis area in absolute pixel values.
@@ -251,7 +264,7 @@ export const selectXRangeCanvas = createSelector(
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0,
     width - margin_left - margin_right,
-  ]
+  ],
 );
 
 // Returns the start and end of the scatterplot y-axis area in absolute pixel values.
@@ -262,21 +275,21 @@ export const selectYRangeCanvas = createSelector(
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT,
     0,
-  ]
+  ],
 );
 
 export const selectXTicks = createSelector(
   selectXRangeCanvas,
   (xRangeCanvas: ScaleRangeType): number => {
     return xRangeCanvas[1] / 85;
-  }
+  },
 );
 
 export const selectYTicks = createSelector(
   selectYRangeCanvas,
   (yRangeCanvas: ScaleRangeType): number => {
     return yRangeCanvas[0] / 50;
-  }
+  },
 );
 
 export type SlycatScaleType =
@@ -301,10 +314,10 @@ export const selectXScale = createSelector(
     xExtent: ExtentType,
     xScaleRange: ScaleRangeType,
     xColumnType: string,
-    xValues: ValuesType
+    xValues: ValuesType,
   ): SlycatScaleType => {
     return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues);
-  }
+  },
 );
 
 export const selectYScale = createSelector(
@@ -318,10 +331,10 @@ export const selectYScale = createSelector(
     yExtent: ExtentType,
     yScaleRange: ScaleRangeType,
     yColumnType: string,
-    yValues: ValuesType
+    yValues: ValuesType,
   ): SlycatScaleType => {
     return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues);
-  }
+  },
 );
 
 const getScale = (
@@ -329,7 +342,7 @@ const getScale = (
   extent: ExtentType,
   scaleRange: ScaleRangeType,
   columnType: string,
-  values: ValuesType
+  values: ValuesType,
 ): SlycatScaleType => {
   let scale;
   switch (scaleType) {
@@ -360,7 +373,7 @@ export const X_LABEL_HORIZONTAL_OFFSET = 40;
 // This is the x position of the x-axis label. Set to align with the end of the axis.
 export const selectXLabelX = createSelector(
   selectXScaleRange,
-  (xScaleRange: ScaleRangeType): number => xScaleRange[1] + X_LABEL_HORIZONTAL_OFFSET
+  (xScaleRange: ScaleRangeType): number => xScaleRange[1] + X_LABEL_HORIZONTAL_OFFSET,
 );
 
 // Vertical offset of the y-axis label.
@@ -370,5 +383,5 @@ export const Y_LABEL_HORIZONTAL_OFFSET = 25;
 export const selectYLabelY = createSelector(
   selectScatterplotPaneHeight,
   selectMarginTop,
-  (scatterplot_height: number, margin_top: number): number => margin_top + scatterplot_height / 2
+  (scatterplot_height: number, margin_top: number): number => margin_top + scatterplot_height / 2,
 );
