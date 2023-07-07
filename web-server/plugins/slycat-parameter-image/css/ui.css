@@ -1005,7 +1005,7 @@ button#controls-button-var-options {
 #scatterplot,
 #scatterplot-grid-root,
 #scatterplot-grid-root .grid-svg,
-#histogram-root,
+/* #histogram-root, */
 #histogram-root .plot-background,
 #histogram-root .histogram-svg,
 #histogram-root .grid-svg {

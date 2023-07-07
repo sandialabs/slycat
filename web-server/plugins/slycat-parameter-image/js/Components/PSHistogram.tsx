@@ -49,6 +49,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const show_grid = useSelector(selectShowGrid);
   const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
   const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
+  const background = slycat_color_maps.get_background(colormap).toString();
 
   const bins = d3
     .bin()
@@ -69,22 +70,13 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   // Adjusting x_scale domain to match the bins
   x_scale.domain([bins[0].x0, bins[bins.length - 1].x1]);
 
-  // Only execute the useEffect hook if show_histogram is true
-  useEffect(() => {
-    // Ugly way of hiding and showing the #histogram-root div to prevent issues with mouse selection
-    // of points. This is only necessary while parts of PS not yet in React.
-    d3.select("#histogram-root").style("display", show_histogram ? "block" : "none");
-
-    if (show_histogram) {
-      updatePSHistogram();
-    }
-  });
-
-  const updatePSHistogram = () => {};
-
+  // Only render the component if show_histogram is true
+  if (!show_histogram) {
+    return null;
+  }
   return (
     <>
-      <PlotBackground />
+      <PlotBackground background={background} />
       <PlotGrid
         x_scale={x_scale}
         y_scale={y_scale}
@@ -97,10 +89,20 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
       <Histogram
         x_scale={x_scale}
         y_scale={y_scale}
+        y_scale_range={y_scale_range}
         bins={bins}
         x_ticks={x_ticks}
         y_ticks={y_ticks}
         histogram_bar_color={histogram_bar_color}
+        histogram_bar_stroke_width={histogram_bar_stroke_width}
+        font_size={font_size}
+        font_family={font_family}
+        x_label_x={x_label_x}
+        x_label_y={x_label_y}
+        x_name={x_name}
+        y_label_y={y_label_y}
+        colormap={colormap}
+        y_label_horizontal_offset={Y_LABEL_HORIZONTAL_OFFSET}
       />
     </>
   );

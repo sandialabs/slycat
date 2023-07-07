@@ -1,63 +1,49 @@
 import React, { useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
 import * as d3 from "d3v7";
-import {
-  selectColormap,
-  selectYScaleRange,
-  selectXLabelX,
-  X_LABEL_VERTICAL_OFFSET,
-  selectXColumnName,
-  Y_LABEL_HORIZONTAL_OFFSET,
-  selectYLabelY,
-  SlycatScaleType,
-} from "../selectors";
-import {
-  selectShowHistogram,
-  selectUnselectedBorderSize,
-  selectFontSize,
-  selectFontFamily,
-} from "../scatterplotSlice";
+import { SlycatScaleType } from "../selectors";
 import slycat_color_maps from "js/slycat-color-maps";
 
 type HistogramProps = {
   x_scale: SlycatScaleType;
   y_scale: SlycatScaleType;
+  y_scale_range: number[];
   bins: d3.Bin<number, number>[];
   x_ticks: number;
   y_ticks: number;
   histogram_bar_color: string;
+  histogram_bar_stroke_width: number;
+  font_size: number;
+  font_family: string;
+  x_label_y: number;
+  x_label_x: number;
+  x_name: string;
+  y_label_y: number;
+  colormap: string;
+  y_label_horizontal_offset: number;
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
   const histogramRef = useRef<SVGSVGElement>(null);
 
-  const show_histogram = useSelector(selectShowHistogram);
-  const colormap = useSelector(selectColormap);
+  const colormap = props.colormap;
   // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
   const x_scale = props.x_scale.copy();
-  const y_scale_range = useSelector(selectYScaleRange);
+  const y_scale_range = props.y_scale_range;
   const x_ticks = props.x_ticks;
   const y_ticks = props.y_ticks;
-  const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
-  const font_size = useSelector(selectFontSize);
-  const font_family = useSelector(selectFontFamily);
-  const x_label_y = X_LABEL_VERTICAL_OFFSET;
-  const x_label_x = useSelector(selectXLabelX);
-  const x_name = useSelector(selectXColumnName);
-  const y_label_y = useSelector(selectYLabelY);
+  const histogram_bar_stroke_width = props.histogram_bar_stroke_width;
+  const font_size = props.font_size;
+  const font_family = props.font_family;
+  const x_label_y = props.x_label_y;
+  const x_label_x = props.x_label_x;
+  const x_name = props.x_name;
+  const y_label_y = props.y_label_y;
   const bins = props.bins;
   const y_scale = props.y_scale;
   const histogram_bar_color = props.histogram_bar_color;
+  const y_label_horizontal_offset = props.y_label_horizontal_offset;
 
-  // Only execute the useEffect hook if show_histogram is true
   useEffect(() => {
-    if (show_histogram) {
-      updateHistogram();
-    }
-  });
-
-  const updateHistogram = () => {
-    // console.debug("Updating histogram");
     // Adjusting x_scale domain to match the bins
     x_scale.domain([bins[0].x0, bins[bins.length - 1].x1]);
 
@@ -65,7 +51,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     const color_scale = slycat_color_maps.get_color_scale_d3v7(
       colormap,
       y_scale.domain()[0],
-      y_scale.domain()[1]
+      y_scale.domain()[1],
     );
 
     // Add a rect for each bin.
@@ -92,7 +78,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .append("title")
       .text(
         (d) =>
-          `Count: ${d.length}\n\nRange: ${d.x0} (inclusive) to \n${d.x1} (exclusive, except for last bar)`
+          `Count: ${d.length}\n\nRange: ${d.x0} (inclusive) to \n${d.x1} (exclusive, except for last bar)`,
       );
 
     // Add the x-axis and label.
@@ -112,7 +98,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
           .attr("fill", "currentColor")
           .attr("text-anchor", "start")
           .style("font-weight", "bold")
-          .text(x_name)
+          .text(x_name),
       )
       .selectAll(".tick text")
       .style("text-anchor", "start")
@@ -129,7 +115,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .call((g) => {
         // Get the width of the y-axis element
         const y_axis_width = g.node().getBBox().width;
-        const y_label_x = -(y_axis_width + Y_LABEL_HORIZONTAL_OFFSET);
+        const y_label_x = -(y_axis_width + y_label_horizontal_offset);
         return g
           .append("text")
           .attr("class", "label")
@@ -141,12 +127,8 @@ const Histogram: React.FC<HistogramProps> = (props) => {
           .style("font-weight", "bold")
           .text("Frequency");
       });
-  };
+  });
 
-  // Only render the component if show_histogram is true
-  if (!show_histogram) {
-    return null;
-  }
   return <svg className="histogram-svg" ref={histogramRef} />;
 };
 
