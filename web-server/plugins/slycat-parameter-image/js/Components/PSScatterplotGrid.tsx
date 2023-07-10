@@ -22,11 +22,15 @@ const PSScatterplotGrid: React.FC<PSScatterplotGridProps> = (props) => {
   const show_grid = useSelector(selectShowGrid);
   const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
 
+  // Only show PlotGrid if show_grid is true
+  if (!show_grid) {
+    return null;
+  }
+
   return (
     <PlotGrid
       x_scale={x_scale}
       y_scale={y_scale}
-      show_grid={show_grid}
       x_ticks={x_ticks}
       y_ticks={y_ticks}
       colormap={colormap}

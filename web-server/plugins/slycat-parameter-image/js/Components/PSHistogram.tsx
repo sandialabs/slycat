@@ -30,7 +30,6 @@ import * as d3 from "d3v7";
 type PSHistogramProps = {};
 
 const PSHistogram: React.FC<PSHistogramProps> = (props) => {
-
   const show_histogram = useSelector(selectShowHistogram);
   // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
   const x_scale = useSelector(selectXScale).copy();
@@ -91,15 +90,17 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   return (
     <>
       <PlotBackground background={background} />
-      <PlotGrid
-        x_scale={x_scale}
-        y_scale={y_scale}
-        show_grid={show_grid}
-        x_ticks={0}
-        y_ticks={y_ticks}
-        colormap={colormap}
-        plot_grid_color={plot_grid_color}
-      />
+      {/* Only show PlotGrid if show_grid is true */}
+      {show_grid ? (
+        <PlotGrid
+          x_scale={x_scale}
+          y_scale={y_scale}
+          x_ticks={0}
+          y_ticks={y_ticks}
+          colormap={colormap}
+          plot_grid_color={plot_grid_color}
+        />
+      ) : null}
       <Histogram
         x_scale={x_scale}
         y_scale={y_scale}

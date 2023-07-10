@@ -6,7 +6,6 @@ import { SlycatScaleType } from "../selectors";
 type PlotGridProps = {
   x_scale: SlycatScaleType;
   y_scale: SlycatScaleType;
-  show_grid: boolean;
   x_ticks: number;
   y_ticks: number;
   colormap: string;
@@ -16,21 +15,13 @@ type PlotGridProps = {
 const PlotGrid: React.FC<PlotGridProps> = (props) => {
   const gridRef = useRef<SVGGElement>(null);
 
-  const show_grid = props.show_grid;
   const x_scale = props.x_scale;
   const y_scale = props.y_scale;
   const x_ticks = props.x_ticks;
   const y_ticks = props.y_ticks;
   const plot_grid_color = props.plot_grid_color;
 
-  // Only execute the useEffect hook if show_grid is true
   useEffect(() => {
-    if (show_grid) {
-      updateGrid();
-    }
-  });
-
-  const updateGrid = () => {
     const setStrokeStyle = (sel: d3.Selection<SVGGElement, unknown, null, undefined>) => {
       sel.style("stroke", plot_grid_color);
     };
@@ -44,12 +35,8 @@ const PlotGrid: React.FC<PlotGridProps> = (props) => {
       .xDecorate(setStrokeStyle)
       .yDecorate(setStrokeStyle);
     d3.select(gridRef.current).call(gridline);
-  };
+  });
 
-  // Only render the component if show_grid is true
-  if (!show_grid) {
-    return null;
-  }
   return (
     <svg className="grid-svg">
       <g id="grid" ref={gridRef} />
