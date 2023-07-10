@@ -26,8 +26,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const histogramRef = useRef<SVGSVGElement>(null);
 
   const colormap = props.colormap;
-  // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
-  const x_scale = props.x_scale.copy();
+  const x_scale = props.x_scale;
   const y_scale_range = props.y_scale_range;
   const x_ticks = props.x_ticks;
   const y_ticks = props.y_ticks;
@@ -44,9 +43,6 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const y_label_horizontal_offset = props.y_label_horizontal_offset;
 
   useEffect(() => {
-    // Adjusting x_scale domain to match the bins
-    x_scale.domain([bins[0].x0, bins[bins.length - 1].x1]);
-
     // Create a color scale for y axis
     const color_scale = slycat_color_maps.get_color_scale_d3v7(
       colormap,

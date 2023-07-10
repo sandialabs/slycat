@@ -16,6 +16,7 @@ import {
   selectXColumnName,
   Y_LABEL_HORIZONTAL_OFFSET,
   selectYLabelY,
+  selectXHasCustomRange,
 } from "../selectors";
 import {
   selectShowHistogram,
@@ -29,11 +30,10 @@ import * as d3 from "d3v7";
 type PSHistogramProps = {};
 
 const PSHistogram: React.FC<PSHistogramProps> = (props) => {
-  const plotBackgroundRef = useRef<HTMLDivElement>(null);
-
-  const x_scale = useSelector(selectXScale);
 
   const show_histogram = useSelector(selectShowHistogram);
+  // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
+  const x_scale = useSelector(selectXScale).copy();
   const colormap = useSelector(selectColormap);
   const y_scale_range = useSelector(selectYScaleRange);
   const x_ticks = useSelector(selectXTicks);
@@ -50,16 +50,34 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
   const histogram_bar_color = slycat_color_maps.get_histogram_bar_color(colormap);
   const background = slycat_color_maps.get_background(colormap).toString();
+  const x_has_custom_range = useSelector(selectXHasCustomRange);
 
-  const bins = d3
+  // Only render the component if show_histogram is true
+  if (!show_histogram) {
+    return null;
+  }
+
+  const bin = d3
     .bin()
     .value((d: number | string) => d)
-    // .thresholds([0, 2, 4, 6, 8, 10])
-    // .thresholds(x_scale.ticks())
-    .thresholds(x_ticks)(
-    // .domain(x_scale.domain())
-    x_values
-  );
+    // Setting the number of bins to be the same as the number of ticks
+    // so that each tick has its own bin.
+    .thresholds(x_ticks);
+  // Other options for setting the number of bins by using supported threshold generators
+  // .thresholds(d3.thresholdFreedmanDiaconis)
+  // .thresholds(d3.thresholdScott)
+  // .thresholds(d3.thresholdSturges)
+
+  // Not specifying domain unless a custom variable range has been set by the user
+  // for the current x variable because
+  // "If the default extent domain is used and the thresholds are specified as a count
+  // (rather than explicit values), then the computed domain will be niced such that all bins are uniform width."
+  // https://d3js.org/d3-array/bin#bin_domain
+  if (x_has_custom_range) {
+    bin.domain(x_scale.domain()).thresholds(x_scale.ticks(x_ticks));
+  }
+
+  const bins = bin(x_values);
 
   // Declare the y (vertical position) scale.
   const y_scale = d3
@@ -70,10 +88,6 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   // Adjusting x_scale domain to match the bins
   x_scale.domain([bins[0].x0, bins[bins.length - 1].x1]);
 
-  // Only render the component if show_histogram is true
-  if (!show_histogram) {
-    return null;
-  }
   return (
     <>
       <PlotBackground background={background} />
