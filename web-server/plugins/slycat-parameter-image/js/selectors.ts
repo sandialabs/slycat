@@ -385,3 +385,30 @@ export const selectYLabelY = createSelector(
   selectMarginTop,
   (scatterplot_height: number, margin_top: number): number => margin_top + scatterplot_height / 2,
 );
+
+// Checks if x-axis has a custom range defined.
+export const selectXHasCustomRange = createSelector(
+  selectVariableRanges,
+  selectXIndex,
+  (variableRanges: VariableRangesType, xIndex: number): boolean => {
+    return variableRanges?.[xIndex] !== undefined;
+  },
+);
+
+// Checks if y-axis has a custom range defined.
+export const selectYHasCustomRange = createSelector(
+  selectVariableRanges,
+  selectYIndex,
+  (variableRanges: VariableRangesType, yIndex: number): boolean => {
+    return variableRanges?.[yIndex] !== undefined;
+  },
+);
+
+// Checks if v-axis has a custom range defined.
+export const selectVHasCustomRange = createSelector(
+  selectVariableRanges,
+  selectVIndex,
+  (variableRanges: VariableRangesType, vIndex: number): boolean => {
+    return variableRanges?.[vIndex] !== undefined;
+  },
+);
