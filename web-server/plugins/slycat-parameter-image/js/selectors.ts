@@ -71,6 +71,14 @@ export const selectYColumnName = createSelector(
   },
 );
 
+export const selectVColumnName = createSelector(
+  selectVIndex,
+  selectVariableLabels,
+  (v_index: number, variableLabels): string => {
+    return variableLabels?.[v_index] ?? "";
+  },
+);
+
 export const selectXColumnType = createSelector(
   selectXIndex,
   selectColumnTypes,
