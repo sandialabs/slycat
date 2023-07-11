@@ -17,7 +17,6 @@ import {
   setMediaSizePosition,
   updateClosedMedia,
 } from "./actions";
-import { get_variable_label } from "./ui";
 import $ from "jquery";
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -28,7 +27,15 @@ import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
-import * as selectors from "./selectors";
+import {
+  selectXScaleRange,
+  selectXRangeCanvas,
+  selectYScaleRange,
+  selectYRangeCanvas,
+  selectXColumnName,
+  selectYColumnName,
+  selectVColumnName,
+} from "./selectors";
 import PSHistogram from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 
@@ -185,10 +192,10 @@ $.widget("parameter_image.scatterplot", {
   _create: function () {
     var self = this;
 
-    self.x_scale_range = selectors.selectXScaleRange(window.store.getState());
-    self.x_range_canvas = selectors.selectXRangeCanvas(window.store.getState());
-    self.y_scale_range = selectors.selectYScaleRange(window.store.getState());
-    self.y_range_canvas = selectors.selectYRangeCanvas(window.store.getState());
+    self.x_scale_range = selectXScaleRange(window.store.getState());
+    self.x_range_canvas = selectXRangeCanvas(window.store.getState());
+    self.y_scale_range = selectYScaleRange(window.store.getState());
+    self.y_range_canvas = selectYRangeCanvas(window.store.getState());
 
     if (self.options["auto-scale"]) {
       self.options.filtered_x = self._filterValues(self.options.x);
@@ -239,10 +246,7 @@ $.widget("parameter_image.scatterplot", {
       .select(self.element.get(0))
       .append("div")
       .attr("id", "scatterplot-grid-root");
-    self.svg = d3
-      .select(self.element.get(0))
-      .append("svg")
-      .attr("class", "scatterplot-svg");
+    self.svg = d3.select(self.element.get(0)).append("svg").attr("class", "scatterplot-svg");
 
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
@@ -318,7 +322,7 @@ $.widget("parameter_image.scatterplot", {
             self.state = "";
             // self._sync_open_media();
             d3.select(this).attr("data-status", "moved");
-          })
+          }),
       );
     };
 
@@ -563,24 +567,28 @@ $.widget("parameter_image.scatterplot", {
     };
 
     const update_scatterplot_labels = () => {
-      const x_label_changed = self.options.x_label != get_variable_label(self.options.x_index);
-      const y_label_changed = self.options.y_label != get_variable_label(self.options.y_index);
-      const v_label_changed = self.options.v_label != get_variable_label(self.options.v_index);
+      const latest_x_label = selectXColumnName(window.store.getState());
+      const latest_y_label = selectYColumnName(window.store.getState());
+      const latest_v_label = selectVColumnName(window.store.getState());
+
+      const x_label_changed = self.options.x_label != latest_x_label;
+      const y_label_changed = self.options.y_label != latest_y_label;
+      const v_label_changed = self.options.v_label != latest_v_label;
       // console.log('x_label_changed: ' + x_label_changed);
 
       if (x_label_changed) {
         // console.log('5 update_scatterplot_labels');
-        self.options.x_label = get_variable_label(self.options.x_index);
+        self.options.x_label = latest_x_label;
         self._schedule_update({ update_x_label: true });
       }
       if (y_label_changed) {
         // console.log('5 update_scatterplot_labels');
-        self.options.y_label = get_variable_label(self.options.y_index);
+        self.options.y_label = latest_y_label;
         self._schedule_update({ update_y_label: true });
       }
       if (v_label_changed) {
         // console.log('5 update_scatterplot_labels');
-        self.options.v_label = get_variable_label(self.options.v_index);
+        self.options.v_label = latest_v_label;
         self._schedule_update({ update_v_label: true });
       }
     };
@@ -638,22 +646,21 @@ $.widget("parameter_image.scatterplot", {
     threeD_legends_root.render(
       <Provider store={window.store}>
         <MediaLegends />
-      </Provider>
+      </Provider>,
     );
 
     const grid_root = createRoot(document.getElementById("scatterplot-grid-root"));
     grid_root.render(
       <Provider store={window.store}>
         <PSScatterplotGrid />
-      </Provider>
+      </Provider>,
     );
-    
 
     const histogram_root = createRoot(document.getElementById("histogram-root"));
     histogram_root.render(
       <Provider store={window.store}>
         <PSHistogram />
-      </Provider>
+      </Provider>,
     );
 
     // Subscribing to changes in various states
@@ -673,10 +680,10 @@ $.widget("parameter_image.scatterplot", {
         watch(
           window.store.getState,
           subscription.objectPath,
-          _.isEqual
+          _.isEqual,
         )((newVal, oldVal, objectPath) => {
           subscription.callback(objectPath);
-        })
+        }),
       );
     });
   },
@@ -743,17 +750,17 @@ $.widget("parameter_image.scatterplot", {
       self
         ._cloneArrayBuffer(indices)
         .filter(
-          (element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index])
+          (element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]),
         ),
-      hidden_simulations
+      hidden_simulations,
     );
 
     self.options.filtered_selection = _.difference(
       selection.filter(
         (element, index, array) =>
-          self._validateValue(x[element]) && self._validateValue(y[element])
+          self._validateValue(x[element]) && self._validateValue(y[element]),
       ),
-      hidden_simulations
+      hidden_simulations,
     );
   },
 
@@ -1109,7 +1116,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right +
-            self.options.canvas_square_size
+            self.options.canvas_square_size,
         )
         .attr(
           "height",
@@ -1117,7 +1124,7 @@ $.widget("parameter_image.scatterplot", {
             self.options.margin_top -
             self.options.margin_bottom -
             40 +
-            self.options.canvas_square_size
+            self.options.canvas_square_size,
         );
     }
 
@@ -1135,7 +1142,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right +
-            self.options.canvas_selected_square_size
+            self.options.canvas_selected_square_size,
         )
         .attr(
           "height",
@@ -1143,7 +1150,7 @@ $.widget("parameter_image.scatterplot", {
             self.options.margin_top -
             self.options.margin_bottom -
             40 +
-            self.options.canvas_selected_square_size
+            self.options.canvas_selected_square_size,
         );
     }
 
@@ -1164,7 +1171,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right +
-            self.options.canvas_square_size
+            self.options.canvas_square_size,
         );
       d3.select(self.canvas_selected)
         .style({
@@ -1175,7 +1182,7 @@ $.widget("parameter_image.scatterplot", {
           total_width -
             self.options.margin_left -
             self.options.margin_right +
-            self.options.canvas_selected_square_size
+            self.options.canvas_selected_square_size,
         );
     }
 
@@ -1196,7 +1203,7 @@ $.widget("parameter_image.scatterplot", {
             self.options.margin_top -
             self.options.margin_bottom -
             40 +
-            self.options.canvas_square_size
+            self.options.canvas_square_size,
         );
       d3.select(self.canvas_selected)
         .style({
@@ -1208,15 +1215,15 @@ $.widget("parameter_image.scatterplot", {
             self.options.margin_top -
             self.options.margin_bottom -
             40 +
-            self.options.canvas_selected_square_size
+            self.options.canvas_selected_square_size,
         );
     }
 
     if (self.updates.update_x) {
       // console.debug(`updates.update_x`);
 
-      self.x_scale_range = selectors.selectXScaleRange(window.store.getState());
-      self.x_range_canvas = selectors.selectXRangeCanvas(window.store.getState());
+      self.x_scale_range = selectXScaleRange(window.store.getState());
+      self.x_range_canvas = selectXRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
       self.x_scale = self._createScale(
@@ -1225,7 +1232,7 @@ $.widget("parameter_image.scatterplot", {
         self.x_scale_range,
         false,
         self.options.x_axis_type,
-        "x"
+        "x",
       );
       self.x_scale_canvas = self._createScale(
         self.options.x_string,
@@ -1233,7 +1240,7 @@ $.widget("parameter_image.scatterplot", {
         self.x_range_canvas,
         false,
         self.options.x_axis_type,
-        "x"
+        "x",
       );
 
       self.x_axis_offset = self.options.height - self.options.margin_bottom - 40;
@@ -1268,8 +1275,8 @@ $.widget("parameter_image.scatterplot", {
     if (self.updates.update_y) {
       self.y_axis_offset = 0 + self.options.margin_left;
 
-      self.y_scale_range = selectors.selectYScaleRange(window.store.getState());
-      self.y_range_canvas = selectors.selectYRangeCanvas(window.store.getState());
+      self.y_scale_range = selectYScaleRange(window.store.getState());
+      self.y_range_canvas = selectYRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
       self.y_scale = self._createScale(
@@ -1278,7 +1285,7 @@ $.widget("parameter_image.scatterplot", {
         self.y_scale_range,
         false,
         self.options.y_axis_type,
-        "y"
+        "y",
       );
       self.y_scale_canvas = self._createScale(
         self.options.y_string,
@@ -1286,7 +1293,7 @@ $.widget("parameter_image.scatterplot", {
         self.y_range_canvas,
         false,
         self.options.y_axis_type,
-        "y"
+        "y",
       );
 
       self.y_axis = d3.svg
@@ -1414,7 +1421,7 @@ $.widget("parameter_image.scatterplot", {
             cx + half_border_width,
             cy + half_border_width,
             strokeWidth,
-            strokeHeight
+            strokeHeight,
           );
         }
       }
@@ -1470,7 +1477,7 @@ $.widget("parameter_image.scatterplot", {
             cx + half_border_width,
             cy + half_border_width,
             strokeWidth,
-            strokeHeight
+            strokeHeight,
           );
         }
       }
@@ -1626,7 +1633,7 @@ $.widget("parameter_image.scatterplot", {
 
         const transx = parseInt(total_width - self.options.margin_right + 100);
         const transy = parseInt(
-          self.options.margin_top + scatterplot_height / 2 - legend_height / 2
+          self.options.margin_top + scatterplot_height / 2 - legend_height / 2,
         );
 
         self.legend_layer
@@ -1648,7 +1655,7 @@ $.widget("parameter_image.scatterplot", {
         range,
         true,
         self.options.v_axis_type,
-        "v"
+        "v",
       );
 
       self.legend_axis = d3.svg
@@ -1662,7 +1669,7 @@ $.widget("parameter_image.scatterplot", {
       self.legend_axis_layer
         .attr(
           "transform",
-          "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)"
+          "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)",
         )
         .call(self.legend_axis)
         .style("font-size", self.options.axes_font_size + "px")
@@ -1795,7 +1802,7 @@ $.widget("parameter_image.scatterplot", {
             .drag()
             .on("drag", handlers["resize"])
             .on("dragstart", handlers["resize_start"])
-            .on("dragend", handlers["resize_end"])
+            .on("dragend", handlers["resize_end"]),
         );
     };
 
@@ -1907,7 +1914,7 @@ $.widget("parameter_image.scatterplot", {
             .drag()
             .on("drag", handlers["move"])
             .on("dragstart", handlers["move_start"])
-            .on("dragend", handlers["move_end"])
+            .on("dragend", handlers["move_end"]),
         )
         .on("mousedown", handlers["frame_mousedown"]);
       var footer = frame_html.append("div").attr("class", "frame-footer");
@@ -2089,7 +2096,7 @@ $.widget("parameter_image.scatterplot", {
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed(
           "resizing",
-          false
+          false,
         );
         self.state = "";
         self._sync_open_media();
@@ -2347,7 +2354,7 @@ $.widget("parameter_image.scatterplot", {
       !image.open_shown_simulations &&
       // Checking if any open pins have the same index and media_index as this one
       $(
-        `.open-image[data-index='${image.index}'][data-media-index='${image.media_index}']:not(.scaffolding)`
+        `.open-image[data-index='${image.index}'][data-media-index='${image.media_index}']:not(.scaffolding)`,
       ).length > 0
     ) {
       self._open_images(images.slice(1));
@@ -2710,7 +2717,7 @@ $.widget("parameter_image.scatterplot", {
               // console.log('vtkstartinteraction');
               self._move_frame_to_front(e.target.parentElement);
             },
-            false
+            false,
           );
 
           // Convert the blob to an array buffer and pass it to the geometry loader
@@ -2820,7 +2827,7 @@ $.widget("parameter_image.scatterplot", {
         self.options.model.project +
         "&key=" +
         URI.encode(URI.encode(uri.host() + uri.path())),
-      true
+      true,
     );
     xhr.responseType = "arraybuffer";
 
@@ -2841,7 +2848,7 @@ $.widget("parameter_image.scatterplot", {
             message: "Loading " + uri.pathname(),
             cancel: function () {
               var jFrame = $(
-                ".scaffolding." + image.image_class + '[data-uid="' + image.uid + '"]'
+                ".scaffolding." + image.image_class + '[data-uid="' + image.uid + '"]',
               );
               var frame = d3.select(jFrame[0]);
               var related_frames = jFrame
@@ -2888,10 +2895,10 @@ $.widget("parameter_image.scatterplot", {
                             uid: $(x).attr("data-uid"),
                             image_class: image.image_class,
                           };
-                        })
+                        }),
                       );
                     };
-                  })(image, frame)
+                  })(image, frame),
                 );
               self.login_open = false;
             },
@@ -2915,7 +2922,7 @@ $.widget("parameter_image.scatterplot", {
                   self.options.model.project +
                   "&key=" +
                   URI.encode(URI.encode(uri.host() + uri.path())),
-                true
+                true,
               );
               xhr.responseType = "arraybuffer";
               xhr.onload = function (e) {
@@ -3083,7 +3090,7 @@ $.widget("parameter_image.scatterplot", {
       y,
       filtered_selection,
       selected_shift,
-      selected_square_size
+      selected_square_size,
     );
     if (!selected_match) self._open_first_match(x, y, filtered_indices, shift, square_size);
   },
@@ -3147,11 +3154,11 @@ $.widget("parameter_image.scatterplot", {
         image_class: "hover-image",
         x: Math.min(
           self.x_scale_format(self.options.x[image_index]) + 10,
-          width - hover_width - self.options.margin_right - 10
+          width - hover_width - self.options.margin_right - 10,
         ),
         y: Math.min(
           self.y_scale_format(self.options.y[image_index]) + 10,
-          height - hover_height - self.options.margin_bottom - 10
+          height - hover_height - self.options.margin_bottom - 10,
         ),
         width: hover_width,
         height: hover_height,
@@ -3270,7 +3277,7 @@ $.widget("parameter_image.scatterplot", {
         height: height,
         x: x,
         y: y,
-      })
+      }),
     );
   },
 
@@ -3317,7 +3324,7 @@ $.widget("parameter_image.scatterplot", {
         changeCurrentFrame({
           uri: frame.data("uri"),
           uid: frame.data("uid"),
-        })
+        }),
       );
 
       self._sync_open_media();
@@ -3529,7 +3536,7 @@ $.widget("parameter_image.scatterplot", {
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = Math.max(
           firstVideo.currentTime - self.options.frameLength,
-          0
+          0,
         );
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
       }
@@ -3569,7 +3576,7 @@ $.widget("parameter_image.scatterplot", {
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = Math.min(
           firstVideo.currentTime + self.options.frameLength,
-          minLength - self.options.frameLength
+          minLength - self.options.frameLength,
         );
         // Update and bookmark
         self._schedule_update({ update_video_sync_time: true });
@@ -3580,7 +3587,7 @@ $.widget("parameter_image.scatterplot", {
       if (video != null) {
         var time = Math.min(
           video.currentTime + self.options.frameLength,
-          video.duration - self.options.frameLength
+          video.duration - self.options.frameLength,
         );
         self._set_single_video_time(video, time);
       }
