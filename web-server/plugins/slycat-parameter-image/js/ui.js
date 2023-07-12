@@ -38,8 +38,9 @@ import "./category-select";
 
 import throttle from "redux-throttle";
 import ps_reducer from "./reducers";
-import scatterplot_reducer from "./scatterplotSlice";
-import {
+import { initialState as rootInitialState } from "./store";
+import scatterplot_reducer, {
+  SLICE_NAME as SCATTERPLOT_SLICE_NAME,
   setScatterplotPaneWidth,
   setScatterplotPaneHeight,
   toggleShowHistogram,
@@ -62,8 +63,6 @@ import {
   setVideoSyncTime,
 } from "./actions";
 
-import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
-
 import { setSyncCameras } from "./vtk-camera-synchronizer";
 
 import {
@@ -76,23 +75,15 @@ import {
   DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
   DEFAULT_SCATTERPLOT_MARGIN_LEFT,
 } from "components/ScatterplotOptions";
-import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import combinedReduction from "combined-reduction";
 import { configureStore } from "@reduxjs/toolkit";
+import { selectXColumnName, selectYColumnName, selectVColumnName } from "./selectors";
 
 let table_metadata = null;
-
-export function get_variable_label(variable) {
-  if (window.store.getState().derived.variableAliases[variable] !== undefined) {
-    return window.store.getState().derived.variableAliases[variable];
-  }
-
-  return table_metadata["column-names"][variable];
-}
 
 // Wait for document ready
 $(document).ready(function () {
@@ -218,11 +209,9 @@ $(document).ready(function () {
         input_columns = model["artifact:input-columns"];
         output_columns = model["artifact:output-columns"];
         image_columns = model["artifact:image-columns"];
-        rating_columns =
-          model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
-        category_columns =
-          model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
-        xy_pairs = model["artifact:xy-pairs"] == undefined ? [] : model["artifact:xy-pairs"];
+        rating_columns = model["artifact:rating-columns"] ?? [];
+        category_columns = model["artifact:category-columns"] ?? [];
+        xy_pairs = model["artifact:xy-pairs"] ?? [];
         filter_manager = new FilterManager(
           model_id,
           bookmarker,
@@ -231,7 +220,7 @@ $(document).ready(function () {
           output_columns,
           image_columns,
           rating_columns,
-          category_columns
+          category_columns,
         );
         if (filter_manager.active_filters_ready()) {
           active_filters_ready();
@@ -289,7 +278,7 @@ $(document).ready(function () {
           console.log(
             "Ooops, this model had project data in the past but it is no longer there. " +
               "Original variable aliases can not be loaded. " +
-              "But we will try to load any aliases that were created after the project data disappeared."
+              "But we will try to load any aliases that were created after the project data disappeared.",
           );
           // Something went wrong. We have a pointer to project data, but can't retrieve it.
           // Might have gotten deleted. So let's try to load aliases from the model's attributes
@@ -383,59 +372,52 @@ $(document).ready(function () {
           const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
 
           // Add unique IDs to bookmarked open_media, as these are now required.
-          let bookmarked_open_media = bookmark["open-images-selection"]
-            ? bookmark["open-images-selection"]
-            : [];
+          let bookmarked_open_media = bookmark["open-images-selection"] ?? [];
           for (let media of bookmarked_open_media) {
             if (!("uid" in media)) {
               media.uid = uuidv4();
             }
           }
 
-          // Create Redux store and set its state based on what's in the bookmark
-          const state_tree = {
-            fontSize: DEFAULT_FONT_SIZE,
-            fontFamily: DEFAULT_FONT_FAMILY,
-            axesVariables: {},
-            threeD_sync: false,
-            // Try to grab current colormap from bookmark, otherwise default it to night
-            colormap: bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night",
-            // First colormap is default
-            threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
-            threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
-            unselected_point_size: unselected_point_size,
-            unselected_border_size: unselected_border_size,
-            selected_point_size: selected_point_size,
-            selected_border_size: selected_border_size,
-            scatterplot_margin: {
-              top: scatterplot_margin_top,
-              right: scatterplot_margin_right,
-              bottom: scatterplot_margin_bottom,
-              left: scatterplot_margin_left,
-            },
-            variableRanges: {},
-            three_d_cameras: {},
-            three_d_colorvars: {},
-            three_d_variable_data_ranges: {},
-            three_d_variable_user_ranges: {},
+          // Create redux store initial state.
+          // First set sensible defaults for model without any bookmark state.
+          // Then overwrite that with any state that we can get from legacy bookmark data.
+          // Next overwrite that with any state that we can get from new bookmark data (i.e., bookmark.state).
+          // Finally merge in derived state slice with data retrieved from slycat api.
+
+          const legacyBookmarkState = {
+            colormap: bookmark["colormap"],
             open_media: bookmarked_open_media,
-            closed_media: [],
-            currentFrame: {},
-            active_filters: [],
-            hidden_simulations: [],
-            manually_hidden_simulations: [],
-            sync_scaling: true,
-            sync_threeD_colorvar: true,
-            selected_simulations: [],
+            video_sync_time: bookmark["video_sync_time"],
             x_index: x_index,
-            video_sync_time:
-              bookmark["video_sync_time"] !== undefined ? bookmark["video_sync_time"] : 0,
+            y_index: y_index,
+            v_index: v_index,
+            scatterplot: {
+              auto_scale: bookmark["auto-scale"],
+            }
           };
-          // Create reducer that combines root-level ps_reducer and adds ui_reducer at ui.
+
+          const derivedState = {
+            derived: {
+              variableAliases: variable_aliases,
+              media_columns: image_columns,
+              xy_pairs: xy_pairs,
+            },
+          };
+
+          const preloadedState = _.merge(
+            {},
+            rootInitialState,
+            legacyBookmarkState,
+            bookmark.state,
+            derivedState,
+          );
+
+          // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
-          // createSlice ui_reducer and other new reducers.
+          // createSlice scatterplot_reducer and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
-            scatterplot: scatterplot_reducer,
+            [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
           });
 
           window.store = configureStore({
@@ -444,7 +426,12 @@ $(document).ready(function () {
               getDefaultMiddleware({
                 serializableCheck: {
                   // Ignore these action types
-                  ignoredActions: ["SET_X_VALUES", "SET_Y_VALUES", "SET_V_VALUES", "UPDATE_THREE_D_CAMERAS"],
+                  ignoredActions: [
+                    "SET_X_VALUES",
+                    "SET_Y_VALUES",
+                    "SET_V_VALUES",
+                    "UPDATE_THREE_D_CAMERAS",
+                  ],
                   // Ignore these field paths in all actions
                   // ignoredActionPaths: ["meta.arg", "payload.timestamp"],
                   // Ignore these paths in the state
@@ -452,21 +439,7 @@ $(document).ready(function () {
                 },
               }).concat(throttleMiddleware),
             devTools: process.env.NODE_ENV !== "production",
-            preloadedState: {
-              ...state_tree,
-              ...bookmark.state,
-              derived: {
-                variableAliases: variable_aliases,
-                xValues: [],
-                yValues: [],
-                mediaValues: [],
-                three_d_colorby_range: {},
-                three_d_colorby_legends: {},
-                media_columns: image_columns,
-                xy_pairs: xy_pairs,
-                table_metadata: {},
-              },
-            },
+            preloadedState: preloadedState,
           });
 
           // Save Redux state to bookmark whenever it changes
@@ -480,7 +453,7 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined, ui: undefined },
+                { ...window.store.getState(), derived: undefined },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
@@ -502,7 +475,7 @@ $(document).ready(function () {
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
           let navbar = ko.contextFor(
-            document.getElementById("slycat-navbar-test").children[0]
+            document.getElementById("slycat-navbar-test").children[0],
           ).$component;
           // Get the role from slycat-navbar component
           const relation = navbar.relation();
@@ -536,7 +509,7 @@ $(document).ready(function () {
         w((newVal, oldVal, objectPath) => {
           // console.debug(`%s changed from %s to %s`, objectPath, oldVal, newVal);
           selected_colormap_changed(newVal);
-        })
+        }),
       );
 
       // Set size of scatterplot pane in Redux
@@ -549,7 +522,7 @@ $(document).ready(function () {
         pane_element,
         pane_state,
         pane_options,
-        layout_name
+        layout_name,
       ) => {
         const width = pane_state.innerWidth;
         const height = pane_state.innerHeight;
@@ -959,15 +932,15 @@ $(document).ready(function () {
 
       $("#scatterplot-pane").css(
         "background",
-        slycat_color_maps.get_background(store.getState().colormap).toString()
+        slycat_color_maps.get_background(store.getState().colormap).toString(),
       );
 
       $("#scatterplot").scatterplot({
         model: model,
         indices: indices,
-        x_label: get_variable_label(x_index),
-        y_label: get_variable_label(y_index),
-        v_label: get_variable_label(v_index),
+        x_label: selectXColumnName(window.store.getState()),
+        y_label: selectYColumnName(window.store.getState()),
+        v_label: selectVColumnName(window.store.getState()),
         x: x,
         y: y,
         v: v,
@@ -1515,7 +1488,7 @@ $(document).ready(function () {
       v_string: table_metadata["column-types"][v_index] == "string",
       colorscale: colorscale,
     });
-    $("#scatterplot").scatterplot("option", "v_label", get_variable_label(v_index));
+    $("#scatterplot").scatterplot("option", "v_label", selectVColumnName(window.store.getState()));
   }
 
   function update_widgets_when_hidden_simulations_change() {
@@ -1548,8 +1521,8 @@ $(document).ready(function () {
   function set_custom_color_variable_range() {
     // console.log(`set_custom_color_variable_range`);
     const variableRanges = window.store.getState().variableRanges[v_index];
-    custom_color_variable_range.min = variableRanges != undefined ? variableRanges.min : undefined;
-    custom_color_variable_range.max = variableRanges != undefined ? variableRanges.max : undefined;
+    custom_color_variable_range.min = variableRanges?.min ?? undefined;
+    custom_color_variable_range.max = variableRanges?.max ?? undefined;
   }
 
   function update_current_colorscale() {
@@ -1564,19 +1537,13 @@ $(document).ready(function () {
 
     if (v_type != "string") {
       let axes_variables = store.getState().axesVariables[v_index];
-      let v_axis_type = axes_variables != undefined ? axes_variables : "Linear";
+      let v_axis_type = axes_variables ?? "Linear";
       // console.log(`v_axis_type is ${v_axis_type}`);
 
       // console.debug(`store.getState().colormap is %o`, store.getState().colormap);
       const colormap = store.getState().colormap;
-      const min =
-        custom_color_variable_range.min != undefined
-          ? custom_color_variable_range.min
-          : d3.min(filtered_v);
-      const max =
-        custom_color_variable_range.max != undefined
-          ? custom_color_variable_range.max
-          : d3.max(filtered_v);
+      const min = custom_color_variable_range.min ?? d3.min(filtered_v);
+      const max = custom_color_variable_range.max ?? d3.max(filtered_v);
       colorscale =
         v_axis_type == "Log"
           ? slycat_color_maps.get_color_scale_log(colormap, min, max)
@@ -1585,7 +1552,7 @@ $(document).ready(function () {
       var uniqueValues = d3.set(filtered_v).values().sort();
       colorscale = slycat_color_maps.get_color_scale_ordinal(
         store.getState().colormap,
-        uniqueValues
+        uniqueValues,
       );
     }
   }
@@ -1761,7 +1728,7 @@ $(document).ready(function () {
           x_index: variable,
           x_string: table_metadata["column-types"][variable] == "string",
           x: x,
-          x_label: get_variable_label(variable),
+          x_label: selectXColumnName(window.store.getState()),
         });
       },
       error: artifact_missing,
@@ -1783,7 +1750,7 @@ $(document).ready(function () {
           y_index: variable,
           y_string: table_metadata["column-types"][variable] == "string",
           y: y,
-          y_label: get_variable_label(variable),
+          y_label: selectYColumnName(window.store.getState()),
         });
       },
       error: artifact_missing,
@@ -1886,7 +1853,7 @@ $(document).ready(function () {
                 filter_var +
                 " >= " +
                 filter.min() +
-                ")"
+                ")",
             );
           } else if (!filter.invert()) {
             new_filters.push(
@@ -1898,7 +1865,7 @@ $(document).ready(function () {
                 filter_var +
                 " >= " +
                 filter.low() +
-                ")"
+                ")",
             );
           }
         } else if (filter.type() == "category") {
