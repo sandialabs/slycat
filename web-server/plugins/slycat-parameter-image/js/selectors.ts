@@ -19,10 +19,10 @@ type MinMaxType = number | string | Date | undefined;
 type ExtentType = [MinMaxType, MinMaxType];
 export type ScaleRangeType = [number, number];
 
-const selectMarginLeft = (state: RootState) => state.scatterplot_margin.left;
-const selectMarginRight = (state: RootState) => state.scatterplot_margin.right;
-const selectMarginTop = (state: RootState) => state.scatterplot_margin.top;
-const selectMarginBottom = (state: RootState) => state.scatterplot_margin.bottom;
+export const selectScatterplotMarginLeft = (state: RootState) => state.scatterplot_margin.left;
+export const selectScatterplotMarginRight = (state: RootState) => state.scatterplot_margin.right;
+export const selectScatterplotMarginTop = (state: RootState) => state.scatterplot_margin.top;
+export const selectScatterplotMarginBottom = (state: RootState) => state.scatterplot_margin.bottom;
 export const selectXValues = (state: RootState) => state.derived.xValues;
 export const selectYValues = (state: RootState) => state.derived.yValues;
 const selectVariableRanges = (state: RootState) => state.variableRanges;
@@ -234,8 +234,8 @@ const selectYExtent = createSelector(
 // Returns the start and end of the scatterplot x-axis area relative
 // to the entire width of the scatterplot pane by adjusting for left and right margins.
 export const selectXScaleRange = createSelector(
-  selectMarginLeft,
-  selectMarginRight,
+  selectScatterplotMarginLeft,
+  selectScatterplotMarginRight,
   selectScatterplotPaneWidth,
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0 + margin_left,
@@ -246,8 +246,8 @@ export const selectXScaleRange = createSelector(
 // Returns the start and end of the scatterplot y-axis area relative
 // to the entire height of the scatterplot pane by adjusting for top and bottom margins.
 export const selectYScaleRange = createSelector(
-  selectMarginTop,
-  selectMarginBottom,
+  selectScatterplotMarginTop,
+  selectScatterplotMarginBottom,
   selectScatterplotPaneHeight,
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, // Subtracting pixels to account for the height of the x-axis tick labels.
@@ -257,8 +257,8 @@ export const selectYScaleRange = createSelector(
 
 // Returns the start and end of the scatterplot x-axis area in absolute pixel values.
 export const selectXRangeCanvas = createSelector(
-  selectMarginLeft,
-  selectMarginRight,
+  selectScatterplotMarginLeft,
+  selectScatterplotMarginRight,
   selectScatterplotPaneWidth,
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
     0,
@@ -268,8 +268,8 @@ export const selectXRangeCanvas = createSelector(
 
 // Returns the start and end of the scatterplot y-axis area in absolute pixel values.
 export const selectYRangeCanvas = createSelector(
-  selectMarginTop,
-  selectMarginBottom,
+  selectScatterplotMarginTop,
+  selectScatterplotMarginBottom,
   selectScatterplotPaneHeight,
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
     height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT,
@@ -381,7 +381,7 @@ export const Y_LABEL_HORIZONTAL_OFFSET = 25;
 // This is the y position of the y-axis label. Set to align with the middle of the axis.
 export const selectYLabelY = createSelector(
   selectScatterplotPaneHeight,
-  selectMarginTop,
+  selectScatterplotMarginTop,
   (scatterplot_height: number, margin_top: number): number => margin_top + scatterplot_height / 2,
 );
 
