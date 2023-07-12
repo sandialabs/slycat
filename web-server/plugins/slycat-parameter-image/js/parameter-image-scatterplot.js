@@ -512,7 +512,7 @@ $.widget("parameter_image.scatterplot", {
       });
     };
 
-    const update_point_border_size = (objectPath) => {
+    const update_point_border_size = (newVal, oldVal, objectPath) => {
       let unselected_point_size_changed = objectPath == "unselected_point_size";
       let unselected_border_size_changed = objectPath == "unselected_border_size";
       let selected_point_size_changed = objectPath == "selected_point_size";
@@ -682,7 +682,7 @@ $.widget("parameter_image.scatterplot", {
           subscription.objectPath,
           _.isEqual,
         )((newVal, oldVal, objectPath) => {
-          subscription.callback(objectPath);
+          subscription.callback(newVal, oldVal, objectPath);
         }),
       );
     });
