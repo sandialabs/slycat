@@ -67,8 +67,13 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         const color = color_scale(d.length);
         return histogram_bar_color ?? `rgb(${color.r} ${color.g} ${color.b})`;
       })
-      .attr("x", (d) => x_scale(d.x0) + 0)
-      .attr("width", (d) => x_scale(d.x1) - x_scale(d.x0) - 0)
+      .attr("x", (d) => x_scale(d.x0))
+      .attr("width", (d) => {
+        const width = x_scale(d.x1) - x_scale(d.x0);
+        // If width is 0, set it to 20 so that the bar is visible.
+        // This can happen when there is only one bin.
+        return width === 0 ? 20 : width;
+      })
       .attr("y", (d) => y_scale(d.length))
       .attr("height", (d) => y_scale(0) - y_scale(d.length))
       .append("title")
