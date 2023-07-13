@@ -22,13 +22,12 @@ import {
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
-import { toggleShowHistogram } from "../scatterplotSlice";
+import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
 
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      auto_scale: this.props.auto_scale,
       video_sync: this.props.video_sync,
       var_settings: this.props.var_settings,
     };
@@ -48,10 +47,10 @@ class ControlsBar extends React.Component {
     this.setAutoScaleTooptip();
   }
 
-  setAutoScaleTooptip = (auto_scale_status) => {
+  setAutoScaleTooptip = () => {
     // console.log(`Initializing popover tooltips. Used for auto scale button.`);
 
-    const status = auto_scale_status !== undefined ? auto_scale_status : this.state.auto_scale;
+    const status = this.props.auto_scale;
     const status_text = status ? "On" : "Off";
     let content_text = "Auto scale is disabled. Click to turn it on.";
     let content_class = "";
@@ -122,12 +121,7 @@ class ControlsBar extends React.Component {
   };
 
   set_auto_scale = (e) => {
-    this.setState((prevState, props) => {
-      const new_auto_scale = !prevState.auto_scale;
-      this.props.element.trigger("auto-scale", new_auto_scale);
-      this.setAutoScaleTooptip(new_auto_scale);
-      return { auto_scale: new_auto_scale };
-    });
+    this.props.toggleAutoScale();
   };
 
   set_video_sync = (e) => {
@@ -290,7 +284,7 @@ class ControlsBar extends React.Component {
               name: "Frequency of X Axis Variable",
               set_selected: this.props.toggleShowHistogram,
               selected: this.props.show_histogram,
-            }
+            },
           );
         }
 
@@ -401,7 +395,7 @@ class ControlsBar extends React.Component {
             <ControlsGroup id={this.selection_id} class="btn-group ml-3">
               <ControlsButtonToggle
                 icon={faExternalLinkAlt}
-                active={this.state.auto_scale}
+                active={this.props.auto_scale}
                 set_active_state={this.set_auto_scale}
                 button_style={`${button_style} ${this.button_style_auto_scale}`}
                 id={this.autoScaleId}
@@ -535,6 +529,7 @@ const mapStateToProps = (state, ownProps) => {
     video_sync_time: state.video_sync_time,
     colormap: state.colormap,
     show_histogram: state.scatterplot.show_histogram,
+    auto_scale: state.scatterplot.auto_scale,
   };
 };
 
@@ -546,11 +541,12 @@ export default connect(
     setVideoSyncTime,
     setColormap,
     toggleShowHistogram,
+    toggleAutoScale,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this
   // ControlsBar component so we can set its state from outside React. This option makes it so that
   // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
   // https://react-redux.js.org/api/connect#forwardref-boolean
-  { forwardRef: true }
+  { forwardRef: true },
 )(ControlsBar);

@@ -44,6 +44,14 @@ import scatterplot_reducer, {
   setScatterplotPaneWidth,
   setScatterplotPaneHeight,
   toggleShowHistogram,
+  selectAutoScale,
+  selectUnselectedPointSize,
+  selectUnselectedBorderSize,
+  selectSelectedPointSize,
+  selectSelectedBorderSize,
+  selectFontSize,
+  selectFontFamily,
+  selectOpenMedia,
 } from "./scatterplotSlice";
 import {
   setXValues,
@@ -81,7 +89,16 @@ import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import combinedReduction from "combined-reduction";
 import { configureStore } from "@reduxjs/toolkit";
-import { selectXColumnName, selectYColumnName, selectVColumnName } from "./selectors";
+import {
+  selectXColumnName,
+  selectYColumnName,
+  selectVColumnName,
+  selectScatterplotMarginLeft,
+  selectScatterplotMarginRight,
+  selectScatterplotMarginTop,
+  selectScatterplotMarginBottom,
+  selectAxesVariables,
+} from "./selectors";
 
 let table_metadata = null;
 
@@ -394,7 +411,7 @@ $(document).ready(function () {
             v_index: v_index,
             scatterplot: {
               auto_scale: bookmark["auto-scale"],
-            }
+            },
           };
 
           const derivedState = {
@@ -459,18 +476,19 @@ $(document).ready(function () {
           window.store.subscribe(bookmarkReduxStateTree);
 
           // Set local variables based on Redux store
-          axes_font_size = store.getState().fontSize;
-          axes_font_family = store.getState().fontFamily;
-          axes_variables_scale = store.getState().axesVariables;
-          unselected_point_size = store.getState().unselected_point_size;
-          unselected_border_size = store.getState().unselected_border_size;
-          selected_point_size = store.getState().selected_point_size;
-          selected_border_size = store.getState().selected_border_size;
-          scatterplot_margin_top = store.getState().scatterplot_margin.top;
-          scatterplot_margin_right = store.getState().scatterplot_margin.right;
-          scatterplot_margin_bottom = store.getState().scatterplot_margin.bottom;
-          scatterplot_margin_left = store.getState().scatterplot_margin.left;
-          open_images = store.getState().open_media;
+          axes_font_size = selectFontSize(store.getState());
+          axes_font_family = selectFontFamily(store.getState());
+          axes_variables_scale = selectAxesVariables(store.getState());
+          unselected_point_size = selectUnselectedPointSize(store.getState());
+          unselected_border_size = selectUnselectedBorderSize(store.getState());
+          selected_point_size = selectSelectedPointSize(store.getState());
+          selected_border_size = selectSelectedBorderSize(store.getState());
+          scatterplot_margin_top = selectScatterplotMarginTop(store.getState());
+          scatterplot_margin_right = selectScatterplotMarginRight(store.getState());
+          scatterplot_margin_bottom = selectScatterplotMarginBottom(store.getState());
+          scatterplot_margin_left = selectScatterplotMarginLeft(store.getState());
+          open_images = selectOpenMedia(store.getState());
+          auto_scale = selectAutoScale(store.getState());
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
@@ -487,6 +505,7 @@ $(document).ready(function () {
           filter_manager.notify_store_ready();
           resolve();
           setup_controls();
+          setup_scatterplot();
           metadata_loaded();
         });
 
@@ -503,14 +522,21 @@ $(document).ready(function () {
 
     // Wait until the redux store has been created
     createReduxStorePromise.then(() => {
-      // Subscribing to changes in colormap
-      let w = watch(store.getState, "colormap");
-      store.subscribe(
-        w((newVal, oldVal, objectPath) => {
-          // console.debug(`%s changed from %s to %s`, objectPath, oldVal, newVal);
-          selected_colormap_changed(newVal);
-        }),
-      );
+      // Subscribing to changes in various states
+      [
+        { objectPath: "colormap", callback: selected_colormap_changed },
+        { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
+      ].forEach((subscription) => {
+        window.store.subscribe(
+          watch(
+            window.store.getState,
+            subscription.objectPath,
+            _.isEqual,
+          )((newVal, oldVal, objectPath) => {
+            subscription.callback(newVal, oldVal, objectPath);
+          }),
+        );
+      });
 
       // Set size of scatterplot pane in Redux
       window.store.dispatch(setScatterplotPaneWidth(model_pane_layout.state.center.innerWidth));
@@ -600,10 +626,6 @@ $(document).ready(function () {
         window.store.dispatch(setYIndex(y_index));
       });
 
-      auto_scale = true;
-      if ("auto-scale" in bookmark) {
-        auto_scale = bookmark["auto-scale"];
-      }
       video_sync = false;
       if ("video-sync" in bookmark) {
         video_sync = bookmark["video-sync"];
@@ -1027,7 +1049,6 @@ $(document).ready(function () {
       category_columns != null &&
       x_index != null &&
       y_index != null &&
-      auto_scale != null &&
       images_index !== null &&
       selected_simulations != null &&
       hidden_simulations != null &&
@@ -1082,7 +1103,6 @@ $(document).ready(function () {
         "y-variable": y_index,
         "image-variable": images_index,
         "color-variable": color_variable,
-        "auto-scale": auto_scale,
         hidden_simulations: hidden_simulations,
         indices: indices,
         "video-sync": video_sync,
@@ -1199,11 +1219,6 @@ $(document).ready(function () {
       // Log changes to the y variable ...
       $("#controls").bind("y-selection-changed", function (event, variable) {
         y_selection_changed(variable);
-      });
-
-      // Changing the auto scale option updates the scatterplot and logs it ...
-      $("#controls").bind("auto-scale", function (event, auto_scale) {
-        auto_scale_option_changed(auto_scale);
       });
 
       // Changing the video sync option updates the scatterplot and logs it ...
@@ -1369,7 +1384,7 @@ $(document).ready(function () {
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  function selected_colormap_changed(colormap) {
+  function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();
 
     // Changing the color map updates the table with a new color scale ...
@@ -1649,7 +1664,7 @@ $(document).ready(function () {
     }
   }
 
-  function auto_scale_option_changed(auto_scale_value) {
+  function auto_scale_option_changed(auto_scale_value, old_auto_scale_value, objectPath) {
     auto_scale = auto_scale_value;
     if (hidden_simulations.length > 0) {
       update_current_colorscale();
@@ -1663,7 +1678,6 @@ $(document).ready(function () {
       type: "POST",
       url: api_root + "events/models/" + model_id + "/auto-scale/" + auto_scale,
     });
-    bookmarker.updateState({ "auto-scale": auto_scale });
   }
 
   function video_sync_option_changed(video_sync_value) {
