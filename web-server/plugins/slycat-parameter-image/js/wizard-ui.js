@@ -30,6 +30,7 @@ function constructor(params) {
   component.current_aids = ko.observable("");
   component.csv_data = ko.observableArray();
   component.error_messages = ko.observable("");
+  component.warning_messages = ko.observable("");
   component.useProjectData = ko.observable(false);
   // Alex removing default model name per team meeting discussion
   // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
@@ -143,10 +144,37 @@ function constructor(params) {
         aid: "error-messages",
       })
       .then((errors) => {
+
+        // keep track of both warnings and errors
         var error_messages = "";
+        var warning_messages = "";
+
+        // check if there are actual errors or just warnings
         if (errors.length >= 1) {
+          for (var i=0; i<errors.length; i++) {
+            if (errors[i]["type"] == "error") {
+              error_messages = "Errors listed below must be fixed before you can upload a model.\n" +
+                               "Please close this dialog or try again with a new file.\n\n"
+              break;
+            }
+          }
+
+          // display warnings/errors
+          for (var i=0; i<errors.length; i++) {
+            if (errors[i]["type"] == "warning"){
+              warning_messages += "Warning: " + errors[i]["message"] + "\n";
+            } else {
+              error_messages += "Error: " + errors[i]["message"] + "\n";
+            }   
+          }
+          component.error_messages(error_messages);
+          component.warning_messages(warning_messages);
+
           // if there were errors, cleanup project data
-          client
+          if (error_messages.length > 0) {
+
+            // delete model and data
+            client
             .get_project_data_in_model_fetch({
               mid: component.model._id(),
             })
@@ -156,10 +184,16 @@ function constructor(params) {
               }
             });
 
-          for (var i = 0; i < errors.length; i++) {
-            error_messages += errors[i] + "\n";
+            // re-enable button
+            $(".browser-continue").toggleClass("disabled", false);
+
+          } else {
+
+            // only warnings, continue
+            component.tab(4);
+            $(".browser-continue").toggleClass("disabled", false);
+
           }
-          component.error_messages(error_messages);
         } else {
           component.error_messages(error_messages);
         }
@@ -303,6 +337,14 @@ function constructor(params) {
   };
 
   component.upload_table = function () {
+
+    // check that a file has been selected
+    if (component.browser.selection().length == 0) {
+      component.error_messages("You must selected a file before continuing.");
+      return
+    }
+
+    // get file data
     $(".local-browser-continue").toggleClass("disabled", true);
     var file = component.browser.selection()[0];
 
