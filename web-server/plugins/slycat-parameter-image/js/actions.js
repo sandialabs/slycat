@@ -33,13 +33,10 @@ export const SET_V_INDEX = "SET_V_INDEX";
 export const SET_MEDIA_INDEX = "SET_MEDIA_INDEX";
 export const SET_OPEN_MEDIA = "SET_OPEN_MEDIA";
 export const UPDATE_CLOSED_MEDIA = "UPDATE_CLOSED_MEDIA";
-export const SET_HIDDEN_SIMULATIONS = "SET_HIDDEN_SIMULATIONS";
-export const SET_MANUALLY_HIDDEN_SIMULATIONS = "SET_MANUALLY_HIDDEN_SIMULATIONS";
 export const SET_MEDIA_SIZE_POSITION = "SET_MEDIA_SIZE_POSITION";
 export const SET_ACTIVE_FILTERS = "SET_ACTIVE_FILTERS";
 export const TOGGLE_SYNC_SCALING = "TOGGLE_SYNC_SCALING";
 export const TOGGLE_SYNC_THREE_D_COLORVAR = "TOGGLE_SYNC_THREE_D_COLORVAR";
-export const SET_SELECTED_SIMULATIONS = "SET_SELECTED_SIMULATIONS";
 export const SET_USER_ROLE = "SET_USER_ROLE";
 export const SET_TABLE_STATISTICS = "SET_TABLE_STATISTICS";
 export const SET_TABLE_METADATA = "SET_TABLE_METADATA";
@@ -277,14 +274,6 @@ export function updateClosedMedia(uid) {
   return { type: UPDATE_CLOSED_MEDIA, uid };
 }
 
-export function setHiddenSimulations(hidden_simulations) {
-  return { type: SET_HIDDEN_SIMULATIONS, hidden_simulations };
-}
-
-export function setManuallyHiddenSimulations(manually_hidden_simulations) {
-  return { type: SET_MANUALLY_HIDDEN_SIMULATIONS, manually_hidden_simulations };
-}
-
 export function setMediaSizePosition(media_size_position) {
   // We might consider throttling this in the future,
   // but for now it affects media legends since they move
@@ -309,13 +298,6 @@ export function toggleSyncScaling() {
 export function toggleSyncThreeDColorvar() {
   return {
     type: TOGGLE_SYNC_THREE_D_COLORVAR,
-  };
-}
-
-export function setSelectedSimulations(simulations) {
-  return {
-    type: SET_SELECTED_SIMULATIONS,
-    simulations,
   };
 }
 

@@ -53,6 +53,15 @@ import scatterplot_reducer, {
   selectFontFamily,
   selectOpenMedia,
 } from "./scatterplotSlice";
+import data_reducer, {
+  SLICE_NAME as DATA_SLICE_NAME,
+  selectSelectedSimulations,
+  selectHiddenSimulations,
+  selectManuallyHiddenSimulations,
+  setSelectedSimulations,
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
+} from "./dataSlice";
 import {
   setXValues,
   setYValues,
@@ -62,9 +71,6 @@ import {
   setYIndex,
   setVIndex,
   setMediaIndex,
-  setHiddenSimulations,
-  setManuallyHiddenSimulations,
-  setSelectedSimulations,
   setUserRole,
   setTableStatistics,
   setTableMetadata,
@@ -409,8 +415,17 @@ $(document).ready(function () {
             x_index: x_index,
             y_index: y_index,
             v_index: v_index,
-            scatterplot: {
+            [SCATTERPLOT_SLICE_NAME]: {
               auto_scale: bookmark["auto-scale"],
+            },
+            [DATA_SLICE_NAME]: {
+              selected_simulations:
+                bookmark.state?.["selected_simulations"] ?? bookmark["simulation-selection"],
+              hidden_simulations:
+                bookmark.state?.["hidden_simulations"] ?? bookmark["hidden-simulations"],
+              manually_hidden_simulations:
+                bookmark.state?.["manually_hidden_simulations"] ??
+                bookmark["manually-hidden-simulations"],
             },
           };
 
@@ -435,6 +450,7 @@ $(document).ready(function () {
           // createSlice scatterplot_reducer and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
+            [DATA_SLICE_NAME]: data_reducer,
           });
 
           window.store = configureStore({
@@ -478,7 +494,7 @@ $(document).ready(function () {
           // Set local variables based on Redux store
           axes_font_size = selectFontSize(store.getState());
           axes_font_family = selectFontFamily(store.getState());
-          axes_variables_scale = selectAxesVariables(store.getState());
+          axes_variables_scale = _.cloneDeep(selectAxesVariables(store.getState()));
           unselected_point_size = selectUnselectedPointSize(store.getState());
           unselected_border_size = selectUnselectedBorderSize(store.getState());
           selected_point_size = selectSelectedPointSize(store.getState());
@@ -487,8 +503,11 @@ $(document).ready(function () {
           scatterplot_margin_right = selectScatterplotMarginRight(store.getState());
           scatterplot_margin_bottom = selectScatterplotMarginBottom(store.getState());
           scatterplot_margin_left = selectScatterplotMarginLeft(store.getState());
-          open_images = selectOpenMedia(store.getState());
+          open_images = _.cloneDeep(selectOpenMedia(store.getState()));
           auto_scale = selectAutoScale(store.getState());
+          selected_simulations = _.cloneDeep(selectSelectedSimulations(store.getState()));
+          hidden_simulations = _.cloneDeep(selectHiddenSimulations(store.getState()));
+          manually_hidden_simulations = _.cloneDeep(selectManuallyHiddenSimulations(store.getState()));
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
@@ -506,6 +525,7 @@ $(document).ready(function () {
           resolve();
           setup_controls();
           setup_scatterplot();
+          setup_table();
           metadata_loaded();
         });
 
@@ -644,16 +664,6 @@ $(document).ready(function () {
         setSyncCameras(threeD_sync);
         setup_controls();
       });
-
-      // Set state of selected and hidden simulations
-      selected_simulations = [];
-      if ("simulation-selection" in bookmark)
-        selected_simulations = bookmark["simulation-selection"];
-      hidden_simulations = [];
-      if ("hidden-simulations" in bookmark) hidden_simulations = bookmark["hidden-simulations"];
-      manually_hidden_simulations = [];
-      if ("manually-hidden-simulations" in bookmark)
-        manually_hidden_simulations = bookmark["manually-hidden-simulations"];
 
       chunker.get_model_array_attribute({
         api_root: api_root,
@@ -1629,8 +1639,7 @@ $(document).ready(function () {
       type: "POST",
       url: api_root + "events/models/" + model_id + "/select/simulation/count/" + selection.length,
     });
-    bookmarker.updateState({ "simulation-selection": selection });
-    selected_simulations = selection;
+    selected_simulations = _.cloneDeep(selection);
 
     // Dispatch update to selected_simulations in Redux
     window.store.dispatch(setSelectedSimulations(selection));

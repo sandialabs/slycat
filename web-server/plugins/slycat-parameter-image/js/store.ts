@@ -15,6 +15,11 @@ import {
   initialState as scatterplotInitialState,
   ScatterplotState,
 } from "./scatterplotSlice";
+import {
+  SLICE_NAME as DATA_SLICE_NAME,
+  initialState as dataInitialState,
+  DataState,
+} from "./dataSlice";
 
 export type AxisType = "Linear" | "Log" | "Date & Time";
 
@@ -97,16 +102,14 @@ export type RootState = {
   closed_media: any[];
   currentFrame: Record<string, any>;
   active_filters: any[];
-  hidden_simulations: number[];
-  manually_hidden_simulations: any[];
   sync_scaling: boolean;
   sync_threeD_colorvar: boolean;
-  selected_simulations: any[];
   x_index: number;
   y_index: number;
   v_index: number;
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
+  [DATA_SLICE_NAME]: DataState;
   derived: DerivedStateType;
 };
 
@@ -148,6 +151,7 @@ export const initialState: RootState = {
   v_index: 1,
   video_sync_time: 0,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
+  [DATA_SLICE_NAME]: { ...dataInitialState },
   derived: {
     variableAliases: {},
     xValues: [],

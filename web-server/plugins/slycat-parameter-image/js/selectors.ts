@@ -2,6 +2,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import * as d3 from "d3v7";
 import _ from "lodash";
 import { selectScatterplotPaneWidth, selectScatterplotPaneHeight } from "./scatterplotSlice";
+import { selectHiddenSimulations } from "./dataSlice";
 import {
   RootState,
   VariableRangesType,
@@ -35,7 +36,6 @@ const selectColumnTypes = (state: RootState) => state.derived.table_metadata["co
 const selectColumnNames = (state: RootState) => state.derived.table_metadata["column-names"];
 const selectVariableAliases = (state: RootState) => state.derived.variableAliases;
 const selectTableStatistics = (state: RootState) => state.derived.table_statistics;
-export const selectHiddenSimulations = (state: RootState) => state.hidden_simulations;
 
 export const selectXValuesWithoutHidden = createSelector(
   selectXValues,
