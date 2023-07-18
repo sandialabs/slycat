@@ -39,7 +39,7 @@ def parse_file_offline(file):
 
     # return empty values if couldn't read file
     except Exception as e:
-        csv_read_error.append({'type': 'error', 'message': 'Could not read .csv file.\n\n' +
+        csv_read_error.append({'type': 'error', 'message': 'Could not read .csv file.\n' +
                                'Pandas exception: "' + str(e) + '".'})
         return attributes, dimensions, data, csv_read_error 
 
@@ -81,7 +81,7 @@ def parse_file_offline(file):
     # slycat warning for empty headers
     if len(empty_headers) != 0:
         csv_read_error.append({'type': 'warning', 'message': 'Found empty headers in columns: ' + \
-                               str(empty_headers) + '.  Using "Unnamed: <Column #>" for empty headers.'})
+                               str(empty_headers) + '.\nUsing "Unnamed: <Column #>" for empty headers.'})
     
     # look for duplicate headers (pandas adds .# to column)
     duplicated_headers = []
@@ -97,8 +97,14 @@ def parse_file_offline(file):
     # slycat warning for duplicated headers
     if len(duplicated_headers) != 0:
         csv_read_error.append({'type': 'warning', 'message': 'Found duplicated headers in columns: ' + \
-                              str(duplicated_headers) + '.  Using "<Header>.#" for duplicate headers.'})
+                              str(duplicated_headers) + '.\nUsing "<Header>.#" for duplicate headers.'})
 
+    # slycat warning that NaNs were discovered
+    if df.isnull().values.any():
+        csv_read_error.append({'type': 'warning', 'message': 'Found NaNs in .csv table.  Pandas converts a variety of null ' + 
+                                "values to NaNs, including blanks, null, None, n/a, etc.  See Panda's read_csv "
+                                'for details.\n  NaNs may be ignored by Slycat algorithms/visualization tools.'})
+        
     # headers may have been changed, need to recompute
     attributes = [dict(name=header, type="float64" 
         if df[header].dtype != "object" else "string") 

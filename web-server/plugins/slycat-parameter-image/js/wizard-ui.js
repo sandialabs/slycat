@@ -153,18 +153,20 @@ function constructor(params) {
         if (errors.length >= 1) {
           for (var i=0; i<errors.length; i++) {
             if (errors[i]["type"] == "error") {
-              error_messages = "Errors listed below must be fixed before you can upload a model.\n" +
-                               "Please close this dialog or try again with a new file.\n\n"
-              break;
+              error_messages = "The errors listed below must be fixed before you can upload a model.\n" +
+                               "Please close this dialog or try again with a new file.\n";
+            } else if (errors[i]["type"] == "warning") {
+              warning_messages = "The warnings listed below indicate that your original data has " + 
+                                 "been altered.\n";
             }
           }
 
           // display warnings/errors
           for (var i=0; i<errors.length; i++) {
             if (errors[i]["type"] == "warning"){
-              warning_messages += "Warning: " + errors[i]["message"] + "\n";
+              warning_messages += "\nWarning: " + errors[i]["message"] + "\n";
             } else {
-              error_messages += "Error: " + errors[i]["message"] + "\n";
+              error_messages += "\nError: " + errors[i]["message"] + "\n";
             }   
           }
           component.error_messages(error_messages);
@@ -183,6 +185,10 @@ function constructor(params) {
                 client.delete_project_data_fetch({ did: did });
               }
             });
+
+            // set progress bar back to zero
+            component.browser.progress(0);
+            component.browser.progress_status("");
 
             // re-enable button
             $(".browser-continue").toggleClass("disabled", false);
