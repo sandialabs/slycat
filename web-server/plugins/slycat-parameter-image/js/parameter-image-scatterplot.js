@@ -389,7 +389,7 @@ $.widget("parameter_image.scatterplot", {
     });
 
     self.element.mouseup(function (e) {
-      // Figure out of this event happened on the scatterplot svg element
+      // Figure out if this event happened on the scatterplot svg element
       const target = e.target;
       const isScatterplotSVG =
         target.tagName.toLowerCase() == "svg" && target.classList.contains("scatterplot-svg");
