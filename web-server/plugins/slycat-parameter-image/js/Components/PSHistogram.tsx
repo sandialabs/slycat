@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import slycat_color_maps from "js/slycat-color-maps";
 import PlotGrid from "./PlotGrid";
 import Histogram from "./Histogram";
@@ -27,11 +27,13 @@ import {
   selectShowGrid,
   selectAutoScale,
 } from "../scatterplotSlice";
+import { selectHiddenSimulations, setSelectedSimulations } from "../dataSlice";
 import * as d3 from "d3v7";
 
 type PSHistogramProps = {};
 
 const PSHistogram: React.FC<PSHistogramProps> = (props) => {
+  const dispatch = useDispatch();
   const show_histogram = useSelector(selectShowHistogram);
   // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
   const x_scale = useSelector(selectXScale).copy();
@@ -54,6 +56,34 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const background = slycat_color_maps.get_background(colormap).toString();
   const x_has_custom_range = useSelector(selectXHasCustomRange);
   const auto_scale = useSelector(selectAutoScale);
+  const hidden_simulations = useSelector(selectHiddenSimulations);
+
+  const handleBinClick = (bin: {
+    range: number[];
+    count: number;
+    index: number;
+    bins_length: number;
+    data: d3.Bin<number, number>;
+  }) => {
+    // Is this the last bin?
+    const is_last_bin = bin.index === bin.bins_length - 1;
+    // Find the min and max values of the bin
+    const min = bin.range[0];
+    const max = bin.range[1];
+    // Find the indices of the values in the bin
+    const indices_matching_bin = x_values.reduce((acc, value, index) => {
+      // Skip if index is in hidden_simulations
+      if (hidden_simulations.includes(index)) {
+        return acc;
+      }
+      // max value is inclusive for the last bin
+      if (value >= min && (is_last_bin ? value <= max : value < max)) {
+        acc.push(index);
+      }
+      return acc;
+    }, []);
+    dispatch(setSelectedSimulations(indices_matching_bin));
+  };
 
   // Only render the component if show_histogram is true
   if (!show_histogram) {
@@ -129,6 +159,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         y_label_y={y_label_y}
         colormap={colormap}
         y_label_horizontal_offset={Y_LABEL_HORIZONTAL_OFFSET}
+        handleBinClick={handleBinClick}
       />
     </>
   );

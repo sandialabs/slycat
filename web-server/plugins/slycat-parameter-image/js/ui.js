@@ -507,7 +507,9 @@ $(document).ready(function () {
           auto_scale = selectAutoScale(store.getState());
           selected_simulations = _.cloneDeep(selectSelectedSimulations(store.getState()));
           hidden_simulations = _.cloneDeep(selectHiddenSimulations(store.getState()));
-          manually_hidden_simulations = _.cloneDeep(selectManuallyHiddenSimulations(store.getState()));
+          manually_hidden_simulations = _.cloneDeep(
+            selectManuallyHiddenSimulations(store.getState()),
+          );
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
@@ -546,6 +548,7 @@ $(document).ready(function () {
       [
         { objectPath: "colormap", callback: selected_colormap_changed },
         { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
+        { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
       ].forEach((subscription) => {
         window.store.subscribe(
           watch(
@@ -1612,7 +1615,7 @@ $(document).ready(function () {
     // }
     // return [];
 
-    // For loop method is much shower (around 300ms for 250K)
+    // For loop method is much slower (around 300ms for 250K)
     // but works in WebKit. Might be able to speed things up by
     // using ArrayBuffer.subarray() method to make smallery
     // arrays and then Array.apply those.
@@ -1632,7 +1635,7 @@ $(document).ready(function () {
     bookmarker.updateState({ "sort-variable": variable, "sort-order": order });
   }
 
-  function selected_simulations_changed(selection) {
+  function selected_simulations_changed(selection, old_selection, objectPath) {
     // console.log("selected_simulations_changed");
     // Logging every selected item is too slow, so just log the count instead.
     $.ajax({
@@ -1641,8 +1644,16 @@ $(document).ready(function () {
     });
     selected_simulations = _.cloneDeep(selection);
 
-    // Dispatch update to selected_simulations in Redux
-    window.store.dispatch(setSelectedSimulations(selection));
+    // If we have an old_selection it means this came from Redux, so we don't need to update Redux again.
+    // But we do need to let the other non-React components know about the new selection.
+    if (old_selection !== undefined) {
+      $("#scatterplot").scatterplot("option", "selection", _.cloneDeep(selection));
+      $("#controls").controls("option", "selection", _.cloneDeep(selection));
+      $("#table").table("option", "row-selection", _.cloneDeep(selection));
+    } else {
+      // Dispatch update to selected_simulations in Redux
+      window.store.dispatch(setSelectedSimulations(selection));
+    }
   }
 
   function x_selection_changed(variable) {

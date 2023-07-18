@@ -183,7 +183,7 @@ $.widget("parameter_image.table", {
                 ? "Current y variable"
                 : "Set as y variable",
             command: "y-on",
-          }
+          },
         );
       }
       return column;
@@ -196,20 +196,20 @@ $.widget("parameter_image.table", {
         self.options.metadata["column-count"] - 1,
         "headerSimId",
         "rowSimId",
-        cell_formatter
-      )
+        cell_formatter,
+      ),
     );
     for (var i in self.options.inputs)
       self.columns.push(
-        make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter)
+        make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter),
       );
     for (var i in self.options.outputs)
       self.columns.push(
-        make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter)
+        make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter),
       );
     for (var i in self.options.others)
       self.columns.push(
-        make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter)
+        make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter),
       );
 
     self.data = new self._data_provider({
@@ -366,7 +366,7 @@ $.widget("parameter_image.table", {
 
     // Subscribing to changes in derived.variableAliases
     window.store.subscribe(
-      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases)
+      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases),
     );
   },
 
@@ -393,8 +393,11 @@ $.widget("parameter_image.table", {
     var self = this;
 
     if (key == "row-selection") {
-      self.options[key] = value;
-      table_helpers._set_selected_rows_no_trigger(self);
+      // Make sure selection actually chaged before doing anything
+      if (!self._array_equal(self.options[key], value)) {
+        self.options[key] = value;
+        table_helpers._set_selected_rows_no_trigger(self);
+      }
     } else if (key == "variable-selection") {
       if (self._array_equal(self.options[key], value)) return;
 
@@ -676,7 +679,7 @@ $.widget("parameter_image.table", {
           if (self.sort_column == self.metadata["column-count"] - 1) {
             // we are sorting by the index column, so we can just make the data we need.
             self.ranked_indices[self.sort_column] = new Int32Array(
-              d3.range(self.metadata["row-count"])
+              d3.range(self.metadata["row-count"]),
             );
             self.get_indices(direction, rows, callback);
           } else {
@@ -690,7 +693,7 @@ $.widget("parameter_image.table", {
                 "/arraysets/data-table/data?hyperchunks=0/rank(a" +
                 self.sort_column +
                 ',"asc")/...&byteorder=' +
-                (chunker.is_little_endian() ? "little" : "big")
+                (chunker.is_little_endian() ? "little" : "big"),
             );
             request.responseType = "arraybuffer";
             request.direction = direction;

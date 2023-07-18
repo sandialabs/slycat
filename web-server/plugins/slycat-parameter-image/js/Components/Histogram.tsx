@@ -20,6 +20,14 @@ type HistogramProps = {
   y_label_y: number;
   colormap: string;
   y_label_horizontal_offset: number;
+  handleBinClick: (bin: {
+    range: (number | undefined)[];
+    count: number;
+    index: number;
+    bins_length: number;
+    data: d3.Bin<number, number>;
+  }) => void;
+
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
@@ -41,6 +49,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const y_scale = props.y_scale;
   const histogram_bar_color = props.histogram_bar_color;
   const y_label_horizontal_offset = props.y_label_horizontal_offset;
+  const handleBinClick = props.handleBinClick;
 
   useEffect(() => {
     // Create a color scale for y axis
@@ -55,7 +64,6 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     histogram.selectAll("*").remove();
     histogram
       .append("g")
-      // .attr("fill", histogram_bar_color)
       .attr("stroke", "black")
       .attr("stroke-width", histogram_bar_stroke_width)
       .selectAll()
@@ -76,6 +84,28 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       })
       .attr("y", (d) => y_scale(d.length))
       .attr("height", (d) => y_scale(0) - y_scale(d.length))
+      // On click, run a function
+      .on("click", (event, d) => {
+        // Get the bin range
+        const range = [d.x0, d.x1];
+        // Get the bin count
+        const count = d.length;
+        // Get the bin index
+        const index = bins.indexOf(d);
+        // Get the length of the bins array
+        const bins_length = bins.length;
+        // Get the bin data
+        const data = d;
+
+        // Run the callback function
+        props.handleBinClick({
+          range,
+          count,
+          index,
+          bins_length,
+          data,
+        });
+      })
       .append("title")
       .text(
         (d) =>
