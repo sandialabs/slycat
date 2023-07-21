@@ -5,11 +5,11 @@ import PlotGrid from "./PlotGrid";
 import Histogram from "./Histogram";
 import PlotBackground from "./PlotBackground";
 import {
+  ValueIndexType,
   selectColormap,
   selectXScale,
   selectXTicks,
   selectYTicks,
-  selectXValues,
   selectYScaleRange,
   selectXLabelX,
   X_LABEL_VERTICAL_OFFSET,
@@ -17,17 +17,19 @@ import {
   Y_LABEL_HORIZONTAL_OFFSET,
   selectYLabelY,
   selectXHasCustomRange,
-  selectXValuesWithoutHidden,
+  selectXValuesAndIndexes,
+  selectXValuesAndIndexesWithoutHidden,
 } from "../selectors";
 import {
   selectShowHistogram,
   selectUnselectedBorderSize,
+  selectSelectedBorderSize,
   selectFontSize,
   selectFontFamily,
   selectShowGrid,
   selectAutoScale,
 } from "../scatterplotSlice";
-import { selectHiddenSimulations, setSelectedSimulations } from "../dataSlice";
+import { setSelectedSimulations, selecteSelectedSimulationsWithoutHidden } from "../dataSlice";
 import * as d3 from "d3v7";
 
 type PSHistogramProps = {};
@@ -41,9 +43,10 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const y_scale_range = useSelector(selectYScaleRange);
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
-  const x_values = useSelector(selectXValues);
-  const x_values_without_hidden = useSelector(selectXValuesWithoutHidden);
+  const x_values_and_indexes = useSelector(selectXValuesAndIndexes);
+  const x_values_and_indexes_without_hidden = useSelector(selectXValuesAndIndexesWithoutHidden);
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
+  const histogram_bar_selected_stroke_width = useSelector(selectSelectedBorderSize);
   const font_size = useSelector(selectFontSize);
   const font_family = useSelector(selectFontFamily);
   const x_label_y = X_LABEL_VERTICAL_OFFSET;
@@ -56,32 +59,19 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const background = slycat_color_maps.get_background(colormap).toString();
   const x_has_custom_range = useSelector(selectXHasCustomRange);
   const auto_scale = useSelector(selectAutoScale);
-  const hidden_simulations = useSelector(selectHiddenSimulations);
+  const selected_simulations_without_hidden = useSelector(selecteSelectedSimulationsWithoutHidden);
 
   const handleBinClick = (bin: {
     range: number[];
     count: number;
     index: number;
     bins_length: number;
-    data: d3.Bin<number, number>;
+    data: d3.Bin<ValueIndexType, number>;
   }) => {
-    // Is this the last bin?
-    const is_last_bin = bin.index === bin.bins_length - 1;
-    // Find the min and max values of the bin
-    const min = bin.range[0];
-    const max = bin.range[1];
-    // Find the indices of the values in the bin
-    const indices_matching_bin = x_values.reduce((acc, value, index) => {
-      // Skip if index is in hidden_simulations
-      if (hidden_simulations.includes(index)) {
-        return acc;
-      }
-      // max value is inclusive for the last bin
-      if (value >= min && (is_last_bin ? value <= max : value < max)) {
-        acc.push(index);
-      }
-      return acc;
-    }, []);
+    // Iterate over data and create an array of indices
+    const indices_matching_bin = bin.data.map(
+      (value_and_index: ValueIndexType) => value_and_index.index,
+    );
     dispatch(setSelectedSimulations(indices_matching_bin));
   };
 
@@ -92,7 +82,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
 
   const bin = d3
     .bin()
-    .value((d: number | string) => d)
+    .value((d: ValueIndexType) => d.value)
     // Setting the number of bins to be the same as the number of ticks
     // so that each tick has its own bin.
     .thresholds(x_ticks);
@@ -110,8 +100,8 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     bin.domain(x_scale.domain()).thresholds(x_scale.ticks(x_ticks));
   }
 
-  const bins_without_hidden = bin(x_values_without_hidden);
-  const bins_with_hidden = bin(x_values);
+  const bins_without_hidden = bin(x_values_and_indexes_without_hidden);
+  const bins_with_hidden = bin(x_values_and_indexes);
 
   // Declare the y (vertical position) scale.
   const y_scale = d3
@@ -127,6 +117,25 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     bins_for_x_scale_domain[0].x0,
     bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1,
   ]);
+
+  // Create an array of indices of bins_without_hidden whose elements' index attributes are all in selected_simulations_without_hidden.
+  // In other words, find bins that contain only selected simulations.
+  const selected_bin_indexes = bins_without_hidden
+    .map((bin, index) => {
+      // Disregard empty bins
+      if (bin.length === 0) {
+        return undefined;
+      }
+      // If all the indices in the bin are in selected_simulations_without_hidden, return the index of the bin
+      const matching_bin_index = bin
+        .map((value_and_index: ValueIndexType) => value_and_index.index)
+        .every((index) => selected_simulations_without_hidden.includes(index))
+        ? index
+        : undefined;
+      return matching_bin_index;
+    })
+    // Filter out undefined values (bins with unselected simulations)
+    .filter((index) => index !== undefined) as number[];
 
   return (
     <>
@@ -147,10 +156,12 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         y_scale={y_scale}
         y_scale_range={y_scale_range}
         bins={bins_without_hidden}
+        selected_bin_indexes={selected_bin_indexes}
         x_ticks={x_ticks}
         y_ticks={y_ticks}
         histogram_bar_color={histogram_bar_color}
         histogram_bar_stroke_width={histogram_bar_stroke_width}
+        histogram_bar_selected_stroke_width={histogram_bar_selected_stroke_width}
         font_size={font_size}
         font_family={font_family}
         x_label_x={x_label_x}

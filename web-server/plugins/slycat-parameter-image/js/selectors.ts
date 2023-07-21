@@ -19,6 +19,7 @@ const X_AXIS_TICK_LABEL_HEIGHT = 40;
 type MinMaxType = number | string | Date | undefined;
 type ExtentType = [MinMaxType, MinMaxType];
 export type ScaleRangeType = [number, number];
+export type ValueIndexType = { value: string | number; index: number };
 
 export const selectScatterplotMarginLeft = (state: RootState) => state.scatterplot_margin.left;
 export const selectScatterplotMarginRight = (state: RootState) => state.scatterplot_margin.right;
@@ -37,11 +38,34 @@ const selectColumnNames = (state: RootState) => state.derived.table_metadata["co
 const selectVariableAliases = (state: RootState) => state.derived.variableAliases;
 const selectTableStatistics = (state: RootState) => state.derived.table_statistics;
 
+export const selectXValuesAndIndexes = createSelector(
+  selectXValues,
+  (xValues): ValueIndexType[] => {
+    // xValues can be either a Float64Array or a string array.
+    // So first converting it to a normal array.
+    return (
+      Array.from(xValues)
+        // Then mapping each value to an object with the value and its index.
+        .map((value, index) => ({ value: value, index: index }))
+    );
+  },
+);
+
 export const selectXValuesWithoutHidden = createSelector(
   selectXValues,
   selectHiddenSimulations,
   (xValues: ValuesType, hiddenSimulations: number[]): ValuesType => {
+    // Removing hidden simulations from xValues.
     return xValues.filter((value, index) => !hiddenSimulations.includes(index));
+  },
+);
+
+export const selectXValuesAndIndexesWithoutHidden = createSelector(
+  selectXValuesAndIndexes,
+  selectHiddenSimulations,
+  (xValuesAndIndexes, hiddenSimulations): ValueIndexType[] => {
+    // Removing hidden simulations from xValuesAndIndexes.
+    return xValuesAndIndexes.filter((value, index) => !hiddenSimulations.includes(index));
   },
 );
 

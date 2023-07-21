@@ -1,17 +1,19 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3v7";
-import { SlycatScaleType } from "../selectors";
+import { SlycatScaleType, ValueIndexType } from "../selectors";
 import slycat_color_maps from "js/slycat-color-maps";
 
 type HistogramProps = {
   x_scale: SlycatScaleType;
   y_scale: SlycatScaleType;
   y_scale_range: number[];
-  bins: d3.Bin<number, number>[];
+  bins: d3.Bin<ValueIndexType, number>[];
+  selected_bin_indexes: number[];
   x_ticks: number;
   y_ticks: number;
   histogram_bar_color: string;
   histogram_bar_stroke_width: number;
+  histogram_bar_selected_stroke_width: number;
   font_size: number;
   font_family: string;
   x_label_y: number;
@@ -25,9 +27,8 @@ type HistogramProps = {
     count: number;
     index: number;
     bins_length: number;
-    data: d3.Bin<number, number>;
+    data: d3.Bin<ValueIndexType, number>;
   }) => void;
-
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
@@ -39,6 +40,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const x_ticks = props.x_ticks;
   const y_ticks = props.y_ticks;
   const histogram_bar_stroke_width = props.histogram_bar_stroke_width;
+  const histogram_bar_selected_stroke_width = props.histogram_bar_selected_stroke_width;
   const font_size = props.font_size;
   const font_family = props.font_family;
   const x_label_y = props.x_label_y;
@@ -46,6 +48,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
   const x_name = props.x_name;
   const y_label_y = props.y_label_y;
   const bins = props.bins;
+  const selected_bin_indexes = props.selected_bin_indexes;
   const y_scale = props.y_scale;
   const histogram_bar_color = props.histogram_bar_color;
   const y_label_horizontal_offset = props.y_label_horizontal_offset;
@@ -65,37 +68,42 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     histogram
       .append("g")
       .attr("stroke", "black")
-      .attr("stroke-width", histogram_bar_stroke_width)
       .selectAll()
       .data(bins)
       .join("rect")
       // Color bars using histogram_bar_color if available, otherwise color them
       // based on their length.
-      .attr("fill", (d) => {
-        const color = color_scale(d.length);
+      .attr("fill", (bin) => {
+        const color = color_scale(bin.length);
         return histogram_bar_color ?? `rgb(${color.r} ${color.g} ${color.b})`;
       })
-      .attr("x", (d) => x_scale(d.x0))
-      .attr("width", (d) => {
-        const width = x_scale(d.x1) - x_scale(d.x0);
+      .attr("stroke-width", (bin) => {
+        // Stroke width depends on whether the bin is selected or not.
+        return selected_bin_indexes.includes(bins.indexOf(bin))
+          ? histogram_bar_selected_stroke_width
+          : histogram_bar_stroke_width;
+      })
+      .attr("x", (bin) => x_scale(bin.x0))
+      .attr("width", (bin) => {
+        const width = x_scale(bin.x1) - x_scale(bin.x0);
         // If width is 0, set it to 20 so that the bar is visible.
         // This can happen when there is only one bin.
         return width === 0 ? 20 : width;
       })
-      .attr("y", (d) => y_scale(d.length))
-      .attr("height", (d) => y_scale(0) - y_scale(d.length))
+      .attr("y", (bin) => y_scale(bin.length))
+      .attr("height", (bin) => y_scale(0) - y_scale(bin.length))
       // On click, run a function
-      .on("click", (event, d) => {
+      .on("click", (event, bin) => {
         // Get the bin range
-        const range = [d.x0, d.x1];
+        const range = [bin.x0, bin.x1];
         // Get the bin count
-        const count = d.length;
+        const count = bin.length;
         // Get the bin index
-        const index = bins.indexOf(d);
+        const index = bins.indexOf(bin);
         // Get the length of the bins array
         const bins_length = bins.length;
         // Get the bin data
-        const data = d;
+        const data = bin;
 
         // Run the callback function
         props.handleBinClick({
@@ -108,8 +116,8 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       })
       .append("title")
       .text(
-        (d) =>
-          `Count: ${d.length}\n\nRange: ${d.x0} (inclusive) to \n${d.x1} (exclusive, except for last bar)`,
+        (bin) =>
+          `Count: ${bin.length}\n\nRange: ${bin.x0} (inclusive) to \n${bin.x1} (exclusive, except for last bar)`,
       );
 
     // Add the x-axis and label.

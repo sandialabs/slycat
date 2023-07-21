@@ -40,7 +40,14 @@ export const { setSelectedSimulations, setHiddenSimulations, setManuallyHiddenSi
 // Selectors
 export const selectSelectedSimulations = (state: RootState) =>
   state[SLICE_NAME].selected_simulations;
+
 export const selectHiddenSimulations = (state: RootState) => state[SLICE_NAME].hidden_simulations;
+
+export const selecteSelectedSimulationsWithoutHidden = (state: RootState) =>
+  state[SLICE_NAME].selected_simulations.filter(
+    (id) => !state[SLICE_NAME].hidden_simulations.includes(id),
+  );
+
 export const selectManuallyHiddenSimulations = (state: RootState) =>
   state[SLICE_NAME].manually_hidden_simulations;
 

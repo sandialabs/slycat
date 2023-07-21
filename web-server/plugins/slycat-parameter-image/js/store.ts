@@ -43,7 +43,7 @@ export type TableStatisticsType = {
   max: number | string;
 }[];
 
-export type ValuesType = (number | string)[];
+export type ValuesType = Array<string> | Float64Array;
 
 type XYPairsType = {
   x: number;
