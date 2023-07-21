@@ -32,6 +32,7 @@ type HistogramProps = {
       data: d3.Bin<ValueIndexType, number>;
     },
   ) => void;
+  handleBackgroundClick: (event: React.MouseEvent) => void;
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
@@ -57,6 +58,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     histogram_bar_color,
     y_label_horizontal_offset,
     handleBinClick,
+    handleBackgroundClick,
   } = props;
 
   useEffect(() => {
@@ -111,7 +113,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         const data = bin;
 
         // Run the callback function
-        props.handleBinClick(event, {
+        handleBinClick(event, {
           range,
           count,
           index,
@@ -173,7 +175,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       });
   });
 
-  return <svg className="histogram-svg" ref={histogramRef} />;
+  return <svg className="histogram-svg" ref={histogramRef} onClick={handleBackgroundClick} />;
 };
 
 export default Histogram;

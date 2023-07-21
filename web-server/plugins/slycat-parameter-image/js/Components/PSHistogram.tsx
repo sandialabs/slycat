@@ -67,6 +67,14 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const selected_simulations = useSelector(selectSelectedSimulations);
   const selected_simulations_without_hidden = useSelector(selecteSelectedSimulationsWithoutHidden);
 
+const handleBackgroundClick = (event: React.MouseEvent) => {
+  // If neither the meta key nor ctrl key was pressed during the click event, deselect all simulations
+  if (!(event.metaKey || event.ctrlKey)) {
+    dispatch(setSelectedSimulations([]));
+  }
+  // If Ctrl or Meta click on the background, do nothing because user was probably trying to add a bar
+};
+
   const handleBinClick = (
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     bin: {
@@ -84,14 +92,22 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     const indices_matching_bin = data.map(({ index }) => index);
 
     // Check if the meta key or ctrl key was pressed during the click event
-    if (event.metaKey || event.ctrlKey) {
-      // If so, merge the indices with the currently selected simulations, removing duplicates
-      const merged_indices = _.union(selected_simulations, indices_matching_bin);
+    const isMetaOrCtrlPressed = event.metaKey || event.ctrlKey;
 
+    // Check if the clicked bar is already selected
+    const isBarAlreadySelected = selected_bin_indexes.includes(bin.index);
+
+    if (isMetaOrCtrlPressed && isBarAlreadySelected) {
+      // If Ctrl or Meta click was on an already selected bar, remove the indices matching the bin from the selected_simulations
+      const new_selected_simulations = _.difference(selected_simulations, indices_matching_bin);
+      dispatch(setSelectedSimulations(new_selected_simulations));
+    } else if (isMetaOrCtrlPressed) {
+      // If Ctrl or Meta click on an unselected bar, merge the indices with the currently selected simulations, removing duplicates
+      const merged_indices = _.union(selected_simulations, indices_matching_bin);
       // Dispatch the merged indices to the setSelectedSimulations action
       dispatch(setSelectedSimulations(merged_indices));
     } else {
-      // If not, dispatch the indices matching the bin to the setSelectedSimulations action
+      // If normal click, dispatch the indices matching the bin to the setSelectedSimulations action
       dispatch(setSelectedSimulations(indices_matching_bin));
     }
   };
@@ -192,6 +208,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         colormap={colormap}
         y_label_horizontal_offset={Y_LABEL_HORIZONTAL_OFFSET}
         handleBinClick={handleBinClick}
+        handleBackgroundClick={handleBackgroundClick}
       />
     </>
   );
