@@ -29,8 +29,13 @@ import {
   selectShowGrid,
   selectAutoScale,
 } from "../scatterplotSlice";
-import { setSelectedSimulations, selecteSelectedSimulationsWithoutHidden } from "../dataSlice";
+import {
+  setSelectedSimulations,
+  selectSelectedSimulations,
+  selecteSelectedSimulationsWithoutHidden,
+} from "../dataSlice";
 import * as d3 from "d3v7";
+import _ from "lodash";
 
 type PSHistogramProps = {};
 
@@ -59,20 +64,36 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const background = slycat_color_maps.get_background(colormap).toString();
   const x_has_custom_range = useSelector(selectXHasCustomRange);
   const auto_scale = useSelector(selectAutoScale);
+  const selected_simulations = useSelector(selectSelectedSimulations);
   const selected_simulations_without_hidden = useSelector(selecteSelectedSimulationsWithoutHidden);
 
-  const handleBinClick = (bin: {
-    range: number[];
-    count: number;
-    index: number;
-    bins_length: number;
-    data: d3.Bin<ValueIndexType, number>;
-  }) => {
-    // Iterate over data and create an array of indices
-    const indices_matching_bin = bin.data.map(
-      (value_and_index: ValueIndexType) => value_and_index.index,
-    );
-    dispatch(setSelectedSimulations(indices_matching_bin));
+  const handleBinClick = (
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    bin: {
+      range: number[];
+      count: number;
+      index: number;
+      bins_length: number;
+      data: d3.Bin<ValueIndexType, number>;
+    },
+  ) => {
+    // Destructure the data property from the bin object
+    const { data } = bin;
+
+    // Map over the data array to create a new array of indices
+    const indices_matching_bin = data.map(({ index }) => index);
+
+    // Check if the meta key or ctrl key was pressed during the click event
+    if (event.metaKey || event.ctrlKey) {
+      // If so, merge the indices with the currently selected simulations, removing duplicates
+      const merged_indices = _.union(selected_simulations, indices_matching_bin);
+
+      // Dispatch the merged indices to the setSelectedSimulations action
+      dispatch(setSelectedSimulations(merged_indices));
+    } else {
+      // If not, dispatch the indices matching the bin to the setSelectedSimulations action
+      dispatch(setSelectedSimulations(indices_matching_bin));
+    }
   };
 
   // Only render the component if show_histogram is true

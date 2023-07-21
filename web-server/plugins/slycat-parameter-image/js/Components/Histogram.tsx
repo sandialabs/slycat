@@ -22,37 +22,42 @@ type HistogramProps = {
   y_label_y: number;
   colormap: string;
   y_label_horizontal_offset: number;
-  handleBinClick: (bin: {
-    range: (number | undefined)[];
-    count: number;
-    index: number;
-    bins_length: number;
-    data: d3.Bin<ValueIndexType, number>;
-  }) => void;
+  handleBinClick: (
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+    bin: {
+      range: (number | undefined)[];
+      count: number;
+      index: number;
+      bins_length: number;
+      data: d3.Bin<ValueIndexType, number>;
+    },
+  ) => void;
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
   const histogramRef = useRef<SVGSVGElement>(null);
 
-  const colormap = props.colormap;
-  const x_scale = props.x_scale;
-  const y_scale_range = props.y_scale_range;
-  const x_ticks = props.x_ticks;
-  const y_ticks = props.y_ticks;
-  const histogram_bar_stroke_width = props.histogram_bar_stroke_width;
-  const histogram_bar_selected_stroke_width = props.histogram_bar_selected_stroke_width;
-  const font_size = props.font_size;
-  const font_family = props.font_family;
-  const x_label_y = props.x_label_y;
-  const x_label_x = props.x_label_x;
-  const x_name = props.x_name;
-  const y_label_y = props.y_label_y;
-  const bins = props.bins;
-  const selected_bin_indexes = props.selected_bin_indexes;
-  const y_scale = props.y_scale;
-  const histogram_bar_color = props.histogram_bar_color;
-  const y_label_horizontal_offset = props.y_label_horizontal_offset;
-  const handleBinClick = props.handleBinClick;
+  const {
+    colormap,
+    x_scale,
+    y_scale_range,
+    x_ticks,
+    y_ticks,
+    histogram_bar_stroke_width,
+    histogram_bar_selected_stroke_width,
+    font_size,
+    font_family,
+    x_label_y,
+    x_label_x,
+    x_name,
+    y_label_y,
+    bins,
+    selected_bin_indexes,
+    y_scale,
+    histogram_bar_color,
+    y_label_horizontal_offset,
+    handleBinClick,
+  } = props;
 
   useEffect(() => {
     // Create a color scale for y axis
@@ -106,7 +111,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         const data = bin;
 
         // Run the callback function
-        props.handleBinClick({
+        props.handleBinClick(event, {
           range,
           count,
           index,
