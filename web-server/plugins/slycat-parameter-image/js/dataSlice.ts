@@ -1,7 +1,8 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createSelector } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import _ from "lodash";
+import { select } from "docs/html/_static/underscore-1.3.1";
 
 export const SLICE_NAME = "data";
 
@@ -43,12 +44,13 @@ export const selectSelectedSimulations = (state: RootState) =>
 
 export const selectHiddenSimulations = (state: RootState) => state[SLICE_NAME].hidden_simulations;
 
-export const selecteSelectedSimulationsWithoutHidden = (state: RootState) =>
-  state[SLICE_NAME].selected_simulations.filter(
-    (id) => !state[SLICE_NAME].hidden_simulations.includes(id),
-  );
-
 export const selectManuallyHiddenSimulations = (state: RootState) =>
-  state[SLICE_NAME].manually_hidden_simulations;
+state[SLICE_NAME].manually_hidden_simulations;
+
+export const selecteSelectedSimulationsWithoutHidden = createSelector(
+  selectSelectedSimulations,
+  selectHiddenSimulations,
+  (selected, hidden) => selected.filter((id) => !hidden.includes(id)),
+);
 
 export default dataSlice.reducer;
