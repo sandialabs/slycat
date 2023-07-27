@@ -257,6 +257,30 @@ const selectYExtent = createSelector(
   },
 );
 
+// Helper function to calculate adjusted margins
+const calculateAdjustedMargins = (
+  margin1: number,
+  margin2: number,
+  size: number,
+  minSize: number,
+) => {
+  // Ensure size is at least minSize
+  size = Math.max(size, minSize);
+
+  // Check if margins are too large
+  if (margin1 + margin2 + minSize > size) {
+    // Adjust the margins to maintain a minimum difference of minSize
+    const totalMargin = margin1 + margin2;
+    let totalAdjustedMargin = size - minSize;
+    totalAdjustedMargin = Math.max(totalAdjustedMargin, 0); // Ensure totalMargin is not less than 0
+
+    // Reduce margins, keeping their relative sizes the same
+    margin1 = Math.round((margin1 / totalMargin) * totalAdjustedMargin);
+    margin2 = Math.round((margin2 / totalMargin) * totalAdjustedMargin);
+  }
+  return [margin1, margin2, size];
+};
+
 // Returns the start and end of the scatterplot x-axis area relative
 // to the entire width of the scatterplot pane by adjusting for left and right margins.
 export const selectXScaleRange = createSelector(
@@ -264,20 +288,12 @@ export const selectXScaleRange = createSelector(
   selectScatterplotMarginRight,
   selectScatterplotPaneWidth,
   (margin_left: number, margin_right: number, width: number): ScaleRangeType => {
-    // Ensure width is at least X_AXIS_MIN_WIDTH
-    width = Math.max(width, X_AXIS_MIN_WIDTH);
-
-    // Check if margins are too large
-    if (margin_left + margin_right + X_AXIS_MIN_WIDTH > width) {
-      // Adjust the margins to maintain a minimum difference of X_AXIS_MIN_WIDTH
-      const totalMargin = margin_left + margin_right;
-      let totalAdjustedMargin = width - X_AXIS_MIN_WIDTH;
-      totalAdjustedMargin = Math.max(totalAdjustedMargin, 0); // Ensure totalMargin is not less than 0
-
-      // Reduce left and right margin, keeping their relative sizes the same
-      margin_left = (margin_left / totalMargin) * totalAdjustedMargin;
-      margin_right = (margin_right / totalMargin) * totalAdjustedMargin;
-    }
+    [margin_left, margin_right, width] = calculateAdjustedMargins(
+      margin_left,
+      margin_right,
+      width,
+      X_AXIS_MIN_WIDTH,
+    );
     return [0 + margin_left, width - margin_right];
   },
 );
@@ -289,24 +305,13 @@ export const selectYScaleRange = createSelector(
   selectScatterplotMarginBottom,
   selectScatterplotPaneHeight,
   (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => {
-    // Ensure width is at least X_AXIS_MIN_WIDTH
-    height = Math.max(height, Y_AXIS_MIN_HEIGHT);
-
-    // Check if margins are too large
-    if (margin_top + margin_bottom + X_AXIS_MIN_WIDTH > height) {
-      // Adjust the margins to maintain a minimum difference of X_AXIS_MIN_WIDTH
-      const totalMargin = margin_top + margin_bottom;
-      let totalAdjustedMargin = height - X_AXIS_MIN_WIDTH;
-      totalAdjustedMargin = Math.max(totalAdjustedMargin, 0); // Ensure totalMargin is not less than 0
-
-      // Reduce left and right margin, keeping their relative sizes the same
-      margin_top = (margin_top / totalMargin) * totalAdjustedMargin;
-      margin_bottom = (margin_bottom / totalMargin) * totalAdjustedMargin;
-    }
-    return [
-      height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, // Subtracting pixels to account for the height of the x-axis tick labels.
-      0 + margin_top,
-    ];
+    [margin_top, margin_bottom, height] = calculateAdjustedMargins(
+      margin_top,
+      margin_bottom,
+      height,
+      Y_AXIS_MIN_HEIGHT,
+    );
+    return [height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, 0 + margin_top];
   },
 );
 
