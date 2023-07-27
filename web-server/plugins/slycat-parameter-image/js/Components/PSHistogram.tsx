@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import slycat_color_maps from "js/slycat-color-maps";
 import PlotGrid from "./PlotGrid";
