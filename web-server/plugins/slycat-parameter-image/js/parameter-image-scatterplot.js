@@ -18,7 +18,7 @@ import {
   updateClosedMedia,
 } from "./actions";
 import $ from "jquery";
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
@@ -644,23 +644,29 @@ $.widget("parameter_image.scatterplot", {
 
     const threeD_legends_root = createRoot(document.getElementById("threeD_legends"));
     threeD_legends_root.render(
-      <Provider store={window.store}>
-        <MediaLegends />
-      </Provider>,
+      <StrictMode>
+        <Provider store={window.store}>
+          <MediaLegends />
+        </Provider>
+      </StrictMode>,
     );
 
     const grid_root = createRoot(document.getElementById("scatterplot-grid-root"));
     grid_root.render(
-      <Provider store={window.store}>
-        <PSScatterplotGrid />
-      </Provider>,
+      <StrictMode>
+        <Provider store={window.store}>
+          <PSScatterplotGrid />
+        </Provider>
+      </StrictMode>,
     );
 
     const histogram_root = createRoot(document.getElementById("histogram-root"));
     histogram_root.render(
-      <Provider store={window.store}>
-        <PSHistogram />
-      </Provider>,
+      <StrictMode>
+        <Provider store={window.store}>
+          <PSHistogram />
+        </Provider>
+      </StrictMode>,
     );
 
     // Subscribing to changes in various states
