@@ -320,10 +320,15 @@ export const selectXRangeCanvas = createSelector(
   selectScatterplotMarginLeft,
   selectScatterplotMarginRight,
   selectScatterplotPaneWidth,
-  (margin_left: number, margin_right: number, width: number): ScaleRangeType => [
-    0,
-    width - margin_left - margin_right,
-  ],
+  (margin_left: number, margin_right: number, width: number): ScaleRangeType => {
+    [margin_left, margin_right, width] = calculateAdjustedMargins(
+      margin_left,
+      margin_right,
+      width,
+      X_AXIS_MIN_WIDTH,
+    );
+    return [0, width - margin_left - margin_right];
+  },
 );
 
 // Returns the start and end of the scatterplot y-axis area in absolute pixel values.
@@ -331,10 +336,15 @@ export const selectYRangeCanvas = createSelector(
   selectScatterplotMarginTop,
   selectScatterplotMarginBottom,
   selectScatterplotPaneHeight,
-  (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => [
-    height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT,
-    0,
-  ],
+  (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => {
+    [margin_top, margin_bottom, height] = calculateAdjustedMargins(
+      margin_top,
+      margin_bottom,
+      height,
+      Y_AXIS_MIN_HEIGHT,
+    );
+    return [height - margin_top - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, 0];
+  },
 );
 
 export const selectXTicks = createSelector(
@@ -440,9 +450,18 @@ export const Y_LABEL_HORIZONTAL_OFFSET = 25;
 
 // This is the y position of the y-axis label. Set to align with the middle of the axis.
 export const selectYLabelY = createSelector(
-  selectScatterplotPaneHeight,
   selectScatterplotMarginTop,
-  (scatterplot_height: number, margin_top: number): number => margin_top + scatterplot_height / 2,
+  selectScatterplotMarginBottom,
+  selectScatterplotPaneHeight,
+  (margin_top: number, margin_bottom: number, height: number): number => {
+    [margin_top, margin_bottom, height] = calculateAdjustedMargins(
+      margin_top,
+      margin_bottom,
+      height,
+      Y_AXIS_MIN_HEIGHT,
+    );
+    return margin_top + height / 2;
+  },
 );
 
 // Checks if x-axis has a custom range defined.
