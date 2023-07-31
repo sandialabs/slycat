@@ -17,8 +17,6 @@ def parse_file(file):
     :param file: csv file to be parsed
     :returns: attributes, dimensions, data, error_messages
     """
-
-    cherrypy.log.error("PANDAS PARSE")
     
     # initial attributes, dimensions, and data
     # empty, but existing to avoid crashing slycat
