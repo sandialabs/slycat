@@ -350,6 +350,10 @@ function constructor(params) {
       return
     }
 
+    // set progress bar to zero
+    component.browser.progress(0);
+    component.browser.progress_status("");
+
     // get file data
     $(".local-browser-continue").toggleClass("disabled", true);
     var file = component.browser.selection()[0];
@@ -514,10 +518,12 @@ function constructor(params) {
   };
 
   component.load_table = function () {
+
     $(".remote-browser-continue").toggleClass("disabled", true);
     const file_name = component.browser.selection()[0].split("/")[
       component.browser.selection()[0].split("/").length - 1
     ];
+
     var fileObject = {
       pid: component.project._id(),
       hostname: [component.remote.hostname()],
