@@ -17,19 +17,14 @@ import slycat.web.client
 
 # DAC UI defaults
 from slycat.web.client.dac_defaults import dac_model_defaults
+import slycat.web.client.dac_tdms_util as dac_tdms_util
+from slycat.web.client.dac_tdms_util import TDMSUploadError
 
 # file name manipulation
 import os
 
 # get suffixes from zip file
 import zipfile
-
-# TDMS error handling
-class TDMSUploadError (Exception):
-
-    # exception for TDMS upload problems
-    def __init__(self, message):
-        self.message = message
 
 # check for .TDM, .tdms, or a single .zip file extension
 # returns "not-tdms" for wrong extension, "tdms" for correct extensions,
@@ -68,57 +63,6 @@ def check_files_exist (file_list):
             files_exist = False
 
     return files_exist
-
-# check the parser parameters
-def check_parser_parms (parms):
-
-    check_parser_msg = []
-
-    # first parameter is minimum number of time points
-    if parms[0] < 2:
-        check_parser_msg.append ("Each channel must have at least two values. " + \
-            "Please use a larger value for min-time-points and try again.")
-    
-    # second parameter is minimum number of channels
-    if parms[1] < 1:
-        check_parser_msg.append ("Each test must have at least one channel. " + \
-            "Please use a larger value for min-channels and try again.")
-    
-    # third parameter is minimum number of shots
-    if parms[2] < 0:
-        check_parser_msg.append("Each channel must occur in at least one channel " + \
-            "(use 0 to indicate every channel).  Please use a non-negative value " + \
-            "for min-num-shots and try again.")
-
-    # fourth parameter is number of landmarks
-    if parms[3] is not None:
-        if not (parms[3] == 0 or parms[3] >= 3):
-            check_parser_msg.append("Number of landmarks must be zero or >= 3.  Please " + \
-                "provide a valid number of landmarks and try again.")
-
-    # fifth parameter is number of PCA components
-    if parms[4] < 2:
-        check_parser_msg.append("Number of PCA components must be >= 2.  Please provide " + \
-            "a valid number of PCA components and try again.")
-
-    # sixth parameter is expected type
-    if parms[5] != "General" and \
-       parms[5] != "Overvoltage" and \
-       parms[5] != "Sprytron":
-        check_parser_msg.append ('Expected data type must be one of "General", ' + \
-            '"Overvoltage" or "Sprytron". Please use one of those options ' + \
-            'and try again.')
-
-    # seventh parameter is union or intersection (combination of time series)
-    if parms[6] != "Union" and \
-       parms[6] != "Intersection":
-        check_parser_msg.append ('Available methods for combining mismatched, ' + \
-            'time points are "Union" and "Intersection". Please use one of those options ' + \
-            'and try again.')
-
-    # seventh and eighth parameters are boolean, so either option is OK 
-
-    return "\n".join(check_parser_msg)
 
 # get file suffixes for .zip file
 def get_suffixes (zip_file):
@@ -188,7 +132,7 @@ def upload_model (arguments, parser, parms, file_list, progress=True):
 
 # check arguments and create model
 def create_model (arguments, log):
-
+    
     # can't have both overvoltage and sprytron
     if arguments.overvoltage and arguments.sprytron:
         raise TDMSUploadError("Can't use both overvoltage and sprytron options " +
@@ -201,7 +145,9 @@ def create_model (arguments, log):
         log("One or more files had the wrong extension (note that if using .zip " +
               "only one file can be uploaded). Please revise the file list " +
               "and try again.")
-        exit()
+        raise TDMSUploadError("One or more files had the wrong extension " + 
+              "(note that if using .zip only one file can be uploaded). Please " + 
+              "revise the file list and try again.")
 
     # check that files exist
     if not check_files_exist (file_list):
@@ -214,37 +160,13 @@ def create_model (arguments, log):
             raise TDMSUploadError("Zip file is invalid or corrupt. Please fix the " + 
                   "file and try again.")
 
-    # set shot type
-    shot_type = 'General'
-    if arguments.overvoltage:
-        shot_type = 'Overvoltage'
-    if arguments.sprytron:
-        shot_type = 'Sprytron'
-
-    # set union type
-    union_type = "Union"
-    if arguments.intersection:
-        union_type = "Intersection"
-
-    # populate parameters
-    parser_parms = [arguments.min_time_points, arguments.min_channels, 
-                    arguments.min_num_shots, arguments.num_landmarks,
-                    arguments.num_PCA_comps,
-                    shot_type, union_type, 
-                    not arguments.do_not_infer_channel_units,
-                    not arguments.do_not_infer_time_units]
+    # parser tdms options
+    parser_parms = dac_tdms_util.get_parms (arguments)
 
     # check common parameters
-    check_parser_error = check_parser_parms (parser_parms)
+    parser_parms, check_parser_error = dac_tdms_util.check_parms (arguments, parser_parms)
     if check_parser_error != "":
         raise TDMSUploadError(check_parser_error)
-
-    # landmarks over-rides PCA comps
-    if arguments.num_landmarks is not None:
-        parser_parms[4] = False
-    else:
-        parser_parms[4] = True
-        parser_parms[3] = arguments.num_PCA_comps
 
     # compile suffixes to include if .zip file
     dac_parser = "dac-tdms-file-parser"
@@ -355,36 +277,8 @@ def parser ():
              'If you want suffixes that include spaces, use quotes, ' +
              'e.g. "suffix with space".')
 
-    # parsing parameters
-    parser.add_argument("--min-time-points", default=10, type=int, 
-        help="Minimum number of time points per channel, integer >= 2. " +
-             "Default: %(default)s.")
-    parser.add_argument("--min-channels", default=2, type=int,
-        help="Minimum number of channels per text, integer >= 1. " +
-             "Default: %(default)s.")
-    parser.add_argument("--min-num-shots", default=1, type=int,
-        help="Channels must occur in at least this many shots, integer >= 0. " +
-             "Use zero to indicate that channel must occur in every shot. " +
-             "Default: %(default)s.")
-    parser.add_argument("--num-landmarks", default=None, type=int,
-        help="Number of landmarks to use, integer >= 3.  Can also use zero " +
-             "to indicate use of full dataset (no landmarks).  Default: %(default)s.")
-    parser.add_argument("--num-PCA-comps", default=10, type=int,
-        help="Number of PCA components to use, integer >= 2.  Note --num-landmarks " + 
-             "over-rides --num-PCA-comps.  Default: %(default)s.")
-    parser.add_argument("--overvoltage", action="store_true",
-        help="Expecting overvoltage data.")
-    parser.add_argument("--sprytron", action="store_true",
-        help="Expecting sprytron data.")
-    parser.add_argument("--intersection", action="store_true", 
-        help="Combine mismatched time steps using intersection. " +
-             "Default is to combine using union.")
-    parser.add_argument("--do-not-infer-channel-units", action="store_true",
-        help="Do not infer channel units. Default is to infer channel units " +
-             "from channel name.")
-    parser.add_argument("--do-not-infer-time-units", action="store_true",
-        help="Do not infer time units. Default is to assume unspecified units " +
-             "are seconds.")
+    # add tmds options
+    parser = dac_tdms_util.add_options (parser)
 
     return parser
 

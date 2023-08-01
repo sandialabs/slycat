@@ -57,16 +57,15 @@ or
 $ python -m slycat.web.client.list_markings
 ```
 
-In addition, there are two entry points defined for the Slycat Dial-A-Cluster plugin
+In addition, there are two main entry points defined for the Slycat Dial-A-Cluster plugin
 
 ```sh
 $ dac_tdms
 ```
-
 and
 
 ```sh
-$ dac_tdms_batch
+$ dac_gen
 ```
 
 These are described in greater detail below.
@@ -198,15 +197,24 @@ for the creation of the models are the same as the options available using
 the DAC model creation wizard in the browser.  To see the options use
 the "--help" flag when calling the script.
 
-In addition, a batch script is available for uploading multiple DAC TDMS
-models.  To use this script, you must first create a file containing the
-options for each model.  The file has the following format.
+In addition, there are two methods for uploading batches of multiple DAC
+TDMS models.  The first method uses the dac_tdms_batch script.  This script
+takes as input a part-num match (see also dac_run_chart) and creates
+the corresponding batches.  For example,
+
+```sh
+$ dac_tdms_batch root-data-directory part-num
+```
+
+The second method uses the dac_tdms_batch_file script.  To use this script, 
+you must first create a file containing the options for each model.  The file 
+has the following format.
 
 Line 1 contains the authentication information for the Slycat server that
 you would pass to the dac_tdms script, but separated by commas.
 For example,
 
-    --user,smartin,--kerberos
+    --user,user-name,--kerberos
 
 If authentication information is unnecessary, just leave the line blank.
 
@@ -218,8 +226,8 @@ the DAC models to be created, e.g.
 Line 2 can also be left blank.  It will default to "Batch TDMS Models".
 Lines 3 and beyond contain the model information for each model, such as
 
-    model-data-file-1.tdms,--model-name,Model 1
-    model-data-file-2.tdms,--model-name,Model 2
+    model-data-file-1.tdms,--model-name,Model 1,--project-name,Batch TDMS Models
+    model-data-file-2.tdms,--model-name,Model 2,--project-name,Batch TDMS Models
 
 Note that you must supply a model file (or multiple files) in accordance
 with the dac_tdms script for each model.  Also note that if 

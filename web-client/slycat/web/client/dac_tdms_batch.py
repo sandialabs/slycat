@@ -2,25 +2,30 @@
 # Under the terms of Contract DE-NA0003525 with National Technology and Engineering 
 # Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
 
-# Creates a batch of dial-a-cluster models by uploading TDMS and TMDS .zip 
-# formatted files to the Slycat server.  Once uploaded the models are created 
-# on the server using the TDMS parser.
-#
-# The files used to create the models are recorded in a file (see 
-# web-client-readme.txt) and passed to this script on the command line.
-#
+# Creates a batch of tdms files.
+
 # S. Martin
-# 10/22/2020
+# 5/31/2023
 
-# use a separate argument parser
-import argparse
+# connection to Slycat server
+import slycat.web.client
 
-# log file & errors
+# dac tdms parser options
+import slycat.web.client.dac_tdms_util as dac_tdms_util
+from slycat.web.client.dac_tdms_util import TDMSUploadError
+
+# dac tdms upload
+import slycat.web.client.dac_tdms as dac_tdms
+
+# logger
 import logging
-import traceback
 
-# tdms upload
-import slycat.web.client.dac_tdms as tdms
+# file manipulation
+import os
+
+# the tdms file types allowed
+TDMS_MATCHES = ['Factory_Trigger', 'Acceptance_Trigger', 'PL', 'Pulse_Life', 
+                'Extended_Pulse_Life', 'Probe_Age']
 
 # sets up logging to screen or file, depending on user input
 def setup_logging(log_file):
@@ -51,79 +56,152 @@ def setup_logging(log_file):
 
     return logger
 
-# tdms batch entry point
-def main():
+# find batches
+def catalog_batches(arguments, log):
 
-    # provide additional command line arguments 
-    batch_parser = argparse.ArgumentParser(description=
-        "Creates a batch of Dial-A-Cluster models from links to TDMS data " +
-        "provided in a file.")
+    # read all meta data before further run chart specific filtering
+    metadata = dac_tdms_util.catalog_tdms_files(arguments, log, TDMS_MATCHES)
 
-    # actual files to upload
-    batch_parser.add_argument("batch_file", 
-        help='TDMS batch file, providing comma separated command line arguments ' +
-             'for TDMS upload script.  Line 1 contains authentication flags, ' +
-             'line 2 contains project information, subsequent lines provide ' + 
-             'TDMS file names and model flags.')
+    # get batches discovered (we will create a model for each batch)
+    batches = []
+    part_numbers = []
+    lot_numbers = []
+    for tdms_file in metadata:
+
+        # collate part, lot, batch information
+        if tdms_file['batch'] not in batches:
+            batches.append(tdms_file['batch'])
+        if tdms_file['part'] not in part_numbers:
+            part_numbers.append(tdms_file['part'])
+        if tdms_file['lot'] not in lot_numbers:
+            lot_numbers.append(tdms_file['lot'])
+
+    batches.sort()
+
+    # check that part number remains constant
+    if len(part_numbers) > 1:
+        log('Cannot have more than one part number for batch uploads.')
+        raise TDMSUploadError('Cannot have more than one part number for batch uploads.')
+    part_number = part_numbers[0]
+
+    # check that lot number remains constant
+    if len(lot_numbers) > 1:
+        log('Cannot have more than one lot number for batch uploads.')
+        raise TDMSUploadError('Cannot have more than one lot number for batch uploads.')
+    lot_number = lot_numbers[0]
+    
+    # create a dictionary of files in each batch
+    batch_data = {}
+    for batch in batches:
+        data_inds = []
+        for data_ind in range(len(metadata)):
+            if metadata[data_ind]['batch'] == batch:
+                data_inds.append(data_ind)
+        batch_data[batch] = data_inds
+    
+    return metadata, part_number, lot_number, batches, batch_data
+
+# create model batches
+def create_models(arguments):
+
+    # can't have both overvoltage and sprytron
+    if arguments.overvoltage and arguments.sprytron:
+        raise TDMSUploadError("Can't use both overvoltage and sprytron options " +
+              "together. Please select one or the other and try again.")
+
+    # set up logging, always to screen, to file if requested
+    log = setup_logging(arguments.log_file)
+
+    # organize tdms files
+    metadata, part_number, lot_number, batches, batch_data = \
+        catalog_batches(arguments, log)
+    
+    # alter agruments for dac tdms
+    arguments.model_description = str(arguments.tdms_file_matches)
+    del arguments.tdms_file_matches
+    del arguments.input_data_dir
+    del arguments.part_num_match
+    del arguments.log_file
+
+    for i in range(len(batches)):
+
+        # keep track of model we are uploading
+        log('Processing DAC Batch ' + batches[i] + ': (' + str(i) + '/' + str(len(batches)) + ').')
+
+        # change project name, model name, description to describe batch
+        arguments.project_name = str(part_number)
+        arguments.model_name = str(part_number) + '_' + str(lot_number) + '_' + batches[i]
+
+        # add batch files
+        batch_files = []
+        for j in batch_data[batches[i]]:
+            for file in metadata[j]['tdms_files']:
+                batch_files.append(os.path.join(metadata[j]['source'], file))
+        arguments.files = batch_files
+
+        # run dac
+        dac_tdms.create_model(arguments, log)
+
+# set up argument parser
+def parser ():
+
+    # provide additional command line arguments for TDMS files
+    parser = slycat.web.client.ArgumentParser(description=
+        "Creates a batch of Dial-A-Cluster models using specified .tdms files.")
+
+    # input data directory
+    parser.add_argument("input_data_dir", 
+        help='Directory containing .tdms output files, organized ' +
+             'according to part number.')
+
+    # part number specification
+    parser.add_argument("part_num_match",
+        help='Part number to match when creating batch models, can included wildcards, ' +
+             'e.g. "XXXXXX_XX_*".  Note that part and lot numbers should be constant, ' +
+             'and you should use "" in Unix to pass wildcards.')
 
     # optional flag to log results to file
-    batch_parser.add_argument('--log_file', default=None,
+    parser.add_argument('--log-file', default=None,
         help="Optional file to log results of TDMS uploads.  Note that if a model " +
              "fails to upload, the script will not terminate, but will carry on " + 
              "trying to upload the remaaining data.  Log file will be overwritten " +
              "if it already exists.")
 
-    # get command line arguments
-    batch_args = batch_parser.parse_args()
+    # TDMS types to use
+    parser.add_argument('--tdms-file-matches', nargs="+", choices=TDMS_MATCHES,
+        help='Use specified file matches to filter TDMS files, ' + 
+             'defaults to full list of choices.')
+    
+    # model and project names/descriptions
+    parser.add_argument("--marking", default="cui", 
+        help="Marking type.  Default: %(default)s")
+    parser.add_argument("--model-description", default="", 
+        help="New model description.  Default: %(default)s")
+    parser.add_argument("--model-name", default="TDMS DAC Model", 
+        help="New model name.  Default: %(default)s")
+    parser.add_argument("--project-description", default="", 
+        help="New project description.  Default: %(default)s")
+    parser.add_argument("--project-name", default="TDMS DAC Models", 
+        help="New project name.  Default: %(default)s")
+    
+    # add tmds options
+    parser = dac_tdms_util.add_options (parser)
 
-    # set up logging, always to screen, to file if requested
-    log = setup_logging(batch_args.log_file)
+    return parser
 
-    # parse batch file
-    auth_args = []
-    proj_args = []
-    model_args = []
-    with open(batch_args.batch_file, 'r') as batch:
+# dac generate batch entry point
+def main():
 
-        # first line has authentication flags
-        line1 = batch.readline().strip()
-        if line1 != '':
-            auth_args = line1.split(",")
+    # set up argument parser
+    batch_parser = parser()  
 
-        # second line has project flags
-        line2 = batch.readline().strip()
-        if line2 != '':
-            proj_args = line2.split(",")
+    # get user arguments
+    arguments = batch_parser.parse_args()
 
-        # following lines have model data
-        for line in batch:
+    # create models
+    create_models(arguments)
 
-            # skip empty lines
-            if line.strip() != '':
-                model_args.append(line.strip().split(","))
-
-    # set up TDMS parser
-    tdms_parser = tdms.parser()
-
-    # upload each model
-    for model in model_args:
-
-        # combine arguments (and remove empty strings)
-        args = auth_args + proj_args + model
-
-        # parse arguments using tdms parser
-        arguments = tdms_parser.parse_args(args)
-
-        # check arguments and create model
-        try:
-            tdms.create_model(arguments, log)
-
-        # if there is a problem, skip this model and continue
-        except:
-            log('Could not upload model with arguments: ' + ' '.join(args))
-            log(traceback.format_exc())
-
-# command line entry point
+# command line version
 if __name__ == "__main__":
 
     main()

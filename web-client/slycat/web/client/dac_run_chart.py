@@ -15,9 +15,12 @@ import slycat.web.client
 # DAC upload
 import slycat.web.client.dac_gen as dac_gen
 
+# common tdms operations
+import slycat.web.client.dac_tdms_util as dac_tdms_util
+from slycat.web.client.dac_tdms_util import TDMSUploadError
+
 # file name manipulation
 import os
-import fnmatch
 
 # manipulating command line arguments
 from argparse import Namespace
@@ -36,153 +39,18 @@ import pandas as pd
 from zipfile import ZipFile
 
 # the tdms file types allowed
-TDMS_MATCHES = ['Factory_Trigger', 'Acceptance_Trigger', 'Pulse_Life', 
+TDMS_MATCHES = ['Factory_Trigger', 'Acceptance_Trigger', 'PL', 'Pulse_Life', 
                 'Extended_Pulse_Life', 'Probe_Age']
 
 # the group run chart variables allowed
 RUN_CHART_MATCHES = ['TAD', 'Rp', 'Ip', 'DBV']
 RUN_CHART_UNITS = ['nsec', 'kOhms', 'Amps', 'V']
 
-# TDMS error handling
-class TDMSUploadError (Exception):
-
-    # exception for TDMS upload problems
-    def __init__(self, message):
-        self.message = message
-
-# parse test data subdirectory
-def parse_run_chart (run_chart):
-
-    # default return is None
-    run_chart_id = None
-
-    # split run_chart string on "_" to get identifiers
-    run_chart_id = run_chart.split("_")
-
-    # there should be four identifiers
-    if len(run_chart_id) != 4:
-        run_chart_id = None
-    
-    return run_chart_id
-
 # organize tdms files based on command line inputs
 def catalog_tdms_files (arguments, log):
 
-    # gather data directories for given part number
-    root_dir = arguments.input_data_dir
-    part_num_match = arguments.part_num_match
-
-    # check that root dir exists
-    if not os.path.isdir(root_dir):
-        raise TDMSUploadError("Input data directory does not exist.  Please provide " +
-              "a different directory and try again.")
-    
-    # look for directories containing data for part number provided
-    root_subdirs = os.listdir(root_dir)
-    part_subdirs = fnmatch.filter(root_subdirs, part_num_match)
-    
-    # are there any subdirectories?
-    if len(part_subdirs) == 0:
-        raise TDMSUploadError('Could not find any subdirectories for part number matching "' +
-              part_num_match + '".')
-
-    # put subdirectories in order
-    part_subdirs.sort()
-
-    # get list of .tdms file matches
-    tdms_matches = TDMS_MATCHES
-    if arguments.tdms_file_matches is not None:
-        tdms_matches = arguments.tdms_file_matches
-    tdms_matches = [file_match.replace('_', ' ') for file_match in tdms_matches]
-
-    # report on tdms file being used
-    log("Using .tdms file matches in: " + str(tdms_matches))
-
-    # look through each subdirectory for run chart data
-    metadata = []
-    for subdir in part_subdirs:
-
-        # look for test data directory
-        test_data_dir = os.path.join(root_dir, subdir, 'Test Data')
-
-        # skip if run_chart_dir is not an actual directory
-        if not os.path.isdir(test_data_dir):
-            log('Skipping "' + test_data_dir + '" because it''s not a directory.')
-            continue
-
-        # each of the subdirectories of run_chart_dir will be a row in the 
-        # metadata table for the run chart model
-        possible_run_chart_dirs = os.listdir(test_data_dir)
-
-        # sort according to data ids
-        possible_run_chart_dirs.sort()
-
-        # check that we found data directories
-        if len(possible_run_chart_dirs) == 0:
-            raise TDMSUploadError('No data subdirectories found for part number match "' + 
-                  part_num_match + '".')
-
-        # check that data directories conform to expected format
-        for run_chart_dir in possible_run_chart_dirs:
-
-            # check that directory is expected format for a run chart
-            run_chart_ids = parse_run_chart(run_chart_dir)
-
-            # if it's not a run chart then skip it
-            if run_chart_ids is None:
-                log('Skipping run chart subdirectory "' + run_chart_dir + 
-                    '" because it does not conform to "part_lot_batch_serial" string format.')
-                continue
-        
-            # find .tdms files in run chart directory
-            run_chart_files = os.listdir(os.path.join(test_data_dir, run_chart_dir))
-            run_chart_tdms_files = [run_chart_file for run_chart_file in run_chart_files 
-                                    if run_chart_file.endswith('.tdms')]
-        
-            # check that we have .tdms files
-            if len(run_chart_tdms_files) == 0:
-                log ('Skipping subdirectory "' + run_chart_ids[0] + '" -- does not ' +
-                      'contain any TDMS files.')
-                continue
-
-            # screen for .tdms files according to argument parameters
-            run_chart_tdms_matches = []
-            run_chart_tdms_types = []
-            for run_chart_file in run_chart_tdms_files:
-                for match in tdms_matches:
-                    if match in run_chart_file:
-
-                        # check that .tdms file has matching part_lot_batch_sn
-                        if not run_chart_file.startswith(
-                            run_chart_ids[0] + "_" + 
-                            run_chart_ids[1] + "_" + 
-                            run_chart_ids[2] + "_" + 
-                            run_chart_ids[3]):
-                            continue
-                        
-                        # keep track of files and types
-                        run_chart_tdms_types.append(match)
-                        run_chart_tdms_matches.append(run_chart_file)
-
-            # check that we have matching .tdms files
-            if len(run_chart_tdms_matches) == 0:
-                log ('Skipping subdirectory "' + run_chart_ids[0] + '" -- does not ' +
-                      'contain any TDMS files with file matches.')
-                continue
-
-            # store in metadata structure
-            metadata.append({"part": run_chart_ids[0],
-                             "lot": run_chart_ids[1],
-                             "batch": run_chart_ids[2],
-                             "sn": run_chart_ids[3],
-                             "source": os.path.join(os.path.abspath(test_data_dir), 
-                                                    run_chart_dir),
-                             "tdms_files": run_chart_tdms_matches,
-                             "tdms_types": run_chart_tdms_types})
-
-    # check that files were found
-    if metadata == []:
-        raise TDMSUploadError("No TDMS files matching selection criterion were found.")
+    # read all meta data before further run chart specific filtering
+    metadata = dac_tdms_util.catalog_tdms_files(arguments, log, TDMS_MATCHES)
 
     # get common set of tdms types
     common_tdms_types = set(metadata[0]["tdms_types"])
@@ -733,7 +601,7 @@ def parser ():
         help="Do not upload to slycat server.")
 
     # model and project names/descriptions
-    parser.add_argument("--marking", default="ouo3", 
+    parser.add_argument("--marking", default="cui", 
         help="Marking type.  Default: %(default)s")
     parser.add_argument("--model-description", default="", 
         help="New model description.  Default: %(default)s")

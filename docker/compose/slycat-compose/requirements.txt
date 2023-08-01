@@ -9,8 +9,8 @@ configparser
 future
 routes
 scipy
-sklearn
-npTDMS
+scikit-learn
+npTDMS==1.6.0
 pandas
 pysmb
 natsort

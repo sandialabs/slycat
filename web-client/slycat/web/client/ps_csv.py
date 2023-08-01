@@ -8,11 +8,13 @@
 import os
 import re
 
-import pandas as pd
 import numpy as np
 
 import slycat.web.client
 import urllib.parse as urlparse
+
+# slycat csv parser
+import slycat.pandas_util
 
 # parse command line arguments
 def parser():
@@ -58,7 +60,11 @@ def log (msg):
 # create PS model, show progress by default, arguments 
 # include the command line connection parameters
 # and project/model information
-def upload_model (arguments, parser, df, progress=True):
+def upload_model (arguments, attributes, dimensions, data, progress=True):
+
+  # get column names/types
+  column_names = [attribute["name"] for attribute in attributes]
+  column_types = [attribute["type"] for attribute in attributes]
 
   # setup a connection to the Slycat Web Server.
   connection = slycat.web.client.connect(arguments)
@@ -74,33 +80,24 @@ def upload_model (arguments, parser, df, progress=True):
   connection.put_model_arrayset(mid, "data-table")
 
   # Start our single "data-table" array.
-  dimensions = [dict(name="row", end=len(df.index))]
-  attributes = [dict(name=header, type="float64" 
-    if df[header].dtype != "object" else "string") 
-    for header in df.columns]
   connection.put_model_arrayset_array(mid, "data-table", 0, dimensions, attributes)
 
   # Upload each column into the array.
-  for index, header in enumerate(df.columns):
-
-    # make sure type is either float or string
-    if df[header].dtype == "object":
-      values = [df[header].values.astype(str)]
-    else:
-      values = [df[header].values.astype(float)]
+  for index in range(len(column_names)):
+    values = [np.asarray(data[index])]
 
     # push to server
     connection.put_model_arrayset_data(mid, "data-table", "0/%s/..." % index, values)
 
   # Store the remaining parameters.
-  input_col_inds = [index for index, header in enumerate(df.columns) 
-    if header in arguments.input_columns and df[header].dtype != "object"]
+  input_col_inds = [index for index, header in enumerate(column_names) 
+    if header in arguments.input_columns and column_types[index] != "string"]
   connection.put_model_parameter(mid, "input-columns", input_col_inds)
-  output_col_inds = [index for index, header in enumerate(df.columns) 
-    if header in arguments.output_columns and df[header].dtype != "object"]
+  output_col_inds = [index for index, header in enumerate(column_names) 
+    if header in arguments.output_columns and column_types[index] != "string"]
   connection.put_model_parameter(mid, "output-columns", output_col_inds)
-  media_col_inds = [index for index, header in enumerate(df.columns) 
-    if header in arguments.media_columns and df[header].dtype == "object"]
+  media_col_inds = [index for index, header in enumerate(column_names) 
+    if header in arguments.media_columns and column_types[index] == "string"]
   connection.put_model_parameter(mid, "image-columns", media_col_inds)
 
   # Signal that we're done uploading data to the model.  This lets Slycat Web
@@ -112,7 +109,7 @@ def upload_model (arguments, parser, df, progress=True):
 
   return mid
 
-# check arguments and create model
+# check arguments and create model, returns URL to model
 def create_model (arguments, log):
 
   # check that input file exists
@@ -125,32 +122,45 @@ def create_model (arguments, log):
     log("Input columns and output columns are intersecting.")
     raise ValueError("Input columns and output columns are intersecting.")
 
-  # load input file as pandas dataframe
-  df = pd.read_csv(arguments.file)
+  # parse file using standard slycat csv parser
+  attributes, dimensions, data, csv_read_error = \
+    slycat.pandas_util.parse_file(arguments.file, file_name=True)
+
+  # check for warnings/errors
+  for i in range(len(csv_read_error)):
+    if csv_read_error[i]["type"] == "warning":
+      log("Warning: " + csv_read_error[i]["message"])
+    else:
+      log("Error: " + csv_read_error[i]["message"])
+      raise ValueError(csv_read_error[i]["message"])
+
+  # get column names/types
+  column_names = [attribute["name"] for attribute in attributes]
+  column_types = [attribute["type"] for attribute in attributes]
 
   # check that inputs are in headers
   if arguments.input_columns is not None:
     for input_col in arguments.input_columns:
-      if input_col not in df.columns:
+      if input_col not in column_names:
         log('Input column "' + input_col + '" not found in input file.')
         raise ValueError('Input column "' + input_col + '" not found in input file.')
 
   # check that outputs are in headers
   if arguments.output_columns is not None:
     for output_col in arguments.output_columns:
-      if output_col not in df.columns:
+      if output_col not in column_names:
         log('Output column "' + output_col + '" not found in input file.')
         raise ValueError('Output column "' + output_col + '" not found in input file.')
       
   # check that meda-columns are in headers
   if arguments.media_columns is not None:
     for media_col in arguments.media_columns:
-      if media_col not in df.columns:
+      if media_col not in column_names:
         log('Media column "' + media_col + '" not found in input file.')
         raise ValueError('Media column "' + media_col + '" not found in input file.')
 
   # check that there is at least one numeric columns (to display scatter plot)
-  if not df.select_dtypes(include='float64').columns.to_list():
+  if not 'float64' in column_types:
     log("You must supply at least one numeric column in the input data.")
     raise ValueError("You must supply at least one numeric column in the input data.")
 
@@ -163,39 +173,41 @@ def create_model (arguments, log):
     search = np.vectorize(lambda x:bool(expression.search(x)))
 
     # go through each column
-    for header in df.columns:
+    for header in range(len(column_names)):
 
       # strings are stored in pandas object type
-      if df[header].dtype == "object":
-        if np.any(search(df[header].values)):
-          arguments.media_columns.append(header)
+      if column_types[header] == "string":
+        if np.any(search(data[header])):
+          arguments.media_columns.append(column_names[header])
 
   # replace media URL hostnames, if requested
   if arguments.media_hostname is not None:
     
     # go through each column
-    for header in df.columns:
+    for header in range(len(column_names)):
 
       # if media column is given and a string
-      if header in arguments.media_columns and df[header].dtype == "object":
+      if column_names[header] in arguments.media_columns and \
+         column_types[header] == "string":
         modified = []
 
         # replace file://cluster with file://hostname
-        for uri in df[header].values:
+        for uri in data[header]:
           uri = urlparse.urlparse(uri)
           path = uri.path
           uri = "file://%s%s" % (arguments.media_hostname, path)
           modified.append(uri)
-        df[header] = modified
+        data[header] = modified
 
   # strip prefix directories, if requested
   if arguments.strip is not None:
 
     # go through each column:
-    for header in df.columns:
+    for header in range(len(column_names)):
 
       # for media columns, strip prefix directories
-      if header in arguments.media_columns and df[header].dtype == "object":
+      if column_names[header] in arguments.media_columns and \
+         column_types[header] == "string":
         modified = []
 
         # strip prefixes
@@ -206,7 +218,7 @@ def create_model (arguments, log):
             uri.path.split(os.sep)[arguments.strip + 1:]))
           uri = "file://%s%s" % (hostname, path)
           modified.append(uri)
-        df[header] = modified
+        data[header] = modified
 
   # echo inputs to user
   log('Input file: ' + arguments.file)
@@ -222,14 +234,18 @@ def create_model (arguments, log):
     log('Stripped ' + str(arguments.strip) + ' prefixes from media columns.')
 
   # upload model
-  mid = upload_model (arguments, parser, df, progress=True)
+  mid = upload_model (arguments, attributes, dimensions, data, progress=True)
 
   # supply direct link to model
   host = arguments.host
   if arguments.port:
       host = host + ":" + arguments.port
-  log("Your new model is located at %s/models/%s" % (host, mid))
+  url = host + "/models/" + mid
+  log("Your new model is located at %s" % url)
   log('***** PS Model Successfully Created *****')
+
+  # return url
+  return url
 
 # main entry point
 def main():
@@ -241,7 +257,7 @@ def main():
     arguments = ps_parser.parse_args()
 
     # check arguments and create model
-    create_model(arguments, log)
+    url = create_model(arguments, log)
 
 # command line version
 if __name__ == "__main__":

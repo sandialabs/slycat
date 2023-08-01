@@ -43,13 +43,16 @@ copyfile('../packages/slycat/darray.py', 'slycat/darray.py')
 copyfile('../packages/slycat/__init__.py', 'slycat/__init__.py')
 copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 
+# we also need the slycat csv parser
+copyfile('../packages/slycat/pandas_util.py', 'slycat/pandas_util.py')
+
 # get Slycat version
 import slycat
 VERSION = slycat.__version__
 
 # development version
 # VERSION = VERSION
-VERSION = "3.4.0"
+VERSION = "4.0.0"
 
 # get README.md
 import pathlib
@@ -84,12 +87,13 @@ setup(
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=["requests", "requests-kerberos",
-                      "numpy", "cherrypy", "sklearn", 
-                      "nptdms", "pandas"],
+                      "numpy", "cherrypy", "scikit-learn", 
+                      "nptdms==1.6.0", "pandas"],
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",
             "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main",
+            "dac_tdms_batch_file=slycat.web.client.dac_tdms_batch_file:main",
             "ps_csv=slycat.web.client.ps_csv:main",
             "dac_gen=slycat.web.client.dac_gen:main"
         ]
