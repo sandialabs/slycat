@@ -9,6 +9,7 @@ type HistogramProps = {
   y_scale_range: number[];
   bins: d3.Bin<ValueIndexType, number>[];
   selected_bin_indexes: number[];
+  flash_bin_indexes: number[];
   x_ticks: number;
   y_ticks: number;
   histogram_bar_color: string;
@@ -54,6 +55,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     y_label_y,
     bins,
     selected_bin_indexes,
+    flash_bin_indexes,
     y_scale,
     histogram_bar_color,
     y_label_horizontal_offset,
@@ -61,6 +63,38 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     handleBackgroundClick,
   } = props;
 
+  // Flash the selected bins
+  const doFlashBins = () => {
+    // Select the histogram
+    const histogram = d3.select(histogramRef.current);
+    // Select all the bars
+    const bars = histogram.selectAll("rect");
+    // Set the duration of the transition
+    const duration = 500;
+    // Set the delay of the transition
+    const delay = 0;
+    // Set the color of the flash
+    const flash_color = "red";
+    // Set the opacity of the flash
+    const flash_opacity = 0.5;
+    // Flash the bins
+    flash_bin_indexes.forEach((binIndex) => {
+      bars
+        .filter((d, i) => i === binIndex)
+        .transition()
+        .duration(duration)
+        .delay(delay)
+        .style("fill", flash_color)
+        .style("opacity", flash_opacity)
+        .transition()
+        .duration(duration)
+        .delay(delay)
+        .style("fill", "")
+        .style("opacity", "");
+    });
+  };
+
+  // This effect creates the histogram using d3.
   useEffect(() => {
     // Create a color scale for y axis
     const color_scale = slycat_color_maps.get_color_scale_d3v7(
@@ -68,6 +102,13 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       y_scale.domain()[0],
       y_scale.domain()[1],
     );
+
+    const getStrokeWidth = (bin: d3.Bin<ValueIndexType, number>) => {
+      // Stroke width depends on whether the bin is selected or not.
+      return selected_bin_indexes.includes(bins.indexOf(bin))
+        ? histogram_bar_selected_stroke_width
+        : histogram_bar_stroke_width;
+    };
 
     // Add a rect for each bin.
     const histogram = d3.select(histogramRef.current);
@@ -84,21 +125,22 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         const color = color_scale(bin.length);
         return histogram_bar_color ?? `rgb(${color.r} ${color.g} ${color.b})`;
       })
-      .attr("stroke-width", (bin) => {
-        // Stroke width depends on whether the bin is selected or not.
-        return selected_bin_indexes.includes(bins.indexOf(bin))
-          ? histogram_bar_selected_stroke_width
-          : histogram_bar_stroke_width;
-      })
-      .attr("x", (bin) => x_scale(bin.x0))
+      .attr("stroke-width", (bin) => getStrokeWidth(bin))
+      // Adjust x position based on stroke width
+      .attr("x", (bin) => x_scale(bin.x0) + 0.5 * getStrokeWidth(bin))
       .attr("width", (bin) => {
-        const width = x_scale(bin.x1) - x_scale(bin.x0);
         // If width is 0, set it to 20 so that the bar is visible.
         // This can happen when there is only one bin.
-        return width === 0 ? 20 : width;
+        const actualWidth = Math.max(20, x_scale(bin.x1) - x_scale(bin.x0));
+        // Adjust width based on stroke width.
+        // If stroke width is greater than the width, set width to 0 to prevent a negative width.
+        const adjustedWidth = Math.max(0, actualWidth - getStrokeWidth(bin));
+        return adjustedWidth;
       })
-      .attr("y", (bin) => y_scale(bin.length))
-      .attr("height", (bin) => y_scale(0) - y_scale(bin.length))
+      // Adjust y position based on stroke width
+      .attr("y", (bin) => y_scale(bin.length) + 0.5 * getStrokeWidth(bin))
+      // Adjust height based on stroke width, but must be at least 0.
+      .attr("height", (bin) => Math.max(0, y_scale(0) - y_scale(bin.length) - getStrokeWidth(bin)))
       // On click, run a function
       .on("click", (event, bin) => {
         // Get the bin range
@@ -174,6 +216,13 @@ const Histogram: React.FC<HistogramProps> = (props) => {
           .text("Frequency");
       });
   });
+
+  // Flash bins only when flash_bin_indexes changes.
+  // This effect must be after the effect that creates the histogram.
+  useEffect(() => {
+    // Flash the bins
+    doFlashBins();
+  }, [flash_bin_indexes]);
 
   return <svg className="histogram-svg" ref={histogramRef} onClick={handleBackgroundClick} />;
 };

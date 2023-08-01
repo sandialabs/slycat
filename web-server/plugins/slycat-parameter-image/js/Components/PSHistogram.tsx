@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import slycat_color_maps from "js/slycat-color-maps";
 import PlotGrid from "./PlotGrid";
@@ -51,7 +51,9 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_values_and_indexes = useSelector(selectXValuesAndIndexes);
   const x_values_and_indexes_without_hidden = useSelector(selectXValuesAndIndexesWithoutHidden);
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
-  const histogram_bar_selected_stroke_width = useSelector(selectSelectedBorderSize);
+  // Doubling size of selected points border width because histogram bars are generally much large
+  // and need a thicker border to stand out from the unselected bars.
+  const histogram_bar_selected_stroke_width = useSelector(selectSelectedBorderSize) * 2;
   const font_size = useSelector(selectFontSize);
   const font_family = useSelector(selectFontFamily);
   const x_label_y = X_LABEL_VERTICAL_OFFSET;
@@ -67,13 +69,23 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const selected_simulations = useSelector(selectSelectedSimulations);
   const selected_simulations_without_hidden = useSelector(selecteSelectedSimulationsWithoutHidden);
 
-const handleBackgroundClick = (event: React.MouseEvent) => {
-  // If neither the meta key nor ctrl key was pressed during the click event, deselect all simulations
-  if (!(event.metaKey || event.ctrlKey)) {
-    dispatch(setSelectedSimulations([]));
-  }
-  // If Ctrl or Meta click on the background, do nothing because user was probably trying to add a bar
-};
+  // Declare a local state to keep track of selected_simulations_without_hidden
+  // to be able to compare it to the current value of selected_simulations_without_hidden
+  // since we need to know which are new to flash them in the histogram.
+  const [
+    selectedSimulationsWithoutHiddenLocalState,
+    setSelectedSimulationsWithoutHiddenLocalState,
+  ] = useState<number[]>(selected_simulations_without_hidden);
+  // Local state for flashBinIndexes to be able to flash bins for newly selected simulations.
+  const [flashBinIndexes, setFlashBinIndexes] = useState<number[]>([]);
+
+  const handleBackgroundClick = (event: React.MouseEvent) => {
+    // If neither the meta key nor ctrl key was pressed during the click event, deselect all simulations
+    if (!(event.metaKey || event.ctrlKey)) {
+      dispatch(setSelectedSimulations([]));
+    }
+    // If Ctrl or Meta click on the background, do nothing because user was probably trying to add a bar
+  };
 
   const handleBinClick = (
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
@@ -174,6 +186,39 @@ const handleBackgroundClick = (event: React.MouseEvent) => {
     // Filter out undefined values (bins with unselected simulations)
     .filter((index) => index !== undefined) as number[];
 
+  // Update flashBinIndexes state when selected_simulations_without_hidden changes
+  // so that histogram can flash bins for newly selected simulations.
+  useEffect(() => {
+    // Find new selected_simulations_without_hidden
+    let newSelectedSimulations = selected_simulations_without_hidden.filter(
+      (x) => !selectedSimulationsWithoutHiddenLocalState.includes(x),
+    );
+    // selected_simulations_without_hidden changed, so let's update local state with new value
+    setSelectedSimulationsWithoutHiddenLocalState(selected_simulations_without_hidden);
+
+    // Create an array of indices of bins_without_hidden where at least one of their elements are in selected_simulations_without_hidden.
+    // In other words, find bins that contain any selected simulations.
+    let flashBins = bins_without_hidden
+      .map((bin, index) => {
+        // Disregard empty bins
+        if (bin.length === 0) {
+          return undefined;
+        }
+        // If any of the indices in the bin are in newSelectedSimulations, return the index of the bin
+        const matching_bin_index = bin
+          .map((value_and_index: ValueIndexType) => value_and_index.index)
+          .some((index) => newSelectedSimulations.includes(index))
+          ? index
+          : undefined;
+        return matching_bin_index;
+      })
+      // Filter out undefined values (bins with unselected simulations)
+      .filter((index) => index !== undefined) as number[];
+
+    // Update flashBinIndexes local state
+    setFlashBinIndexes(flashBins);
+  }, [selected_simulations_without_hidden]);
+
   return (
     <>
       <PlotBackground background={background} />
@@ -194,6 +239,7 @@ const handleBackgroundClick = (event: React.MouseEvent) => {
         y_scale_range={y_scale_range}
         bins={bins_without_hidden}
         selected_bin_indexes={selected_bin_indexes}
+        flash_bin_indexes={flashBinIndexes}
         x_ticks={x_ticks}
         y_ticks={y_ticks}
         histogram_bar_color={histogram_bar_color}
