@@ -10,7 +10,8 @@ import cherrypy
 # common csv parsing code used by both slycat-web-server and slycat-web-client
 # does not call slycat.web.server directly, instead returns any error messages
 # error messages are returned as a list of {'type': 'warning', 'message': 'message'}
-def parse_file(file):
+# use file_name = True to pass a file name instead of a string with file contents
+def parse_file(file, file_name=False):
     """
     parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
     and sets attributes (attributes)
@@ -29,7 +30,10 @@ def parse_file(file):
 
     # load input file as pandas dataframe
     try:
-        df = pd.read_csv(StringIO(file))
+        if file_name:
+            df = pd.read_csv(file)
+        else:
+            df = pd.read_csv(StringIO(file))
 
     # return empty values if couldn't read file
     except Exception as e:
@@ -59,7 +63,7 @@ def parse_file(file):
         if df[header].dtype == "object":
             data.append(df[header].values.astype('unicode'))
         else:
-            data.append(df[header].values)
+            data.append(df[header].values.astype(float))
             
     # check for empty headers (pandas replaced them with 'Unnamed: <Column #>')
     empty_headers = []

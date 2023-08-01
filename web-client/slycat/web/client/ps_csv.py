@@ -84,12 +84,7 @@ def upload_model (arguments, attributes, dimensions, data, progress=True):
 
   # Upload each column into the array.
   for index in range(len(column_names)):
-
-    # make sure float are actually floats
-    if column_types[index] == 'float64':
-      values = [np.asarray(data[index]).astype(float)]
-    else:
-      values = [np.asarray(data[index])]
+    values = [np.asarray(data[index])]
 
     # push to server
     connection.put_model_arrayset_data(mid, "data-table", "0/%s/..." % index, values)
