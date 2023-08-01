@@ -52,7 +52,7 @@ VERSION = slycat.__version__
 
 # development version
 # VERSION = VERSION
-VERSION = "3.4.0"
+VERSION = "4.0.0"
 
 # get README.md
 import pathlib
