@@ -492,7 +492,7 @@ export default function initialize_timeseries_model(
           .toString(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        fill: slycat_color_maps.get_background(get_state().controls.colormap).toString(),
+        "fill": slycat_color_maps.get_background(get_state().controls.colormap),
         "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
       });
 
@@ -706,7 +706,7 @@ export default function initialize_timeseries_model(
         .toString(),
     });
     $("#waveform-viewer rect.selectionMask").css({
-      fill: slycat_color_maps.get_background(get_state().controls.colormap).toString(),
+      "fill": slycat_color_maps.get_background(get_state().controls.colormap),
       "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
     });
 
