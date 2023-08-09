@@ -47,7 +47,7 @@ From `/docs` in the slycat repo run the following command
 
 This should create a `_build` directory with the resulting sphynx documentation created from the build files.
 
-# other build options
+# Other build options
 
 ```bsh
 $ make
