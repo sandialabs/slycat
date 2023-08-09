@@ -1489,7 +1489,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/api/uploads/(uid)/finished`
+    :http:post:`/api/uploads/(uid)/finished`
     """
 
     return self.request("POST", "/api/uploads/%s/finished" % uid, 
@@ -1522,7 +1522,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/api/uploads/(uid)`
+    :http:post:`/api/uploads`
     """
   
     # call directly to get response code
