@@ -4,6 +4,7 @@
 // HTML5 DOM waveform visualization, for use with the timeseries model.
 
 import d3 from "d3";
+import parseCSSColor from "parse-css-color";
 import knob from "jquery-knob";
 import slycat_color_maps from "js/slycat-color-maps";
 
@@ -299,12 +300,13 @@ $.widget("timeseries.waveformplot", {
     this.canvas_picker.width = this.diagram_width;
     this.canvas_picker.height = this.diagram_height;
 
-    var fillStyle = slycat_color_maps.get_background(self.options.get_state().controls.colormap);
-    var opacity = slycat_color_maps.get_opacity(self.options.get_state().controls.colormap);
-    this.canvas_hover_ctx.fillStyle =
-      "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
-    this.canvas_selection_ctx.fillStyle =
-      "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
+    const [r, g, b] = parseCSSColor(
+      slycat_color_maps.get_background(self.options.get_state().controls.colormap)
+    ).values;
+    const opacity = slycat_color_maps.get_opacity(self.options.get_state().controls.colormap);
+    const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    this.canvas_hover_ctx.fillStyle = rgba;
+    this.canvas_selection_ctx.fillStyle = rgba;
 
     var waveform_subset = [];
     if (visible !== undefined) {
@@ -426,7 +428,6 @@ $.widget("timeseries.waveformplot", {
   /* Hover effect for waveforms */
   _hover: function (waveforms) {
     var self = this;
-    var fillStyle;
 
     // Only hover a waveform if it's part of the current selection
     var selection = self.options.selection;
