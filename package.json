@@ -46,6 +46,7 @@
     "layout-jquery3": "1.8.5",
     "lodash": "4.17.21",
     "papaparse": "^5",
+    "parse-css-color": "^0.2.1",
     "react": "^18",
     "react-dom": "^18",
     "react-redux": "^8",

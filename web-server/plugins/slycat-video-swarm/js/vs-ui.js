@@ -294,7 +294,7 @@ function model_loaded() {
           .toString(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        fill: $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+        "fill": $("#color-switcher").colorswitcher("get_background", colormap).toString(),
         "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", colormap),
       });
       $("#mp-movies").css({
@@ -754,7 +754,7 @@ function update_waveform_color() {
     "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
   });
   $("#waveform-viewer rect.selectionMask").css({
-    fill: $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "fill": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
     "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", undefined),
   });
 
