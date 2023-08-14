@@ -186,6 +186,28 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     // Filter out undefined values (bins with unselected simulations)
     .filter((index) => index !== undefined) as number[];
 
+  // Create an array of indices of bins_without_hidden where some but not all
+  // of its elements' index attributes are in selected_simulations_without_hidden.
+  // In other words, find bins that contain some but not all selected simulations.
+  const partially_selected_bin_indexes = bins_without_hidden
+    .map((bin, index) => {
+      // Disregard empty bins
+      if (bin.length === 0) {
+        return undefined;
+      }
+      // If some but not all the indices in the bin are in selected_simulations_without_hidden, return the index of the bin
+      const matching_bin_index = bin
+        .map((value_and_index: ValueIndexType) => value_and_index.index)
+        .some((index) => selected_simulations_without_hidden.includes(index))
+        ? index
+        : undefined;
+      return matching_bin_index;
+    })
+    // Filter out undefined values (bins with unselected simulations)
+    .filter((index) => index !== undefined)
+    // Filter out any values that are also in selecte_bin_indexes
+    .filter((index) => !selected_bin_indexes.includes(index)) as number[];
+
   // Update flashBinIndexes state when selected_simulations_without_hidden changes
   // so that histogram can flash bins for newly selected simulations.
   useEffect(() => {
@@ -239,6 +261,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         y_scale_range={y_scale_range}
         bins={bins_without_hidden}
         selected_bin_indexes={selected_bin_indexes}
+        partially_selected_bin_indexes={partially_selected_bin_indexes}
         flash_bin_indexes={flashBinIndexes}
         x_ticks={x_ticks}
         y_ticks={y_ticks}

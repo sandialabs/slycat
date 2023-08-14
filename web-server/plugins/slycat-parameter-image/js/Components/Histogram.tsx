@@ -9,6 +9,7 @@ type HistogramProps = {
   y_scale_range: number[];
   bins: d3.Bin<ValueIndexType, number>[];
   selected_bin_indexes: number[];
+  partially_selected_bin_indexes: number[];
   flash_bin_indexes: number[];
   x_ticks: number;
   y_ticks: number;
@@ -55,6 +56,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     y_label_y,
     bins,
     selected_bin_indexes,
+    partially_selected_bin_indexes,
     flash_bin_indexes,
     y_scale,
     histogram_bar_color,
@@ -103,11 +105,21 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       y_scale.domain()[1],
     );
 
-    const getStrokeWidth = (bin: d3.Bin<ValueIndexType, number>) => {
-      // Stroke width depends on whether the bin is selected or not.
-      return selected_bin_indexes.includes(bins.indexOf(bin))
+    const getStrokeWidth = (
+      bin: d3.Bin<ValueIndexType, number>
+    ): number => {
+      const binIndex = bins.indexOf(bin);
+      const isSelected =
+        selected_bin_indexes.includes(binIndex) ||
+        partially_selected_bin_indexes.includes(binIndex);
+      return isSelected
         ? histogram_bar_selected_stroke_width
         : histogram_bar_stroke_width;
+    };
+
+    const getStrokeDasharray = (bin: d3.Bin<ValueIndexType, number>) => {
+      // Stroke dasharray depends on whether the bin is partially selected or not.
+      return partially_selected_bin_indexes.includes(bins.indexOf(bin)) ? "10,5" : "";
     };
 
     // Add a rect for each bin.
@@ -119,6 +131,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .selectAll()
       .data(bins)
       .join("rect")
+      .attr("stroke-dasharray", (bin) => getStrokeDasharray(bin))
       // Color bars using histogram_bar_color if available, otherwise color them
       // based on their length.
       .attr("fill", (bin) => {
