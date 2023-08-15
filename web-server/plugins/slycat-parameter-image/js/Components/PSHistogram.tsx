@@ -32,7 +32,7 @@ import {
 import {
   setSelectedSimulations,
   selectSelectedSimulations,
-  selecteSelectedSimulationsWithoutHidden,
+  selectSelectedSimulationsWithoutHidden,
 } from "../dataSlice";
 import * as d3 from "d3v7";
 import _ from "lodash";
@@ -67,7 +67,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_has_custom_range = useSelector(selectXHasCustomRange);
   const auto_scale = useSelector(selectAutoScale);
   const selected_simulations = useSelector(selectSelectedSimulations);
-  const selected_simulations_without_hidden = useSelector(selecteSelectedSimulationsWithoutHidden);
+  const selected_simulations_without_hidden = useSelector(selectSelectedSimulationsWithoutHidden);
 
   // Declare a local state to keep track of selected_simulations_without_hidden
   // to be able to compare it to the current value of selected_simulations_without_hidden
