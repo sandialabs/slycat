@@ -36,7 +36,7 @@ import {
   selectYColumnName,
   selectVColumnName,
 } from "./selectors";
-import PSHistogram from "./Components/PSHistogram";
+import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 
 // Events for vtk viewer
@@ -664,7 +664,7 @@ $.widget("parameter_image.scatterplot", {
     histogram_root.render(
       <StrictMode>
         <Provider store={window.store}>
-          <PSHistogram />
+          <PSHistogramWrapper />
         </Provider>
       </StrictMode>,
     );

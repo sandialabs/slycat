@@ -37,11 +37,26 @@ import {
 import * as d3 from "d3v7";
 import _ from "lodash";
 
+// This wrapper is here only to hide and show the histogram based on selectShowHistogram selector.
+// This should really be done in the parent component, but currently there is no parent
+// React component because we are still using legacy code to render the histogram.
+// This simple logic can't be moved into PSHistogram because it would require all the hooks
+// to be executed even when the histogram is hidden, which is a potential performance issue.
+const PSHistogramWrapper: React.FC = () => {
+  const show_histogram = useSelector(selectShowHistogram);
+  // Only render the component if show_histogram is true
+  if (!show_histogram) {
+    return null;
+  }
+  return <PSHistogram />;
+};
+
+export default PSHistogramWrapper;
+
 type PSHistogramProps = {};
 
 const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const dispatch = useDispatch();
-  const show_histogram = useSelector(selectShowHistogram);
   // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
   const x_scale = useSelector(selectXScale).copy();
   const colormap = useSelector(selectColormap);
@@ -236,11 +251,6 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     setFlashBinIndexes(flashBins);
   }, [selected_simulations_without_hidden]);
 
-  // Only render the component if show_histogram is true
-  if (!show_histogram) {
-    return null;
-  }
-
   return (
     <>
       <PlotBackground background={background} />
@@ -282,5 +292,3 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     </>
   );
 };
-
-export default PSHistogram;
