@@ -1,7 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import * as d3 from "d3v7";
 import _ from "lodash";
-import { selectScatterplotPaneWidth, selectScatterplotPaneHeight } from "./scatterplotSlice";
+import { selectScatterplotPaneWidth, selectScatterplotPaneHeight, selectShowHistogram } from "./scatterplotSlice";
 import { selectHiddenSimulations } from "./dataSlice";
 import {
   RootState,
@@ -11,6 +11,7 @@ import {
   ColumnTypesType,
   ValuesType,
 } from "./store";
+import { select } from "docs/html/_static/underscore-1.3.1";
 
 // Constants
 const X_AXIS_TICK_LABEL_HEIGHT = 40;
@@ -365,7 +366,8 @@ export type SlycatScaleType =
   | d3.ScaleLinear<number, number>
   | d3.ScaleLogarithmic<number, number>
   | d3.ScaleTime<number, number>
-  | d3.ScalePoint<string>;
+  | d3.ScalePoint<string>
+  | d3.ScaleBand<string>;
 
 // TODO: selectXValues and selectYValues sometimes are out of sync with the
 // currently selected x variable and y variable. This is because they are
@@ -378,14 +380,16 @@ export const selectXScale = createSelector(
   selectXScaleRange,
   selectXColumnType,
   selectXValues,
+  selectShowHistogram,
   (
     xScaleType: string,
     xExtent: ExtentType,
     xScaleRange: ScaleRangeType,
     xColumnType: string,
     xValues,
+    selectShowHistogram,
   ): SlycatScaleType => {
-    return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues);
+    return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues, selectShowHistogram);
   },
 );
 
@@ -395,14 +399,16 @@ export const selectYScale = createSelector(
   selectYScaleRange,
   selectYColumnType,
   selectYValues,
+  selectShowHistogram,
   (
     yScaleType: string,
     yExtent: ExtentType,
     yScaleRange: ScaleRangeType,
     yColumnType: string,
     yValues,
+    selectShowHistogram,
   ): SlycatScaleType => {
-    return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues);
+    return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues, selectShowHistogram);
   },
 );
 
@@ -412,6 +418,7 @@ const getScale = (
   scaleRange: ScaleRangeType,
   columnType: string,
   values: ValuesType,
+  showHistogram: boolean,
 ): SlycatScaleType => {
   let scale;
   switch (scaleType) {
@@ -427,6 +434,7 @@ const getScale = (
       // For numeric values, use a linear scale.
       if (columnType !== "string") scale = d3.scaleLinear();
       // Otherwise, use a point scale (ordinal / categorical) for string values
+      else if (showHistogram) scale = d3.scaleBand();
       else scale = d3.scalePoint();
   }
   // Domain is the min and max values for numeric values or Date & Time scales,
