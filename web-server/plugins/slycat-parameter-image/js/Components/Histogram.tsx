@@ -65,6 +65,10 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     handleBackgroundClick,
   } = props;
 
+  // If x_scale is a band scale, set the padding to 0.1 to create
+  // spacing between bars.
+  x_scale.bandwidth && x_scale.padding(0.1);
+
   // Flash the selected bins
   const doFlashBins = () => {
     // Select the histogram
@@ -105,21 +109,31 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       y_scale.domain()[1],
     );
 
-    const getStrokeWidth = (
-      bin: d3.Bin<ValueIndexType, number>
-    ): number => {
+    const getStrokeWidth = (bin: d3.Bin<ValueIndexType, number>): number => {
       const binIndex = bins.indexOf(bin);
       const isSelected =
         selected_bin_indexes.includes(binIndex) ||
         partially_selected_bin_indexes.includes(binIndex);
-      return isSelected
-        ? histogram_bar_selected_stroke_width
-        : histogram_bar_stroke_width;
+      return isSelected ? histogram_bar_selected_stroke_width : histogram_bar_stroke_width;
     };
 
     const getStrokeDasharray = (bin: d3.Bin<ValueIndexType, number>) => {
       // Stroke dasharray depends on whether the bin is partially selected or not.
       return partially_selected_bin_indexes.includes(bins.indexOf(bin)) ? "10,5" : "";
+    };
+
+    const getBarWidth = (bin: d3.Bin<ValueIndexType, number>) => {
+      const actualWidth = x_scale.bandwidth
+        ? // If x_scale is a band scale, then the width of the bar is the width of the band.
+          x_scale.bandwidth()
+        : // If width is 0, set it to 20 so that the bar is visible.
+          // This can happen when there is only one bin.
+          x_scale(bin.x1) - x_scale(bin.x0) || 20;
+
+      // Adjust width based on stroke width.
+      // If stroke width is greater than the width, set width to 0 to prevent a negative width.
+      const adjustedWidth = Math.max(0, actualWidth - getStrokeWidth(bin));
+      return adjustedWidth;
     };
 
     // Add a rect for each bin.
@@ -141,15 +155,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .attr("stroke-width", (bin) => getStrokeWidth(bin))
       // Adjust x position based on stroke width
       .attr("x", (bin) => x_scale(bin.x0) + 0.5 * getStrokeWidth(bin))
-      .attr("width", (bin) => {
-        // If width is 0, set it to 20 so that the bar is visible.
-        // This can happen when there is only one bin.
-        const actualWidth = Math.max(20, x_scale(bin.x1) - x_scale(bin.x0));
-        // Adjust width based on stroke width.
-        // If stroke width is greater than the width, set width to 0 to prevent a negative width.
-        const adjustedWidth = Math.max(0, actualWidth - getStrokeWidth(bin));
-        return adjustedWidth;
-      })
+      .attr("width", (bin) => getBarWidth(bin))
       // Adjust y position based on stroke width
       .attr("y", (bin) => y_scale(bin.length) + 0.5 * getStrokeWidth(bin))
       // Adjust height based on stroke width, but must be at least 0.
