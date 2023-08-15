@@ -124,11 +124,6 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     }
   };
 
-  // Only render the component if show_histogram is true
-  if (!show_histogram) {
-    return null;
-  }
-
   const bin = d3
     .bin()
     .value((d: ValueIndexType) => d.value)
@@ -240,6 +235,11 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     // Update flashBinIndexes local state
     setFlashBinIndexes(flashBins);
   }, [selected_simulations_without_hidden]);
+
+  // Only render the component if show_histogram is true
+  if (!show_histogram) {
+    return null;
+  }
 
   return (
     <>
