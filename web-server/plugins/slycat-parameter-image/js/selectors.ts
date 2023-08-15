@@ -430,8 +430,11 @@ const getScale = (
       else scale = d3.scalePoint();
   }
   // Domain is the min and max values for numeric values or Date & Time scales,
-  // otherwise the unique values for string variables.
-  const domain = columnType === "string" && scaleType !== "Date & Time" ? _.uniq(values) : extent;
+  // otherwise the locale sorted unique values for string variables.
+  const domain =
+    columnType === "string" && scaleType !== "Date & Time"
+      ? _.uniq(values).sort((a, b) => a.localeCompare(b))
+      : extent;
   return scale.range(scaleRange).domain(domain);
 };
 

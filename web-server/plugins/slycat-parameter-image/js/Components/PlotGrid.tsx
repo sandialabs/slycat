@@ -10,16 +10,21 @@ type PlotGridProps = {
   y_ticks: number;
   colormap: string;
   plot_grid_color: string;
+  show_vertical_grid_lines?: boolean;
+  show_horizontal_grid_lines?: boolean;
 };
 
-const PlotGrid: React.FC<PlotGridProps> = (props) => {
+const PlotGrid: React.FC<PlotGridProps> = ({
+  x_scale,
+  y_scale,
+  x_ticks,
+  y_ticks,
+  colormap,
+  plot_grid_color,
+  show_vertical_grid_lines = true,
+  show_horizontal_grid_lines = true,
+}) => {
   const gridRef = useRef<SVGGElement>(null);
-
-  const x_scale = props.x_scale;
-  const y_scale = props.y_scale;
-  const x_ticks = props.x_ticks;
-  const y_ticks = props.y_ticks;
-  const plot_grid_color = props.plot_grid_color;
 
   useEffect(() => {
     const setStrokeStyle = (sel: d3.Selection<SVGGElement, unknown, null, undefined>) => {
@@ -34,6 +39,15 @@ const PlotGrid: React.FC<PlotGridProps> = (props) => {
       .yTicks(y_ticks)
       .xDecorate(setStrokeStyle)
       .yDecorate(setStrokeStyle);
+    
+    // Remove grid lines if they are disabled
+    if (!show_vertical_grid_lines) {
+      gridline.xTickValues([]);
+    }
+    if (!show_horizontal_grid_lines) {
+      gridline.yTickValues([]);
+    }
+    
     d3.select(gridRef.current).call(gridline);
   });
 

@@ -19,6 +19,7 @@ import {
   selectXHasCustomRange,
   selectXValuesAndIndexes,
   selectXValuesAndIndexesWithoutHidden,
+  selectXColumnType,
 } from "../selectors";
 import {
   selectShowHistogram,
@@ -74,6 +75,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_label_y = X_LABEL_VERTICAL_OFFSET;
   const x_label_x = useSelector(selectXLabelX);
   const x_name = useSelector(selectXColumnName);
+  const x_column_type = useSelector(selectXColumnType);
   const y_label_y = useSelector(selectYLabelY);
   const show_grid = useSelector(selectShowGrid);
   const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
@@ -139,43 +141,79 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     }
   };
 
-  const bin = d3
-    .bin()
-    .value((d: ValueIndexType) => d.value)
-    // Setting the number of bins to be the same as the number of ticks
-    // so that each tick has its own bin.
-    .thresholds(x_ticks);
-  // Other options for setting the number of bins by using supported threshold generators
-  // .thresholds(d3.thresholdFreedmanDiaconis)
-  // .thresholds(d3.thresholdScott)
-  // .thresholds(d3.thresholdSturges)
+  const makeBins = (values_and_indexes: ValueIndexType[]) => {
+    // If the x variable is a string, we can't use d3.bin() to create the bins
+    // because d3.bin() only works with numeric values.
+    // So doing it manually here.
+    if (x_column_type === "string") {
+      // Group the values by value
+      const grouped = d3.group(values_and_indexes, (d) => d.value);
+      // Sort the groups by value (values are all strings, so let's use localeCompare)
+      const groupedSorted = new Map(
+        [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0])),
+      );
+      // Reformat the groupedSorted Map into same format as d3.bin() output,
+      // which is an array of arrays with each array containing the following:
+      // the values of the group
+      // x0 property: lower bound of the bin
+      // x1 property: upper bound of the bin
+      // length property: number of elements in the bin
+      const groupedSortedArray = Array.from(groupedSorted, ([key, values]) => {
+        let bin = [...values];
+        bin.x0 = key;
+        bin.x1 = key;
+        bin.length = values.length;
+        return bin;
+      });
+      console.debug(`groupedSortedArray: %o`, groupedSortedArray);
+      return groupedSortedArray;
+    } else {
+      // For numeric x variables, use d3.bin() to create the bins.
+      const bin = d3
+        .bin()
+        .value((d: ValueIndexType) => d.value)
+        // Setting the number of bins to be the same as the number of ticks
+        // so that each tick has its own bin.
+        .thresholds(x_ticks);
+      // Other options for setting the number of bins by using supported threshold generators
+      // .thresholds(d3.thresholdFreedmanDiaconis)
+      // .thresholds(d3.thresholdScott)
+      // .thresholds(d3.thresholdSturges)
 
-  // Not specifying domain unless a custom variable range has been set by the user
-  // for the current x variable because
-  // "If the default extent domain is used and the thresholds are specified as a count
-  // (rather than explicit values), then the computed domain will be niced such that all bins are uniform width."
-  // https://d3js.org/d3-array/bin#bin_domain
-  if (x_has_custom_range) {
-    bin.domain(x_scale.domain()).thresholds(x_scale.ticks(x_ticks));
+      // Not specifying domain unless a custom variable range has been set by the user
+      // for the current x variable because
+      // "If the default extent domain is used and the thresholds are specified as a count
+      // (rather than explicit values), then the computed domain will be niced such that all bins are uniform width."
+      // https://d3js.org/d3-array/bin#bin_domain
+      if (x_has_custom_range) {
+        bin.domain(x_scale.domain()).thresholds(x_scale.ticks(x_ticks));
+      }
+      const bins = bin(values_and_indexes);
+      return bins;
+    }
+  };
+
+  // Make bins for the histogram.
+  const bins_without_hidden = makeBins(x_values_and_indexes_without_hidden);
+
+  // For non-string variables, adjusting x_scale domain to match the bins.
+  if (x_column_type !== "string") {
+    const bins_with_hidden = makeBins(x_values_and_indexes);
+
+    // With auto_scale true, we use bins without hidden values to set the domain.
+    // But if it's false, we set it to match bins of x_values, not x_values_without_hidden.
+    const bins_for_x_scale_domain = auto_scale ? bins_without_hidden : bins_with_hidden;
+    x_scale.domain([
+      bins_for_x_scale_domain[0].x0,
+      bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1,
+    ]);
   }
-
-  const bins_without_hidden = bin(x_values_and_indexes_without_hidden);
-  const bins_with_hidden = bin(x_values_and_indexes);
 
   // Declare the y (vertical position) scale.
   const y_scale = d3
     .scaleLinear()
     .domain([0, d3.max(bins_without_hidden, (d) => d.length)])
     .range(y_scale_range);
-
-  // Adjusting x_scale domain to match the bins.
-  // With auto_scale true, we use bins without hidden values to set the domain.
-  // But if it's false, we set it to match bins of x_values, not x_values_without_hidden.
-  const bins_for_x_scale_domain = auto_scale ? bins_without_hidden : bins_with_hidden;
-  x_scale.domain([
-    bins_for_x_scale_domain[0].x0,
-    bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1,
-  ]);
 
   // Create an array of indices of bins_without_hidden whose elements' index attributes are all in selected_simulations_without_hidden.
   // In other words, find bins that contain only selected simulations.
@@ -259,10 +297,11 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         <PlotGrid
           x_scale={x_scale}
           y_scale={y_scale}
-          x_ticks={0}
+          x_ticks={x_ticks}
           y_ticks={y_ticks}
           colormap={colormap}
           plot_grid_color={plot_grid_color}
+          show_vertical_grid_lines={false}
         />
       ) : null}
       <Histogram
