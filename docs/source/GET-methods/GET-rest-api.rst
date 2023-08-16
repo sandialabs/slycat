@@ -6,6 +6,7 @@ GET METHODS
 .. toctree::
     :maxdepth: 1
 
+    GET-Configuration-Markings.rst
     GET-Bookmark.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
@@ -26,3 +27,4 @@ GET METHODS
     GET-Remote-Image.rst
     GET-Remote-Video.rst
     GET-User.rst
+    GET-Timeseries-Names.rst
