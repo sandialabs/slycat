@@ -12,6 +12,7 @@ import logging.handlers
 import numbers
 import numpy
 import os
+import io
 import time
 import _pickle
 import re
@@ -636,94 +637,170 @@ def create_project_data(mid, aid, file):
         except ValueError:
             return False
         return True
+    
+    # If we received an HDF5 file, we don't need to create a new one. 
+    # Just need to decode the bytes and store it as is. 
+    if ('.h5' in aid[1]) or ('.hdf5' in aid[1]):
+        rows = []
 
-    rows = []
+        for f in file:
+            f_buffer = io.BytesIO(f)
+            f_buffer.seek(0)
 
-    split_file = file[0].split('\n')
+            hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+            unique_name = uuid.uuid4().hex
+            hdf5_name = f"{unique_name}.hdf5"
+            hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
 
-    for row in split_file:
-        row_list = [row]
-        split_row = row_list[0].split(',')
-        rows.append(split_row)
+            # Write the stuff
+            with open(hdf5_path + hdf5_name, "wb") as f:
+                f.write(f_buffer.getbuffer())
 
-    columns = numpy.array(rows).T
+            # Make the entry in couch for project data
+            content_type = "hdf5"
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", mid)
 
-    for i, column in enumerate(columns):
-        for j, entry in enumerate(column):
-            columns[i,j] = entry.encode("utf-8")
+            with slycat.web.server.get_model_lock(model["_id"]):
+                model = database.get("model", mid)
+                project = database.get("project", model["project"])
+                pid = project["_id"]
+                timestamp = time.time()
+                formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+                did = uuid.uuid4().hex
 
-    column_names = [name.strip() for name in rows[0]]
-    column_names = ["%eval_id"] + column_names
-    column_types = ["string" for name in column_names]
+                #TODO review how we pass files to this
+                # our file got passed as a list by someone...
+                if isinstance(file, list):
+                    file = file[0]
+                #TODO review how we pass aids to this
+                # if true we are using the new file naming structure
+                if len(aid) > 1:
+                    # looks like we got passed a list(list()) lets extract the name
+                    if isinstance(aid[1], list):
+                        aid[1] = aid[1][0]
+                # for backwards compatibility for not passing the file name
+                else:
+                    aid.append("unnamed_file")
+                data = {
+                    "_id": did,
+                    "type": "project_data",
+                    "hdf5_name": hdf5_name,
+                    "file_name": formatted_timestamp + "_" + aid[1],
+                    "data_table": aid[0],
+                    "project": pid,
+                    "mid": [mid],
+                    "created": datetime.datetime.utcnow().isoformat(),
+                    "creator": cherrypy.request.login,
+                }
+                if "project_data" not in model:
+                    model["project_data"] = []
+                model["project_data"].append(did)
+                database.save(model)
+            database.save(data)
+            cherrypy.log.error("[MICROSERVICE] Added HDF5 project data %s." % data["file_name"])
 
-    column_types[0] = "int64"
+            # If we decide later to store inputs and outputs separately, this code will pull them out from the original file
 
-    for index in range(1, len(columns)):  # repack data cols as numpy arrays
-        try:
-            if isNumeric(columns[index][0]):
-                columns[index] = numpy.array(columns[index], dtype="float64")
-                column_types[index] = "float64"
-            else:
-                stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
-                columns[index] = numpy.array(columns[index], dtype=stringType)
-                column_types[index] = "string"
-        except:
-            pass
+            # with h5py.File(f_buffer, 'r') as h5_file:
+            #     unformatted_responses = list(h5_file['models']['simulation']['model1']['responses']['functions']) # Inputs
+            #     unformatted_variables = list(h5_file['models']['simulation']['model1']['variables']['continuous']) # Outputs
 
-    # Edit with path to store HDF5
-    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
-    # Edit with name for HDF5 file
-    unique_name = uuid.uuid4().hex
-    hdf5_name = f"{unique_name}.hdf5"
-    hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
+            #     cherrypy.log.error('Unformatted responses')
+            #     cherrypy.log.error(str(unformatted_responses))
 
-    h5f = h5py.File((hdf5_file_path), "w")
-    h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
-    h5f.close()
+            #     h5f = h5py.File((hdf5_file_path), "w")
+            #     h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
+            #     h5f.close()
 
-    # Make the entry in couch for project data
-    content_type = "text/csv"
-    database = slycat.web.server.database.couchdb.connect()
-    model = database.get("model", mid)
+    # We didn't get an HDF5 file, so do everything normally.
+    else:
+        rows = []
+        split_file = file[0].split('\n')
 
-    with slycat.web.server.get_model_lock(model["_id"]):
+        for row in split_file:
+            row_list = [row]
+            split_row = row_list[0].split(',')
+            rows.append(split_row)
+
+        columns = numpy.array(rows).T
+
+        for i, column in enumerate(columns):
+            for j, entry in enumerate(column):
+                columns[i,j] = entry.encode("utf-8")
+
+        column_names = [name.strip() for name in rows[0]]
+        column_names = ["%eval_id"] + column_names
+        column_types = ["string" for name in column_names]
+
+        column_types[0] = "int64"
+
+        for index in range(1, len(columns)):  # repack data cols as numpy arrays
+            try:
+                if isNumeric(columns[index][0]):
+                    columns[index] = numpy.array(columns[index], dtype="float64")
+                    column_types[index] = "float64"
+                else:
+                    stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
+                    columns[index] = numpy.array(columns[index], dtype=stringType)
+                    column_types[index] = "string"
+            except:
+                pass
+
+        # Edit with path to store HDF5
+        hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+        # Edit with name for HDF5 file
+        unique_name = uuid.uuid4().hex
+        hdf5_name = f"{unique_name}.hdf5"
+        hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
+
+        h5f = h5py.File((hdf5_file_path), "w")
+        h5f.create_dataset('data_table', data=numpy.array(columns, dtype='S'))
+        h5f.close()
+
+        # Make the entry in couch for project data
+        content_type = "text/csv"
+        database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
-        project = database.get("project", model["project"])
-        pid = project["_id"]
-        timestamp = time.time()
-        formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-        did = uuid.uuid4().hex
 
-        #TODO review how we pass files to this
-        # our file got passed as a list by someone...
-        if isinstance(file, list):
-            file = file[0]
-        #TODO review how we pass aids to this
-        # if true we are using the new file naming structure
-        if len(aid) > 1:
-            # looks like we got passed a list(list()) lets extract the name
-            if isinstance(aid[1], list):
-                aid[1] = aid[1][0]
-        # for backwards compatibility for not passing the file name
-        else:
-            aid.append("unnamed_file")
-        data = {
-            "_id": did,
-            "type": "project_data",
-            "hdf5_name": hdf5_name,
-            "file_name": formatted_timestamp + "_" + aid[1],
-            "data_table": aid[0],
-            "project": pid,
-            "mid": [mid],
-            "created": datetime.datetime.utcnow().isoformat(),
-            "creator": cherrypy.request.login,
-        }
-        if "project_data" not in model:
-            model["project_data"] = []
-        model["project_data"].append(did)
-        database.save(model)
-    database.save(data)
-    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
+        with slycat.web.server.get_model_lock(model["_id"]):
+            model = database.get("model", mid)
+            project = database.get("project", model["project"])
+            pid = project["_id"]
+            timestamp = time.time()
+            formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+            did = uuid.uuid4().hex
+
+            #TODO review how we pass files to this
+            # our file got passed as a list by someone...
+            if isinstance(file, list):
+                file = file[0]
+            #TODO review how we pass aids to this
+            # if true we are using the new file naming structure
+            if len(aid) > 1:
+                # looks like we got passed a list(list()) lets extract the name
+                if isinstance(aid[1], list):
+                    aid[1] = aid[1][0]
+            # for backwards compatibility for not passing the file name
+            else:
+                aid.append("unnamed_file")
+            data = {
+                "_id": did,
+                "type": "project_data",
+                "hdf5_name": hdf5_name,
+                "file_name": formatted_timestamp + "_" + aid[1],
+                "data_table": aid[0],
+                "project": pid,
+                "mid": [mid],
+                "created": datetime.datetime.utcnow().isoformat(),
+                "creator": cherrypy.request.login,
+            }
+            if "project_data" not in model:
+                model["project_data"] = []
+            model["project_data"].append(did)
+            database.save(model)
+        database.save(data)
+        cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)

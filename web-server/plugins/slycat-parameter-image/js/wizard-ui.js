@@ -380,16 +380,18 @@ function constructor(params) {
       },
     };
 
-    client.post_project_data({
-      pid: component.project._id(),
-      file: file,
-      success: function(result) {
-        console.log("Success!");
-      },
-      error: function(status) {
-        console.log("Failure...");
-      }
-    })
+    // if (component.useProjectData() === true) {
+    //   client.post_project_data({
+    //     pid: component.project._id(),
+    //     file: file,
+    //     success: function(result) {
+    //       console.log("Success!");
+    //     },
+    //     error: function(status) {
+    //       console.log("Failure...");
+    //     }
+    //   })
+    // } 
     fileUploader.uploadFile(fileObject, component.useProjectData());
   };
   component.connectSMB = function () {
