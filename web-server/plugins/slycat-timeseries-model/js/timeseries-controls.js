@@ -186,7 +186,7 @@ $.widget("timeseries.controls",
     var self = this;
     this.color_items.empty();
     for(let value of this.options.color_variables) {
-      $("<a href='#' class='dropdown-item'>")
+      $("<a class='dropdown-item'>")
         .toggleClass("active", self.options["color-variable"] == value)
         .attr("data-colorvariable", value)
         .appendTo(self.color_items)

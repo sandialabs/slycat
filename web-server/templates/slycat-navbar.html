@@ -86,21 +86,33 @@
           </button>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="slycat-create-wizards">
             <!-- ko foreach: model_create_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
             <div
               class="dropdown-divider"
               data-bind="visible: model_create_wizards().length && project_create_wizards().length"
             ></div>
             <!-- ko foreach: project_create_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
             <div
               class="dropdown-divider"
               data-bind="visible: project_create_wizards().length && global_create_wizards().length"
             ></div>
             <!-- ko foreach: global_create_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
           </div>
         </div>
@@ -119,21 +131,33 @@
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- ko foreach: model_edit_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
             <div
               class="dropdown-divider"
               data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"
             ></div>
             <!-- ko foreach: project_edit_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
             <div
               class="dropdown-divider"
               data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"
             ></div>
             <!-- ko foreach: global_edit_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
           </div>
         </div>
@@ -152,18 +176,18 @@
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- ko foreach: project_info_wizards -->
-            <a
+            <button
+              type="button"
               class="dropdown-item"
               data-bind="text: label, click: $parent.run_wizard"
-              href="#"
-            ></a>
+            ></button>
             <!-- /ko -->
             <!-- ko foreach: model_info_wizards -->
-            <a
+            <button
+              type="button"
               class="dropdown-item"
               data-bind="text: label, click: $parent.run_wizard"
-              href="#"
-            ></a>
+            ></button>
             <!-- /ko -->
           </div>
         </div>
@@ -181,7 +205,7 @@
           </button>
           <div class="dropdown-menu dropdown-menu-right dropdown-menu-bookmarks">
             <!-- ko foreach: model_bookmark_wizards -->
-            <a class="dropdown-item bookmark-new" data-bind="click: $parent.run_wizard" href="#">
+            <a class="dropdown-item bookmark-new" data-bind="click: $parent.run_wizard">
               <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
               <!-- <span class="fa fa-floppy-o"></span> -->
               <span class="fa fa-plus"></span>
@@ -194,7 +218,7 @@
               data-bind="visible: model_bookmark_wizards().length && (saved_project_bookmarks().length || saved_model_bookmarks().length)"
             ></div>
             <!-- ko foreach: saved_model_bookmarks -->
-            <a class="dropdown-item bookmark-link" data-bind="attr: {href:uri}" href="#">
+            <a class="dropdown-item bookmark-link" data-bind="attr: {href:uri}">
               <!-- Showing bookmark controls to writers and administrators, not to readers -->
               <span
                 data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'"
@@ -284,21 +308,33 @@
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- ko foreach: model_delete_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
             <div
               class="dropdown-divider"
               data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"
             ></div>
             <!-- ko foreach: project_delete_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
             <div
               class="dropdown-divider"
               data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"
             ></div>
             <!-- ko foreach: global_delete_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
+            <button
+              type="button"
+              class="dropdown-item"
+              data-bind="text: label, click:$parent.run_wizard"
+            ></button>
             <!-- /ko -->
           </div>
         </div>

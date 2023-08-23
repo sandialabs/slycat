@@ -163,7 +163,7 @@ $.widget("slycat.colorswitcher",
         color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
       }
       var background_color = self.get_background(key);
-      var item = $('<a href="#" class="dropdown-item">')
+      var item = $('<a class="dropdown-item">')
         .addClass("color")
         .toggleClass("active", key == self.options.colormap)
         .attr("data-colormap", key)

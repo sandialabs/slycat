@@ -337,7 +337,7 @@ $.widget("mp.controls",
     var self = this;
     this.color_items.empty();
     for(var i = 0; i < this.options.color_variables.length; i++) {
-      $("<a href='#' class='dropdown-item'>")
+      $("<a class='dropdown-item'>")
         .toggleClass("active", self.options.color_variable == self.options.color_variables[i])
         .attr("data-colorvariable", this.options.color_variables[i])
         .appendTo(self.color_items)

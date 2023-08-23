@@ -24,11 +24,11 @@
             </button>
             <div class="dropdown-menu" aria-labelledby="filter-dropdown">
               <!-- ko foreach: availableFilters -->
-              <a
-                href="#"
+              <button
+                type="button"
                 class="dropdown-item"
                 data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"
-              ></a>
+              ></button>
               <!-- /ko -->
             </div>
             <!-- /ko -->
