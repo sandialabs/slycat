@@ -2,41 +2,70 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-light navbar-expand-sm" data-bind="css: {'model' : model_id()}">
     <!-- Branding element. Slycat name visible only on projects listing page.  -->
-    <a class="navbar-brand text-dark font-weight-bold" data-bind="attr:{href:server_root}" title="Slycat">
-      <span class="pl-3" data-bind="visible: project().length == 0, text: server_friendly_name">Slycat</span>
+    <a
+      class="navbar-brand text-dark font-weight-bold"
+      data-bind="attr:{href:server_root}"
+      title="Slycat"
+    >
+      <span class="pl-3" data-bind="visible: project().length == 0, text: server_friendly_name"
+        >Slycat</span
+      >
     </a>
     <!-- The actual navigation elements. -->
-    <div class="collapse navbar-collapse d-flex flex-row-reverse flex-nowrap" id="slycat-navbar-content">
-
+    <div
+      class="collapse navbar-collapse d-flex flex-row-reverse flex-nowrap"
+      id="slycat-navbar-content"
+    >
       <!-- Personal Tools -->
       <div class="nav navbar-personal navbar-nav flex-nowrap">
         <div class="dropdown">
-          <a id="slycat-personal-tools-user" class="btn btn-sm dropdown-toggle text-secondary" 
-          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
+          <a
+            id="slycat-personal-tools-user"
+            class="btn btn-sm dropdown-toggle text-secondary"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             <span class="fa fa-user"></span>
           </a>
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="slycat-personal-tools-user">
+          <div
+            class="dropdown-menu dropdown-menu-right"
+            aria-labelledby="slycat-personal-tools-user"
+          >
             <h6 class="dropdown-header" data-bind="text: user.name">User's Actual Name</h6>
             <h6 class="dropdown-header" data-bind="text:'Username: ' + user.uid()">Username</h6>
             <div role="separator" class="dropdown-divider"></div>
 
             <!-- ko if: ispasswordrequired.slycat_passwordrequired -->
-            <a class="dropdown-item" data-bind="click:sign_out" href="#">
-                <span class="fa fa-sign-out"></span> Sign Out
+            <a class="dropdown-item" data-bind="click:sign_out">
+              <span class="fa fa-sign-out"></span> Sign Out
             </a>
             <!-- /ko -->
-
           </div>
         </div>
         <div class="dropdown">
-          <a id="slycat-personal-tools-help" class="btn btn-sm dropdown-toggle text-secondary" 
-          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
+          <a
+            id="slycat-personal-tools-help"
+            class="btn btn-sm dropdown-toggle text-secondary"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             <span class="fa fa-question-circle"></span>
           </a>
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="slycat-personal-tools-help">
-            <a class="dropdown-item" data-bind="click:about" href="#"><span class="fa fa-fw"></span> About Slycat</a>
-            <a class="dropdown-item" data-bind="click:support_request" href="#"><span class="fa fa-fw fa-envelope-o"></span> Support Request</a>
-            <a class="dropdown-item" data-bind="click:open_documentation" href="#"><span class="fa fa-fw fa-book"></span> Documentation</a>
+          <div
+            class="dropdown-menu dropdown-menu-right"
+            aria-labelledby="slycat-personal-tools-help"
+          >
+            <a class="dropdown-item" data-bind="click:about"
+              ><span class="fa fa-fw"></span> About Slycat</a
+            >
+            <a class="dropdown-item" data-bind="click:support_request"
+              ><span class="fa fa-fw fa-envelope-o"></span> Support Request</a
+            >
+            <a class="dropdown-item" data-bind="click:open_documentation"
+              ><span class="fa fa-fw fa-book"></span> Documentation</a
+            >
           </div>
         </div>
       </div>
@@ -45,19 +74,31 @@
       <div class="nav navbar-menus navbar-nav navbar-right btn-group flex-nowrap mr-2">
         <!-- ko if: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length -->
         <div class="btn-group">
-          <button type="button" id="slycat-create-wizards" class="btn btn-sm btn-success dropdown-toggle" 
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button
+            type="button"
+            id="slycat-create-wizards"
+            class="btn btn-sm btn-success dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             Create
           </button>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="slycat-create-wizards">
             <!-- ko foreach: model_create_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
-            <div class="dropdown-divider" data-bind="visible: model_create_wizards().length && project_create_wizards().length"></div>
+            <div
+              class="dropdown-divider"
+              data-bind="visible: model_create_wizards().length && project_create_wizards().length"
+            ></div>
             <!-- ko foreach: project_create_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
-            <div class="dropdown-divider" data-bind="visible: project_create_wizards().length && global_create_wizards().length"></div>
+            <div
+              class="dropdown-divider"
+              data-bind="visible: project_create_wizards().length && global_create_wizards().length"
+            ></div>
             <!-- ko foreach: global_create_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
@@ -66,19 +107,31 @@
         <!-- /ko -->
         <!-- ko if: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length -->
         <div class="btn-group">
-          <button type="button" id="slycat-edit-wizards" class="btn btn-sm btn-warning dropdown-toggle" 
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button
+            type="button"
+            id="slycat-edit-wizards"
+            class="btn btn-sm btn-warning dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             Edit
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- ko foreach: model_edit_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
-            <div class="dropdown-divider" data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"></div>
+            <div
+              class="dropdown-divider"
+              data-bind="visible: model_edit_wizards().length && project_edit_wizards().length"
+            ></div>
             <!-- ko foreach: project_edit_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
-            <div class="dropdown-divider" data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"></div>
+            <div
+              class="dropdown-divider"
+              data-bind="visible: project_edit_wizards().length && global_edit_wizards().length"
+            ></div>
             <!-- ko foreach: global_edit_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
@@ -87,72 +140,119 @@
         <!-- /ko -->
         <!-- ko if: project_info_wizards().length || model_info_wizards().length -->
         <div class="btn-group">
-          <button type="button" id="slycat-info-wizards" class="btn btn-sm btn-info dropdown-toggle" 
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button
+            type="button"
+            id="slycat-info-wizards"
+            class="btn btn-sm btn-info dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             Info
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- ko foreach: project_info_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click: $parent.run_wizard" href="#"></a>
+            <a
+              class="dropdown-item"
+              data-bind="text: label, click: $parent.run_wizard"
+              href="#"
+            ></a>
             <!-- /ko -->
             <!-- ko foreach: model_info_wizards -->
-            <a class="dropdown-item" data-bind="text: label, click: $parent.run_wizard" href="#"></a>
+            <a
+              class="dropdown-item"
+              data-bind="text: label, click: $parent.run_wizard"
+              href="#"
+            ></a>
             <!-- /ko -->
           </div>
         </div>
         <!-- /ko -->
         <!-- ko if: (model_id() && model_create_wizards().length) || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0)) -->
         <div class="btn-group nav-bookmarks">
-          <button type="button" class="btn btn-sm btn-primary dropdown-toggle" 
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button
+            type="button"
+            class="btn btn-sm btn-primary dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             Bookmarks
           </button>
           <div class="dropdown-menu dropdown-menu-right dropdown-menu-bookmarks">
             <!-- ko foreach: model_bookmark_wizards -->
             <a class="dropdown-item bookmark-new" data-bind="click: $parent.run_wizard" href="#">
-                <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
-                <!-- <span class="fa fa-floppy-o"></span> -->
-                <span class="fa fa-plus"></span>
-                <span data-bind="text: label"></span></a>
+              <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
+              <!-- <span class="fa fa-floppy-o"></span> -->
+              <span class="fa fa-plus"></span>
+              <span data-bind="text: label"></span>
             </a>
             <!-- /ko -->
-            <div role="separator" class="dropdown-divider" data-bind="visible: model_bookmark_wizards().length && (saved_project_bookmarks().length || saved_model_bookmarks().length)"></div>
+            <div
+              role="separator"
+              class="dropdown-divider"
+              data-bind="visible: model_bookmark_wizards().length && (saved_project_bookmarks().length || saved_model_bookmarks().length)"
+            ></div>
             <!-- ko foreach: saved_model_bookmarks -->
             <a class="dropdown-item bookmark-link" data-bind="attr: {href:uri}" href="#">
-                <!-- Showing bookmark controls to writers and administrators, not to readers -->
-                <span data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'">
-                  <button type="button" class="btn btn-sm btn-warning bookmark-edit"
-                    data-bind="click: $parent.edit_saved_bookmark">
-                    <span class="fa fa-pencil"></span>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-danger bookmark-delete" title="Delete bookmark"
-                    data-bind="click: $parent.delete_saved_bookmark">
-                    <span class="fa fa-trash-o"></span>
-                  </button>
-                </span> &nbsp;
-                <strong>
-                  <span data-bind="text:name"></span>
-                </strong>
-                <small>
-                  <em>
-                    Created <span data-bind="text:created"></span>
-                    by <span data-bind="text:creator"></span>
-                  </em>
-                </small>
+              <!-- Showing bookmark controls to writers and administrators, not to readers -->
+              <span
+                data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'"
+              >
+                <button
+                  type="button"
+                  class="btn btn-sm btn-warning bookmark-edit"
+                  data-bind="click: $parent.edit_saved_bookmark"
+                >
+                  <span class="fa fa-pencil"></span>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger bookmark-delete"
+                  title="Delete bookmark"
+                  data-bind="click: $parent.delete_saved_bookmark"
+                >
+                  <span class="fa fa-trash-o"></span>
+                </button>
+              </span>
+              &nbsp;
+              <strong>
+                <span data-bind="text:name"></span>
+              </strong>
+              <small>
+                <em>
+                  Created <span data-bind="text:created"></span> by
+                  <span data-bind="text:creator"></span>
+                </em>
+              </small>
             </a>
             <!-- /ko -->
-            <div role="separator" class="dropdown-divider" data-bind="visible: saved_project_bookmarks().length && saved_model_bookmarks().length"></div>
+            <div
+              role="separator"
+              class="dropdown-divider"
+              data-bind="visible: saved_project_bookmarks().length && saved_model_bookmarks().length"
+            ></div>
             <!-- ko foreach: saved_project_bookmarks -->
             <a class="dropdown-item bookmark-link" data-bind="attr: {href:uri}">
               <!-- Showing bookmark controls to writers and administrators, not to readers -->
-              <span data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'">
+              <span
+                data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'"
+              >
                 <!-- <button type="button" class="btn btn-sm btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="fa fa-pencil"></span></button> -->
-                <button type="button" class="btn btn-sm btn-danger bookmark-delete" title="Delete bookmark"
-                  data-bind="click: $parent.delete_saved_bookmark">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger bookmark-delete"
+                  title="Delete bookmark"
+                  data-bind="click: $parent.delete_saved_bookmark"
+                >
                   <span class="fa fa-trash-o"></span>
                 </button>
-              </span> &nbsp;
-              <span class="badge badge-secondary mr-1" data-bind="visible: model_type, text:$parent.model_names.translate_model_type(model_type) + ' model'"></span>
+              </span>
+              &nbsp;
+              <span
+                class="badge badge-secondary mr-1"
+                data-bind="visible: model_type, text:$parent.model_names.translate_model_type(model_type) + ' model'"
+              ></span>
               <strong>
                 <span>
                   <span data-bind="text:model_name"></span>
@@ -161,8 +261,8 @@
               </strong>
               <small>
                 <em>
-                  Created <span data-bind="text:created"></span>
-                  by <span data-bind="text:creator"></span>
+                  Created <span data-bind="text:created"></span> by
+                  <span data-bind="text:creator"></span>
                 </em>
               </small>
             </a>
@@ -172,19 +272,31 @@
         <!-- /ko -->
         <!-- ko if: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length -->
         <div class="btn-group">
-          <button type="button" id="slycat-delete-wizards" class="btn btn-sm btn-danger dropdown-toggle" 
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button
+            type="button"
+            id="slycat-delete-wizards"
+            class="btn btn-sm btn-danger dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
             Delete
           </button>
           <div class="dropdown-menu dropdown-menu-right">
             <!-- ko foreach: model_delete_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
-            <div class="dropdown-divider" data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"></div>
+            <div
+              class="dropdown-divider"
+              data-bind="visible: model_delete_wizards().length && project_delete_wizards().length"
+            ></div>
             <!-- ko foreach: project_delete_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
-            <div class="dropdown-divider" data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"></div>
+            <div
+              class="dropdown-divider"
+              data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"
+            ></div>
             <!-- ko foreach: global_delete_wizards -->
             <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard" href="#"></a>
             <!-- /ko -->
@@ -197,9 +309,13 @@
       <nav aria-label="breadcrumb" class="mr-auto">
         <ol class="breadcrumb pl-0" data-bind="css: {'slycat-no-models': model().length == 0}">
           <!-- ko foreach: project -->
-          <li class="breadcrumb-item project" data-bind="css: {'active text-dark font-weight-bold': $parent.model().length == 0}">
+          <li
+            class="breadcrumb-item project"
+            data-bind="css: {'active text-dark font-weight-bold': $parent.model().length == 0}"
+          >
             <!-- ko if: $parent.model().length != 0 -->
-            <a data-bind="
+            <a
+              data-bind="
               text:name,
               attr:{
                 href:$parent.server_root + 'projects/' + _id(),
@@ -212,7 +328,8 @@
             ></a>
             <!-- /ko -->
             <!-- ko if: $parent.model().length == 0 -->
-            <span class="active" 
+            <span
+              class="active"
               data-bind="
                 text:name,
                 attr:{
@@ -227,7 +344,8 @@
           </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
-          <li class="breadcrumb-item active model text-dark font-weight-bold" 
+          <li
+            class="breadcrumb-item active model text-dark font-weight-bold"
             data-bind="
               text:name,
               attr:{
@@ -236,37 +354,44 @@
               "
             data-toggle="popover"
             data-trigger="hover"
-            data-html="true"></li>
+            data-html="true"
+          ></li>
           <!-- /ko -->
         </ol>
       </nav>
-
     </div>
   </nav>
   <!-- ko foreach: model_alerts -->
-    <div class="alert slycat-navbar-alert m-3" 
-      data-bind="
+  <div
+    class="alert slycat-navbar-alert m-3"
+    data-bind="
         css:{
           'alert-danger':$data.type === 'danger',
           'alert-info':$data.type === 'info',
           'alert-success':$data.type === 'success'
         }
         "
-      >
-      <div data-bind="text:message"></div>
-      <pre class="mb-0 mt-3" data-bind="
+  >
+    <div data-bind="text:message"></div>
+    <pre
+      class="mb-0 mt-3"
+      data-bind="
         visible:detail,
         text:detail,
-        css:{'bg-danger':$data.type === 'danger','bg-info':$data.type === 'info','bg-success':$data.type === 'success'}"></pre>
-    </div>
+        css:{'bg-danger':$data.type === 'danger','bg-info':$data.type === 'info','bg-success':$data.type === 'success'}"
+    ></pre>
+  </div>
   <!-- /ko -->
   <div class="modal fade" tabindex="-1" role="dialog" id="slycat-wizard" data-backdrop="static">
     <div class="modal-dialog" role="document" data-bind="css: { 'modal-lg': wizard }">
       <div class="modal-content">
         <!-- adding a .react-wizard class so we can start rendering based on the selector for new react wizards -->
         <div data-bind="if: wizard">
-          <div class="react-wizard" data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" style="height: 100%">
-          </div>
+          <div
+            class="react-wizard"
+            data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}"
+            style="height: 100%"
+          ></div>
         </div>
       </div>
     </div>
@@ -277,17 +402,36 @@
         <div class="modal-body">
           <div class="jumbotron">
             <img src="../img/slycat-brand.png" />
-            <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p>
+            <p>
+              &hellip; is the web-based analysis and visualization platform created at Sandia
+              National Laboratories.
+            </p>
           </div>
           <!-- Old way of getting version and commit hash, which seems to be broken as of August 2020. -->
           <!-- <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p> -->
           <div>
-            Version <pre data-bind="text:GIT_SLYCAT_VERSION"></pre>
-            Branch <pre data-bind="text:GIT_SLYCAT_BRANCH"></pre>
-            Commit <pre data-bind="text:GIT_SLYCAT_COMMITHASH"></pre>
+            Version
+            <pre data-bind="text:GIT_SLYCAT_VERSION"></pre>
+            Branch
+            <pre data-bind="text:GIT_SLYCAT_BRANCH"></pre>
+            Commit
+            <pre data-bind="text:GIT_SLYCAT_COMMITHASH"></pre>
           </div>
-          <p><small>Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain rights in this software.</small></p>
-          <p><small>Sandia National Laboratories is a multimission laboratory managed and operated by National Technology and Engineering Solutions of Sandia, LLC., a wholly owned subsidiary of Honeywell International, Inc., for the U.S. Department of Energy’s National Nuclear Security Administration under contract DE-NA-0003525.</small></p>
+          <p>
+            <small
+              >Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000
+              with Sandia Corporation, the U.S. Government retains certain rights in this
+              software.</small
+            >
+          </p>
+          <p>
+            <small
+              >Sandia National Laboratories is a multimission laboratory managed and operated by
+              National Technology and Engineering Solutions of Sandia, LLC., a wholly owned
+              subsidiary of Honeywell International, Inc., for the U.S. Department of Energy’s
+              National Nuclear Security Administration under contract DE-NA-0003525.</small
+            >
+          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
