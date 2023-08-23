@@ -390,36 +390,47 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     else:
         for item in project_datas:
             if item["project"] == pid and item["file_name"] == file_key:
+                # find the stored data
                 fid = item["_id"]
                 hdf5_name = item["hdf5_name"]
                 hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + hdf5_name
 
-                # Read HDF5 file
+                # Read HDF5 file for CSV data
                 decoded_data = []
                 decoded_col = []
-                with h5py.File(hdf5_path, "r") as f:
-                    data = list(f['data_table'])
-                    for col in data:
-                        for item in col:
-                            decoded_item = item.decode('utf-8')
-                            decoded_col.append(decoded_item)
-                        decoded_data.append(decoded_col)
-                        decoded_col = []
-                decoded_rows = numpy.array(decoded_data).T
+                # determine the type of data we just got and if we need to extract it eg for csv files
+                # HDF5 file path
+                if ('.h5' in item["file_name"]) or ('.hdf5' in item["file_name"]):
+                    with open(hdf5_path, "rb") as fh:
+                        file_obj = fh.read()
+                        attachment.append(file_obj)
+                # CSV file path
+                else:
+                    with h5py.File(hdf5_path, "r") as hdf5_file:
 
-                giant_csv_list = []
-                temp_row = []
-                for row in decoded_rows:
-                    for i, entry in enumerate(row):
-                        if i == (len(row) - 1):
-                            temp_row.append(str(entry) + '\n')
-                        else:
-                            temp_row.append(str(entry) + ',')
-                    temp_row_string = ''.join(temp_row)
-                    giant_csv_list.append(temp_row_string)
-                    temp_row = []
-                giant_csv_string = ''.join(giant_csv_list)
-                attachment.append(giant_csv_string)
+                            cherrypy.log.error("project data %s:%s" % (item,str([ [key, val] for key, val in hdf5_file.items()])))
+                            data = list(hdf5_file['data_table'])
+                            for col in data:
+                                for item in col:
+                                    decoded_item = item.decode('utf-8')
+                                    decoded_col.append(decoded_item)
+                                decoded_data.append(decoded_col)
+                                decoded_col = []
+                            decoded_rows = numpy.array(decoded_data).T
+
+                            giant_csv_list = []
+                            temp_row = []
+                            for row in decoded_rows:
+                                for i, entry in enumerate(row):
+                                    if i == (len(row) - 1):
+                                        temp_row.append(str(entry) + '\n')
+                                    else:
+                                        temp_row.append(str(entry) + ',')
+                                temp_row_string = ''.join(temp_row)
+                                giant_csv_list.append(temp_row_string)
+                                temp_row = []
+                            giant_csv_string = ''.join(giant_csv_list)
+                            attachment.append(giant_csv_string)
                 
     # if we didnt fined the file repspond with not found
     if fid is None:
