@@ -56,8 +56,8 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
         );
       default:
         return (
-          <a
-            href="#"
+          <button
+            type="button"
             key={item.key}
             className={"dropdown-item" + (item.key == this.props.selected ? " active" : "")}
             onClick={(e) =>
@@ -72,7 +72,7 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
             style={item.style}
           >
             {item.name}
-          </a>
+          </button>
         );
     }
   };

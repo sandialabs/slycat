@@ -290,7 +290,6 @@ class ControlsButtonVarOptions extends React.PureComponent {
     const fontItems = fonts.map((font, index) => (
       <a
         key={index}
-        href="#"
         onClick={this.props.changeFontFamily}
         style={{ fontFamily: font.fontFamily }}
         className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
