@@ -63,8 +63,8 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
         const set_selected_function = item.set_selected ?? this.props.set_selected;
         const selected = item.selected ?? item.key == this.props.selected;
         return (
-          <a
-            href="#"
+          <button
+            type="button"
             key={item.key}
             className={"dropdown-item" + (selected ? " active" : "")}
             onClick={(e) =>
@@ -79,7 +79,7 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
             style={item.style}
           >
             {item.name}
-          </a>
+          </button>
         );
     }
   };
