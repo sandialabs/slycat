@@ -640,7 +640,7 @@ label.bottom-margin
 .slycat-big-scrolling-alert
 {
   max-height: 159px;
-  overflow-y: scroll;
+  overflow-y: auto;
   white-space: pre-line;
 }
 
