@@ -63,6 +63,9 @@
     </div>
 
     <div data-bind="visible:tab() == 1">
+      <div class="alert alert-danger" role="alert" data-bind="visible:show_local_browser_error()">
+        You must selected a file before continuing.
+      </div>
       <slycat-local-browser
         params="
         selection:browser.selection,

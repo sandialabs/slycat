@@ -57,6 +57,7 @@ function constructor(params) {
   component.scale_inputs = ko.observable(true);
   component.cca_type = ko.observable("local"); // local is selected by default...
   component.row_count = ko.observable(null);
+  component.show_local_browser_error = ko.observable(false);
 
   component.cca_type.subscribe(function (newValue) {
     // if(newValue == 'local')
@@ -159,7 +160,14 @@ function constructor(params) {
   };
 
   component.upload_table = function () {
+    // check that a file has been selected
+    if (component.browser.selection().length == 0) {
+      component.show_local_browser_error(true);
+      return;
+    }
+    component.show_local_browser_error(false);
     $(".local-browser-continue").toggleClass("disabled", true);
+    
     //TODO: add logic to the file uploader to look for multiple files list to add
     var file = component.browser.selection()[0];
     let file_name = file.name;
