@@ -26,12 +26,6 @@ function constructor(params) {
     description: "",
     marking: markings.preselected(),
   });
-  console.debug(
-    `CCA: new-ui.js: markings is: %o and markings.preselected() is: ${markings.preselected()} and markings.allowed() is: %o`,
-    markings,
-    markings.allowed(),
-  );
-  console.debug("CCA: new-ui.js: constructor: component.model: ", component.model);
   component.remote = mapping.fromJS({
     hostname: null,
     username: null,
