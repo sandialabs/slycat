@@ -851,7 +851,7 @@ $.widget("timeseries.dendrogram", {
     var self = this;
     self.outputs_items.empty();
     for (var i = 0; i < self.options.clusters.length; i++) {
-      $("<a href='#' class='dropdown-item'>")
+      $("<a class='dropdown-item'>")
         .toggleClass("active", self.options["cluster"] == i)
         .attr("data-cluster", i)
         .appendTo(self.outputs_items)

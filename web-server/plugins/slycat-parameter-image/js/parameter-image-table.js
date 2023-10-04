@@ -4,6 +4,7 @@
 // Slickgrid-based data table widget, for use with the CCA model.
 
 import d3 from "d3";
+import * as d3v7 from "d3v7";
 import * as chunker from "js/chunker";
 import * as table_helpers from "js/slycat-table-helpers";
 import "slickgrid/slick.interactions.js";
@@ -68,7 +69,7 @@ $.widget("parameter_image.table", {
       // We have a colorscale for this column, meaning we are color coding by its variable.
       if (columnDef.colorscale) {
         let classNames = `highlightWrapper ${value === null ? "null" : ""} ${
-          d3.hcl(get_color(columnDef.colorscale, value)).l > 50 ? "light" : "dark"
+          d3v7.hcl(get_color(columnDef.colorscale, value)).l > 50 ? "light" : "dark"
         }`;
         let styles = `background: ${get_color(columnDef.colorscale, value)}`;
         return `<div class="${classNames}" style="${styles}">${value_formatter(value)}</div>`;

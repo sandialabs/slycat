@@ -6,317 +6,543 @@ S. Martin
 -->
 
 <div class="modal-header">
-    <h3 class="modal-title">New Dial-A-Cluster Model</h3>
-    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
+  <h3 class="modal-title">New Dial-A-Cluster Model</h3>
+  <button
+    type="button"
+    class="close"
+    data-bind="click: cancel"
+    data-dismiss="modal"
+    aria-label="Close"
+  >
+    <span aria-hidden="true">&times;</span>
+  </button>
 </div>
 
 <!-- Organizes the tabs in the input wizard. -->
 <div class="modal-body">
-    <ul class="nav nav-pills">
-        <li class="nav-item" data-bind="css:{active:tab() == 0}" class="btn-secondary"><a class="nav-link">Data Format</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'"><a class="nav-link">Locate Data</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'"><a class="nav-link">Locate Data</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: dac_format() == 'tdms'"><a class="nav-link">Locate Data</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: dac_tdms_zip() == 'true'"><a class="nav-link">Select Suffixes</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: dac_format() == 'tdms'"><a class="nav-link">Import Options</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 6}"><a class="nav-link">Name Model</a></li>
-    </ul>
+  <ul class="nav nav-pills">
+    <li class="nav-item" data-bind="css:{active:tab() == 0}" class="btn-secondary">
+      <a class="nav-link">Data Format</a>
+    </li>
+    <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'">
+      <a class="nav-link">Locate Data</a>
+    </li>
+    <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'">
+      <a class="nav-link">Locate Data</a>
+    </li>
+    <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: dac_format() == 'tdms'">
+      <a class="nav-link">Locate Data</a>
+    </li>
+    <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: dac_tdms_zip() == 'true'">
+      <a class="nav-link">Select Suffixes</a>
+    </li>
+    <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: dac_format() == 'tdms'">
+      <a class="nav-link">Import Options</a>
+    </li>
+    <li class="nav-item" data-bind="css:{active:tab() == 6}"><a class="nav-link">Name Model</a></li>
+  </ul>
 
-    <!-- This tab lets the user select the file format to upload. -->
-    <div class="tab-content">
+  <!-- This tab lets the user select the file format to upload. -->
+  <div class="tab-content">
     <div data-bind="visible:tab() == 0">
-        <div class="form-check" style="margin-left: 15px;">
-            <label>
-                <input type="radio" name="local-or-remote-radios" value="tdms" data-bind="checked: dac_format">
-                Switchtube TDMS Format
-            </label>
-            </div>
-        <div class="form-check" style="margin-left: 15px;">
+      <div class="form-check" style="margin-left: 15px">
         <label>
-            <input type="radio" name="local-or-remote-radios" value="pts" data-bind="checked: dac_format">
-            PTS CSV/META Zip Format
+          <input
+            type="radio"
+            name="local-or-remote-radios"
+            value="tdms"
+            data-bind="checked: dac_format"
+          />
+          Switchtube TDMS Format
         </label>
-        </div>
-        <div class="form-check" style="margin-left: 15px;">
-            <label>
-                <input type="radio" name="local-or-remote-radios" value="dac-gen" data-bind="checked: dac_format">
-                Dial-A-Cluster Generic Zip Format
-            </label>
-        </div>
-        <label id="dac-load-model-error" style="margin-top:20px; display:none" class="invalid-text small text-danger">
-            Load model error.
+      </div>
+      <div class="form-check" style="margin-left: 15px">
+        <label>
+          <input
+            type="radio"
+            name="local-or-remote-radios"
+            value="pts"
+            data-bind="checked: dac_format"
+          />
+          PTS CSV/META Zip Format
         </label>
+      </div>
+      <div class="form-check" style="margin-left: 15px">
+        <label>
+          <input
+            type="radio"
+            name="local-or-remote-radios"
+            value="dac-gen"
+            data-bind="checked: dac_format"
+          />
+          Dial-A-Cluster Generic Zip Format
+        </label>
+      </div>
+      <label
+        id="dac-load-model-error"
+        style="margin-top: 20px; display: none"
+        class="invalid-text small text-danger"
+      >
+        Load model error.
+      </label>
     </div>
 
     <!-- This tab loads data in DAC Generic Format, using the slycat-parser-controls to
          load a dac-table type table. -->
     <div data-bind="visible:tab() == 1" class="form-horizontal">
-
-        <div style="margin-top: 40px;">
+      <div style="margin-top: 40px">
         <label>Select DAC generic .zip file:</label>
-        <slycat-local-browser params="
+        <slycat-local-browser
+          params="
             selection:browser_dac_file.selection,
             progress:browser_dac_file.progress,
-            progress_status:browser_dac_file.progress_status"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser_dac_file,category:'dac-gen-zip-file'"></slycat-parser-controls>
-            <label class="dac-do-not-close-browser text-danger"
-                   style="display:none">Please wait for file to upload (do not close browser).</label>
-             <label id="dac-gen-file-error" style="display: none" class="invalid-text small text-danger">
-                DAC file error.
-            </label>
+            progress_status:browser_dac_file.progress_status"
+        ></slycat-local-browser>
+        <slycat-parser-controls
+          params="parser:parser_dac_file,category:'dac-gen-zip-file'"
+        ></slycat-parser-controls>
+        <label class="dac-do-not-close-browser text-danger" style="display: none"
+          >Please wait for file to upload (do not close browser).</label
+        >
+        <div id="dac-gen-file-error" style="display: none" class="alert alert-danger" role="alert">
+          DAC file error.
         </div>
-
+      </div>
     </div>
 
     <!-- This tab is for loading the CSV/META files.  The slycat-parser-controls
          tag indicates which type of table to load, which in our case is 'dac-table' -->
     <div data-bind="visible:tab() == 2" class="form-horizontal">
-
-        <div style="margin-top: 40px;">
+      <div style="margin-top: 40px">
         <label>Select CSV/META .zip file:</label>
-        <slycat-local-browser params="
+        <slycat-local-browser
+          params="
             selection:browser_zip_file.selection,
             progress:browser_zip_file.progress,
-            progress_status:browser_zip_file.progress_status"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser_zip_file,category:'dac-zip-file'"></slycat-parser-controls>
-            <label class="dac-do-not-close-browser text-danger"
-                   style="display:none">Please wait for file to upload (do not close browser).</label>
-            <label id="dac-pts-file-error" style="display: none" class="invalid-text small text-danger">
-                DAC file error.
-            </label>
+            progress_status:browser_zip_file.progress_status"
+        ></slycat-local-browser>
+        <slycat-parser-controls
+          params="parser:parser_zip_file,category:'dac-zip-file'"
+        ></slycat-parser-controls>
+        <label class="dac-do-not-close-browser text-danger" style="display: none"
+          >Please wait for file to upload (do not close browser).</label
+        >
+        <div id="dac-pts-file-error" style="display: none" class="alert alert-danger" role="alert">
+          DAC file error.
         </div>
+      </div>
 
+      <div style="margin-top: 30px">
+        <label
+          >Minimum number of time points in a CSV file:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="A CSV file with less than the specified number of time points will be discarded during the data import."
+          ></i>
+        </label>
+        <input
+          id="dac-min-CSV"
+          class="form-control"
+          type="number"
+          min="2"
+          data-bind="value: csv_min_size"
+        />
+        <div class="invalid-feedback">Each CSV file must have at least two values.</div>
+      </div>
 
-        <div style="margin-top: 30px">
-          <label>Minimum number of time points in a CSV file:
-          <i class="fa fa-question-circle inline-help" aria-hidden="true"
-          title="A CSV file with less than the specified number of time points will be discarded during the data import."></i>
-          </label>
-          <input id="dac-min-CSV" class="form-control" type="number" min="2" data-bind="value: csv_min_size">
-           <div class="invalid-feedback">
-               Each CSV file must have at least two values.
-           </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <label
+          >Minimum number of digitizers in a test:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Tests with less than the specified number of digitizers will be discarded during the data import."
+          ></i
+        ></label>
+        <input
+          id="dac-min-dig"
+          class="form-control"
+          type="number"
+          min="1"
+          data-bind="value: min_num_dig"
+        />
+        <div class="invalid-feedback">Each test must have at least one digitizer.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 20px">
-          <label>Minimum number of digitizers in a test:
-          <i class="fa fa-question-circle inline-help" aria-hidden="true"
-          title="Tests with less than the specified number of digitizers will be discarded during the data import."></i></label></label>
-          <input id="dac-min-dig" class="form-control" type="number" min="1" data-bind="value: min_num_dig">
-          <div class="invalid-feedback">
-               Each test must have at least one digitizer.
-          </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <label
+          >Number of PCA components to use in coordinate calculations:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Number of PCA components to use as intermediates in coordinate calculations."
+          ></i>
+        </label>
+        <input
+          id="dac-pts-pca-comps"
+          class="form-control"
+          type="number"
+          min="2"
+          data-bind="value: num_PCA_comps, enable:dac_calc_type()=='PCA'"
+        />
+        <div class="invalid-feedback">Minimum number of PCA components is 2.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 20px">
-            <label>Number of PCA components to use in coordinate calculations:
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Number of PCA components to use as intermediates in coordinate calculations."></i>
-            </label>
-            <input id="dac-pts-pca-comps" class="form-control" type="number" min="2" data-bind="value: num_PCA_comps, enable:dac_calc_type()=='PCA'">
-             <div class="invalid-feedback">
-                 Minimum number of PCA components is 2.
-             </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <label
+          >Number of landmarks to use in coordinate calculations:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Number of landmarks points to use in MDS calculation.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."
+          ></i>
+        </label>
+        <input
+          id="dac-pts-landmarks"
+          class="form-control"
+          type="number"
+          min="3"
+          data-bind="value: num_landmarks, enable:dac_calc_type()=='landmark'"
+        />
+        <div class="invalid-feedback">Minimum number of landmarks is 3.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 20px">
-            <label>Number of landmarks to use in coordinate calculations:
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Number of landmarks points to use in MDS calculation.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."></i>         
-            </label>
-            <input id="dac-pts-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks, enable:dac_calc_type()=='landmark'">
-             <div class="invalid-feedback">
-                 Minimum number of landmarks is 3.
-             </div>
-        </div>
-
-        <div style="margin-top: 20px">
-            <label>
-            Use
-            <input type="radio" name="dac-pts-calc-type" value="PCA" data-bind="checked: dac_calc_type">
-            PCA components,
-            <input type="radio" name="dac-pts-calc-type" value="MDS" data-bind="checked: dac_calc_type">
-            MDS, or
-            <input type="radio" name="dac-pts-calc-type" value="landmark" data-bind="checked: dac_calc_type">
-            landmarks for coordinate calculation.
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                title="Use PCA components, MDS (traditional calculation) or MDS w/ landmarks for coordinate calculations."></i>
-            </label>
-        </div>
-
+      <div style="margin-top: 20px">
+        <label>
+          Use
+          <input
+            type="radio"
+            name="dac-pts-calc-type"
+            value="PCA"
+            data-bind="checked: dac_calc_type"
+          />
+          PCA components,
+          <input
+            type="radio"
+            name="dac-pts-calc-type"
+            value="MDS"
+            data-bind="checked: dac_calc_type"
+          />
+          MDS, or
+          <input
+            type="radio"
+            name="dac-pts-calc-type"
+            value="landmark"
+            data-bind="checked: dac_calc_type"
+          />
+          landmarks for coordinate calculation.
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Use PCA components, MDS (traditional calculation) or MDS w/ landmarks for coordinate calculations."
+          ></i>
+        </label>
+      </div>
     </div>
 
-     <!-- Select TDMS switchtube files. -->
+    <!-- Select TDMS switchtube files. -->
     <div data-bind="visible:tab() == 3" class="form-horizontal">
-
-        <div style="margin-top: 40px;">
+      <div style="margin-top: 40px">
         <label>Select switchtube file(s):</label>
-        <slycat-local-browser params="
+        <slycat-local-browser
+          params="
             selection:browser_tdms_files.selection,
             multiple:true,
-            progress:browser_tdms_files.progress"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser_tdms_files,category:'dac-tdms-files'"></slycat-parser-controls>
-            <label class="dac-do-not-close-browser text-danger"
-                   style="display:none">Please wait for file(s) to upload (do not close browser).</label>
-            <label id="dac-tdms-file-error" style="display: none" class="invalid-text small text-danger">
-            DAC file error.
-        </label>
+            progress:browser_tdms_files.progress"
+        ></slycat-local-browser>
+        <slycat-parser-controls
+          params="parser:parser_tdms_files,category:'dac-tdms-files'"
+        ></slycat-parser-controls>
+        <label class="dac-do-not-close-browser text-danger" style="display: none"
+          >Please wait for file(s) to upload (do not close browser).</label
+        >
+        <div id="dac-tdms-file-error" style="display: none" class="alert alert-danger" role="alert">
+          DAC file error.
         </div>
-
+      </div>
     </div>
 
     <!-- TDMS .zip suffix selection -->
     <div data-bind="visible:tab() == 4" class="form-horizontal">
-
-        <label>Select file suffix types to process.
-            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
-        </label>
-        <slycat-table-ingestion params="
+      <label
+        >Select file suffix types to process.
+        <i
+          class="fa fa-question-circle inline-help"
+          aria-hidden="true"
+          title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."
+        ></i>
+      </label>
+      <slycat-table-ingestion
+        params="
             variables: suffix_attributes,
             properties: [{name: 'Include', type: 'bool'}]
-        "></slycat-table-ingestion>
-        <label id="dac-inc-suffix-error" style="display: none" class="invalid-text small text-danger">
-            Please select at least one suffix type to include in the analysis.
-        </label>
-
+        "
+      ></slycat-table-ingestion>
+      <label id="dac-inc-suffix-error" style="display: none" class="invalid-text small text-danger">
+        Please select at least one suffix type to include in the analysis.
+      </label>
     </div>
 
     <!-- TDMS load options. -->
     <div data-bind="visible:tab() == 5" class="form-horizontal">
+      <div style="margin-top: 30px">
+        <label
+          >Minimum number of time points in a channel:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="A channel with less than the specified number of time points will be discarded during the data import."
+          ></i>
+        </label>
+        <input
+          id="dac-min-time-steps"
+          class="form-control"
+          type="number"
+          min="2"
+          data-bind="value: min_time_steps"
+        />
+        <div class="invalid-feedback">Each channel must have at least two values.</div>
+      </div>
 
-        <div style="margin-top: 30px">
-          <label>Minimum number of time points in a channel:
-          <i class="fa fa-question-circle inline-help" aria-hidden="true"
-          title="A channel with less than the specified number of time points will be discarded during the data import."></i>
-          </label>
-          <input id="dac-min-time-steps" class="form-control" type="number" min="2" data-bind="value: min_time_steps">
-           <div class="invalid-feedback">
-               Each channel must have at least two values.
-           </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 30px">
+        <label
+          >Minimum number of channels in a shot:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Tests with less than the specified number of channels will be discarded during the data import."
+          ></i
+        ></label>
+        <input
+          id="dac-min-channel"
+          class="form-control"
+          type="number"
+          min="1"
+          data-bind="value: min_num_channels"
+        />
+        <div class="invalid-feedback">Each shot must have at least one channel.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 30px">
-          <label>Minimum number of channels in a shot:
-          <i class="fa fa-question-circle inline-help" aria-hidden="true"
-          title="Tests with less than the specified number of channels will be discarded during the data import."></i></label>
-          <input id="dac-min-channel" class="form-control" type="number" min="1" data-bind="value: min_num_channels">
-          <div class="invalid-feedback">
-               Each shot must have at least one channel.
-          </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 30px">
+        <label
+          >Channels must occur in at least this many shots:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Channels that occur in less than this number of shots will be discarded during the data import.  Missing channels in a given shot will be included as identically zero.  Use a value of zero to indicate that channels must be present in every shot."
+          ></i
+        ></label>
+        <input
+          id="dac-min-shots"
+          class="form-control"
+          type="number"
+          min="0"
+          data-bind="value: min_num_shots"
+        />
+        <div class="invalid-feedback">Each channel must occur zero or more times.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 30px">
-            <label>Channels must occur in at least this many shots:
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Channels that occur in less than this number of shots will be discarded during the data import.  Missing channels in a given shot will be included as identically zero.  Use a value of zero to indicate that channels must be present in every shot."></i></label>
-            <input id="dac-min-shots" class="form-control" type="number" min="0" data-bind="value: min_num_shots">
-            <div class="invalid-feedback">
-                 Each channel must occur zero or more times.
-            </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <label
+          >Number of PCA components to use in coordinate calculations:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Number of PCA components to use as intermediates in coordinate calculations."
+          ></i>
+        </label>
+        <input
+          id="dac-tdms-pca-comps"
+          class="form-control"
+          type="number"
+          min="2"
+          data-bind="value: num_PCA_comps, enable:dac_calc_type()=='PCA'"
+        />
+        <div class="invalid-feedback">Minimum number of PCA components is 2.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 20px">
-            <label>Number of PCA components to use in coordinate calculations:
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Number of PCA components to use as intermediates in coordinate calculations."></i>
-            </label>
-            <input id="dac-tdms-pca-comps" class="form-control" type="number" min="2" data-bind="value: num_PCA_comps, enable:dac_calc_type()=='PCA'">
-             <div class="invalid-feedback">
-                 Minimum number of PCA components is 2.
-             </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <label
+          >Number of landmarks to use in coordinate calculations:
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Number of landmarks points to use in MDS calculation.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."
+          ></i>
+        </label>
+        <input
+          id="dac-tdms-landmarks"
+          class="form-control"
+          type="number"
+          min="3"
+          data-bind="value: num_landmarks, enable:dac_calc_type()=='landmark'"
+        />
+        <div class="invalid-feedback">Minimum number of landmarks is 3.</div>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom: 20px">
-            <label>Number of landmarks to use in coordinate calculations:
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Number of landmarks points to use in MDS calculation.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."></i>         
-            </label>
-            <input id="dac-tdms-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks, enable:dac_calc_type()=='landmark'">
-             <div class="invalid-feedback">
-                 Minimum number of landmarks is 3.
-             </div>
-        </div>
+      <div style="margin-top: 20px; margin-bottom: 20px">
+        <label>
+          Use
+          <input
+            type="radio"
+            name="dac-tdms-calc-type"
+            value="PCA"
+            data-bind="checked: dac_calc_type"
+          />
+          PCA components,
+          <input
+            type="radio"
+            name="dac-tdms-calc-type"
+            value="MDS"
+            data-bind="checked: dac_calc_type"
+          />
+          MDS, or
+          <input
+            type="radio"
+            name="dac-tdms-calc-type"
+            value="landmark"
+            data-bind="checked: dac_calc_type"
+          />
+          landmarks for coordinate calculation.
+          <i
+            class="fa fa-question-circle inline-help"
+            aria-hidden="true"
+            title="Use PCA components, MDS (traditional calculation) or MDS w/ landmarks for coordinate calculations."
+          ></i>
+        </label>
+      </div>
 
-        <div style="margin-top: 20px; margin-bottom:20px">
-            <label>
-            Use
-            <input type="radio" name="dac-tdms-calc-type" value="PCA" data-bind="checked: dac_calc_type">
-            PCA components,
-            <input type="radio" name="dac-tdms-calc-type" value="MDS" data-bind="checked: dac_calc_type">
-            MDS, or
-            <input type="radio" name="dac-tdms-calc-type" value="landmark" data-bind="checked: dac_calc_type">
-            landmarks for coordinate calculation.
-            <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                title="Use PCA components, MDS (traditional calculation) or MDS w/ landmarks for coordinate calculations."></i>
-            </label>
-        </div>
+      <div>
+        <label>
+          Expecting
+          <input
+            type="radio"
+            name="dac-tdms-radios"
+            value="General"
+            data-bind="checked: dac_tdms_type"
+          />
+          General,
+          <input
+            type="radio"
+            name="dac-tdms-radios"
+            value="Overvoltage"
+            data-bind="checked: dac_tdms_type"
+          />
+          Overvoltage, or
+          <input
+            type="radio"
+            name="dac-tdms-radios"
+            value="Sprytron"
+            data-bind="checked: dac_tdms_type"
+          />
+          Sprytron data.
+        </label>
+      </div>
 
-        <div>
-            <label>
-            Expecting
-            <input type="radio" name="dac-tdms-radios" value="General" data-bind="checked: dac_tdms_type">
-             General,
-            <input type="radio" name="dac-tdms-radios" value="Overvoltage" data-bind="checked: dac_tdms_type">
-             Overvoltage, or
-            <input type="radio" name="dac-tdms-radios" value="Sprytron" data-bind="checked: dac_tdms_type">
-             Sprytron data.
-            </label>
-        </div>
+      <div>
+        <label>
+          Combine mismatched time steps using
+          <input
+            type="radio"
+            name="dac-union-radios"
+            value="Intersection"
+            data-bind="checked: dac_union_type"
+          />
+          Intersection or
+          <input
+            type="radio"
+            name="dac-union-radios"
+            value="Union"
+            data-bind="checked: dac_union_type"
+          />
+          Union.
+        </label>
+      </div>
 
-        <div>
-            <label>
-            Combine mismatched time steps using
-            <input type="radio" name="dac-union-radios" value="Intersection" data-bind="checked: dac_union_type">
-             Intersection or
-            <input type="radio" name="dac-union-radios" value="Union" data-bind="checked: dac_union_type">
-             Union.
-            </label>
-        </div>
+      <div style="margin-top: 20px">
+        <input
+          type="checkbox"
+          name="dac-infer-units"
+          value="True"
+          data-bind="checked: dac_infer_units"
+        />
+        Infer channel units from channel name.
+      </div>
 
-        <div style="margin-top: 20px">
-            <input type="checkbox" name="dac-infer-units" value="True" data-bind="checked: dac_infer_units">
-            Infer channel units from channel name.
-        </div>
-
-        <div style="margin-top: 10px; margin-bottom: 20px">
-            <input type="checkbox" name="dac-infer-time" value="True" data-bind="checked: dac_infer_time">
-            Infer time units (assume seconds).
-        </div>
-
+      <div style="margin-top: 10px; margin-bottom: 20px">
+        <input
+          type="checkbox"
+          name="dac-infer-time"
+          value="True"
+          data-bind="checked: dac_infer_time"
+        />
+        Infer time units (assume seconds).
+      </div>
     </div>
 
     <!-- Inputs the name of the model (final tab). -->
     <div data-bind="visible:tab() == 6">
-        <form class="form-horizontal" role="form" onsubmit="return false">
-            <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
-        </form>
-        <label id="dac-finish-model-error" style="display: none" class="invalid-text small text-danger">
-            Finish model error.
-        </label>
+      <form class="form-horizontal" role="form" onsubmit="return false">
+        <slycat-model-controls
+          params="name:model.name,description:model.description,marking:model.marking"
+        ></slycat-model-controls>
+      </form>
+      <label
+        id="dac-finish-model-error"
+        style="display: none"
+        class="invalid-text small text-danger"
+      >
+        Finish model error.
+      </label>
     </div>
-
-    </div>
+  </div>
 </div>
 
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
-    <button class="btn btn-primary browser-continue"
-            data-bind="visible:tab() == 1,click:upload_dac_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary browser-continue"
-            data-bind="visible:tab() == 2,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary browser-continue"
-            data-bind="visible:tab() == 3,click:upload_tdms_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary browser-continue"
-            data-bind="visible:tab() == 4,click:check_suffix_selection"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 5, click:reset_defaults">Reset Defaults</button>
-    <button class="btn btn-primary browser-continue"
-            data-bind="visible:tab() == 5,click:check_tdms_options"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary dac-launch-thread"
-            data-bind="visible:tab() == 6,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
-
+  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
+    Back
+  </button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
+  <button
+    class="btn btn-primary browser-continue"
+    data-bind="visible:tab() == 1,click:upload_dac_format"
+  >
+    <i class="fa fa-spinner fa-pulse"></i> Continue
+  </button>
+  <button
+    class="btn btn-primary browser-continue"
+    data-bind="visible:tab() == 2,click:upload_pts_format"
+  >
+    <i class="fa fa-spinner fa-pulse"></i> Continue
+  </button>
+  <button
+    class="btn btn-primary browser-continue"
+    data-bind="visible:tab() == 3,click:upload_tdms_format"
+  >
+    <i class="fa fa-spinner fa-pulse"></i> Continue
+  </button>
+  <button
+    class="btn btn-primary browser-continue"
+    data-bind="visible:tab() == 4,click:check_suffix_selection"
+  >
+    <i class="fa fa-spinner fa-pulse"></i> Continue
+  </button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 5, click:reset_defaults">
+    Reset Defaults
+  </button>
+  <button
+    class="btn btn-primary browser-continue"
+    data-bind="visible:tab() == 5,click:check_tdms_options"
+  >
+    <i class="fa fa-spinner fa-pulse"></i> Continue
+  </button>
+  <button
+    class="btn btn-primary dac-launch-thread"
+    data-bind="visible:tab() == 6,click:finish_model"
+  >
+    <i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model
+  </button>
 </div>

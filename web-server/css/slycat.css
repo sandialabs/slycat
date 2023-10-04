@@ -631,8 +631,8 @@ label.bottom-margin
 
 /* Needed to make bookmarks dropdown scrollable when it becomes too long */
 .dropdown-menu-bookmarks {
-  overflow-y: scroll;
-  overflow-x: scroll;
+  overflow-y: auto;
+  overflow-x: auto;
   max-height: 80vh;
   max-width: 70vw;
 }
@@ -640,7 +640,7 @@ label.bottom-margin
 .slycat-big-scrolling-alert
 {
   max-height: 159px;
-  overflow-y: scroll;
+  overflow-y: auto;
   white-space: pre-line;
 }
 
