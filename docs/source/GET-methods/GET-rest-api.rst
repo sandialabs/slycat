@@ -7,6 +7,7 @@ GET METHODS
     :maxdepth: 1
 
     GET-Configuration-Markings.rst
+    GET-Configuration-Parsers.rst
     GET-Bookmark.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
