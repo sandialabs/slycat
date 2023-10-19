@@ -514,7 +514,10 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
 
     OUTPUTS: alpha_cluster_mat is a matrix containing all the alpha
              values for clustering each meta data array
+
     """
+
+    cherrypy.log.error("ALPHA PCA")
 
     # landmarks should always be None for this calculation
 
@@ -525,12 +528,17 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
     # form a matrix using only first PCA components
     X = np.asarray([list(var_dist[i][:,0]) for i in range(num_vars)]).transpose()
 
+    cherrypy.log.error(str(X[0,0]))
+
     # for each quantitative meta variable, compute scaled property vector
     num_meta_cols = len(meta_column_types)
+    cherrypy.log.error(str(num_meta_cols))
     prop_vecs = []
     for i in range(num_meta_cols):
         
         # populate property vector data
+        cherrypy.log.error(str(meta_column_types[i]))
+
         if meta_column_types[i] == "float64":
             
             prop_vec = np.asarray(meta_columns[i])
@@ -562,6 +570,8 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
 
         # save property vector
         prop_vecs.append(prop_vec)
+
+    cherrypy.log.error(str(prop_vecs))
 
     # compute NNLS cluster button alpha values, if more than one data point
     alpha_cluster_mat = np.zeros((num_meta_cols, num_vars))

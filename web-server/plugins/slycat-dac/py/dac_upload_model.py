@@ -101,7 +101,8 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # -----------------------------------
 
     # starting uploads (70%)
-    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Uploading ...", 70.0])
+    slycat.web.server.put_model_parameter(
+        database, model, "dac-polling-progress", ["Uploading ...", 70.0])
 
     # push error log to database
     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
@@ -120,12 +121,13 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
 
     # start our single "dac-datapoints-meta" array.
     dimensions = [dict(name="row", end=len(meta_rows))]
-    attributes = [dict(name=name, type=type) for name, type in zip(meta_column_str_names, meta_column_types)]
+    attributes = [dict(name=name, type=type) for name, type in zip(meta_column_str_names, alpha_column_types)]
     slycat.web.server.put_model_array(database, model, "dac-datapoints-meta", 0, attributes, dimensions)
 
     # upload data into the array
-    for index, data in enumerate(meta_columns):
-        slycat.web.server.put_model_arrayset_data(database, model, "dac-datapoints-meta", "0/%s/..." % index, [data])
+    for index, data in enumerate(alpha_columns):
+        slycat.web.server.put_model_arrayset_data(
+            database, model, "dac-datapoints-meta", "0/%s/..." % index, [data])
 
     # create variables.meta table on server
     slycat.web.server.put_model_arrayset(database, model, "dac-variables-meta")
@@ -145,7 +147,8 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
 
     # upload data into the array
     for index, data in enumerate(meta_var_cols):
-        slycat.web.server.put_model_arrayset_data(database, model, "dac-variables-meta", "0/%s/..." % index, [data])
+        slycat.web.server.put_model_arrayset_data(
+            database, model, "dac-variables-meta", "0/%s/..." % index, [data])
 
     # create time points matrix on server
     slycat.web.server.put_model_arrayset(database, model, "dac-time-points")

@@ -60,7 +60,7 @@ def register_slycat_plugin(context):
         # ------------------
 
         dac_error.log_dac_msg("Initializing MDS coords.")
-
+        
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
         num_vars = len(meta_dist)
@@ -100,7 +100,8 @@ def register_slycat_plugin(context):
         # --------------------------------
 
         # get metadata information
-        metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-datapoints-meta")
+        metadata = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "dac-datapoints-meta")
 
         # number of columns of metadata
         metadata_cols = metadata[0]['attributes']
@@ -109,10 +110,11 @@ def register_slycat_plugin(context):
         # data type of each column
         meta_column_types = []
         for i in range(num_meta_cols):
-            meta_column_types.append(metadata_cols[i]['type'])
+            meta_column_types.append(metadata_cols[i]['type'].decode())
 
         # get actual metadata
-        meta_columns = slycat.web.server.get_model_arrayset_data(database, model, "dac-datapoints-meta", "0/.../...")
+        meta_columns = slycat.web.server.get_model_arrayset_data(
+            database, model, "dac-datapoints-meta", "0/.../...")
 
         # compute alpha cluster values for NNLS cluster button
         alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist, meta_columns, 
@@ -162,7 +164,6 @@ def register_slycat_plugin(context):
         slycat.web.server.put_model_arrayset_data(database, model, "dac-alpha-clusters", "0/0/...", [alpha_cluster_mat])
 
         # upload done indicator for polling routine
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
         dac_error.log_dac_msg("Done initializing MDS coords.")
 
         # returns dummy argument indicating success
@@ -212,7 +213,8 @@ def register_slycat_plugin(context):
         if "artifact:dac-var-include-columns" in model:
 
             # load include columns
-            var_include_columns = slycat.web.server.get_model_parameter(database, model, "dac-var-include-columns")
+            var_include_columns = slycat.web.server.get_model_parameter(
+                database, model, "dac-var-include-columns")
 
         else:
 
