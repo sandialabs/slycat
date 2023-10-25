@@ -175,7 +175,10 @@ try:
     
     for key in key_list:
         if not isinstance(key, str):
-            new_key = key.decode("UTF-8")
+            try:
+                new_key = key.decode("UTF-8")
+            except:
+                new_key = key
             clusters[new_key] = clusters[key]
             del clusters[key]
 

@@ -72,6 +72,10 @@ $(document).ready(function() {
     // colormap defaults
     var cont_colormap = null;
 
+    // variable/meta include columns
+    var var_include_columns = [];
+    var meta_include_columns = [];
+
     // model id from address bar
     var mid = URI(window.location).segment(-1);
 
@@ -217,6 +221,23 @@ $(document).ready(function() {
             });
     }
 
+    // return bookmark preference, if it exists.
+    // otherwise initialize bookmark preference to existing preference
+    function bookmark_preference (bookmark_name, existing_pref)
+    {
+
+        var bookmark_pref = existing_pref;
+        if (bookmark_name in bookmark) {
+                bookmark_pref = bookmark[bookmark_name];
+            } else {
+                var bookmark_state = {}
+                bookmark_state[bookmark_name] = existing_pref;
+                bookmarker.updateState(bookmark_state);
+            }
+
+        return bookmark_pref;
+    }
+
     // check for preferences using bookmarks, and set up variables
     // note that we only set data independent bookmarks here, e.g. bookmarks
     // which do not depend on the model data so they need no error check, like
@@ -234,6 +255,43 @@ $(document).ready(function() {
                 // save model name for naming tables
                 MODEL_NAME = result.name;
 
+                // set display parameters, if available
+                if ('artifact:dac-display-parms' in result) {
+
+                    var display_parms = result['artifact:dac-display-parms'];
+
+                    MAX_PLOT_NAME = display_parms["dac-MAX-PLOT-NAME"];
+                    MAX_COLOR_NAME = display_parms["dac-MAX-COLOR-NAME"];
+                    MAX_SLIDER_NAME = display_parms["dac-MAX-SLIDER-NAME"];
+                    MAX_TIME_POINTS = display_parms["dac-MAX-TIME-POINTS"];
+                    MAX_NUM_PLOTS = display_parms["dac-MAX-NUM-PLOTS"];
+                    MAX_POINTS_ANIMATE = display_parms["dac-MAX-POINTS-ANIMATE"];
+                    SCATTER_PLOT_TYPE = display_parms["dac-SCATTER-PLOT-TYPE"];
+                    MAX_CATS = display_parms["dac-MAX-CATS"];
+                    MAX_FREETEXT_LEN = display_parms["dac-MAX-FREETEXT-LEN"];
+                
+                }
+
+                // truncate model name to max name length
+                MODEL_NAME = MODEL_NAME.substring(0, MAX_PLOT_NAME);
+
+                // set colormap, if available
+                if ('artifact:dac-cont-colormap' in result) {
+                    var cont_data = result['artifact:dac-cont-colormap'];
+                    var cont_data_0 = cont_data[0];
+                    cont_colormap = JSON.parse(cont_data_0);
+                }
+
+                // get variable include columns
+                if ('artifact:dac-var-include-columns' in result) {
+                    var_include_columns = result['artifact:dac-var-include-columns'];
+                }
+
+                // get meta include columns
+                if ('artifact:dac-meta-include-columns' in result) {
+                    meta_include_columns = result['artifact:dac-meta-include-columns'];
+                }                
+
                 // set up bookmark object
                 bookmarker = bookmark_manager.create(result.project, result._id);
 
@@ -243,27 +301,6 @@ $(document).ready(function() {
 
                     // initialize bookmark state
                     bookmark = state;
-
-                    // initialize data independent preferences, if present
-                    if ("dac-cont-colormap" in bookmark) {
-                        cont_colormap = JSON.parse(bookmark_preference("dac-cont-colormap", cont_colormap)[0]); };
-
-                    // no more discrete colormap (same as continuous)
-                    // if ("dac-disc-colormap" in bookmark) {
-                    //     disc_colormap = JSON.parse(bookmark_preference("dac-disc-colormap", disc_colormap)[0]); };
-
-                    MAX_PLOT_NAME = bookmark_preference("dac-MAX-PLOT-NAME", MAX_PLOT_NAME);
-                    MAX_COLOR_NAME = bookmark_preference("dac-MAX-COLOR-NAME", MAX_COLOR_NAME);
-                    MAX_SLIDER_NAME = bookmark_preference("dac-MAX-SLIDER-NAME", MAX_SLIDER_NAME);
-                    MAX_TIME_POINTS = bookmark_preference("dac-MAX-TIME-POINTS", MAX_TIME_POINTS);
-                    MAX_NUM_PLOTS = bookmark_preference("dac-MAX-NUM-PLOTS", MAX_NUM_PLOTS);
-                    MAX_POINTS_ANIMATE = bookmark_preference("dac-MAX-POINTS-ANIMATE", MAX_POINTS_ANIMATE);
-                    SCATTER_PLOT_TYPE = bookmark_preference("dac-SCATTER-PLOT-TYPE", SCATTER_PLOT_TYPE);
-                    MAX_CATS = bookmark_preference("dac-MAX-CATS", MAX_CATS);
-                    MAX_FREETEXT_LEN = bookmark_preference("dac-MAX-FREETEXT-LEN", MAX_FREETEXT_LEN);
-
-                    // truncate model name to max name length
-                    MODEL_NAME = MODEL_NAME.substring(0, MAX_PLOT_NAME);
 
                     // Create Redux store and set its state based on what's in the bookmark
                     const state_tree = {
@@ -334,23 +371,6 @@ $(document).ready(function() {
 
             }
         });
-    }
-
-    // return bookmark preference, if it exists.
-    // otherwise initialize bookmark preference to existing preference
-    function bookmark_preference (bookmark_name, existing_pref)
-    {
-
-        var bookmark_pref = existing_pref;
-        if (bookmark_name in bookmark) {
-                bookmark_pref = bookmark[bookmark_name];
-            } else {
-                var bookmark_state = {}
-                bookmark_state[bookmark_name] = existing_pref;
-                bookmarker.updateState(bookmark_state);
-            }
-
-        return bookmark_pref;
     }
 
     // set up model origin data
@@ -718,8 +738,8 @@ $(document).ready(function() {
                     var num_points = data_table_meta[0]["row-count"];
 
                     // check variables to be included
-                    var var_include_columns = include_check("dac-var-include-columns", num_vars, true);
-                    var meta_include_columns = include_check("dac-meta-include-columns", num_cols, true);
+                    var_include_columns = include_check(var_include_columns, num_vars, true);
+                    meta_include_columns = include_check(meta_include_columns, num_cols, true);
 
                     // initialize sliders to all one, unless valid bookmark is available
                     var init_alpha_values = [];
@@ -1016,7 +1036,7 @@ $(document).ready(function() {
                         $("#dac-plots-displayed-" + (i+1)).remove();
                         $("#dac-plots-not-displayed-" + (i+1)).remove();
                         $("#dac-download-plot-" + (i+1)).remove();
-                    };
+                    }
 
                   });
 
@@ -1041,6 +1061,11 @@ $(document).ready(function() {
 
         // assume we include all meta data columns
         var include_columns = [];
+
+        // check if bookmark_name is a string
+        if (typeof(bookmark_name) !== 'string') {
+            include_columns = bookmark_name;
+        }
 
         // check bookmarks for variables to include
         if (bookmark_name in bookmark) {

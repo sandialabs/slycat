@@ -229,7 +229,7 @@ module.draw = function ()
 	if (curr_color_by_col.length > 0) {
 
 		// set colormap if present
-		if (colormap == null) {
+		if (colormap === null) {
 
 			// revert to default color map
 			color_scale = d3.scale.linear()
