@@ -447,7 +447,7 @@ export default class TimeseriesWizard extends React.Component<
         const configured_markings = markings.map((marking:any) => {return {text: marking["label"], value: marking["type"]} });
         // setState is asynchronous, so have to pass create_model as callback to it instead of calling it immediately after it.
         // This is because create_model tries to get marking from the state and sometimes just gets the initial empty array instead.
-        this.setState({ marking: configured_markings }, this.create_model);
+        this.setState({ marking: configured_markings, selectedMarking: configured_markings[0]["type"] }, this.create_model);
         // this.create_model();
       }
     });
