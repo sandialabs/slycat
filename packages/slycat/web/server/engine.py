@@ -71,6 +71,9 @@ def start(root_path, config_file):
 
   dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
+  ########################
+  #### DELETE METHODS ####
+  ########################
   dispatcher.connect("delete-model", "/models/:mid", slycat.web.server.handlers.delete_model, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-cache", "/projects/:pid/delete-cache", slycat.web.server.handlers.delete_project_cache, conditions={"method" : ["DELETE"]})
@@ -82,7 +85,12 @@ def start(root_path, config_file):
   dispatcher.connect("delete-project-data", "/projects/data/:did", slycat.web.server.handlers.delete_project_data, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-data-in-model", "/projects/data/:did/model/:mid", slycat.web.server.handlers.delete_project_data_in_model, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-model-in-project-data", "/model/:mid/projects/data/:did", slycat.web.server.handlers.delete_model_in_project_data, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("delete-job", "/remotes/delete-job/:hostname/:jid", slycat.web.server.handlers.delete_job, conditions={ "method": ["DELETE"] })
+  dispatcher.connect("delete-model-parameter", "/delete-artifact/:mid/:aid", slycat.web.server.handlers.delete_model_parameter, conditions={"method" : ["DELETE"]})
 
+  #####################
+  #### GET METHODS ####
+  #####################
   dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
@@ -111,25 +119,33 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.get_project_cache_object, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
-  dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
   dispatcher.connect("get-project-data", "/projects/data/:did", slycat.web.server.handlers.get_project_data, conditions={"method": ["GET"]})
-  dispatcher.connect("put-project-data-parameter", "/data/:did/aids/:aid", slycat.web.server.handlers.put_project_data_parameter, conditions={"method": ["PUT"]})
-  dispatcher.connect("post-project-data", "/projects/data/:pid", slycat.web.server.handlers.create_project_data_from_pid, conditions={"method": ["POST"]})
   dispatcher.connect("get-project-data-in-model", "/projects/data/model/:mid", slycat.web.server.handlers.get_project_data_in_model, conditions={"method": ["GET"]})
   dispatcher.connect("get-project-file-names", "/projects/:pid/name", slycat.web.server.handlers.get_project_file_names, conditions={"method": ["GET"]})
   dispatcher.connect("get-project-data-parameter", "/projects/data/:did/parameters/:param", slycat.web.server.handlers.get_project_data_parameter, conditions={"method": ["GET"]})
   dispatcher.connect("get-last-active-time", "/server/last_active_time", slycat.web.server.handlers.get_last_active_time, conditions={"method": ["GET"]})
-  #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
-
   dispatcher.connect("get-remote-image", "/remotes/:hostname/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video", "/remotes/:hostname/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-show-user-password", "/remotes/show/user-password", slycat.web.server.handlers.get_remote_show_user_password, conditions={"method": ["GET"]})
-
   dispatcher.connect("get-user", "/users/:uid/:time", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
-  
+  dispatcher.connect("get-session-status", "/remotes/:hostname/session-status", slycat.web.server.handlers.get_session_status, conditions={ "method": ["GET"] })
+  dispatcher.connect("get-job-session-status", "/remotes/:hostname/:jid/get-remote-job-status", slycat.web.server.handlers.get_remote_job_status, conditions={"method": ["GET"]})
+  dispatcher.connect("get-checkjob", "/remotes/checkjob/:hostname/:jid", slycat.web.server.handlers.get_checkjob, conditions={ "method": ["GET"] })
+  dispatcher.connect("get-user-config", "/remotes/:hostname/get-user-config", slycat.web.server.handlers.get_user_config, conditions={ "method": ["GET"] })
+  dispatcher.connect("get-runtime", "/remotes/:nodes/:tasks/:size/job-time", slycat.web.server.handlers.job_time, conditions={ "method": ["GET"] })
+  dispatcher.connect("clean-project-data", "/clean/project-data", slycat.web.server.handlers.clean_project_data, conditions={"method" : ["GET"]})
+  dispatcher.connect("clear-ssh-sessions", "/clear/ssh-sessions", slycat.web.server.handlers.clear_ssh_sessions, conditions={"method" : ["GET"]})
+  dispatcher.connect("openid-login", "/openid-login", slycat.web.server.handlers.open_id_authenticate, conditions={"method": ["GET"]})
+
+  ##########################
+  #### PUT/POST METHODS ####
+  ##########################
+  dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
+  dispatcher.connect("put-project-data-parameter", "/data/:did/aids/:aid", slycat.web.server.handlers.put_project_data_parameter, conditions={"method": ["PUT"]})
+  dispatcher.connect("post-project-data", "/projects/data/:pid", slycat.web.server.handlers.create_project_data_from_pid, conditions={"method": ["POST"]})
   dispatcher.connect("model-command", "/models/:mid/commands/:type/:command", slycat.web.server.handlers.model_command, conditions={"method" : ["GET", "POST", "PUT"]})
   dispatcher.connect("post-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.post_model_arrayset_data, conditions={"method" : ["POST"]})
   dispatcher.connect("model-sensitive-command", "/models/:mid/sensitive/:type/:command", slycat.web.server.handlers.model_sensitive_command, conditions={"method" : ["POST"]})
@@ -141,14 +157,10 @@ def start(root_path, config_file):
   dispatcher.connect("post-project-models", "/projects/:pid/models",slycat.web.server.handlers.post_project_models, conditions={"method": ["POST"]})
   dispatcher.connect("post-log", "/log", slycat.web.server.handlers.post_log, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
-
   dispatcher.connect("post-remote-browse", "/remotes/:hostname/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes-smb", "/remotes/smb", slycat.web.server.handlers.post_remotes_smb, conditions={"method" : ["POST"]})
   dispatcher.connect("post-smb-browse", "/smb/remotes/:hostname/browse{path:.*}", slycat.web.server.handlers.post_smb_browse, conditions={"method" : ["POST"]})
-
-
-
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset", "/models/:mid/arraysets/:aid", slycat.web.server.handlers.put_model_arrayset, conditions={"method" : ["PUT"]})
@@ -157,33 +169,20 @@ def start(root_path, config_file):
   dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-reference", "/references/:rid", slycat.web.server.handlers.put_reference, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
-
-  #TODO: scrub sid
-  dispatcher.connect("get-session-status", "/remotes/:hostname/session-status", slycat.web.server.handlers.get_session_status, conditions={ "method": ["GET"] })
   dispatcher.connect("post-remote-launch", "/remotes/:hostname/launch", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
   dispatcher.connect("post-submit-batch", "/remotes/:hostname/submit-batch", slycat.web.server.handlers.post_submit_batch, conditions={ "method": ["POST"] })
-  dispatcher.connect("get-checkjob", "/remotes/checkjob/:hostname/:jid", slycat.web.server.handlers.get_checkjob, conditions={ "method": ["GET"] })
-  dispatcher.connect("delete-job", "/remotes/delete-job/:hostname/:jid", slycat.web.server.handlers.delete_job, conditions={ "method": ["DELETE"] })
   dispatcher.connect("get-job-output", "/remotes/get-job-output/:hostname/:jid/path{path:.*}", slycat.web.server.handlers.get_job_output, conditions={ "method": ["POST"] })
   dispatcher.connect("post-remote-command", "/remotes/:hostname/post-remote-command", slycat.web.server.handlers.post_remote_command, conditions={ "method": ["POST"] })
-  dispatcher.connect("get-job-session-status", "/remotes/:hostname/:jid/get-remote-job-status", slycat.web.server.handlers.get_remote_job_status, conditions={"method": ["GET"]})
-
-  dispatcher.connect("get-user-config", "/remotes/:hostname/get-user-config", slycat.web.server.handlers.get_user_config, conditions={ "method": ["GET"] })
-  dispatcher.connect("get-runtime", "/remotes/:nodes/:tasks/:size/job-time", slycat.web.server.handlers.job_time, conditions={ "method": ["GET"] })
-
   dispatcher.connect("set-user-config", "/remotes/:hostname/set-user-config", slycat.web.server.handlers.set_user_config, conditions={ "method": ["POST"] })
-
   dispatcher.connect("post-uploads", "/uploads", slycat.web.server.handlers.post_uploads, conditions={"method" : ["POST"]})
   dispatcher.connect("put-upload-file-part", "/uploads/:uid/files/:fid/parts/:pid", slycat.web.server.handlers.put_upload_file_part, conditions={"method" : ["PUT"]})
   dispatcher.connect("post-upload-finished", "/uploads/:uid/finished", slycat.web.server.handlers.post_upload_finished, conditions={"method" : ["POST"]})
-  
-  dispatcher.connect("clean-project-data", "/clean/project-data", slycat.web.server.handlers.clean_project_data, conditions={"method" : ["GET"]})
-  dispatcher.connect("clear-ssh-sessions", "/clear/ssh-sessions", slycat.web.server.handlers.clear_ssh_sessions, conditions={"method" : ["GET"]})
-  dispatcher.connect("delete-model-parameter", "/delete-artifact/:mid/:aid", slycat.web.server.handlers.delete_model_parameter, conditions={"method" : ["DELETE"]})
   dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
-  dispatcher.connect("openid-login", "/openid-login", slycat.web.server.handlers.open_id_authenticate, conditions={"method": ["GET"]})
 
   def log_configuration(tree, indent=""):
+    '''
+    logs the configuration when starting up the cherrypy server
+    '''
     for key, value in sorted(tree.items()):
       if isinstance(value, dict):
         cherrypy.log.error("%s%s:" % (indent, key))
@@ -213,7 +212,6 @@ def start(root_path, config_file):
   # wsgi: look at the auth below
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
-  # configuration["/logout"]["tools.%s.on" % authentication] = False
   for key, value in list(configuration["slycat-web-server"]["authentication"]["kwargs"].items()):
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
