@@ -16,4 +16,5 @@ DELETE METHODS
     DELETE-Model-In-Project-Data.rst
     DELETE-reference.rst
     DELETE-Remote.rst
+    DELETE-Job.rst
     DELETE-Upload.rst
