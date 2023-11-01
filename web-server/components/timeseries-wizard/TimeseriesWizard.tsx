@@ -439,7 +439,7 @@ export default class TimeseriesWizard extends React.Component<
   }
 
   getMarkings = () => {
-    client.get_configuration_markings_fetch().then((markings) => {
+    client.get_selectable_configuration_markings_fetch().then((markings) => {
       markings.sort(function (left: any, right: any) {
         return left.type == right.type ? 0 : left.type < right.type ? -1 : 1;
       });
