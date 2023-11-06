@@ -3151,7 +3151,9 @@ def get_configuration_remote_hosts():
 @cherrypy.tools.json_out(on=True)
 def get_configuration_smb_remote_hosts():
     if "smb-remote-hosts" in cherrypy.request.app.config["slycat-web-server"]:
-        return cherrypy.request.app.config["slycat-web-server"]["smb-remote-hosts"]
+        hostnames = cherrypy.request.app.config["slycat-web-server"]["smb-remote-hosts"]
+        json_hostnames = {"hostnames": hostnames}
+        return json_hostnames
     return {"hostnames":[]}
 
 @cherrypy.tools.json_out(on=True)
