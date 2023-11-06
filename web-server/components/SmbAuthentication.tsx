@@ -78,7 +78,6 @@ export default class SmbAuthentication extends React.Component<any,any> {
   getRemoteHosts = async () => {
     return client.get_configuration_smb_remote_hosts_fetch()
       .then((json)=>{
-        console.log(json.hostnames);
         this.setState({hostnames:json.hostnames});
       })
   };
