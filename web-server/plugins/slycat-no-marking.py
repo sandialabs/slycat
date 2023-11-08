@@ -3,5 +3,5 @@
 # retains certain rights in this software.
 
 def register_slycat_plugin(context):
-  context.register_marking("", "None", "")
+  context.register_marking("mna", "None", "")
 
