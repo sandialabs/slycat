@@ -40,6 +40,7 @@ type HistogramProps = {
 
 const Histogram: React.FC<HistogramProps> = (props) => {
   const histogramRef = useRef<SVGSVGElement>(null);
+  const MIN_BAR_DIMENSIONS = 1;
 
   const {
     colormap,
@@ -138,6 +139,25 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       return adjustedWidth;
     };
 
+    const getBarHeight = (bin: d3.Bin<ValueIndexType, number>) => {
+      // Adjust height based on stroke width, but must be greater than 0 to remain visible.
+      const adjustedHeight = Math.max(
+        MIN_BAR_DIMENSIONS + getStrokeWidth(bin),
+        y_scale(0) - y_scale(bin.length) - getStrokeWidth(bin),
+      );
+      return adjustedHeight;
+    };
+
+    const getBarX = (bin: d3.Bin<ValueIndexType, number>) => {
+      // Adjust x position based on stroke width
+      return x_scale(bin.x0) + 0.5 * getStrokeWidth(bin);
+    }
+
+    const getBarY = (bin: d3.Bin<ValueIndexType, number>) => {
+      // Adjust y position based on stroke width
+      return y_scale(0) - getBarHeight(bin) - 0.5 * getStrokeWidth(bin);
+    }
+
     // Add a rect for each bin.
     const histogram = d3.select(histogramRef.current);
     histogram.selectAll("*").remove();
@@ -155,13 +175,10 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         return histogram_bar_color ?? `rgb(${color.r} ${color.g} ${color.b})`;
       })
       .attr("stroke-width", (bin) => getStrokeWidth(bin))
-      // Adjust x position based on stroke width
-      .attr("x", (bin) => x_scale(bin.x0) + 0.5 * getStrokeWidth(bin))
-      .attr("width", (bin) => getBarWidth(bin))
-      // Adjust y position based on stroke width
-      .attr("y", (bin) => y_scale(bin.length) + 0.5 * getStrokeWidth(bin))
-      // Adjust height based on stroke width, but must be at least 0.
-      .attr("height", (bin) => Math.max(0, y_scale(0) - y_scale(bin.length) - getStrokeWidth(bin)))
+      .attr("x", getBarX)
+      .attr("width", getBarWidth)
+      .attr("y", getBarY)
+      .attr("height", getBarHeight)
       // On click, run a function
       .on("click", (event, bin) => {
         // Get the bin range
