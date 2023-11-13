@@ -1,7 +1,11 @@
 import { createSelector } from "@reduxjs/toolkit";
 import * as d3 from "d3v7";
 import _ from "lodash";
-import { selectScatterplotPaneWidth, selectScatterplotPaneHeight, selectShowHistogram } from "./scatterplotSlice";
+import {
+  selectScatterplotPaneWidth,
+  selectScatterplotPaneHeight,
+  selectShowHistogram,
+} from "./scatterplotSlice";
 import { selectHiddenSimulations } from "./dataSlice";
 import {
   RootState,
@@ -41,25 +45,83 @@ const selectColumnNames = (state: RootState) => state.derived.table_metadata["co
 const selectVariableAliases = (state: RootState) => state.derived.variableAliases;
 const selectTableStatistics = (state: RootState) => state.derived.table_statistics;
 
-export const selectXValuesAndIndexes = createSelector(
+export const selectXColumnType = createSelector(
+  selectXIndex,
+  selectColumnTypes,
+  (x_index: number, columnTypes): string | undefined => {
+    return columnTypes?.[x_index];
+  },
+);
+
+export const selectYColumnType = createSelector(
+  selectYIndex,
+  selectColumnTypes,
+  (y_index: number, columnTypes): string => {
+    return columnTypes?.[y_index] ?? "";
+  },
+);
+
+export const selectVColumnType = createSelector(
+  selectVIndex,
+  selectColumnTypes,
+  (v_index: number, columnTypes): string => {
+    return columnTypes?.[v_index] ?? "";
+  },
+);
+
+// xValues can be either a Float64Array or a string array or a number array.
+// So convert it to a normal array.
+export const selectXValuesArray = createSelector(
   selectXValues,
-  (xValues): ValueIndexType[] => {
-    // xValues can be either a Float64Array or a string array.
-    // So first converting it to a normal array.
-    return (
-      Array.from(xValues)
-        // Then mapping each value to an object with the value and its index.
-        .map((value, index) => ({ value: value, index: index }))
-    );
+  (xValues): any[] => {
+    return Array.from(xValues);
+  },
+);
+
+export const selectXValuesLog = createSelector(
+  selectXValuesArray,
+  selectXColumnType,
+  (xValues, selectXColumnType): string[] | (number | undefined)[] => {
+    // If xValues is a string array, return it as is.
+    if (selectXColumnType === "string") return xValues;
+
+    // Otherwise, check that each value is a number and that it is positive and return the log of each value.
+    return xValues.map((value) => {
+      const number = Number(value);
+      if (isNaN(number) || number <= 0) return undefined;
+      return Math.log10(number);
+    });
+  },
+);
+
+function convertValuesToIndexedObjects(valuesArray: any[]): { value: any, index: number }[] {
+  return valuesArray.map((value, index) => ({ value: value, index: index }));
+}
+
+function removeHiddenSimulations(valuesAndIndexes: any[], hiddenSimulations: number[]): any[] {
+  return valuesAndIndexes.filter((value, index) => !hiddenSimulations.includes(index));
+}
+
+export const selectXValuesAndIndexes = createSelector(
+  selectXValuesArray,
+  (xValuesArray): ValueIndexType[] => {
+    return convertValuesToIndexedObjects(xValuesArray);
+  },
+);
+
+export const selectXValuesLogAndIndexes = createSelector(
+  selectXValuesLog,
+  (xValuesLogArray): ValueIndexType[] => {
+    return convertValuesToIndexedObjects(xValuesLogArray);
   },
 );
 
 export const selectXValuesWithoutHidden = createSelector(
-  selectXValues,
+  selectXValuesArray,
   selectHiddenSimulations,
-  (xValues: ValuesType, hiddenSimulations: number[]): ValuesType => {
+  (xValues: any[], hiddenSimulations: number[]): ValuesType => {
     // Removing hidden simulations from xValues.
-    return xValues.filter((value, index) => !hiddenSimulations.includes(index));
+    return removeHiddenSimulations(xValues, hiddenSimulations);
   },
 );
 
@@ -68,7 +130,16 @@ export const selectXValuesAndIndexesWithoutHidden = createSelector(
   selectHiddenSimulations,
   (xValuesAndIndexes, hiddenSimulations): ValueIndexType[] => {
     // Removing hidden simulations from xValuesAndIndexes.
-    return xValuesAndIndexes.filter((value, index) => !hiddenSimulations.includes(index));
+    return removeHiddenSimulations(xValuesAndIndexes, hiddenSimulations);
+  },
+);
+
+export const selectXValuesLogAndIndexesWithoutHidden = createSelector(
+  selectXValuesLogAndIndexes,
+  selectHiddenSimulations,
+  (xValuesLogAndIndexes, hiddenSimulations): ValueIndexType[] => {
+    // Removing hidden simulations from xValuesAndIndexes.
+    return removeHiddenSimulations(xValuesLogAndIndexes, hiddenSimulations);
   },
 );
 
@@ -103,30 +174,6 @@ export const selectVColumnName = createSelector(
   selectVariableLabels,
   (v_index: number, variableLabels): string => {
     return variableLabels?.[v_index] ?? "";
-  },
-);
-
-export const selectXColumnType = createSelector(
-  selectXIndex,
-  selectColumnTypes,
-  (x_index: number, columnTypes): string => {
-    return columnTypes?.[x_index] ?? "";
-  },
-);
-
-export const selectYColumnType = createSelector(
-  selectYIndex,
-  selectColumnTypes,
-  (y_index: number, columnTypes): string => {
-    return columnTypes?.[y_index] ?? "";
-  },
-);
-
-export const selectVColumnType = createSelector(
-  selectVIndex,
-  selectColumnTypes,
-  (v_index: number, columnTypes): string => {
-    return columnTypes?.[v_index] ?? "";
   },
 );
 
@@ -220,7 +267,7 @@ const getExtent = (
   }
 };
 
-const selectXExtent = createSelector(
+export const selectXExtent = createSelector(
   selectXValues,
   selectVariableRanges,
   selectXIndex,
@@ -385,7 +432,7 @@ export const selectXScale = createSelector(
     xScaleType: string,
     xExtent: ExtentType,
     xScaleRange: ScaleRangeType,
-    xColumnType: string,
+    xColumnType: string | undefined,
     xValues,
     selectShowHistogram,
   ): SlycatScaleType => {
@@ -416,24 +463,19 @@ const getScale = (
   scaleType: string,
   extent: ExtentType,
   scaleRange: ScaleRangeType,
-  columnType: string,
+  columnType: string | undefined,
   values: ValuesType,
   showHistogram: boolean,
 ): SlycatScaleType => {
   let scale;
   switch (scaleType) {
-    // Log scale types always get a log scale
-    case "Log":
-      scale = d3.scaleLog();
-      break;
-    // Date & Time scale types always get a time scale
     case "Date & Time":
       scale = d3.scaleTime();
       break;
     default:
       // For numeric values, use a linear scale.
       if (columnType !== "string") scale = d3.scaleLinear();
-      // Otherwise, use a point scale (ordinal / categorical) for string values
+      // Otherwise, use a band scale for string values
       else if (showHistogram) scale = d3.scaleBand();
       else scale = d3.scalePoint();
   }
@@ -441,7 +483,9 @@ const getScale = (
   // otherwise the locale sorted unique values for string variables.
   const domain =
     columnType === "string" && scaleType !== "Date & Time"
-      ? _.uniq(values).sort((a, b) => a.localeCompare(b))
+      ? _.uniq(values).sort((a, b) => {
+        return a.toString().localeCompare(b.toString());
+      })
       : extent;
   return scale.range(scaleRange).domain(domain);
 };

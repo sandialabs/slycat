@@ -35,6 +35,7 @@ type HistogramProps = {
     },
   ) => void;
   handleBackgroundClick: (event: React.MouseEvent) => void;
+  tickFormatter: (value: number) => string;
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
@@ -63,6 +64,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     y_label_horizontal_offset,
     handleBinClick,
     handleBackgroundClick,
+    tickFormatter,
   } = props;
 
   // If x_scale is a band scale, set the padding to 0.1 to create
@@ -183,10 +185,14 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         });
       })
       .append("title")
-      .text(
-        (bin) =>
-          `Count: ${bin.length}\n\nRange: ${bin.x0} (inclusive) to \n${bin.x1} (exclusive, except for last bar)`,
-      );
+      .text((bin) => {
+        const x0 = tickFormatter ? tickFormatter(bin.x0) : bin.x0;
+        const x1 = tickFormatter ? tickFormatter(bin.x1) : bin.x1;
+        return `Count: ${bin.length}\n\nRange: ${x0} (inclusive) to \n${x1} (exclusive, except for last bar)`;
+      });
+
+    let x_axis = d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0);
+    x_axis.tickFormat(tickFormatter);
 
     // Add the x-axis and label.
     histogram
@@ -195,7 +201,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       .style("font-size", font_size + "px")
       .style("font-family", font_family)
       .attr("transform", `translate(0,${y_scale_range[0]})`)
-      .call(d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0))
+      .call(x_axis)
       .call((g) =>
         g
           .append("text")

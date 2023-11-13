@@ -8,6 +8,7 @@ import {
   ValueIndexType,
   selectColormap,
   selectXScale,
+  selectXScaleType,
   selectXTicks,
   selectYTicks,
   selectYScaleRange,
@@ -18,7 +19,9 @@ import {
   selectYLabelY,
   selectXHasCustomRange,
   selectXValuesAndIndexes,
+  selectXValuesLogAndIndexes,
   selectXValuesAndIndexesWithoutHidden,
+  selectXValuesLogAndIndexesWithoutHidden,
   selectXColumnType,
 } from "../selectors";
 import {
@@ -60,12 +63,19 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const dispatch = useDispatch();
   // Making a copy of the x_scale to avoid mutating the selector since we will be modifying the scale's domain
   const x_scale = useSelector(selectXScale).copy();
+  const x_scale_type = useSelector(selectXScaleType);
   const colormap = useSelector(selectColormap);
   const y_scale_range = useSelector(selectYScaleRange);
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
-  const x_values_and_indexes = useSelector(selectXValuesAndIndexes);
-  const x_values_and_indexes_without_hidden = useSelector(selectXValuesAndIndexesWithoutHidden);
+  const x_values_and_indexes = useSelector(
+    x_scale_type === "Log" ? selectXValuesLogAndIndexes : selectXValuesAndIndexes,
+  );
+  const x_values_and_indexes_without_hidden = useSelector(
+    x_scale_type === "Log"
+      ? selectXValuesLogAndIndexesWithoutHidden
+      : selectXValuesAndIndexesWithoutHidden,
+  );
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
   // Doubling size of selected points border width because histogram bars are generally much large
   // and need a thicker border to stand out from the unselected bars.
@@ -150,7 +160,9 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
       const grouped = d3.group(values_and_indexes, (d) => d.value);
       // Sort the groups by value (values are all strings, so let's use localeCompare)
       const groupedSorted = new Map(
-        [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0])),
+        [...grouped.entries()].sort((a, b) => {
+          return a[0].toString().localeCompare(b[0].toString());
+        }),
       );
       // Reformat the groupedSorted Map into same format as d3.bin() output,
       // which is an array of arrays with each array containing the following:
@@ -289,6 +301,13 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     setFlashBinIndexes(flashBins);
   }, [selected_simulations_without_hidden]);
 
+  const tickFormatter =
+    x_scale_type == "Log"
+      ? (d: number, index?: number) => {
+          return `${Math.pow(10, d)}`;
+        }
+      : null;
+
   return (
     <>
       <PlotBackground background={background} />
@@ -327,6 +346,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         y_label_horizontal_offset={Y_LABEL_HORIZONTAL_OFFSET}
         handleBinClick={handleBinClick}
         handleBackgroundClick={handleBackgroundClick}
+        tickFormatter={tickFormatter}
       />
     </>
   );
