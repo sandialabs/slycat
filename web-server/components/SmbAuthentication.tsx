@@ -26,6 +26,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
       password: "",
       share: display.share?display.share:null,
       domain: display.domain?display.domain:null,
+      domains: [],
       hostnames : [],
       loadingData: this.props.loadingData,
       initialLoad: false,
@@ -83,9 +84,23 @@ export default class SmbAuthentication extends React.Component<any,any> {
       })
   };
 
+  /**
+   * gets a list of all the known domain names that we can connect to
+   * via ssh
+   * 
+   * @memberof SmbAuthentication
+   */
+  getDomains = async () => {
+    return client.get_configuration_smb_domains_fetch()
+      .then((json)=>{
+        this.setState({domains:json.domains});
+      })
+  }
+
   async componentDidMount(){
     await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
+    await this.getDomains();
     if(this.poll){
       clearInterval(this.poll);
     }
@@ -231,15 +246,6 @@ export default class SmbAuthentication extends React.Component<any,any> {
           </div>
         </div>
         <div className='form-group row mb-3'>
-          <label className='col-sm-2 col-form-label'>Domain Name</label>
-          <div className='col-sm-9'>
-            <input disabled={this.props.loadingData}
-              className='form-control' type='text'
-              value={this.state.domain?this.state.domain:""}
-              onChange={(e)=>this.onValueChange(e.target.value, "domain")} />
-          </div>
-        </div>
-        <div className='form-group row mb-3'>
           <label className='col-sm-2 col-form-label'>Username</label>
           <div className='col-sm-9'>
             <input disabled={this.props.loadingData} 
@@ -262,7 +268,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
   }
 
   /**
-   * maps the hostnames as dropdowns items JSX
+   * maps the hostnames as dropdown items JSX
    *
    * @memberof SmbAuthentication
    */
@@ -277,6 +283,24 @@ export default class SmbAuthentication extends React.Component<any,any> {
       )
     });
     return hostnamesJSX;
+  }
+
+  /**
+   * maps the domains as dropdown items JSX
+   * 
+   * @memberof SmbAuthentication
+   */
+  getDomainsJSX = () => {
+    const domainsJSX = this.state.domains.map((domain, i) => {
+      return (
+        <li key={i}>
+          <a className='dropdown-item' onClick={(e:any)=>this.onValueChange(e.target.text, "domain")}>
+            {domain}
+          </a>
+        </li>
+      )
+    });
+    return domainsJSX;
   }
 
   /**
@@ -306,6 +330,23 @@ export default class SmbAuthentication extends React.Component<any,any> {
               </div>
               <input className='form-control' value={this.state.hostname?this.state.hostname:""} type='text' 
               onChange={(e)=>this.onValueChange(e.target.value, "hostname")} />
+            </div>
+          </div>
+        </div>
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Domains</label>
+          <div className='col-sm-9'>
+            <div className='input-group'>
+              <div className='input-group-prepend'>
+                <button className='btn btn-secondary dropdown-toggle'
+                  type='button' id='dropdownMenuButton'
+                  data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' />
+                <ul className='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+                  {this.getDomainsJSX()}
+                </ul>
+              </div>
+              <input className='form-control' value={this.state.domain?this.state.domain:""} type='text'
+              onChange={(e)=>this.onValueChange(e.target.value, "domain")} />
             </div>
           </div>
         </div>

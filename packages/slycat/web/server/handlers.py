@@ -3161,7 +3161,7 @@ def get_configuration_smb_domains():
     if "smb-domains" in cherrypy.request.app.config["slycat-web-server"]:
         domains = cherrypy.request.app.config["slycat-web-server"]["smb-domains"]
         json_domains = {"domains": domains}
-        return domains
+        return json_domains
     return {"domains":[]}
 
 @cherrypy.tools.json_out(on=True)
