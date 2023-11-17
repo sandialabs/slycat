@@ -25,6 +25,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
       session_exists: null,
       password: "",
       share: display.share?display.share:null,
+      domain: display.domain?display.domain:null,
       hostnames : [],
       loadingData: this.props.loadingData,
       initialLoad: false,
@@ -45,8 +46,8 @@ export default class SmbAuthentication extends React.Component<any,any> {
           initialLoad:true,
           loadingData:false
         }, () => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
     }).catch(response => {
       this.setState({
@@ -55,7 +56,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
         loadingData:false
       }, () => {
         this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
       });
     });
   };
@@ -134,29 +135,36 @@ export default class SmbAuthentication extends React.Component<any,any> {
         localStorage.setItem("slycat-smb-remote-controls-share", value);
         this.setState({share: value},() => {
           this.checkRemoteStatus(this.state.hostname);
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
+        break;
+      case "domain":
+        localStorage.setItem("slycat-smb-remote-controls-domain", value);
+        this.setState({domain: value},() => {
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists)
+        })
         break;
       case "username":
         localStorage.setItem("slycat-smb-remote-controls-username", value);
         this.setState({username: value},() => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
         break;
       case "hostname":
         localStorage.setItem("slycat-smb-remote-controls-hostname", value);
         this.checkRemoteStatus(value);
         this.setState({hostname: value},() => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
         break;
       case "password":
         this.setState({password: value},() => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
         break;
       default:
@@ -201,7 +209,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
     if (e.key === 'Enter') {
       let last_key = e.key;
       this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists, last_key);
+        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists, last_key);
     }
   }
 
@@ -220,6 +228,15 @@ export default class SmbAuthentication extends React.Component<any,any> {
               className='form-control' type='text'
               value={this.state.share?this.state.share:""}
               onChange={(e)=>this.onValueChange(e.target.value, "share")} />
+          </div>
+        </div>
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Domain Name</label>
+          <div className='col-sm-9'>
+            <input disabled={this.props.loadingData}
+              className='form-control' type='text'
+              value={this.state.domain?this.state.domain:""}
+              onChange={(e)=>this.onValueChange(e.target.value, "domain")} />
           </div>
         </div>
         <div className='form-group row mb-3'>
