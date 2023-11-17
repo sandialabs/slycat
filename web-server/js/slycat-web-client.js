@@ -518,6 +518,19 @@ module.get_configuration_smb_remote_hosts_fetch = async function () {
   });
 };
 
+module.get_configuration_smb_domains_fetch = async function () {
+  return fetch(`${api_root}configuration/smb-domains`, {
+    credentials: 'same-origin',
+    cache: 'no-store',
+    dataType: 'json'
+  }).then(async function (response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  });
+}
+
 module.get_configuration_version = function (params) {
   $.ajax({
     dataType: 'json',
