@@ -514,6 +514,7 @@ def compute_alpha_clusters_PCA (var_dist, meta_columns, meta_column_types):
 
     OUTPUTS: alpha_cluster_mat is a matrix containing all the alpha
              values for clustering each meta data array
+
     """
 
     # landmarks should always be None for this calculation

@@ -609,6 +609,7 @@ $(document).ready(function () {
 
       for (var i = 0; i < table_metadata["column-count"] - 1; i++) {
         // Only use non-string columns
+        // TODO: check if we need to only do ono strings for some reason
         if (table_metadata["column-types"][i] != "string") x_y_variables.push(i);
       }
 

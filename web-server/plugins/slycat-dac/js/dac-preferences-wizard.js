@@ -4,7 +4,6 @@
 // S. Martin
 // 6/7/2018
 
-import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
 import ko from "knockout";
 import mapping from "knockout-mapping";
@@ -81,11 +80,9 @@ function constructor(params)
 
     // which color is selected (one for continuous, one for discrete)
     var cont_selected = null;
-    // var disc_selected = null;
 
     // also keep track of color maps
     var cont_map = null;
-    // var disc_map = null;
 
     // option defaults
     var DEF_MAX_LABEL_LENGTH = 20;
@@ -93,11 +90,10 @@ function constructor(params)
     var DEF_MAX_NUM_PLOTS = 33;
     var DEF_MAX_POINTS_ANIMATE = 2500;
     var DEF_SCATTER_PLOT_TYPE = "circle";
-    var DEF_CONTROL_BAR_POSITION = "scatter-plot";
     var DEF_MAX_CATS = 50;
     var DEF_MAX_FREETEXT_LEN = 500;
 
-    // UI parameters
+    // init display parameters to defaults
     component.dac_max_label_length = ko.observable(DEF_MAX_LABEL_LENGTH);
     component.dac_max_time_points = ko.observable(DEF_MAX_TIME_POINTS);
     component.dac_max_num_plots = ko.observable(DEF_MAX_NUM_PLOTS);
@@ -117,15 +113,9 @@ function constructor(params)
     // need a large dialog for color palettes
     $(".modal-dialog").addClass("modal-lg");
 
-    // if the user selects the cancel button we quit, doing nothing
-    component.cancel = function() {
-        // revert to normal modal dialog size
-       $(".modal-dialog").removeClass("modal-lg");
-    };
-
     // this function is called to select variables to
     // include (after selecting metadata)
-    var include_variables = function() {
+    var draw_variables = function() {
 
         // load first column and use to let user select metadata
         client.get_model_arrayset_data({
@@ -142,7 +132,6 @@ function constructor(params)
                 var name = null;
                 var type = null;
                 var constant = null;
-                var string = null;
                 var tooltip = null;
 
                 // put time series names into gui attributes
@@ -162,63 +151,32 @@ function constructor(params)
                         lastSelected: false,
                         tooltip: tooltip
                     });
-                };
+                }
 
                 // check to see if user has previously selected columns
-                bookmarker.getState(function(bookmark)
-                {
+                if (var_include_columns.length > 0) {
 
-                    if ("dac-var-include-columns" in bookmark) {
+                    // change attributes according to previous selections
+                    // (re-using local variable i)
+                    for (i = 0; i != attributes.length; i++) {
 
-                        var include_columns = bookmark["dac-var-include-columns"];
-
-                        // change attributes according to previous selections
-                        for (var i = 0; i != attributes.length; i++) {
-
-                            // un-mark non-included columns
-                            if (include_columns.indexOf(i) == -1) {
-                                attributes[i].Include = false;
-                            }
+                        // un-mark non-included columns
+                        if (var_include_columns.indexOf(i) == -1) {
+                            attributes[i].Include = false;
                         }
-
                     }
 
-                    // give access to gui
-                    mapping.fromJS(attributes, component.var_attributes);
+                }
 
-                });
+                // give access to gui
+                mapping.fromJS(attributes, component.var_attributes);
             }
         });
     }
 
-    // upon starting wizard, populate variables
-    include_variables();
-
-    // check that user selected at least one variable
-    component.check_variables = function () {
-
-        // record variables columns that user wants to include
-        var_include_columns = [];
-        for(var i = 0; i != component.var_attributes().length; ++i) {
-            if(component.var_attributes()[i].Include())
-                var_include_columns.push(i);
-        };
-
-        // user must select at least one column
-        if (var_include_columns.length > 0) {
-
-            // advance to metadata tab
-            $("#dac-inc-var-error").hide();
-            component.tab(1);
-
-        } else {
-            $("#dac-inc-var-error").show();
-        }
-    }
-
     // this function gets called after all data is uploaded,
     // including metadata table
-    var include_metadata = function() {
+    var draw_metadata = function() {
 
         // load header row and use to let user select metadata
         client.get_model_arrayset_metadata({
@@ -253,28 +211,22 @@ function constructor(params)
                 }
 
                 // check to see if user has previously selected columns
-                bookmarker.getState(function(bookmark)
-                {
+                if (meta_include_columns.length > 0) {
 
-                    if ("dac-meta-include-columns" in bookmark) {
+                    // change attributes according to previous selections
+                    // (re-using local variable i)
+                    for (i = 0; i != attributes.length; i++) {
 
-                        var include_columns = bookmark["dac-meta-include-columns"];
-
-                        // change attributes according to previous selections
-                        for (var i = 0; i != attributes.length; i++) {
-
-                            // un-mark non-included columns
-                            if (include_columns.indexOf(i) == -1) {
-                                attributes[i].Include = false;
-                            }
+                        // un-mark non-included columns
+                        if (meta_include_columns.indexOf(i) == -1) {
+                            attributes[i].Include = false;
                         }
-
                     }
 
-                    // give access to gui
-                    mapping.fromJS(attributes, component.meta_attributes);
+                }
 
-                });
+                // give access to gui
+                mapping.fromJS(attributes, component.meta_attributes);
             }
         });
 
@@ -287,116 +239,6 @@ function constructor(params)
         });
 
     };
-
-    // upon starting wizard, populate metadata
-    include_metadata();
-
-    // check metadata results
-    component.check_metadata = function () {
-
-        // record metadata columns that user wants to include
-        meta_include_columns = [];
-        for(var i = 0; i != component.meta_attributes().length; ++i) {
-            if(component.meta_attributes()[i].Include())
-                meta_include_columns.push(i);
-        };
-
-        // user must select at least one column
-        if (meta_include_columns.length > 0) {
-
-            // advance to color tab
-            $("#dac-inc-meta-error").hide();
-            component.tab(2);
-
-        } else {
-            $("#dac-inc-meta-error").show();
-        }
-
-
-    }
-
-    // set up swatches in third panel
-    var draw_swatches = function () {
-
-        // set up swatches
-        d3.select("#dac-sequential-swatches")
-            .selectAll(".dac-palette")
-                .data(d3.entries(cb_seq))
-            .enter().append("span")
-                .attr("class", "dac-palette")
-                .attr("title", function(d) { return d.key; })
-            .on("click", select_cont_palette)
-            .selectAll(".dac-swatch")
-                .data(function(d) { return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
-                .enter().append("span")
-            .attr("class", "dac-swatch")
-            .style("background-color", function(d) { return d; });
-
-        d3.select("#dac-diverging-swatches")
-            .selectAll(".dac-palette")
-                .data(d3.entries(cb_div))
-            .enter().append("span")
-                .attr("class", "dac-palette")
-                .attr("title", function(d) { return d.key; })
-            .on("click", select_cont_palette)
-            .selectAll(".dac-swatch")
-                .data(function(d) { return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
-                .enter().append("span")
-            .attr("class", "dac-swatch")
-            .style("background-color", function(d) { return d; });
-
-        d3.select("#dac-discrete-swatches")
-            .selectAll(".dac-palette")
-                .data(d3.entries(cb_disc))
-            .enter().append("span")
-                .attr("class", "dac-palette")
-                .attr("title", function(d) { return d.key; })
-            .on("click", select_cont_palette)
-            .selectAll(".dac-swatch")
-                .data(function(d) { return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
-                .enter().append("span")
-            .attr("class", "dac-swatch")
-            .style("background-color", function(d) { return d; });
-
-        // load up previous continuous selection, if any
-        bookmarker.getState(function(bookmark)
-        {
-
-            if ("dac-cont-colormap" in bookmark) {
-
-                var cont_data = bookmark["dac-cont-colormap"];
-
-                // set continuous color map data
-                cont_map = cont_data[0];
-                cont_selected = cont_data[1];
-
-                // is there a selection?
-                if (cont_selected != null) {
-
-                    // is it a diverging selection?
-                    if (cont_selected in cb_div) {
-
-                        // yes, switch to diverging color scales
-                        component.dac_scale_type("diverging");
-                    }
-
-                    // is it a discrete selection? (added for continuous, discrete merge)
-                    if (cont_selected in cb_disc) {
-
-                        // yes, switch to discrete color scales
-                        component.dac_scale_type("discrete");
-                    }
-
-                    // either way, highlight previous selection
-                    d3.select("[title=" + cont_selected + "]")
-                        .style("background-color", "#444")
-
-                };
-            };
-
-        });
-
-    }
 
     // set continuous color palette selection
     var select_cont_palette = function (d) {
@@ -415,7 +257,7 @@ function constructor(params)
         } else {
 
             // remove previous sequential/diverging selections
-            if (cont_selected != null) {
+            if (cont_selected !== null) {
 
                 // if previous sequential selection then remove
                 d3.select("[title=" + cont_selected + "]")
@@ -432,93 +274,223 @@ function constructor(params)
             cont_map = d3.values(d.value).map(JSON.stringify).join("\n");
 
         }
-
     }
 
-    /* disconected, only using select_cont_palette
-    // set discrete color palette selection
-    var select_disc_palette = function (d) {
+    // set up swatches in third panel
+    var draw_swatches = function () {
 
-        // if previously selected, then unselect
-        if (d.key == disc_selected) {
+        // set up swatches
+        d3.select("#dac-sequential-swatches")
+            .selectAll(".dac-palette")
+                .data(d3.entries(cb_seq))
+            .enter().append("span")
+                .attr("class", "dac-palette")
+                .attr("title", function(d) { return d.key; })
+            .on("click", select_cont_palette)
+            .selectAll(".dac-swatch")
+                .data(function(d) { 
+                    return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
+                .enter().append("span")
+            .attr("class", "dac-swatch")
+            .style("background-color", function(d) { return d; });
 
-            // unselect in UI
-            d3.select("[title=" + disc_selected + "]")
-                .style("background-color", "#fff")
+        d3.select("#dac-diverging-swatches")
+            .selectAll(".dac-palette")
+                .data(d3.entries(cb_div))
+            .enter().append("span")
+                .attr("class", "dac-palette")
+                .attr("title", function(d) { return d.key; })
+            .on("click", select_cont_palette)
+            .selectAll(".dac-swatch")
+                .data(function(d) { 
+                    return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
+                .enter().append("span")
+            .attr("class", "dac-swatch")
+            .style("background-color", function(d) { return d; });
 
-            // unselect in code
-            disc_selected = null;
-            disc_map = null;
+        d3.select("#dac-discrete-swatches")
+            .selectAll(".dac-palette")
+                .data(d3.entries(cb_disc))
+            .enter().append("span")
+                .attr("class", "dac-palette")
+                .attr("title", function(d) { return d.key; })
+            .on("click", select_cont_palette)
+            .selectAll(".dac-swatch")
+                .data(function(d) { 
+                    return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
+                .enter().append("span")
+            .attr("class", "dac-swatch")
+            .style("background-color", function(d) { return d; });
 
-        } else {
+        // check for previous colormap selection
+        if (cont_selected !== null) {
 
-            // remove previous sequential/diverging selections
-            if (disc_selected != null) {
+            // is it a diverging selection?
+            if (cont_selected in cb_div) {
 
-                // if previous sequential selection then remove
-                d3.select("[title=" + disc_selected + "]")
-                    .style("background-color", "#fff")
-
+                // yes, switch to diverging color scales
+                component.dac_scale_type("diverging");
             }
 
-            // now set new selection
-            disc_selected = d.key;
-            d3.select("[title=" + disc_selected + "]")
-                .style("background-color", "#444")
+            // is it a discrete selection? (added for continuous, discrete merge)
+            if (cont_selected in cb_disc) {
 
-            // keep up with actual color map too
-            disc_map = d3.values(d.value).map(JSON.stringify).join("\n");
-
+                // yes, switch to discrete color scales
+                component.dac_scale_type("discrete");
+            }
         }
 
-    }
-    */
-
-    // initialize all swatches, switch betweent them in wizard
-    draw_swatches();
-
-    // initialize options with any previous selections
-    var init_options = function () {
-
-        // load previous selections
-        bookmarker.getState(function(bookmark)
-        {
-
-            // set options, if they exist
-            if ("dac-MAX-PLOT-NAME" in bookmark) {
-                component.dac_max_label_length(bookmark["dac-MAX-PLOT-NAME"]); };
-
-            if ("dac-MAX-TIME-POINTS" in bookmark){
-                component.dac_max_time_points(bookmark["dac-MAX-TIME-POINTS"]); };
-
-            if ("dac-MAX-NUM-POINTS" in bookmark) {
-                component.dac_max_num_plots(bookmark["dac-MAX-NUM-PLOTS"]); };
-
-            if ("dac-MAX-POINTS-ANIMATE" in bookmark) {
-                component.dac_max_points_animate(bookmark["dac-MAX-POINTS-ANIMATE"]); };
-
-            if ("dac-SCATTER-PLOT-TYPE" in bookmark) {
-                component.dac_scatter_plot_type(bookmark["dac-SCATTER-PLOT-TYPE"]); };
-
-            if ("dac-MAX-CATS" in bookmark) {
-                component.dac_max_cats(bookmark["dac-MAX-CATS"]); };
-
-            if ("dac-MAX-FREETEXT-LEN" in bookmark) {
-                component.dac_max_freetext_len(bookmark["dac-MAX-FREETEXT-LEN"]); };
-
-        });
+        // either way, highlight previous selection
+        d3.select("[title=" + cont_selected + "]")
+            .style("background-color", "#444")
 
     }
 
-    // set options to display any previous selections
-    init_options();
+    // load model preferences then draw wizard
+    var draw_wizard = function () {
+
+        // get previous state of model preferences
+        client.get_model({
+            mid: component.model._id(),
+            success: function (result)
+            {
+                // check for variables to include
+                if ('artifact:dac-var-include-columns' in result) {
+                    var_include_columns = result['artifact:dac-var-include-columns'];
+                }
+                draw_variables();
+
+                // check for meta data to include
+                if ('artifact:dac-meta-include-columns' in result) {
+                    meta_include_columns = result['artifact:dac-meta-include-columns'];
+                }
+                draw_metadata();
+
+                // check for color pallette
+                if ('artifact:dac-cont-colormap' in result) {
+
+                    var color_parms = result['artifact:dac-cont-colormap'];
+                    cont_map = color_parms[0];
+                    cont_selected = color_parms[1];
+
+                } else {
+
+                    cont_selected = 'Greys';
+                    cont_map = JSON.stringify(cb_seq[cont_selected][9]);
+                }
+                draw_swatches();
+
+                // set display parameters according to previous preferences
+                if ('artifact:dac-display-parms' in result) {
+
+                    var display_parms = result['artifact:dac-display-parms'];
+
+                    // dac-MAX-PLOT-NAME, dac-MAX-COLOR-NAME, dac-MAX-SLIDER-NAME
+                    // are all set ot dac_max_label_length
+                    component.dac_max_label_length(display_parms["dac-MAX-PLOT-NAME"]);
+                    component.dac_max_time_points(display_parms['dac-MAX-TIME-POINTS']);
+                    component.dac_max_num_plots(display_parms['dac-MAX-NUM-PLOTS']);
+                    component.dac_max_points_animate(display_parms['dac-MAX-POINTS-ANIMATE']);
+                    component.dac_scatter_plot_type(display_parms['dac-SCATTER-PLOT-TYPE']);
+                    component.dac_max_cats(display_parms['dac-MAX-CATS']);
+                    component.dac_max_freetext_len(display_parms['dac-MAX-FREETEXT-LEN']);
+                }
+            }
+        })
+    }
+    draw_wizard();
+
+    // call backs for UI buttons
+    // -------------------------
+
+    // if the user selects the cancel button we quit, doing nothing
+    component.cancel = function() {
+
+        // revert to normal modal dialog size
+        $(".modal-dialog").removeClass("modal-lg");
+    };
+
+    // function for operating the back button in the wizard
+    component.back = function() {
+
+        var target = component.tab();
+
+        target--;
+
+        component.tab(target);
+    };
+
+    // check that user selected at least one variable
+    component.check_variables = function () {
+
+        // record variables columns that user wants to include
+        var_include_columns = [];
+        for(var i = 0; i != component.var_attributes().length; ++i) {
+            if(component.var_attributes()[i].Include()) {
+                var_include_columns.push(i);
+            }
+        }
+
+        // user must select at least one column
+        if (var_include_columns.length > 0) {
+
+            // advance to metadata tab
+            $("#dac-inc-var-error").hide();
+            component.tab(1);
+
+        } else {
+            $("#dac-inc-var-error").show();
+        }
+    }
+
+    // check metadata results
+    component.check_metadata = function () {
+
+        // record metadata columns that user wants to include
+        meta_include_columns = [];
+        for(var i = 0; i != component.meta_attributes().length; ++i) {
+            if(component.meta_attributes()[i].Include()) {
+                meta_include_columns.push(i);
+            }
+        }
+
+        // user must select at least one column
+        if (meta_include_columns.length > 0) {
+
+            // advance to color tab
+            $("#dac-inc-meta-error").hide();
+            component.tab(2);
+
+        } else {
+            $("#dac-inc-meta-error").show();
+        }
+    }
 
     // show options tab
     component.speedup_preferences = function() {
 
         // show speed up preferences
         component.tab(3);
+    };
 
+    // reset defaults on options pane
+    component.reset_defaults = function () {
+
+        component.dac_max_label_length(DEF_MAX_LABEL_LENGTH);
+        component.dac_max_time_points(DEF_MAX_TIME_POINTS);
+        component.dac_max_num_plots(DEF_MAX_NUM_PLOTS);
+        component.dac_max_points_animate(DEF_MAX_POINTS_ANIMATE);
+        component.dac_scatter_plot_type(DEF_SCATTER_PLOT_TYPE);
+        component.dac_max_cats(DEF_MAX_CATS);
+        component.dac_max_freetext_len(DEF_MAX_FREETEXT_LEN);
+
+        // turn off any errors
+        $("#dac-label-length").removeClass("is-invalid");
+        $("#dac-max-time-points").removeClass("is-invalid");
+        $("#dac-max-plots").removeClass("is-invalid");
+        $("#dac-max-anim").removeClass("is-invalid");
+        $("#dac-max-cats").removeClass("is-invalid");
+        $("#dac-max-freetext").removeClass("is-invalid");
     };
 
     // check user selection options before finishing wizard
@@ -585,78 +557,12 @@ function constructor(params)
         }
     }
 
-    // reset defaults on options pane
-    component.reset_defaults = function () {
-
-        component.dac_max_label_length(DEF_MAX_LABEL_LENGTH);
-        component.dac_max_time_points(DEF_MAX_TIME_POINTS);
-        component.dac_max_num_plots(DEF_MAX_NUM_PLOTS);
-        component.dac_max_points_animate(DEF_MAX_POINTS_ANIMATE);
-        component.dac_scatter_plot_type(DEF_SCATTER_PLOT_TYPE);
-        component.dac_max_cats(DEF_MAX_CATS);
-        component.dac_max_freetext_len(DEF_MAX_FREETEXT_LEN);
-
-        // turn off any errors
-        $("#dac-label-length").removeClass("is-invalid");
-        $("#dac-max-time-points").removeClass("is-invalid");
-        $("#dac-max-plots").removeClass("is-invalid");
-        $("#dac-max-anim").removeClass("is-invalid");
-        $("#dac-max-cats").removeClass("is-invalid");
-        $("#dac-max-freetext").removeClass("is-invalid");
-
-    };
-
-    // very last function called to launch model
-    component.go_to_model = function() {
-
-        // revert to normal modal dialog size
-        // $(".modal-dialog").removeClass("modal-lg");
-        location = 'models/' + component.model._id();
-    };
-
-    // this script gets called at the end of the 4th tab (after selecting columns to include)
-    component.finish = function() {
-
-        // turn off continue button while we load data
-        $(".browser-continue").toggleClass("disabled", true);
-
-        // update bookmark state to reflect meta data columns
-        bookmarker.updateState({"dac-meta-include-columns": meta_include_columns});
-
-        // update bookmark state to reflect variable columns
-        bookmarker.updateState({"dac-var-include-columns": var_include_columns});
-
-        // update bookmark state to reflect continuous colormap
-        bookmarker.updateState({"dac-cont-colormap": [cont_map, cont_selected]});
-
-        // update bookmark state to reflect discrete colormap
-        // bookmarker.updateState({"dac-disc-colormap": [disc_map, disc_selected]});
-
-        // update remaining options in bookmark state
-        bookmarker.updateState({"dac-MAX-PLOT-NAME": dac_max_label_length,
-                                "dac-MAX-COLOR-NAME": dac_max_label_length,
-                                "dac-MAX-SLIDER-NAME": dac_max_label_length,
-                                "dac-MAX-TIME-POINTS": dac_max_time_points,
-                                "dac-MAX-NUM-PLOTS": dac_max_num_plots,
-                                "dac-MAX-POINTS-ANIMATE": dac_max_points_animate,
-                                "dac-SCATTER-PLOT-TYPE": component.dac_scatter_plot_type(),
-                                "dac-MAX-CATS": dac_max_cats,
-                                "dac-MAX-FREETEXT-LEN": dac_max_freetext_len});
-
-        // reset filters in case table columns have changed
-        var column_filters = [];
-        for (var i = 0; i < (meta_include_columns.length + num_editable_cols); i++) {
-            column_filters.push("");
-        }
-        bookmarker.updateState({"dac-table-filters": column_filters});
-
-        // re-init MDS coords
-        init_MDS_coords();
-
-    };
+    // to save the changes, we have to upload everything in sequence
+    // before the model is reloaded.  the sequence is display, colormap, included
+    // metadata, included variables, re-compute coords, then finish
 
     // call to re-initialize MDS coords and alpha cluster values
-    var init_MDS_coords = function () {
+    var finish_step_5 = function () {
 
         // call server to compute new coords
         client.get_model_command({
@@ -669,27 +575,119 @@ function constructor(params)
                 component.go_to_model();
             },
             error: function () {
-
-                $("#dac-init-MDS-error").show();
+                $("#dac-server-error").show();
                 $(".browser-continue").toggleClass("disabled", false);
             }
         });
     }
 
-    // function for operating the back button in the wizard
-    component.back = function() {
+    var finish_step_4 = function() {
 
-        var target = component.tab();
+        // upload variables included
+        client.put_model_parameter ({
+            mid: component.model._id(),
+            aid: "dac-var-include-columns",
+            value: var_include_columns,
+            success: function () {
+                finish_step_5();
+            },
+            error: function () {
+                $("#dac-server-error").show();
+                $(".browser-continue").toggleClass("disabled", false);
+            }
+        })
+    }
 
-        target--;
+    var finish_step_3 = function() {
 
-        component.tab(target);
+        // upload variables included
+        client.put_model_parameter ({
+            mid: component.model._id(),
+            aid: "dac-meta-include-columns",
+            value: meta_include_columns,
+            success: function () {
+                finish_step_4();
+            },
+            error: function () {
+                $("#dac-server-error").show();
+                $(".browser-continue").toggleClass("disabled", false);
+            }
+        })
+
+    }
+
+    var finish_step_2 = function() {
+
+        // upload colormap
+        client.put_model_parameter ({
+            mid: component.model._id(),
+            aid: "dac-cont-colormap",
+            value: [cont_map, cont_selected],
+            success: function() {
+                finish_step_3();
+            },
+            error: function() {
+                $("#dac-server-error").show();
+                $(".browser-continue").toggleClass("disabled", false);
+            }
+        });
+    }
+
+    var finish_step_1 = function() {
+
+        // upload display paramters
+        client.put_model_parameter ({
+            mid: component.model._id(),
+            aid: "dac-display-parms",
+            value: {"dac-MAX-PLOT-NAME": dac_max_label_length,
+                    "dac-MAX-COLOR-NAME": dac_max_label_length,
+                    "dac-MAX-SLIDER-NAME": dac_max_label_length,
+                    "dac-MAX-TIME-POINTS": dac_max_time_points,
+                    "dac-MAX-NUM-PLOTS": dac_max_num_plots,
+                    "dac-MAX-POINTS-ANIMATE": dac_max_points_animate,
+                    "dac-SCATTER-PLOT-TYPE": component.dac_scatter_plot_type(),
+                    "dac-MAX-CATS": dac_max_cats,
+                    "dac-MAX-FREETEXT-LEN": dac_max_freetext_len},
+            success: function() {
+                finish_step_2();
+            },
+            error: function() {
+                $("#dac-server-error").show();
+                $(".browser-continue").toggleClass("disabled", false);
+            }
+        });
+    }
+
+    // this script gets called at the end of the 4th tab (after selecting columns to include)
+    component.finish = function() {
+
+        // turn off continue button while we load data
+        $(".browser-continue").toggleClass("disabled", true);
+
+        // perform sequential upload/re-computation then re-launch model
+        finish_step_1();
+
+        // reset filters in case table columns have changed
+        // (can be done asychronously)
+        var column_filters = [];
+        for (var i = 0; i < (meta_include_columns.length + num_editable_cols); i++) {
+            column_filters.push("");
+        }
+        bookmarker.updateState({"dac-table-filters": column_filters});
+    };
+
+    // very last function called to launch model
+    component.go_to_model = function() {
+
+        // revert to normal modal dialog size
+        // $(".modal-dialog").removeClass("modal-lg");
+        location = 'models/' + component.model._id();
     };
 
     return component;
 }
 
 export default {
-viewModel: constructor,
-template: dacWizardUI
+    viewModel: constructor,
+    template: dacWizardUI
 };

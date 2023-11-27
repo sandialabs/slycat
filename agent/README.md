@@ -146,7 +146,8 @@
         for command_script in command["scripts"]:
             # compare the payload commands to the registered commands on the agent
             if command_script != "":
-                run_commands.append(self.get_script_run_string(command_script) + " --log_file " + str(jid) + ".log")
+                run_commands.append(self.get_script_run_string(command_script))
+                # run_commands.append(self.get_script_run_string(command_script) + " --log_file " + str(jid) + ".log")
         if not run_commands:
             results = {"ok": False, "message": "could not create a run command did you register your script with "
                                                "slycat?"}
