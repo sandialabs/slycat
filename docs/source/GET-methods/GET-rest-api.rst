@@ -9,6 +9,7 @@ GET METHODS
     GET-Configuration-Markings.rst
     GET-Selectable-Configuration-Markings.rst
     GET-Configuration-Parsers.rst
+    GET-Configuration-Remote-Hosts.rst
     GET-Bookmark.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
