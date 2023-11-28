@@ -3147,12 +3147,6 @@ def get_configuration_smb_remote_hosts():
 def get_configuration_support_email():
     return cherrypy.request.app.config["slycat-web-server"]["support-email"]
 
-
-@cherrypy.tools.json_out(on=True)
-def get_configuration_injected_code():
-    return cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-
-
 @cherrypy.tools.json_out(on=True)
 def get_configuration_ga_tracking_id():
     return cherrypy.request.app.config["slycat-web-server"].get("ga-tracking-id", "")
