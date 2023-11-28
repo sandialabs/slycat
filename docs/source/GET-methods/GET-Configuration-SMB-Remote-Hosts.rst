@@ -1,9 +1,9 @@
-GET Configuration Remote Hosts
+GET Configuration SMB Remote Hosts
 ==============================
 
-.. http:get:: /api/configuration/remote-hosts
+.. http:get:: /api/configuration/smb-remote-hosts
 
-  Returns a list of remote host and if they have a slycat agent
+  Returns a list of SMB remote hosts
 
   :status 200:
 
@@ -13,7 +13,7 @@ GET Configuration Remote Hosts
 
   .. sourcecode:: http
 
-    GET /api/configuration/remote-hosts HTTP/1.1
+    GET /api/configuration/smb-remote-hosts HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
@@ -39,7 +39,7 @@ GET Configuration Remote Hosts
     date: Fri, 20 Oct 2023 15:55:35 GMT
     connection: close
 
-    [{"hostname": "localhost", "agent": false}]
+    {"hostnames": ["example.test"]}
 
 See Also
 --------
@@ -47,4 +47,4 @@ See Also
 - :http:get:`/api/remotes/(hostname)/file(path)`
 - :http:get:`/api/remotes/(hostname)/image(path)`
 - :http:get:`/api/remotes/(hostname)/videos/(vsid)`
-- :http:get:`/api/configuration/smb-remote-hosts`
+- :http:get:`/api/configuration/remote-hosts`
