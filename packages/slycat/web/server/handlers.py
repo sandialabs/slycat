@@ -3163,7 +3163,7 @@ def get_configuration_version():
                                      stdout=subprocess.PIPE).communicate()[0].strip()
             except:
                 pass
-    return {"version": slycat.__version__, "commit": get_configuration_version.commit}
+    return {"version": slycat.__version__, "commit": get_configuration_version.commit.decode('utf-8')}
 
 
 get_configuration_version.lock = threading.Lock()
