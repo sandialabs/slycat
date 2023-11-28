@@ -8,6 +8,8 @@ import logging
 import os
 import re
 import sys
+# datetime is required to parse the config file
+import datetime
 
 import slycat.web.server.cleanup
 import slycat.web.server.handlers

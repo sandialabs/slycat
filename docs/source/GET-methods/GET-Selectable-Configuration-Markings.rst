@@ -1,9 +1,9 @@
-GET Configuration Markings
-==========================
+GET Selectable Configuration Markings
+=====================================
 
-.. http:get:: /api/configuration/markings
+.. http:get:: /api/configuration/selectable-markings
 
-  Retrieves the markings
+  Retrieves the selectable markings
 
 
   :responseheader Content-Type: application/json
@@ -12,7 +12,7 @@ GET Configuration Markings
 
   .. sourcecode:: http
 
-    GET /api/configuration/markings HTTP/1.1
+    GET /api/configuration/selectable-markings HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
@@ -52,4 +52,4 @@ GET Configuration Markings
 See Also
 --------
 
-- :http:get:`/api/configuration/selectable-markings`
+- :http:get:`/api/configuration/markings`
