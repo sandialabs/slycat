@@ -14,6 +14,7 @@ GET METHODS
     GET-Configuration-Support-Email.rst
     GET-Configuration-GA-Tracking-ID.rst
     GET-Configuration-Version.rst
+    GET-Configuration-Wizards.rst
     GET-Bookmark.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
