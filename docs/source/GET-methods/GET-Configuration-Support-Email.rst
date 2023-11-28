@@ -1,9 +1,9 @@
-GET Configuration SMB Remote Hosts
-==================================
+GET Configuration Support Email
+===============================
 
-.. http:get:: /api/configuration/smb-remote-hosts
+.. http:get:: /api/configuration/support-email
 
-  Returns a list of SMB remote hosts
+  Returns the support email for a users to email for help
 
   :status 200:
 
@@ -13,7 +13,7 @@ GET Configuration SMB Remote Hosts
 
   .. sourcecode:: http
 
-    GET /api/configuration/smb-remote-hosts HTTP/1.1
+    GET /api/configuration/support-email HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
@@ -39,12 +39,4 @@ GET Configuration SMB Remote Hosts
     date: Fri, 20 Oct 2023 15:55:35 GMT
     connection: close
 
-    {"hostnames": ["example.test"]}
-
-See Also
---------
-
-- :http:get:`/api/remotes/(hostname)/file(path)`
-- :http:get:`/api/remotes/(hostname)/image(path)`
-- :http:get:`/api/remotes/(hostname)/videos/(vsid)`
-- :http:get:`/api/configuration/remote-hosts`
+    {"address": "nobody@example.com", "subject": "Slycat Support Request"}

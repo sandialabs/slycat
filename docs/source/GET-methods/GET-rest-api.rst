@@ -11,6 +11,7 @@ GET METHODS
     GET-Configuration-Parsers.rst
     GET-Configuration-Remote-Hosts.rst
     GET-Configuration-SMB-Remote-Hosts.rst
+    GET-Configuration-Support-Email.rst
     GET-Bookmark.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
