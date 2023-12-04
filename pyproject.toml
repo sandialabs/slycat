@@ -21,7 +21,7 @@ sklearn = "^0.0"
 npTDMS = "^1.4.0"
 pandas = "^1.4.1"
 pysmb = "^1.2.7"
-setuptools = "^61.0.0"
+setuptools = "^65.5.1"
 Pillow = "^9.0.1"
 
 [tool.poetry.dev-dependencies]
