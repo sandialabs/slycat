@@ -3158,6 +3158,11 @@ def get_configuration_smb_remote_hosts():
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_smb_domains():
+    """
+    Returns the SMB domains from the slycat web server 
+    configuration file
+    :return: domain names
+    """
     if "smb-domains" in cherrypy.request.app.config["slycat-web-server"]:
         domains = cherrypy.request.app.config["slycat-web-server"]["smb-domains"]
         json_domains = {"domains": domains}
