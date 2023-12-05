@@ -38,7 +38,7 @@ GET SMB Domain Names
     content-type: application/json
     connection: close
 
-    {"selected-column":34,"selected-row":13}
+    {"domains":['domain_1', 'domain_2', 'domain_3']}
 
 See Also
 --------
