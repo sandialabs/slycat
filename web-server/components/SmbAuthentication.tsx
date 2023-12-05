@@ -25,6 +25,8 @@ export default class SmbAuthentication extends React.Component<any,any> {
       session_exists: null,
       password: "",
       share: display.share?display.share:null,
+      domain: display.domain?display.domain:null,
+      domains: [],
       hostnames : [],
       loadingData: this.props.loadingData,
       initialLoad: false,
@@ -45,8 +47,8 @@ export default class SmbAuthentication extends React.Component<any,any> {
           initialLoad:true,
           loadingData:false
         }, () => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
     }).catch(response => {
       this.setState({
@@ -55,7 +57,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
         loadingData:false
       }, () => {
         this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
       });
     });
   };
@@ -82,9 +84,23 @@ export default class SmbAuthentication extends React.Component<any,any> {
       })
   };
 
+  /**
+   * gets a list of all the known domain names that we can connect to
+   * via ssh
+   * 
+   * @memberof SmbAuthentication
+   */
+  getDomains = async () => {
+    return client.get_configuration_smb_domains_fetch()
+      .then((json)=>{
+        this.setState({domains:json.domains});
+      })
+  }
+
   async componentDidMount(){
     await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
+    await this.getDomains();
     if(this.poll){
       clearInterval(this.poll);
     }
@@ -134,29 +150,36 @@ export default class SmbAuthentication extends React.Component<any,any> {
         localStorage.setItem("slycat-smb-remote-controls-share", value);
         this.setState({share: value},() => {
           this.checkRemoteStatus(this.state.hostname);
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
+        break;
+      case "domain":
+        localStorage.setItem("slycat-smb-remote-controls-domain", value);
+        this.setState({domain: value},() => {
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+          this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists)
+        })
         break;
       case "username":
         localStorage.setItem("slycat-smb-remote-controls-username", value);
         this.setState({username: value},() => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
         break;
       case "hostname":
         localStorage.setItem("slycat-smb-remote-controls-hostname", value);
         this.checkRemoteStatus(value);
         this.setState({hostname: value},() => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
         break;
       case "password":
         this.setState({password: value},() => {
-          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username + '@' + this.state.domain),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists);
         });
         break;
       default:
@@ -201,7 +224,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
     if (e.key === 'Enter') {
       let last_key = e.key;
       this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
-        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists, last_key);
+        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.domain, this.state.session_exists, last_key);
     }
   }
 
@@ -245,7 +268,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
   }
 
   /**
-   * maps the hostnames as dropdowns items JSX
+   * maps the hostnames as dropdown items JSX
    *
    * @memberof SmbAuthentication
    */
@@ -260,6 +283,24 @@ export default class SmbAuthentication extends React.Component<any,any> {
       )
     });
     return hostnamesJSX;
+  }
+
+  /**
+   * maps the domains as dropdown items JSX
+   * 
+   * @memberof SmbAuthentication
+   */
+  getDomainsJSX = () => {
+    const domainsJSX = this.state.domains.map((domain, i) => {
+      return (
+        <li key={i}>
+          <a className='dropdown-item' onClick={(e:any)=>this.onValueChange(e.target.text, "domain")}>
+            {domain}
+          </a>
+        </li>
+      )
+    });
+    return domainsJSX;
   }
 
   /**
@@ -289,6 +330,23 @@ export default class SmbAuthentication extends React.Component<any,any> {
               </div>
               <input className='form-control' value={this.state.hostname?this.state.hostname:""} type='text' 
               onChange={(e)=>this.onValueChange(e.target.value, "hostname")} />
+            </div>
+          </div>
+        </div>
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Domains</label>
+          <div className='col-sm-9'>
+            <div className='input-group'>
+              <div className='input-group-prepend'>
+                <button className='btn btn-secondary dropdown-toggle'
+                  type='button' id='dropdownMenuButton'
+                  data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' />
+                <ul className='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+                  {this.getDomainsJSX()}
+                </ul>
+              </div>
+              <input className='form-control' value={this.state.domain?this.state.domain:""} type='text'
+              onChange={(e)=>this.onValueChange(e.target.value, "domain")} />
             </div>
           </div>
         </div>

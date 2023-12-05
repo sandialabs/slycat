@@ -90,6 +90,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-parsers", "/configuration/parsers", slycat.web.server.handlers.get_configuration_parsers, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-remote-hosts", "/configuration/remote-hosts", slycat.web.server.handlers.get_configuration_remote_hosts, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-smb-remote-hosts", "/configuration/smb-remote-hosts", slycat.web.server.handlers.get_configuration_smb_remote_hosts, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-configuration-smb-domains", "/configuration/smb-domains", slycat.web.server.handlers.get_configuration_smb_domains, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-support-email", "/configuration/support-email", slycat.web.server.handlers.get_configuration_support_email, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-injected-code", "/configuration/injected-code", slycat.web.server.handlers.get_configuration_injected_code, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-ga-tracking-id", "/configuration/ga-tracking-id", slycat.web.server.handlers.get_configuration_ga_tracking_id, conditions={"method" : ["GET"]})

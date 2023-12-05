@@ -7,6 +7,7 @@ GET METHODS
     :maxdepth: 1
 
     GET-Bookmark.rst
+    GET-Configuration-SMB-Domains.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
     GET-Model-Arrayset-Metadata.rst

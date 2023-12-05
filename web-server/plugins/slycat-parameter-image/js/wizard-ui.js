@@ -45,6 +45,7 @@ function constructor(params) {
     username: null,
     password: null,
     share: null,
+    domain: null,
     status: null,
     status_type: null,
     enable: true,
@@ -260,6 +261,7 @@ function constructor(params) {
     username,
     password,
     share,
+    domain,
     session_exists,
     last_key
   ) {
@@ -267,6 +269,7 @@ function constructor(params) {
     component.remote.username(username);
     component.remote.password(password);
     component.remote.share(share);
+    component.remote.domain(domain);
     component.remote.session_exists(session_exists);
     //If the user hits enter key, try to connect
     if (last_key === "Enter") {
