@@ -1,5 +1,5 @@
 GET SMB Domain Names
-============
+========================
 
 .. http:get:: /configuration/smb-domains
 
