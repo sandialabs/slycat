@@ -39,4 +39,4 @@ GET Configuration Version
     date: Fri, 20 Oct 2023 15:55:35 GMT
     connection: close
 
-    {"version": "3.1.1", "commit": "c6bf315d8efca9e56809c95f4824599c86a00f8c"}
+    {"version": "3.4.2", "commit": "c6bf315d8efca9e56809c95f4824599c86a00f8c"}
