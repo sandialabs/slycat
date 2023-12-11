@@ -446,7 +446,14 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
+@cherrypy.tools.json_out(on=True)
 def get_project_file_names(pid):
+    """
+    Gets all the stored filenames on the server that can be used to make models for a 
+    given project
+    :param pid: project ID
+    :return: array of found project data file names
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -456,17 +463,10 @@ def get_project_file_names(pid):
     if not project_datas:
         cherrypy.log.error("The project_datas list is empty.")
     else:
-        #cherrypy.log.error("Files found.")
-        for item in project_datas:
-            if item["project"] == pid:
-                # data_id = item["_id"]
-                temp_json_data = {"file_name": item["file_name"]}
-                #cherrypy.log.error("The file name is: ")
-                #cherrypy.log.error(str(temp_json_data))
-                data.append(temp_json_data)
-
-    json_data = json.dumps(data)
-    return json_data
+        for project_data in project_datas:
+            if project_data["project"] == pid:
+                data.append({"file_name": project_data["file_name"]})
+    return data
 
 @cherrypy.tools.json_out(on=True)
 def get_project_references(pid):

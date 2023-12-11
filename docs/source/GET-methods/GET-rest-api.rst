@@ -34,6 +34,8 @@ GET METHODS
     GET-Projects.rst
     GET-Project-References.rst
     GET-Projects-List.rst
+    GET-Project-File-Names.rst
+    GET-Project-Data.rst
     GET-Remote-File.rst
     GET-Remote-Image.rst
     GET-Remote-Video.rst
