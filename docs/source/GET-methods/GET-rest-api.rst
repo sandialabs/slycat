@@ -16,6 +16,7 @@ GET METHODS
     GET-Configuration-Version.rst
     GET-Configuration-Wizards.rst
     GET-Bookmark.rst
+    GET-Configuration-SMB-Domains.rst
     GET-Home.rst
     GET-Model-Arrayset-Data.rst
     GET-Model-Arrayset-Metadata.rst
