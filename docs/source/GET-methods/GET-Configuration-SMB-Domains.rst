@@ -1,5 +1,5 @@
 GET SMB Domain Names
-========================
+====================
 
 .. http:get:: /configuration/smb-domains
 
@@ -29,19 +29,20 @@ GET SMB Domain Names
 
     HTTP/1.1 200 OK
     X-Powered-By: Express
+    content-type: application/json;charset=utf-8
     content-length: 43
     expires: 0
-    server: CherryPy/14.0.0
+    server: CherryPy/18.8.0
     pragma: no-cache
     cache-control: no-cache, no-store, must-revalidate
-    date: Fri, 14 Jun 2019 19:41:58 GMT
-    content-type: application/json
+    date: Fri, 20 Oct 2023 15:55:35 GMT
     connection: close
 
-    {"domains":['domain_1', 'domain_2', 'domain_3']}
+    {
+      "domains":["domain_1", "domain_2", "domain_3"]
+    }
 
 See Also
 --------
 
--  :http:post:`/api/configuration/smb-domains`
-
+- :http:get:`/api/configuration/smb-remote-hosts`
