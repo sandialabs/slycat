@@ -151,12 +151,12 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     const getBarX = (bin: d3.Bin<ValueIndexType, number>) => {
       // Adjust x position based on stroke width
       return x_scale(bin.x0) + 0.5 * getStrokeWidth(bin);
-    }
+    };
 
     const getBarY = (bin: d3.Bin<ValueIndexType, number>) => {
       // Adjust y position based on stroke width
       return y_scale(0) - getBarHeight(bin) - 0.5 * getStrokeWidth(bin);
-    }
+    };
 
     // Add a rect for each bin.
     const histogram = d3.select(histogramRef.current);

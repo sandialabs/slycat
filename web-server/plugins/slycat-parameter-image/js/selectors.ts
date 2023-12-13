@@ -71,12 +71,9 @@ export const selectVColumnType = createSelector(
 
 // xValues can be either a Float64Array or a string array or a number array.
 // So convert it to a normal array.
-export const selectXValuesArray = createSelector(
-  selectXValues,
-  (xValues): any[] => {
-    return Array.from(xValues);
-  },
-);
+export const selectXValuesArray = createSelector(selectXValues, (xValues): any[] => {
+  return Array.from(xValues);
+});
 
 export const selectXValuesLog = createSelector(
   selectXValuesArray,
@@ -107,7 +104,7 @@ export const selectXValuesDate = createSelector(
   },
 );
 
-function convertValuesToIndexedObjects(valuesArray: any[]): { value: any, index: number }[] {
+function convertValuesToIndexedObjects(valuesArray: any[]): { value: any; index: number }[] {
   return valuesArray.map((value, index) => ({ value: value, index: index }));
 }
 
@@ -513,8 +510,8 @@ const getScale = (
   const domain =
     columnType === "string" && scaleType !== "Date & Time"
       ? _.uniq(values).sort((a, b) => {
-        return a.toString().localeCompare(b.toString());
-      })
+          return a.toString().localeCompare(b.toString());
+        })
       : extent;
   return scale.range(scaleRange).domain(domain);
 };

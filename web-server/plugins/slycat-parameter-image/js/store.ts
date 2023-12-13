@@ -43,7 +43,11 @@ export type TableStatisticsType = {
   max: number | string;
 }[];
 
-export type ValuesType = Array<string> | Array<number | undefined> | Array<Date | undefined> | Float64Array;
+export type ValuesType =
+  | Array<string>
+  | Array<number | undefined>
+  | Array<Date | undefined>
+  | Float64Array;
 
 type XYPairsType = {
   x: number;
