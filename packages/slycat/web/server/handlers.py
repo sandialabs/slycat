@@ -960,7 +960,7 @@ def get_project_data_parameter(did, param, **kwargs):
 @cherrypy.tools.json_out(on=True)
 def get_project_data_in_model(mid, **kwargs):
     """
-    Returns a list of the project data in a model.
+    Returns a list of the project data ids in a model as a list.
 
     Arguments:
         mid {string} -- model id

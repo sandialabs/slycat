@@ -1,7 +1,7 @@
-GET Project Data In Model
-=========================
+GET Project Data Parameter
+==========================
 
-.. http:get:: /api/projects/data/model/(mid)
+.. http:get:: /projects/data/(did)/parameters/(param)
 
   Returns a project data parameter.
 
@@ -13,7 +13,7 @@ GET Project Data In Model
 
   .. sourcecode:: http
 
-    GET api/projects/data/model/020855a209894a33ad9c01bca0d0c734 HTTP/1.1
+    GET /api/projects/data/3ef75f2c116448e5a282b058662408de/parameters/mid HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
@@ -39,9 +39,10 @@ GET Project Data In Model
     date: Fri, 20 Oct 2023 15:55:35 GMT
     connection: close
 
-    ["7f4a104a508b424f903a6843542dacb1"]
+    ["b26d9a5d7b2f44729bffccad51fdfcf9"]
 
 See Also
 --------
 
+- :http:get:`/api/projects/data/model/(mid)`
 - :http:get:`/api/projects/data/(did)`
