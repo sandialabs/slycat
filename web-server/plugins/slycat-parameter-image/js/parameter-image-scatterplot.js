@@ -830,11 +830,11 @@ $.widget("parameter_image.scatterplot", {
 
       // Use custom range for min or max if we have one
       const min =
-        customMin != undefined && !isNaN(new Date(customMin.toString()))
+        customMin != undefined && !isNaN(new Date(customMin.toString()).valueOf())
           ? new Date(customMin.toString())
           : dates[0];
       const max =
-        customMax != undefined && !isNaN(new Date(customMax.toString()))
+        customMax != undefined && !isNaN(new Date(customMax.toString()).valueOf())
           ? new Date(customMax.toString())
           : dates[dates.length - 1];
 
