@@ -209,6 +209,13 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       });
 
     let x_axis = d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0);
+
+    // Create tick values by combining the x0 and x1 values of each bin.
+    // That way we get a tick at start and end of each bin.
+    let tickValues = [...bins.map((bin) => bin.x0), ...bins.map((bin) => bin.x1)];
+    // Remove duplicates
+    tickValues = [...new Set(tickValues)];
+    x_axis.tickValues(tickValues);
     x_axis.tickFormat(tickFormatter);
 
     // Add the x-axis and label.
