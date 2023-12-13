@@ -972,11 +972,10 @@ def get_project_data_in_model(mid, **kwargs):
     model = database.get("model", mid)
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
-    try:
-        did = model["project_data"]
-    except:
-        did = [""]
-    return did
+    if "project_data" in model:
+        return model["project_data"]
+    else:
+        return []
 
 def delete_project_data(did, **kwargs):
     """

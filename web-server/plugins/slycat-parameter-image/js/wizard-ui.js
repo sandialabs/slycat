@@ -224,21 +224,18 @@ function constructor(params) {
         })
         .then((did) => {
           // if the data id isn't empty
-          if (did.length !== 0) {
-            // delete model first
-            client.delete_model_fetch({ mid: component.model._id() }).then(() => {
-              // Get list of model ids project data is used in
+          // delete model first
+          client.delete_model_fetch({ mid: component.model._id() }).then(() => {
+            // Get list of model ids project data is used in
+            if (did.length >= 1) {
               client.get_project_data_parameter_fetch({ did: did, param: "mid" }).then((models) => {
                 // if there are no more models using that project data, delete it
                 if (models && models.length === 0) {
                   client.delete_project_data_fetch({ did: did });
                 }
               });
-            });
-          } else {
-            // No data to delete
-            client.delete_model_fetch({ mid: component.model._id() });
-          }
+            }
+          });
         });
     }
   };
