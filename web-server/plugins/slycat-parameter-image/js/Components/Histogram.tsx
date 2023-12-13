@@ -140,11 +140,15 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     };
 
     const getBarHeight = (bin: d3.Bin<ValueIndexType, number>) => {
-      // Adjust height based on stroke width, but must be greater than 0 to remain visible.
-      const adjustedHeight = Math.max(
-        MIN_BAR_DIMENSIONS + getStrokeWidth(bin),
-        y_scale(0) - y_scale(bin.length) - getStrokeWidth(bin),
-      );
+      // If bar height is greater than 0, adjust height based on stroke width, 
+      // but must be greater than 0 to remain visible.
+      const adjustedHeight =
+        bin.length === 0
+          ? 0
+          : Math.max(
+              MIN_BAR_DIMENSIONS + getStrokeWidth(bin),
+              y_scale(0) - y_scale(bin.length) - getStrokeWidth(bin),
+            );
       return adjustedHeight;
     };
 
