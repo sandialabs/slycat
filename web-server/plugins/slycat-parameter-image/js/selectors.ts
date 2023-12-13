@@ -94,6 +94,19 @@ export const selectXValuesLog = createSelector(
   },
 );
 
+export const selectXValuesDate = createSelector(
+  selectXValuesArray,
+  selectXColumnType,
+  (xValues, selectXColumnType): (Date | undefined)[] => {
+    return xValues.map((value) => {
+      // Try to convert to a data object and return it. Otherwise return undefined.
+      const date = new Date(value.toString());
+      if (isNaN(date.valueOf())) return undefined;
+      return date;
+    });
+  },
+);
+
 function convertValuesToIndexedObjects(valuesArray: any[]): { value: any, index: number }[] {
   return valuesArray.map((value, index) => ({ value: value, index: index }));
 }
@@ -113,6 +126,12 @@ export const selectXValuesLogAndIndexes = createSelector(
   selectXValuesLog,
   (xValuesLogArray): ValueIndexType[] => {
     return convertValuesToIndexedObjects(xValuesLogArray);
+  },
+);
+export const selectXValuesDateAndIndexes = createSelector(
+  selectXValuesDate,
+  (xValuesDateArray): ValueIndexType[] => {
+    return convertValuesToIndexedObjects(xValuesDateArray);
   },
 );
 
@@ -140,6 +159,15 @@ export const selectXValuesLogAndIndexesWithoutHidden = createSelector(
   (xValuesLogAndIndexes, hiddenSimulations): ValueIndexType[] => {
     // Removing hidden simulations from xValuesAndIndexes.
     return removeHiddenSimulations(xValuesLogAndIndexes, hiddenSimulations);
+  },
+);
+
+export const selectXValuesDateAndIndexesWithoutHidden = createSelector(
+  selectXValuesDateAndIndexes,
+  selectHiddenSimulations,
+  (xValuesDateAndIndexes, hiddenSimulations): ValueIndexType[] => {
+    // Removing hidden simulations from xValuesDateAndIndexes.
+    return removeHiddenSimulations(xValuesDateAndIndexes, hiddenSimulations);
   },
 );
 
@@ -214,23 +242,20 @@ const getExtent = (
   switch (scaleType) {
     // For 'Date & Time' scales...
     case "Date & Time":
-      // Convert all values to Date objects
-      const dates = values.map((value) => new Date(value.toString()));
-
-      extent[0] = d3.min(dates);
-      extent[1] = d3.max(dates);
+      extent[0] = d3.min(values);
+      extent[1] = d3.max(values);
 
       // If we have a custom range, try to use that instead.
       const customRange = variableRanges[index];
       if (customRange?.min !== undefined) {
         const minDate = new Date(customRange.min.toString());
-        if (minDate.toString() !== "Invalid Date") {
+        if (!isNaN(minDate.valueOf())) {
           extent[0] = minDate;
         }
       }
       if (customRange?.max !== undefined) {
         const maxDate = new Date(customRange.max.toString());
-        if (maxDate.toString() !== "Invalid Date") {
+        if (!isNaN(maxDate.valueOf())) {
           extent[1] = maxDate;
         }
       }
@@ -269,6 +294,7 @@ const getExtent = (
 
 export const selectXExtent = createSelector(
   selectXValues,
+  selectXValuesDate,
   selectVariableRanges,
   selectXIndex,
   selectColumnTypes,
@@ -276,13 +302,16 @@ export const selectXExtent = createSelector(
   selectTableStatistics,
   (
     xValues,
+    xValuesDate,
     variableRanges: VariableRangesType,
     xIndex: number,
     columnTypes,
     xScaleType: string,
     tableStatistics: TableStatisticsType,
   ): ExtentType => {
-    return getExtent(xValues, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
+    // If we have Date & Time values, use the Date & Time extent.
+    const x_values = xScaleType === "Date & Time" ? xValuesDate : xValues;
+    return getExtent(x_values, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
   },
 );
 
