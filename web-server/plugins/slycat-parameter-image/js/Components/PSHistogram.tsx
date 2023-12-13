@@ -20,8 +20,10 @@ import {
   selectXHasCustomRange,
   selectXValuesAndIndexes,
   selectXValuesLogAndIndexes,
+  selectXValuesDateAndIndexes,
   selectXValuesAndIndexesWithoutHidden,
   selectXValuesLogAndIndexesWithoutHidden,
+  selectXValuesDateAndIndexesWithoutHidden,
   selectXColumnType,
 } from "../selectors";
 import {
@@ -69,11 +71,17 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
   const x_values_and_indexes = useSelector(
-    x_scale_type === "Log" ? selectXValuesLogAndIndexes : selectXValuesAndIndexes,
+    x_scale_type === "Log"
+      ? selectXValuesLogAndIndexes
+      : x_scale_type === "Date & Time"
+      ? selectXValuesDateAndIndexes
+      : selectXValuesAndIndexes,
   );
   const x_values_and_indexes_without_hidden = useSelector(
     x_scale_type === "Log"
       ? selectXValuesLogAndIndexesWithoutHidden
+      : x_scale_type === "Date & Time"
+      ? selectXValuesDateAndIndexesWithoutHidden
       : selectXValuesAndIndexesWithoutHidden,
   );
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
@@ -177,16 +185,27 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         bin.length = values.length;
         return bin;
       });
-      console.debug(`groupedSortedArray: %o`, groupedSortedArray);
       return groupedSortedArray;
     } else {
       // For numeric x variables, use d3.bin() to create the bins.
+      function thresholdTime(n) {
+        return (data: Array<Date>, min: Date, max: Date) => {
+          return d3.scaleTime().domain([min, max]).ticks(n);
+        };
+      }
+      // If the x variable is Date & Time, use thresholdTime to create the bins.
+      const thresholds = x_scale_type === "Date & Time" ? thresholdTime(x_ticks) : x_ticks;
+
       const bin = d3
         .bin()
-        .value((d: ValueIndexType) => d.value)
+        .value((d: ValueIndexType) => {
+          return d.value;
+        })
         // Setting the number of bins to be the same as the number of ticks
         // so that each tick has its own bin.
-        .thresholds(x_ticks);
+        .thresholds(thresholds);
+      console.debug(`x_ticks: ${x_ticks}`);
+
       // Other options for setting the number of bins by using supported threshold generators
       // .thresholds(d3.thresholdFreedmanDiaconis)
       // .thresholds(d3.thresholdScott)
@@ -198,9 +217,30 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
       // (rather than explicit values), then the computed domain will be niced such that all bins are uniform width."
       // https://d3js.org/d3-array/bin#bin_domain
       if (x_has_custom_range) {
-        bin.domain(x_scale.domain()).thresholds(x_scale.ticks(x_ticks));
+        bin.domain(x_scale.domain());
+        // .thresholds(x_scale.ticks(x_ticks))
       }
       const bins = bin(values_and_indexes);
+      console.debug(`bins: %o`, bins);
+
+      // For Date & Time variables, the last bin sometimes has identical x0 and x1 values.
+      // So let's adjust its x1 value according to the difference of the previous bin's x0 and x1 values.
+
+      const startOfLastBin = bins[bins.length - 1].x0;
+      const endOfLastBin = bins[bins.length - 1].x1;
+      if (
+        x_scale_type == "Date & Time" &&
+        bins.length > 1 &&
+        startOfLastBin &&
+        endOfLastBin &&
+        startOfLastBin.getTime() === endOfLastBin.getTime()
+      ) {
+        const startOfSecondToLastBin = bins[bins.length - 2].x0;
+        const elapsedMillisBetweenBins = endOfLastBin.getTime() - startOfSecondToLastBin.getTime();
+        const newEndOfLastBin = new Date(startOfLastBin.getTime() + elapsedMillisBetweenBins);
+        bins[bins.length - 1].x1 = newEndOfLastBin;
+      }
+
       return bins;
     }
   };
@@ -208,6 +248,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   // Make bins for the histogram.
   const bins_without_hidden = makeBins(x_values_and_indexes_without_hidden);
 
+  // To Do, this should also happen for string variables that are Date & Time
   // For non-string variables, adjusting x_scale domain to match the bins.
   if (x_column_type !== "string") {
     const bins_with_hidden = makeBins(x_values_and_indexes);
@@ -215,10 +256,14 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     // With auto_scale true, we use bins without hidden values to set the domain.
     // But if it's false, we set it to match bins of x_values, not x_values_without_hidden.
     const bins_for_x_scale_domain = auto_scale ? bins_without_hidden : bins_with_hidden;
-    x_scale.domain([
-      bins_for_x_scale_domain[0].x0,
-      bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1,
-    ]);
+    let domain_start = bins_for_x_scale_domain[0].x0;
+    let domain_end = bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1;
+    // if (x_scale_type == "Date & Time") {
+    //   domain_start = new Date(domain_start.toString());
+    //   domain_end = new Date(domain_end.toString());
+    // }
+
+    x_scale.domain([domain_start, domain_end]);
   }
 
   // Declare the y (vertical position) scale.
@@ -301,12 +346,29 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     setFlashBinIndexes(flashBins);
   }, [selected_simulations_without_hidden]);
 
-  const tickFormatter =
-    x_scale_type == "Log"
-      ? (d: number, index?: number) => {
-          return `${Math.pow(10, d)}`;
-        }
-      : null;
+  const logFormatter = (d: number, index?: number) => {
+    console.debug("logFormatter", d, index);
+    return `${Math.pow(10, d)}`;
+  };
+
+  const dateFormatter = (d: Date | number, index?: number) => {
+    // console.debug("dateFormatter", d, index, new Date(d));
+    return `${new Date(d).toLocaleString()}`;
+  };
+
+  // const tickFormatter = x_scale_type == "Log" ? logFormatter : null;
+
+  let tickFormatter;
+  switch (x_scale_type) {
+    case "Log":
+      tickFormatter = logFormatter;
+      break;
+    // case "Date & Time":
+    //   tickFormatter = dateFormatter;
+    //   break;
+    default:
+      tickFormatter = null;
+  }
 
   return (
     <>
