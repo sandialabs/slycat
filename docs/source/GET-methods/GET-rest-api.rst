@@ -37,6 +37,7 @@ GET METHODS
     GET-Project-File-Names.rst
     GET-Project-Data.rst
     GET-Project-Data-In-Model.rst
+    GET-Project-Data-Parameter.rst
     GET-Remote-File.rst
     GET-Remote-Image.rst
     GET-Remote-Video.rst
