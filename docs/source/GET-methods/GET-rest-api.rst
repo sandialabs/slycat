@@ -41,7 +41,7 @@ GET METHODS
     GET-Remote-File.rst
     GET-Remote-Image.rst
     GET-Remote-Video.rst
+    GET-Remotes.rst
     GET-User.rst
     GET-Timeseries-Names.rst
     GET_Last_Active_Tme.rst
-    
