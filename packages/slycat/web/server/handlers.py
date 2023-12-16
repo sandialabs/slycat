@@ -149,8 +149,8 @@ def require_integer_parameter(value, name):
 @cherrypy.tools.json_out(on=True)
 def get_last_active_time():
     """
-    Checks when the most recent session activity occured.
-    If it occured more than 10 minutes ago, returns true.
+    Checks when the most recent session activity occurred.
+    If it occurred more than 10 minutes ago, returns true.
     If less than 10 minutes ago, returns false.
     """
     most_recent_time = datetime.timedelta(days=999)

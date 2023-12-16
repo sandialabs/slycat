@@ -43,3 +43,5 @@ GET METHODS
     GET-Remote-Video.rst
     GET-User.rst
     GET-Timeseries-Names.rst
+    GET_Last_Active_Tme.rst
+    
