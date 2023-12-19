@@ -27,6 +27,7 @@ GET METHODS
     GET-Model-Table-Metadata.rst
     GET-Model-Table-Sorted-Indices.rst
     GET-Model-Table-Unsorted-Indices.rst
+    GET-Model-Statistics.rst
     GET-Model.rst
     GET-Project-Cache-Object.rst
     GET-Project-Models.rst
