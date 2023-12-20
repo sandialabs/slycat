@@ -15,4 +15,5 @@ PUT METHODS
     PUT-Model.rst
     PUT-Project.rst
     PUT-Project-CSV-Data.rst
+    PUT-Project-Data-Parameter.rst
     PUT-Upload-File-Part.rst
