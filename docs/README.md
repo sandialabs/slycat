@@ -81,4 +81,4 @@ Please use `make target' where target is one of
 
 # Adding the docs to the slycat webserver build
 
-You will need to copy the built docs from `/docs/_build` to ~TBA
+You will need to copy the built docs from `~/docs/_build` to `~/docs/html`
