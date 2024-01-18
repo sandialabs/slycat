@@ -3,7 +3,7 @@ GET Configuration Markings
 
 .. http:get:: /api/configuration/markings
 
-  Retrieves the markings
+  Retrieves the markings as a json array of marking objects. An example response is presented in this document.
 
 
   :responseheader Content-Type: application/json
