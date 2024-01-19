@@ -5,7 +5,6 @@ GET Selectable Configuration Markings
 
   Retrieves the selectable markings
 
-
   :responseheader Content-Type: application/json
 
   **Sample Request**
