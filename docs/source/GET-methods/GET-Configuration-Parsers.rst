@@ -3,7 +3,7 @@ GET Configuration Parsers
 
 .. http:get:: /api/configuration/parsers
 
-  Returns a list of Parser objects and their metadata. These are the parsers that are available from the Slycat server
+  Returns a list of parser objects and their metadata. These are the parsers that are available from the Slycat server
   for parsing uploaded data, such as CSVs, into the Slycat server for displaying models. You can generally find parsers
   displayed in the Slycat model wizards.
 
