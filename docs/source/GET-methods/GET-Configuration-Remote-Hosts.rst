@@ -3,7 +3,7 @@ GET Configuration Remote Hosts
 
 .. http:get:: /api/configuration/remote-hosts
 
-  Returns a list of remote hosts and if they have a slycat agent
+  Returns a list of remote hosts and if they have a Slycat agent
 
   :status 200:
 
