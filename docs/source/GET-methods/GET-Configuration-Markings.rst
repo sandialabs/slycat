@@ -5,7 +5,6 @@ GET Configuration Markings
 
   Retrieves the markings as a json array of marking objects. An example response is presented in this document.
 
-
   :responseheader Content-Type: application/json
 
   **Sample Request**
