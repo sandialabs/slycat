@@ -3,7 +3,7 @@ GET Configuration Support Email
 
 .. http:get:: /api/configuration/support-email
 
-  Returns the support email for a users to email for help
+  Returns the support email address for a user to send help requests
 
   :status 200:
 
