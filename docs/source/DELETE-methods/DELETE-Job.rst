@@ -1,7 +1,7 @@
 DELETE Job
 ==========
 
-.. http:delete:: /api//remotes/delete-job/(hostname)/(jid)
+.. http:delete:: /api/remotes/delete-job/(hostname)/(jid)
 
   Deletes a remote job by calling cancel on the job using a connected session to
   an HPC machine. Submits a command to the slycat-agent to cancel a running job
