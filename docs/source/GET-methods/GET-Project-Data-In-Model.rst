@@ -3,7 +3,7 @@ GET Project Data In Model
 
 .. http:get:: /api/projects/data/model/(mid)
 
-  Returns a list of the project data "did" in a model as a list.
+  Returns a list of the project data IDs (did) in a model.
 
   :status 200:
 
