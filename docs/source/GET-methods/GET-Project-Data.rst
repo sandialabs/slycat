@@ -3,7 +3,7 @@ GET Project Data
 
 .. http:get:: /api/projects/data/(did)
 
-  Returns a project data which is a reference to all the data stored in a project object.
+  Returns a project data for a given data ID (did).
 
   :status 200:
 
