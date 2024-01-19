@@ -3,7 +3,7 @@ GET Remotes
 
 .. http:get:: /api/remotes/(hostname)
 
-  Returns true if the remote host is found in the users session for an active user on the server. Also,
+  Returns true if the remote host is found in the user's session for an active user on the server. Also
   return if the remote host is an SMB share drive.
 
   :status 200:
