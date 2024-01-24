@@ -1,9 +1,9 @@
-GET SMB Domain Names
-====================
+GET Configuration Markings
+==========================
 
-.. http:get:: /configuration/smb-domains
+.. http:get:: /api/configuration/markings
 
-  Retrieves a list of SMB domain names, which get returned as JSON
+  Retrieves the markings as a JSON array of marking objects. An example response is presented in this document.
 
   :responseheader Content-Type: application/json
 
@@ -11,7 +11,7 @@ GET SMB Domain Names
 
   .. sourcecode:: http
 
-    GET /api/configuration/smb-domains HTTP/1.1
+    GET /api/configuration/markings HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
@@ -29,20 +29,26 @@ GET SMB Domain Names
 
     HTTP/1.1 200 OK
     X-Powered-By: Express
-    content-type: application/json;charset=utf-8
     content-length: 43
     expires: 0
-    server: CherryPy/18.8.0
+    server: CherryPy/14.0.0
     pragma: no-cache
     cache-control: no-cache, no-store, must-revalidate
-    date: Fri, 20 Oct 2023 15:55:35 GMT
+    date: Fri, 14 Jun 2019 19:41:58 GMT
+    content-type: application/json
     connection: close
 
-    {
-      "domains":["domain_1", "domain_2", "domain_3"]
-    }
+    [
+      {
+        "label": "None",
+        "badge": "",
+        "page-before": null,
+        "page-after": null,
+        "type": "mna"
+      }
+    ]
 
 See Also
 --------
 
-- :http:get:`/api/configuration/smb-remote-hosts`
+- :http:get:`/api/configuration/selectable-markings`

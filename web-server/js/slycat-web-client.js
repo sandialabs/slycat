@@ -450,20 +450,6 @@ module.get_configuration_support_email = function (params) {
   });
 };
 
-module.get_configuration_injected_code = function (params) {
-  $.ajax({
-    dataType: 'json',
-    type: 'GET',
-    url: `${api_root}configuration/injected-code`,
-    success(injected_code) {
-      if (params.success) params.success(injected_code);
-    },
-    error(request, status, reason_phrase) {
-      if (params.error) params.error(request, status, reason_phrase);
-    }
-  });
-};
-
 module.get_configuration_ga_tracking_id = function (params) {
   $.ajax({
     dataType: 'json',
@@ -691,8 +677,8 @@ module.get_model_command_fetch = async function (params, errorFunction) {
     });
 };
 
-module.get_last_active_time_fetch = async function () {
-  return fetch(`${api_root}server/last_active_time`, {
+module.get_is_user_currently_active = async function () {
+  return fetch(`${api_root}server/is-user-currently-active`, {
     credentials: 'same-origin',
     cache: 'no-store',
     dataType: 'json'

@@ -1,9 +1,13 @@
-GET SMB Domain Names
-====================
+GET Configuration Parsers
+=========================
 
-.. http:get:: /configuration/smb-domains
+.. http:get:: /api/configuration/parsers
 
-  Retrieves a list of SMB domain names, which get returned as JSON
+  Returns a list of parser objects and their metadata. These are the parsers that are available from the Slycat server
+  for parsing uploaded data, such as CSVs, into the Slycat server for displaying models. You can generally find parsers
+  displayed in the Slycat model wizards.
+
+  :status 200:
 
   :responseheader Content-Type: application/json
 
@@ -11,11 +15,10 @@ GET SMB Domain Names
 
   .. sourcecode:: http
 
-    GET /api/configuration/smb-domains HTTP/1.1
+    GET /api/configuration/parsers HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
-    DNT: 1
     X-Requested-With: XMLHttpRequest
     User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36
     Referer: https://localhost:9000/models/b26d9a5d7b2f44729bffccad51fdfcf9?bid=405d84f7553f53736beabdf874d55356
@@ -38,11 +41,17 @@ GET SMB Domain Names
     date: Fri, 20 Oct 2023 15:55:35 GMT
     connection: close
 
-    {
-      "domains":["domain_1", "domain_2", "domain_3"]
-    }
+    [
+      {
+          "type": "slycat-csv-parser",
+          "label": "Comma separated values (CSV)",
+          "categories": [
+              "table"
+          ]
+      }
+    ]
 
 See Also
 --------
 
-- :http:get:`/api/configuration/smb-remote-hosts`
+- :http:get:`/api/projects`

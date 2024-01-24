@@ -1,9 +1,12 @@
-GET SMB Domain Names
-====================
+GET Remotes
+===========
 
-.. http:get:: /configuration/smb-domains
+.. http:get:: /api/remotes/(hostname)
 
-  Retrieves a list of SMB domain names, which get returned as JSON
+  Returns true if the remote host is found in the user's session for an active user on the server. Also
+  return if the remote host is an SMB share drive.
+
+  :status 200:
 
   :responseheader Content-Type: application/json
 
@@ -11,11 +14,10 @@ GET SMB Domain Names
 
   .. sourcecode:: http
 
-    GET /api/configuration/smb-domains HTTP/1.1
+    GET /api/remotes/localhost HTTP/1.1
     Host: localhost:9000
     Connection: keep-alive
     Accept: application/json, text/javascript, */*; q=0.01
-    DNT: 1
     X-Requested-With: XMLHttpRequest
     User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36
     Referer: https://localhost:9000/models/b26d9a5d7b2f44729bffccad51fdfcf9?bid=405d84f7553f53736beabdf874d55356
@@ -39,10 +41,15 @@ GET SMB Domain Names
     connection: close
 
     {
-      "domains":["domain_1", "domain_2", "domain_3"]
+        "status": true,
+        "msg": "msg",
+        "hostName": "localhost",
+        "share": false
     }
 
 See Also
 --------
 
-- :http:get:`/api/configuration/smb-remote-hosts`
+* :http:get:`/api/remotes/(hostname)/image(path)`
+* :http:get:`/api/remotes/(hostname)/videos/(vsid)`
+* :http:get:`/api/remotes/(hostname)/file(path)`

@@ -147,10 +147,10 @@ def require_integer_parameter(value, name):
         raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
 
 @cherrypy.tools.json_out(on=True)
-def get_last_active_time():
+def is_user_currently_active():
     """
-    Checks when the most recent session activity occured.
-    If it occured more than 10 minutes ago, returns true.
+    Checks when the most recent session activity occurred.
+    If it occurred more than 10 minutes ago, returns true.
     If less than 10 minutes ago, returns false.
     """
     most_recent_time = datetime.timedelta(days=999)
@@ -446,7 +446,14 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
+@cherrypy.tools.json_out(on=True)
 def get_project_file_names(pid):
+    """
+    Gets all the stored filenames on the server that can be used to make models for a 
+    given project
+    :param pid: project ID
+    :return: array of found project data file names
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -456,17 +463,10 @@ def get_project_file_names(pid):
     if not project_datas:
         cherrypy.log.error("The project_datas list is empty.")
     else:
-        #cherrypy.log.error("Files found.")
-        for item in project_datas:
-            if item["project"] == pid:
-                # data_id = item["_id"]
-                temp_json_data = {"file_name": item["file_name"]}
-                #cherrypy.log.error("The file name is: ")
-                #cherrypy.log.error(str(temp_json_data))
-                data.append(temp_json_data)
-
-    json_data = json.dumps(data)
-    return json_data
+        for project_data in project_datas:
+            if project_data["project"] == pid:
+                data.append({"file_name": project_data["file_name"]})
+    return data
 
 @cherrypy.tools.json_out(on=True)
 def get_project_references(pid):
@@ -960,7 +960,7 @@ def get_project_data_parameter(did, param, **kwargs):
 @cherrypy.tools.json_out(on=True)
 def get_project_data_in_model(mid, **kwargs):
     """
-    Returns a list of the project data in a model.
+    Returns a list of the project data ids in a model as a list.
 
     Arguments:
         mid {string} -- model id
@@ -972,11 +972,10 @@ def get_project_data_in_model(mid, **kwargs):
     model = database.get("model", mid)
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
-    try:
-        did = model["project_data"]
-    except:
-        did = [""]
-    return did
+    if "project_data" in model:
+        return model["project_data"]
+    else:
+        return []
 
 def delete_project_data(did, **kwargs):
     """
@@ -1359,19 +1358,6 @@ def login():
         cherrypy.response.status = "404 no auth found!!!"
 
     return {'success': success, 'target': response_url}
-
-
-def get_root():
-    """
-    TODO: this function may be deprecated with the webpack move
-    Redirect all requests to "/" to "/projects"
-    Not sure why we used to do that, but after conversion to webpack this is no longer needed,
-    so I changed the projects-redirect config parameter in web-server-config.ini to just "/"
-    """
-    current_url = urlparse(cherrypy.url())
-    proj_url = "https://" + current_url.netloc
-    raise cherrypy.HTTPRedirect(proj_url, 303)
-
 
 def logout():
     """
@@ -3173,12 +3159,6 @@ def get_configuration_smb_domains():
 def get_configuration_support_email():
     return cherrypy.request.app.config["slycat-web-server"]["support-email"]
 
-
-@cherrypy.tools.json_out(on=True)
-def get_configuration_injected_code():
-    return cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-
-
 @cherrypy.tools.json_out(on=True)
 def get_configuration_ga_tracking_id():
     return cherrypy.request.app.config["slycat-web-server"].get("ga-tracking-id", "")
@@ -3195,7 +3175,7 @@ def get_configuration_version():
                                      stdout=subprocess.PIPE).communicate()[0].strip()
             except:
                 pass
-    return {"version": slycat.__version__, "commit": get_configuration_version.commit}
+    return {"version": slycat.__version__, "commit": get_configuration_version.commit.decode('utf-8')}
 
 
 get_configuration_version.lock = threading.Lock()
