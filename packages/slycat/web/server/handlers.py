@@ -147,7 +147,7 @@ def require_integer_parameter(value, name):
         raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
 
 @cherrypy.tools.json_out(on=True)
-def get_last_active_time():
+def is_user_currently_active():
     """
     Checks when the most recent session activity occurred.
     If it occurred more than 10 minutes ago, returns true.

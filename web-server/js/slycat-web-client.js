@@ -677,8 +677,8 @@ module.get_model_command_fetch = async function (params, errorFunction) {
     });
 };
 
-module.get_last_active_time_fetch = async function () {
-  return fetch(`${api_root}server/last_active_time`, {
+module.get_is_user_currently_active = async function () {
+  return fetch(`${api_root}server/is-user-currently-active`, {
     credentials: 'same-origin',
     cache: 'no-store',
     dataType: 'json'
