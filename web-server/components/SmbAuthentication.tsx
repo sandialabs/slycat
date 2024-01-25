@@ -247,12 +247,27 @@ export default class SmbAuthentication extends React.Component<any,any> {
         </div>
         <div className='form-group row mb-3'>
           <label className='col-sm-2 col-form-label'>Username</label>
-          <div className='col-sm-9'>
+          <div className='col-sm-4'>
             <input disabled={this.props.loadingData} 
               className='form-control' type='text'
               value={this.state.username?this.state.username:""}
               onChange={(e)=>this.onValueChange(e.target.value, "username")} />
           </div>
+          <label className='col-sm-1 col-form-label'>@</label>
+            <div className='col-sm-4'>
+              <div className='input-group'>
+                <div className='input-group-prepend'>
+                  <button className='btn btn-secondary dropdown-toggle'
+                    type='button' id='dropdownMenuButton'
+                    data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' />
+                  <ul className='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+                    {this.getDomainsJSX()}
+                  </ul>
+                </div>
+                <input className='form-control' value={this.state.domain?this.state.domain:""} type='text'
+                onChange={(e)=>this.onValueChange(e.target.value, "domain")} />
+              </div>
+            </div>
         </div>
         {!this.state.session_exists&&(<div className='form-group row mb-3'>
           <label className='col-sm-2 col-form-label'>Password</label>
@@ -330,23 +345,6 @@ export default class SmbAuthentication extends React.Component<any,any> {
               </div>
               <input className='form-control' value={this.state.hostname?this.state.hostname:""} type='text' 
               onChange={(e)=>this.onValueChange(e.target.value, "hostname")} />
-            </div>
-          </div>
-        </div>
-        <div className='form-group row mb-3'>
-          <label className='col-sm-2 col-form-label'>Domains</label>
-          <div className='col-sm-9'>
-            <div className='input-group'>
-              <div className='input-group-prepend'>
-                <button className='btn btn-secondary dropdown-toggle'
-                  type='button' id='dropdownMenuButton'
-                  data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' />
-                <ul className='dropdown-menu' aria-labelledby='dropdownMenuButton'>
-                  {this.getDomainsJSX()}
-                </ul>
-              </div>
-              <input className='form-control' value={this.state.domain?this.state.domain:""} type='text'
-              onChange={(e)=>this.onValueChange(e.target.value, "domain")} />
             </div>
           </div>
         </div>
