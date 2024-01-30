@@ -140,7 +140,7 @@ const Histogram: React.FC<HistogramProps> = (props) => {
     };
 
     const getBarHeight = (bin: d3.Bin<ValueIndexType, number>) => {
-      // If bar height is greater than 0, adjust height based on stroke width, 
+      // If bar height is greater than 0, adjust height based on stroke width,
       // but must be greater than 0 to remain visible.
       const adjustedHeight =
         bin.length === 0
@@ -212,8 +212,8 @@ const Histogram: React.FC<HistogramProps> = (props) => {
         return `Count: ${bin.length}\n\nRange: ${x0} (inclusive) to \n${x1} (exclusive, except for last bar)`;
       });
 
-    let x_axis = d3.axisBottom(x_scale).ticks(x_ticks).tickSizeOuter(0);
-
+    let x_axis = d3.axisBottom(x_scale).tickSizeOuter(0);
+    
     // Create tick values by combining the x0 and x1 values of each bin.
     // That way we get a tick at start and end of each bin.
     let tickValues = [...bins.map((bin) => bin.x0), ...bins.map((bin) => bin.x1)];

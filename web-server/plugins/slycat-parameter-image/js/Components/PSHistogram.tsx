@@ -20,8 +20,10 @@ import {
   selectXHasCustomRange,
   selectXValuesAndIndexes,
   selectXValuesLogAndIndexes,
+  selectXValuesDateAndIndexes,
   selectXValuesAndIndexesWithoutHidden,
   selectXValuesLogAndIndexesWithoutHidden,
+  selectXValuesDateAndIndexesWithoutHidden,
   selectXColumnType,
 } from "../selectors";
 import {
@@ -69,12 +71,18 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
   const x_values_and_indexes = useSelector(
-    x_scale_type === "Log" ? selectXValuesLogAndIndexes : selectXValuesAndIndexes,
+    x_scale_type === "Log"
+      ? selectXValuesLogAndIndexes
+      : x_scale_type === "Date & Time"
+        ? selectXValuesDateAndIndexes
+        : selectXValuesAndIndexes,
   );
   const x_values_and_indexes_without_hidden = useSelector(
     x_scale_type === "Log"
       ? selectXValuesLogAndIndexesWithoutHidden
-      : selectXValuesAndIndexesWithoutHidden,
+      : x_scale_type === "Date & Time"
+        ? selectXValuesDateAndIndexesWithoutHidden
+        : selectXValuesAndIndexesWithoutHidden,
   );
   const histogram_bar_stroke_width = useSelector(selectUnselectedBorderSize);
   // Doubling size of selected points border width because histogram bars are generally much large
@@ -152,10 +160,59 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   };
 
   const makeBins = (values_and_indexes: ValueIndexType[]) => {
+    // For Date & Time variables, we need to adjust the x_scale by nicing it
+    // and apply its domain and thresholds to the bins.
+    if (x_scale_type == "Date & Time") {
+      // First nice the x_scale so it starts and ends on nice and meaningful thresholds.
+      x_scale.nice();
+
+      // For Date & Time variables, use thresholdTime to create the bins.
+      // This is necessary because d3.bin() doesn't select nice bin thresholds for Date & Time variables.
+      // https://observablehq.com/@d3/d3-bin-time-thresholds
+      function thresholdTime(n) {
+        return (data: Array<Date>, min: Date, max: Date) => {
+          const thresholds = d3.scaleTime().domain([min, max]).ticks(n);
+          return thresholds;
+        };
+      }
+
+      const bin = d3
+        .bin()
+        .value((d: ValueIndexType) => {
+          return d.value;
+        })
+        .thresholds(thresholdTime(x_ticks))
+        .domain(x_scale.domain());
+
+      const bins = bin(values_and_indexes);
+
+      // For Date & Time variables, the last bin sometimes has identical x0 and x1 values.
+      // So let's adjust its x1 value according to the difference of the previous bin's x0 and x1 values.
+      const startOfFirstBin = bins[0].x0;
+      const endOfFirstBin = bins[0].x1;
+      const elapsedMillisFirstBin = endOfFirstBin.getTime() - startOfFirstBin.getTime();
+      const startOfLastBin = bins[bins.length - 1].x0;
+      const endOfLastBin = bins[bins.length - 1].x1;
+      const elapsedMillisLastBin = endOfLastBin.getTime() - startOfLastBin.getTime();
+      const lengthOfLastBin = bins[bins.length - 1].length;
+      if (
+        lengthOfLastBin > 0 &&
+        x_scale_type == "Date & Time" &&
+        bins.length > 1 &&
+        elapsedMillisFirstBin > elapsedMillisLastBin
+      ) {
+        const newEndOfLastBin = new Date(startOfLastBin.getTime() + elapsedMillisFirstBin);
+        bins[bins.length - 1].x1 = newEndOfLastBin;
+      }
+      // Adjust x_scale domain to match the bins.
+      x_scale.domain([bins[0].x0, bins[bins.length - 1].x1]);
+
+      return bins;
+    }
     // If the x variable is a string, we can't use d3.bin() to create the bins
     // because d3.bin() only works with numeric values.
     // So doing it manually here.
-    if (x_column_type === "string") {
+    else if (x_column_type === "string" && x_scale_type !== "Date & Time") {
       // Group the values by value
       const grouped = d3.group(values_and_indexes, (d) => d.value);
       // Sort the groups by value (values are all strings, so let's use localeCompare)
@@ -177,20 +234,15 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
         bin.length = values.length;
         return bin;
       });
-      console.debug(`groupedSortedArray: %o`, groupedSortedArray);
       return groupedSortedArray;
     } else {
-      // For numeric x variables, use d3.bin() to create the bins.
+      // For numeric variables, use d3.bin() to create the bins.
       const bin = d3
         .bin()
         .value((d: ValueIndexType) => d.value)
-        // Setting the number of bins to be the same as the number of ticks
+        // Set the number of bins to be the same as the number of ticks
         // so that each tick has its own bin.
         .thresholds(x_ticks);
-      // Other options for setting the number of bins by using supported threshold generators
-      // .thresholds(d3.thresholdFreedmanDiaconis)
-      // .thresholds(d3.thresholdScott)
-      // .thresholds(d3.thresholdSturges)
 
       // Not specifying domain unless a custom variable range has been set by the user
       // for the current x variable because
@@ -198,7 +250,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
       // (rather than explicit values), then the computed domain will be niced such that all bins are uniform width."
       // https://d3js.org/d3-array/bin#bin_domain
       if (x_has_custom_range) {
-        bin.domain(x_scale.domain()).thresholds(x_scale.ticks(x_ticks));
+        bin.domain(x_scale.domain());
       }
       const bins = bin(values_and_indexes);
       return bins;
@@ -208,17 +260,17 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   // Make bins for the histogram.
   const bins_without_hidden = makeBins(x_values_and_indexes_without_hidden);
 
-  // For non-string variables, adjusting x_scale domain to match the bins.
-  if (x_column_type !== "string") {
+  // For non-string variables or Date & Time scales, adjusting x_scale domain to match the bins.
+  if (x_column_type !== "string" || x_scale_type == "Date & Time") {
     const bins_with_hidden = makeBins(x_values_and_indexes);
 
     // With auto_scale true, we use bins without hidden values to set the domain.
     // But if it's false, we set it to match bins of x_values, not x_values_without_hidden.
     const bins_for_x_scale_domain = auto_scale ? bins_without_hidden : bins_with_hidden;
-    x_scale.domain([
-      bins_for_x_scale_domain[0].x0,
-      bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1,
-    ]);
+    let domain_start = bins_for_x_scale_domain[0].x0;
+    let domain_end = bins_for_x_scale_domain[bins_for_x_scale_domain.length - 1].x1;
+
+    x_scale.domain([domain_start, domain_end]);
   }
 
   // Declare the y (vertical position) scale.
@@ -301,12 +353,18 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     setFlashBinIndexes(flashBins);
   }, [selected_simulations_without_hidden]);
 
-  const tickFormatter =
-    x_scale_type == "Log"
-      ? (d: number, index?: number) => {
-          return `${Math.pow(10, d)}`;
-        }
-      : null;
+  const logFormatter = (d: number, index?: number) => {
+    return `${Math.pow(10, d)}`;
+  };
+
+  let tickFormatter;
+  switch (x_scale_type) {
+    case "Log":
+      tickFormatter = logFormatter;
+      break;
+    default:
+      tickFormatter = null;
+  }
 
   return (
     <>
