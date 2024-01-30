@@ -254,7 +254,7 @@ module.exports = {
       // Module ends with slycat-bootstrap.scss
       module: /slycat-bootstrap\.scss$/,
       // Message contains a line that starts with the following
-      message: /^Deprecation Passing percentage units to the global abs\(\) function is deprecated/m,
+      message: /^Passing percentage units to the global abs\(\) function is deprecated/m,
     },
   ],
 };
