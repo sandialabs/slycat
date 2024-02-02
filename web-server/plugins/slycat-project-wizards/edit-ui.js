@@ -113,7 +113,7 @@ function constructor(params)
             dialog.dialog(
             {
               title: "Unknown User",
-              message: "User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.",
+              message: "User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name. Error: " + reason_phrase,
             });
           }
           else
