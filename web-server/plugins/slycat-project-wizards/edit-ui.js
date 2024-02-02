@@ -183,7 +183,10 @@ function constructor(params)
         {
           window.location.reload(true);
         },
-        error: dialog.ajax_error("Error updating project."),
+        error: function(request, status, reason_phrase)
+        {
+          dialog.ajax_error("Error updating project.")(request, status, reason_phrase)
+        },
       });
     }
   }

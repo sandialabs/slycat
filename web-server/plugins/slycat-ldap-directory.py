@@ -56,15 +56,15 @@ def user(uid):
     except ldap.NO_SUCH_OBJECT:
       cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
       cherrypy.log.error("slycat-ldap-directory.py user", "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT")
-      raise cherrypy.HTTPError(404)
+      raise cherrypy.HTTPError(f"404 User not found ldap.NO_SUCH_OBJECT: {uid}, please remove if the user is no longer affiliated to the project")
     except AssertionError as e:
       cherrypy.log.error( e.message )
       cherrypy.log.error("slycat-ldap-directory.py user", "cherrypy.HTTPError 404 %s" % e.message)
-      raise cherrypy.HTTPError(404)
+      raise cherrypy.HTTPError(f"404 User error: {e.message} for user {uid} ldap is possibly down")
     except:
       cherrypy.log.error(traceback.format_exc())
       cherrypy.log.error("slycat-ldap-directory.py user", "cherrypy.HTTPError 500 %s" % traceback.format_exc())
-      raise cherrypy.HTTPError(500)
+      raise cherrypy.HTTPError("500 ldap is possibly down")
   return configuration["cache"][uid]
 
 def register_slycat_plugin(context):
