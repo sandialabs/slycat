@@ -1392,7 +1392,6 @@ module.post_remote_command = function (params) {
 };
 
 module.post_remote_browse_smb = function (params) {
-  console.log('In browse smb');
   $.ajax({
     contentType: 'application/json',
     data: JSON.stringify({}),
