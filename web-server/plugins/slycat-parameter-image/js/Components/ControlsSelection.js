@@ -347,8 +347,8 @@ class ControlsSelection extends React.PureComponent {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    selection: state.selected_simulations,
-    hidden_simulations: state.hidden_simulations,
+    selection: state.data.selected_simulations,
+    hidden_simulations: state.data.hidden_simulations,
     active_filters: state.active_filters,
     sync_threeD_colorvar: state.sync_threeD_colorvar,
     variableRanges: state.variableRanges,

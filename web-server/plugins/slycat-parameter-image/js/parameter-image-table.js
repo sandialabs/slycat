@@ -161,7 +161,7 @@ $.widget("parameter_image.table", {
             self.options["image-variable"] == column_index
               ? "Current image variable"
               : "Set as image variable",
-          command: self.options["image-variable"] == column_index ? "" : "image-on",
+          command: "image-on",
         });
       }
       // Special options for non-image and non-index columns
@@ -174,7 +174,7 @@ $.widget("parameter_image.table", {
               self.options["x-variable"] == column_index
                 ? "Current x variable"
                 : "Set as x variable",
-            command: self.options["x-variable"] == column_index ? "" : "x-on",
+            command: "x-on",
           },
           {
             cssClass: self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
@@ -182,8 +182,8 @@ $.widget("parameter_image.table", {
               self.options["y-variable"] == column_index
                 ? "Current y variable"
                 : "Set as y variable",
-            command: self.options["y-variable"] == column_index ? "" : "y-on",
-          }
+            command: "y-on",
+          },
         );
       }
       return column;
@@ -196,20 +196,20 @@ $.widget("parameter_image.table", {
         self.options.metadata["column-count"] - 1,
         "headerSimId",
         "rowSimId",
-        cell_formatter
-      )
+        cell_formatter,
+      ),
     );
     for (var i in self.options.inputs)
       self.columns.push(
-        make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter)
+        make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter),
       );
     for (var i in self.options.outputs)
       self.columns.push(
-        make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter)
+        make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter),
       );
     for (var i in self.options.others)
       self.columns.push(
-        make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter)
+        make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter),
       );
 
     self.data = new self._data_provider({
@@ -273,11 +273,9 @@ $.widget("parameter_image.table", {
           var index = grid.getColumnIndex(self.options.images[i]);
           self.columns[index].header.buttons[1].cssClass = "icon-image-off";
           self.columns[index].header.buttons[1].tooltip = "Set as image variable";
-          self.columns[index].header.buttons[1].command = "image-on";
           grid.updateColumnHeader(self.columns[index].id);
         }
         button.cssClass = "icon-image-on";
-        button.command = "";
         button.tooltip = "Current image variable";
         self.element.trigger("images-selection-changed", column.id);
       } else if (command == "x-on") {
@@ -288,12 +286,10 @@ $.widget("parameter_image.table", {
           ) {
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
             self.columns[i].header.buttons[1].tooltip = "Set as x variable";
-            self.columns[i].header.buttons[1].command = "x-on";
             grid.updateColumnHeader(self.columns[i].id);
           }
         }
         button.cssClass = "icon-x-on";
-        button.command = "";
         button.tooltip = "Current x variable";
         self.options["x-variable"] = column.id;
         self.options.x_y_variables.x = column.id;
@@ -307,12 +303,10 @@ $.widget("parameter_image.table", {
           ) {
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
             self.columns[i].header.buttons[2].tooltip = "Set as y variable";
-            self.columns[i].header.buttons[2].command = "y-on";
             grid.updateColumnHeader(self.columns[i].id);
           }
         }
         button.cssClass = "icon-y-on";
-        button.command = "";
         button.tooltip = "Current y variable";
         self.options["y-variable"] = column.id;
         self.options.x_y_variables.y = column.id;
@@ -372,7 +366,7 @@ $.widget("parameter_image.table", {
 
     // Subscribing to changes in derived.variableAliases
     window.store.subscribe(
-      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases)
+      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases),
     );
   },
 
@@ -399,8 +393,11 @@ $.widget("parameter_image.table", {
     var self = this;
 
     if (key == "row-selection") {
-      self.options[key] = value;
-      table_helpers._set_selected_rows_no_trigger(self);
+      // Make sure selection actually chaged before doing anything
+      if (!self._array_equal(self.options[key], value)) {
+        self.options[key] = value;
+        table_helpers._set_selected_rows_no_trigger(self);
+      }
     } else if (key == "variable-selection") {
       if (self._array_equal(self.options[key], value)) return;
 
@@ -453,11 +450,9 @@ $.widget("parameter_image.table", {
         if (self.columns[i].id == self.options["x-variable"]) {
           self.columns[i].header.buttons[1].cssClass = "icon-x-on";
           self.columns[i].header.buttons[1].tooltip = "Current x variable";
-          self.columns[i].header.buttons[1].command = "";
         } else {
           self.columns[i].header.buttons[1].cssClass = "icon-x-off";
           self.columns[i].header.buttons[1].tooltip = "Set as x variable";
-          self.columns[i].header.buttons[1].command = "x-on";
         }
         self.grid.updateColumnHeader(self.columns[i].id);
       }
@@ -475,11 +470,9 @@ $.widget("parameter_image.table", {
         if (self.columns[i].id == self.options["y-variable"]) {
           self.columns[i].header.buttons[2].cssClass = "icon-y-on";
           self.columns[i].header.buttons[2].tooltip = "Current y variable";
-          self.columns[i].header.buttons[2].command = "";
         } else {
           self.columns[i].header.buttons[2].cssClass = "icon-y-off";
           self.columns[i].header.buttons[2].tooltip = "Set as y variable";
-          self.columns[i].header.buttons[2].command = "y-on";
         }
         self.grid.updateColumnHeader(self.columns[i].id);
       }
@@ -494,11 +487,9 @@ $.widget("parameter_image.table", {
       if (self.columns[index].id == self.options["image-variable"]) {
         self.columns[index].header.buttons[1].cssClass = "icon-image-on";
         self.columns[index].header.buttons[1].tooltip = "Current image variable";
-        self.columns[index].header.buttons[1].command = "";
       } else {
         self.columns[index].header.buttons[1].cssClass = "icon-image-off";
         self.columns[index].header.buttons[1].tooltip = "Set as image variable";
-        self.columns[index].header.buttons[1].command = "image-on";
       }
       self.grid.updateColumnHeader(self.columns[index].id);
     }
@@ -688,7 +679,7 @@ $.widget("parameter_image.table", {
           if (self.sort_column == self.metadata["column-count"] - 1) {
             // we are sorting by the index column, so we can just make the data we need.
             self.ranked_indices[self.sort_column] = new Int32Array(
-              d3.range(self.metadata["row-count"])
+              d3.range(self.metadata["row-count"]),
             );
             self.get_indices(direction, rows, callback);
           } else {
@@ -702,7 +693,7 @@ $.widget("parameter_image.table", {
                 "/arraysets/data-table/data?hyperchunks=0/rank(a" +
                 self.sort_column +
                 ',"asc")/...&byteorder=' +
-                (chunker.is_little_endian() ? "little" : "big")
+                (chunker.is_little_endian() ? "little" : "big"),
             );
             request.responseType = "arraybuffer";
             request.direction = direction;
