@@ -505,6 +505,10 @@
   margin: 0;
 }
 
+#scatterplot .scatterplot-svg {
+  position: absolute;
+}
+
 /* Image Preview */
 #scatterplot-pane #image-preview {
   position: absolute;
@@ -991,13 +995,33 @@ button#controls-button-var-options {
   font-family: var(--custom-font-family, Arial);
 }
 
-/* Scatterplot Grid */
-#scatterplot-grid-svg {
+/* Scatterplot and Histogram need to have the same z-index */
+#scatterplot,
+#histogram-root {
+  z-index: 0;
+}
+
+/* Histogram and Scatterplot Grid */
+#scatterplot,
+#scatterplot-grid-root,
+#scatterplot-grid-root .grid-svg,
+/* #histogram-root, */
+#histogram-root .plot-background,
+#histogram-root .histogram-svg,
+#histogram-root .grid-svg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+}
+/* Scatterplot Grid */
+#scatterplot-grid-root,
+#scatterplot-grid-root .grid-svg {
   /* Sends the grid behind everything else. Canvas points are -1, so this moves the grid behind them. */
   z-index: -2;
+}
+/* Histogram */
+#histogram-root {
+  color: black;
 }

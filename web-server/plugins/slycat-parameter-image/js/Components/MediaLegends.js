@@ -55,7 +55,7 @@ class MediaLegends extends React.PureComponent {
 const mapStateToProps = (state, ownProps) => {
   const three_d_colorvars = state.three_d_colorvars;
   const open_media = state.open_media ? state.open_media : [];
-  const hidden_simulations = state.hidden_simulations;
+  const hidden_simulations = state.data.hidden_simulations;
   const not_hidden_open_media = _.filter(
     open_media, 
     o => hidden_simulations.indexOf(o.index) < 0

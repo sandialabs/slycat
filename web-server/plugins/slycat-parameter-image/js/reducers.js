@@ -34,13 +34,10 @@ import {
   SET_MEDIA_INDEX,
   SET_OPEN_MEDIA,
   UPDATE_CLOSED_MEDIA,
-  SET_HIDDEN_SIMULATIONS,
-  SET_MANUALLY_HIDDEN_SIMULATIONS,
   SET_MEDIA_SIZE_POSITION,
   SET_ACTIVE_FILTERS,
   TOGGLE_SYNC_SCALING,
   TOGGLE_SYNC_THREE_D_COLORVAR,
-  SET_SELECTED_SIMULATIONS,
   SET_USER_ROLE,
   SET_TABLE_STATISTICS,
   SET_TABLE_METADATA,
@@ -443,7 +440,7 @@ export default function ps_reducer(state = initialState, action) {
           // Remove existing entry if it's already there
           .filter(
             (element) =>
-              element.index != open_media.index || element.media_index != open_media.media_index
+              element.index != open_media.index || element.media_index != open_media.media_index,
           );
         // Add new closed media entry
         new_closed_media.push(open_media);
@@ -454,25 +451,15 @@ export default function ps_reducer(state = initialState, action) {
       // If we can't find a match of the uid, do nothing.
       return state;
 
-    case SET_HIDDEN_SIMULATIONS:
-      return Object.assign({}, state, {
-        hidden_simulations: action.hidden_simulations.slice(0),
-      });
-
-    case SET_MANUALLY_HIDDEN_SIMULATIONS:
-      return Object.assign({}, state, {
-        manually_hidden_simulations: action.manually_hidden_simulations.slice(0),
-      });
-
     case SET_MEDIA_SIZE_POSITION:
       let cloned_deep_open_media = _.cloneDeep(state.open_media);
       const match = cloned_deep_open_media.findIndex(
-        (element) => element.uid == action.media_size_position.uid
+        (element) => element.uid == action.media_size_position.uid,
       );
       cloned_deep_open_media[match] = Object.assign(
         {},
         cloned_deep_open_media[match],
-        action.media_size_position
+        action.media_size_position,
       );
       // If "Sync Scaling" is enabled and we are working with the currentFrame (i.e., highlighted frame),
       // go through all selected media and scale it accordingly
@@ -486,7 +473,7 @@ export default function ps_reducer(state = initialState, action) {
             return;
           }
           // Skip unselected media
-          // if(state.selected_simulations.indexOf(currentMedia.index) == -1)
+          // if(state.data.selected_simulations.indexOf(currentMedia.index) == -1)
           // {
           //   // console.debug(`skipping unselected media %o`, currentMedia);
           //   return;
@@ -521,11 +508,6 @@ export default function ps_reducer(state = initialState, action) {
     case TOGGLE_SYNC_THREE_D_COLORVAR:
       return Object.assign({}, state, {
         sync_threeD_colorvar: !state.sync_threeD_colorvar,
-      });
-
-    case SET_SELECTED_SIMULATIONS:
-      return Object.assign({}, state, {
-        selected_simulations: action.simulations.slice(0),
       });
 
     case SET_USER_ROLE:

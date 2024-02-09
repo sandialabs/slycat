@@ -38,8 +38,30 @@ import "./category-select";
 
 import throttle from "redux-throttle";
 import ps_reducer from "./reducers";
-import scatterplot_reducer from "./scatterplotSlice";
-import { setScatterplotPaneWidth, setScatterplotPaneHeight, setShowGrid } from "./scatterplotSlice";
+import { initialState as rootInitialState } from "./store";
+import scatterplot_reducer, {
+  SLICE_NAME as SCATTERPLOT_SLICE_NAME,
+  setScatterplotPaneWidth,
+  setScatterplotPaneHeight,
+  toggleShowHistogram,
+  selectAutoScale,
+  selectUnselectedPointSize,
+  selectUnselectedBorderSize,
+  selectSelectedPointSize,
+  selectSelectedBorderSize,
+  selectFontSize,
+  selectFontFamily,
+  selectOpenMedia,
+} from "./scatterplotSlice";
+import data_reducer, {
+  SLICE_NAME as DATA_SLICE_NAME,
+  selectSelectedSimulations,
+  selectHiddenSimulations,
+  selectManuallyHiddenSimulations,
+  setSelectedSimulations,
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
+} from "./dataSlice";
 import {
   setXValues,
   setYValues,
@@ -49,17 +71,11 @@ import {
   setYIndex,
   setVIndex,
   setMediaIndex,
-  setHiddenSimulations,
-  setManuallyHiddenSimulations,
-  setSelectedSimulations,
   setUserRole,
   setTableStatistics,
   setTableMetadata,
   setVideoSyncTime,
-  setColormap,
 } from "./actions";
-
-import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 
 import { setSyncCameras } from "./vtk-camera-synchronizer";
 
@@ -73,23 +89,24 @@ import {
   DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
   DEFAULT_SCATTERPLOT_MARGIN_LEFT,
 } from "components/ScatterplotOptions";
-import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import combinedReduction from "combined-reduction";
 import { configureStore } from "@reduxjs/toolkit";
+import {
+  selectXColumnName,
+  selectYColumnName,
+  selectVColumnName,
+  selectScatterplotMarginLeft,
+  selectScatterplotMarginRight,
+  selectScatterplotMarginTop,
+  selectScatterplotMarginBottom,
+  selectAxesVariables,
+} from "./selectors";
 
 let table_metadata = null;
-
-export function get_variable_label(variable) {
-  if (window.store.getState().derived.variableAliases[variable] !== undefined) {
-    return window.store.getState().derived.variableAliases[variable];
-  }
-
-  return table_metadata["column-names"][variable];
-}
 
 // Wait for document ready
 $(document).ready(function () {
@@ -215,11 +232,9 @@ $(document).ready(function () {
         input_columns = model["artifact:input-columns"];
         output_columns = model["artifact:output-columns"];
         image_columns = model["artifact:image-columns"];
-        rating_columns =
-          model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
-        category_columns =
-          model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
-        xy_pairs = model["artifact:xy-pairs"] == undefined ? [] : model["artifact:xy-pairs"];
+        rating_columns = model["artifact:rating-columns"] ?? [];
+        category_columns = model["artifact:category-columns"] ?? [];
+        xy_pairs = model["artifact:xy-pairs"] ?? [];
         filter_manager = new FilterManager(
           model_id,
           bookmarker,
@@ -228,7 +243,7 @@ $(document).ready(function () {
           output_columns,
           image_columns,
           rating_columns,
-          category_columns
+          category_columns,
         );
         if (filter_manager.active_filters_ready()) {
           active_filters_ready();
@@ -286,7 +301,7 @@ $(document).ready(function () {
           console.log(
             "Ooops, this model had project data in the past but it is no longer there. " +
               "Original variable aliases can not be loaded. " +
-              "But we will try to load any aliases that were created after the project data disappeared."
+              "But we will try to load any aliases that were created after the project data disappeared.",
           );
           // Something went wrong. We have a pointer to project data, but can't retrieve it.
           // Might have gotten deleted. So let's try to load aliases from the model's attributes
@@ -380,59 +395,62 @@ $(document).ready(function () {
           const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
 
           // Add unique IDs to bookmarked open_media, as these are now required.
-          let bookmarked_open_media = bookmark["open-images-selection"]
-            ? bookmark["open-images-selection"]
-            : [];
+          let bookmarked_open_media = bookmark["open-images-selection"] ?? [];
           for (let media of bookmarked_open_media) {
             if (!("uid" in media)) {
               media.uid = uuidv4();
             }
           }
 
-          // Create Redux store and set its state based on what's in the bookmark
-          const state_tree = {
-            fontSize: DEFAULT_FONT_SIZE,
-            fontFamily: DEFAULT_FONT_FAMILY,
-            axesVariables: {},
-            threeD_sync: false,
-            // Try to grab current colormap from bookmark, otherwise default it to night
-            colormap: bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night",
-            // First colormap is default
-            threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
-            threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
-            unselected_point_size: unselected_point_size,
-            unselected_border_size: unselected_border_size,
-            selected_point_size: selected_point_size,
-            selected_border_size: selected_border_size,
-            scatterplot_margin: {
-              top: scatterplot_margin_top,
-              right: scatterplot_margin_right,
-              bottom: scatterplot_margin_bottom,
-              left: scatterplot_margin_left,
-            },
-            variableRanges: {},
-            three_d_cameras: {},
-            three_d_colorvars: {},
-            three_d_variable_data_ranges: {},
-            three_d_variable_user_ranges: {},
+          // Create redux store initial state.
+          // First set sensible defaults for model without any bookmark state.
+          // Then overwrite that with any state that we can get from legacy bookmark data.
+          // Next overwrite that with any state that we can get from new bookmark data (i.e., bookmark.state).
+          // Finally merge in derived state slice with data retrieved from slycat api.
+
+          const legacyBookmarkState = {
+            colormap: bookmark["colormap"],
             open_media: bookmarked_open_media,
-            closed_media: [],
-            currentFrame: {},
-            active_filters: [],
-            hidden_simulations: [],
-            manually_hidden_simulations: [],
-            sync_scaling: true,
-            sync_threeD_colorvar: true,
-            selected_simulations: [],
+            video_sync_time: bookmark["video_sync_time"],
             x_index: x_index,
-            video_sync_time:
-              bookmark["video_sync_time"] !== undefined ? bookmark["video_sync_time"] : 0,
+            y_index: y_index,
+            v_index: v_index,
+            [SCATTERPLOT_SLICE_NAME]: {
+              auto_scale: bookmark["auto-scale"],
+            },
+            [DATA_SLICE_NAME]: {
+              selected_simulations:
+                bookmark.state?.["selected_simulations"] ?? bookmark["simulation-selection"],
+              hidden_simulations:
+                bookmark.state?.["hidden_simulations"] ?? bookmark["hidden-simulations"],
+              manually_hidden_simulations:
+                bookmark.state?.["manually_hidden_simulations"] ??
+                bookmark["manually-hidden-simulations"],
+            },
           };
-          // Create reducer that combines root-level ps_reducer and adds ui_reducer at ui.
+
+          const derivedState = {
+            derived: {
+              variableAliases: variable_aliases,
+              media_columns: image_columns,
+              xy_pairs: xy_pairs,
+            },
+          };
+
+          const preloadedState = _.merge(
+            {},
+            rootInitialState,
+            legacyBookmarkState,
+            bookmark.state,
+            derivedState,
+          );
+
+          // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
-          // createSlice ui_reducer and other new reducers.
+          // createSlice scatterplot_reducer and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
-            scatterplot: scatterplot_reducer,
+            [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
+            [DATA_SLICE_NAME]: data_reducer,
           });
 
           window.store = configureStore({
@@ -441,7 +459,12 @@ $(document).ready(function () {
               getDefaultMiddleware({
                 serializableCheck: {
                   // Ignore these action types
-                  ignoredActions: ["SET_X_VALUES", "SET_Y_VALUES", "SET_V_VALUES"],
+                  ignoredActions: [
+                    "SET_X_VALUES",
+                    "SET_Y_VALUES",
+                    "SET_V_VALUES",
+                    "UPDATE_THREE_D_CAMERAS",
+                  ],
                   // Ignore these field paths in all actions
                   // ignoredActionPaths: ["meta.arg", "payload.timestamp"],
                   // Ignore these paths in the state
@@ -449,21 +472,7 @@ $(document).ready(function () {
                 },
               }).concat(throttleMiddleware),
             devTools: process.env.NODE_ENV !== "production",
-            preloadedState: {
-              ...state_tree,
-              ...bookmark.state,
-              derived: {
-                variableAliases: variable_aliases,
-                xValues: [],
-                yValues: [],
-                mediaValues: [],
-                three_d_colorby_range: {},
-                three_d_colorby_legends: {},
-                media_columns: image_columns,
-                xy_pairs: xy_pairs,
-                table_metadata: {},
-              },
-            },
+            preloadedState: preloadedState,
           });
 
           // Save Redux state to bookmark whenever it changes
@@ -477,29 +486,35 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined, ui: undefined },
+                { ...window.store.getState(), derived: undefined },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
 
           // Set local variables based on Redux store
-          axes_font_size = store.getState().fontSize;
-          axes_font_family = store.getState().fontFamily;
-          axes_variables_scale = store.getState().axesVariables;
-          unselected_point_size = store.getState().unselected_point_size;
-          unselected_border_size = store.getState().unselected_border_size;
-          selected_point_size = store.getState().selected_point_size;
-          selected_border_size = store.getState().selected_border_size;
-          scatterplot_margin_top = store.getState().scatterplot_margin.top;
-          scatterplot_margin_right = store.getState().scatterplot_margin.right;
-          scatterplot_margin_bottom = store.getState().scatterplot_margin.bottom;
-          scatterplot_margin_left = store.getState().scatterplot_margin.left;
-          open_images = store.getState().open_media;
+          axes_font_size = selectFontSize(store.getState());
+          axes_font_family = selectFontFamily(store.getState());
+          axes_variables_scale = _.cloneDeep(selectAxesVariables(store.getState()));
+          unselected_point_size = selectUnselectedPointSize(store.getState());
+          unselected_border_size = selectUnselectedBorderSize(store.getState());
+          selected_point_size = selectSelectedPointSize(store.getState());
+          selected_border_size = selectSelectedBorderSize(store.getState());
+          scatterplot_margin_top = selectScatterplotMarginTop(store.getState());
+          scatterplot_margin_right = selectScatterplotMarginRight(store.getState());
+          scatterplot_margin_bottom = selectScatterplotMarginBottom(store.getState());
+          scatterplot_margin_left = selectScatterplotMarginLeft(store.getState());
+          open_images = _.cloneDeep(selectOpenMedia(store.getState()));
+          auto_scale = selectAutoScale(store.getState());
+          selected_simulations = _.cloneDeep(selectSelectedSimulations(store.getState()));
+          hidden_simulations = _.cloneDeep(selectHiddenSimulations(store.getState()));
+          manually_hidden_simulations = _.cloneDeep(
+            selectManuallyHiddenSimulations(store.getState()),
+          );
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
           let navbar = ko.contextFor(
-            document.getElementById("slycat-navbar-test").children[0]
+            document.getElementById("slycat-navbar-test").children[0],
           ).$component;
           // Get the role from slycat-navbar component
           const relation = navbar.relation();
@@ -511,6 +526,8 @@ $(document).ready(function () {
           filter_manager.notify_store_ready();
           resolve();
           setup_controls();
+          setup_scatterplot();
+          setup_table();
           metadata_loaded();
         });
 
@@ -527,14 +544,22 @@ $(document).ready(function () {
 
     // Wait until the redux store has been created
     createReduxStorePromise.then(() => {
-      // Subscribing to changes in colormap
-      let w = watch(store.getState, "colormap");
-      store.subscribe(
-        w((newVal, oldVal, objectPath) => {
-          // console.debug(`%s changed from %s to %s`, objectPath, oldVal, newVal);
-          selected_colormap_changed(newVal);
-        })
-      );
+      // Subscribing to changes in various states
+      [
+        { objectPath: "colormap", callback: selected_colormap_changed },
+        { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
+        { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
+      ].forEach((subscription) => {
+        window.store.subscribe(
+          watch(
+            window.store.getState,
+            subscription.objectPath,
+            _.isEqual,
+          )((newVal, oldVal, objectPath) => {
+            subscription.callback(newVal, oldVal, objectPath);
+          }),
+        );
+      });
 
       // Set size of scatterplot pane in Redux
       window.store.dispatch(setScatterplotPaneWidth(model_pane_layout.state.center.innerWidth));
@@ -546,7 +571,7 @@ $(document).ready(function () {
         pane_element,
         pane_state,
         pane_options,
-        layout_name
+        layout_name,
       ) => {
         const width = pane_state.innerWidth;
         const height = pane_state.innerHeight;
@@ -625,10 +650,6 @@ $(document).ready(function () {
         window.store.dispatch(setYIndex(y_index));
       });
 
-      auto_scale = true;
-      if ("auto-scale" in bookmark) {
-        auto_scale = bookmark["auto-scale"];
-      }
       video_sync = false;
       if ("video-sync" in bookmark) {
         video_sync = bookmark["video-sync"];
@@ -647,16 +668,6 @@ $(document).ready(function () {
         setSyncCameras(threeD_sync);
         setup_controls();
       });
-
-      // Set state of selected and hidden simulations
-      selected_simulations = [];
-      if ("simulation-selection" in bookmark)
-        selected_simulations = bookmark["simulation-selection"];
-      hidden_simulations = [];
-      if ("hidden-simulations" in bookmark) hidden_simulations = bookmark["hidden-simulations"];
-      manually_hidden_simulations = [];
-      if ("manually-hidden-simulations" in bookmark)
-        manually_hidden_simulations = bookmark["manually-hidden-simulations"];
 
       chunker.get_model_array_attribute({
         api_root: api_root,
@@ -957,15 +968,15 @@ $(document).ready(function () {
 
       $("#scatterplot-pane").css(
         "background",
-        slycat_color_maps.get_background(store.getState().colormap).toString()
+        slycat_color_maps.get_background(store.getState().colormap).toString(),
       );
 
       $("#scatterplot").scatterplot({
         model: model,
         indices: indices,
-        x_label: get_variable_label(x_index),
-        y_label: get_variable_label(y_index),
-        v_label: get_variable_label(v_index),
+        x_label: selectXColumnName(window.store.getState()),
+        y_label: selectYColumnName(window.store.getState()),
+        v_label: selectVColumnName(window.store.getState()),
         x: x,
         y: y,
         v: v,
@@ -1052,7 +1063,6 @@ $(document).ready(function () {
       category_columns != null &&
       x_index != null &&
       y_index != null &&
-      auto_scale != null &&
       images_index !== null &&
       selected_simulations != null &&
       hidden_simulations != null &&
@@ -1107,7 +1117,6 @@ $(document).ready(function () {
         "y-variable": y_index,
         "image-variable": images_index,
         "color-variable": color_variable,
-        "auto-scale": auto_scale,
         hidden_simulations: hidden_simulations,
         indices: indices,
         "video-sync": video_sync,
@@ -1224,11 +1233,6 @@ $(document).ready(function () {
       // Log changes to the y variable ...
       $("#controls").bind("y-selection-changed", function (event, variable) {
         y_selection_changed(variable);
-      });
-
-      // Changing the auto scale option updates the scatterplot and logs it ...
-      $("#controls").bind("auto-scale", function (event, auto_scale) {
-        auto_scale_option_changed(auto_scale);
       });
 
       // Changing the video sync option updates the scatterplot and logs it ...
@@ -1394,7 +1398,7 @@ $(document).ready(function () {
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  function selected_colormap_changed(colormap) {
+  function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();
 
     // Changing the color map updates the table with a new color scale ...
@@ -1513,7 +1517,7 @@ $(document).ready(function () {
       v_string: table_metadata["column-types"][v_index] == "string",
       colorscale: colorscale,
     });
-    $("#scatterplot").scatterplot("option", "v_label", get_variable_label(v_index));
+    $("#scatterplot").scatterplot("option", "v_label", selectVColumnName(window.store.getState()));
   }
 
   function update_widgets_when_hidden_simulations_change() {
@@ -1546,8 +1550,8 @@ $(document).ready(function () {
   function set_custom_color_variable_range() {
     // console.log(`set_custom_color_variable_range`);
     const variableRanges = window.store.getState().variableRanges[v_index];
-    custom_color_variable_range.min = variableRanges != undefined ? variableRanges.min : undefined;
-    custom_color_variable_range.max = variableRanges != undefined ? variableRanges.max : undefined;
+    custom_color_variable_range.min = variableRanges?.min ?? undefined;
+    custom_color_variable_range.max = variableRanges?.max ?? undefined;
   }
 
   function update_current_colorscale() {
@@ -1562,19 +1566,13 @@ $(document).ready(function () {
 
     if (v_type != "string") {
       let axes_variables = store.getState().axesVariables[v_index];
-      let v_axis_type = axes_variables != undefined ? axes_variables : "Linear";
+      let v_axis_type = axes_variables ?? "Linear";
       // console.log(`v_axis_type is ${v_axis_type}`);
 
       // console.debug(`store.getState().colormap is %o`, store.getState().colormap);
       const colormap = store.getState().colormap;
-      const min =
-        custom_color_variable_range.min != undefined
-          ? custom_color_variable_range.min
-          : d3.min(filtered_v);
-      const max =
-        custom_color_variable_range.max != undefined
-          ? custom_color_variable_range.max
-          : d3.max(filtered_v);
+      const min = custom_color_variable_range.min ?? d3.min(filtered_v);
+      const max = custom_color_variable_range.max ?? d3.max(filtered_v);
       colorscale =
         v_axis_type == "Log"
           ? slycat_color_maps.get_color_scale_log(colormap, min, max)
@@ -1583,7 +1581,7 @@ $(document).ready(function () {
       var uniqueValues = d3.set(filtered_v).values().sort();
       colorscale = slycat_color_maps.get_color_scale_ordinal(
         store.getState().colormap,
-        uniqueValues
+        uniqueValues,
       );
     }
   }
@@ -1618,7 +1616,7 @@ $(document).ready(function () {
     // }
     // return [];
 
-    // For loop method is much shower (around 300ms for 250K)
+    // For loop method is much slower (around 300ms for 250K)
     // but works in WebKit. Might be able to speed things up by
     // using ArrayBuffer.subarray() method to make smallery
     // arrays and then Array.apply those.
@@ -1638,18 +1636,25 @@ $(document).ready(function () {
     bookmarker.updateState({ "sort-variable": variable, "sort-order": order });
   }
 
-  function selected_simulations_changed(selection) {
+  function selected_simulations_changed(selection, old_selection, objectPath) {
     // console.log("selected_simulations_changed");
     // Logging every selected item is too slow, so just log the count instead.
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/select/simulation/count/" + selection.length,
     });
-    bookmarker.updateState({ "simulation-selection": selection });
-    selected_simulations = selection;
+    selected_simulations = _.cloneDeep(selection);
 
-    // Dispatch update to selected_simulations in Redux
-    window.store.dispatch(setSelectedSimulations(selection));
+    // If we have an old_selection it means this came from Redux, so we don't need to update Redux again.
+    // But we do need to let the other non-React components know about the new selection.
+    if (old_selection !== undefined) {
+      $("#scatterplot").scatterplot("option", "selection", _.cloneDeep(selection));
+      $("#controls").controls("option", "selection", _.cloneDeep(selection));
+      $("#table").table("option", "row-selection", _.cloneDeep(selection));
+    } else {
+      // Dispatch update to selected_simulations in Redux
+      window.store.dispatch(setSelectedSimulations(selection));
+    }
   }
 
   function x_selection_changed(variable) {
@@ -1674,9 +1679,13 @@ $(document).ready(function () {
 
     // Dispatch update to y index in Redux
     window.store.dispatch(setYIndex(y_index));
+    // Hide histogram if it's being displayed
+    if (window.store.getState().scatterplot.show_histogram) {
+      window.store.dispatch(toggleShowHistogram());
+    }
   }
 
-  function auto_scale_option_changed(auto_scale_value) {
+  function auto_scale_option_changed(auto_scale_value, old_auto_scale_value, objectPath) {
     auto_scale = auto_scale_value;
     if (hidden_simulations.length > 0) {
       update_current_colorscale();
@@ -1690,7 +1699,6 @@ $(document).ready(function () {
       type: "POST",
       url: api_root + "events/models/" + model_id + "/auto-scale/" + auto_scale,
     });
-    bookmarker.updateState({ "auto-scale": auto_scale });
   }
 
   function video_sync_option_changed(video_sync_value) {
@@ -1755,7 +1763,7 @@ $(document).ready(function () {
           x_index: variable,
           x_string: table_metadata["column-types"][variable] == "string",
           x: x,
-          x_label: get_variable_label(variable),
+          x_label: selectXColumnName(window.store.getState()),
         });
       },
       error: artifact_missing,
@@ -1777,7 +1785,7 @@ $(document).ready(function () {
           y_index: variable,
           y_string: table_metadata["column-types"][variable] == "string",
           y: y,
-          y_label: get_variable_label(variable),
+          y_label: selectYColumnName(window.store.getState()),
         });
       },
       error: artifact_missing,
@@ -1880,7 +1888,7 @@ $(document).ready(function () {
                 filter_var +
                 " >= " +
                 filter.min() +
-                ")"
+                ")",
             );
           } else if (!filter.invert()) {
             new_filters.push(
@@ -1892,7 +1900,7 @@ $(document).ready(function () {
                 filter_var +
                 " >= " +
                 filter.low() +
-                ")"
+                ")",
             );
           }
         } else if (filter.type() == "category") {

@@ -12,6 +12,7 @@ interface ColorMapsInterface {
     null_color: string;
     outofdomain_color: string;
     scatterplot_grid_color: string;
+    histogram_bar_color: string;
     opacity: string;
     colors: d3.RGBColor[];
   };
@@ -23,6 +24,7 @@ const GRAY2 = "rgb(128 128 128)";
 const GRAY3 = "rgb(102 102 102)";
 const GRAY4 = "rgb(75 75 75)";
 const BLACK = "rgb(0 0 0)";
+const HISTOGRAM_BLUE = "rgb(102 170 215)";
 
 export default {
   color_maps: {
@@ -32,6 +34,7 @@ export default {
       null_color: GRAY4,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY3,
+      histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.5",
       colors: [
         d3.rgb(59, 76, 192),
@@ -75,6 +78,7 @@ export default {
       null_color: GRAY2,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY1,
+      histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.7",
       colors: [
         d3.rgb(100, 108, 234),
@@ -118,6 +122,7 @@ export default {
       null_color: GRAY4,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY3,
+      histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.6",
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
@@ -127,6 +132,7 @@ export default {
       null_color: GRAY2,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY1,
+      histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.7",
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
@@ -137,6 +143,7 @@ export default {
       null_color: GRAY4,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY3,
+      histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },
@@ -147,6 +154,7 @@ export default {
       null_color: GRAY2,
       outofdomain_color: BLACK,
       scatterplot_grid_color: GRAY1,
+      histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },
