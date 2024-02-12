@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>slycat.web.server.handlers &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="slycat.web.server.hdf5" href="slycat.web.server.hdf5.html" />
+    <link rel="prev" title="slycat.web.server.engine" href="slycat.web.server.engine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../python-api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.darray.html">slycat.darray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hdf5.html">slycat.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hyperchunks.html">slycat.hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.uri.html">slycat.uri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.client.html">slycat.web.client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.html">slycat.web.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.authentication.html">slycat.web.server.authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.database.couchdb.html">slycat.web.server.database.couchdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.engine.html">slycat.web.server.engine</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">slycat.web.server.handlers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.MyEncoder"><code class="docutils literal notranslate"><span class="pre">MyEncoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.handlers.MyEncoder.default"><code class="docutils literal notranslate"><span class="pre">MyEncoder.default()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.clean_project_data"><code class="docutils literal notranslate"><span class="pre">clean_project_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.clear_ssh_sessions"><code class="docutils literal notranslate"><span class="pre">clear_ssh_sessions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.create_project_data"><code class="docutils literal notranslate"><span class="pre">create_project_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.create_project_data_from_pid"><code class="docutils literal notranslate"><span class="pre">create_project_data_from_pid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_job"><code class="docutils literal notranslate"><span class="pre">delete_job()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_model"><code class="docutils literal notranslate"><span class="pre">delete_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_model_in_project_data"><code class="docutils literal notranslate"><span class="pre">delete_model_in_project_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_model_parameter"><code class="docutils literal notranslate"><span class="pre">delete_model_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_project"><code class="docutils literal notranslate"><span class="pre">delete_project()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_project_cache"><code class="docutils literal notranslate"><span class="pre">delete_project_cache()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_project_cache_object"><code class="docutils literal notranslate"><span class="pre">delete_project_cache_object()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_project_data"><code class="docutils literal notranslate"><span class="pre">delete_project_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_project_data_in_model"><code class="docutils literal notranslate"><span class="pre">delete_project_data_in_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_reference"><code class="docutils literal notranslate"><span class="pre">delete_reference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_remote"><code class="docutils literal notranslate"><span class="pre">delete_remote()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.delete_upload"><code class="docutils literal notranslate"><span class="pre">delete_upload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_bookmark"><code class="docutils literal notranslate"><span class="pre">get_bookmark()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_checkjob"><code class="docutils literal notranslate"><span class="pre">get_checkjob()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_ga_tracking_id"><code class="docutils literal notranslate"><span class="pre">get_configuration_ga_tracking_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_markings"><code class="docutils literal notranslate"><span class="pre">get_configuration_markings()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_parsers"><code class="docutils literal notranslate"><span class="pre">get_configuration_parsers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_remote_hosts"><code class="docutils literal notranslate"><span class="pre">get_configuration_remote_hosts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_smb_domains"><code class="docutils literal notranslate"><span class="pre">get_configuration_smb_domains()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_smb_remote_hosts"><code class="docutils literal notranslate"><span class="pre">get_configuration_smb_remote_hosts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_support_email"><code class="docutils literal notranslate"><span class="pre">get_configuration_support_email()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_version"><code class="docutils literal notranslate"><span class="pre">get_configuration_version()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_configuration_wizards"><code class="docutils literal notranslate"><span class="pre">get_configuration_wizards()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_job_output"><code class="docutils literal notranslate"><span class="pre">get_job_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_array_attribute_chunk"><code class="docutils literal notranslate"><span class="pre">get_model_array_attribute_chunk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_arrayset_data"><code class="docutils literal notranslate"><span class="pre">get_model_arrayset_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_arrayset_metadata"><code class="docutils literal notranslate"><span class="pre">get_model_arrayset_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_file"><code class="docutils literal notranslate"><span class="pre">get_model_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_parameter"><code class="docutils literal notranslate"><span class="pre">get_model_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_statistics"><code class="docutils literal notranslate"><span class="pre">get_model_statistics()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_table_chunk"><code class="docutils literal notranslate"><span class="pre">get_model_table_chunk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_table_metadata"><code class="docutils literal notranslate"><span class="pre">get_model_table_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_table_sorted_indices"><code class="docutils literal notranslate"><span class="pre">get_model_table_sorted_indices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_model_table_unsorted_indices"><code class="docutils literal notranslate"><span class="pre">get_model_table_unsorted_indices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project"><code class="docutils literal notranslate"><span class="pre">get_project()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_cache_object"><code class="docutils literal notranslate"><span class="pre">get_project_cache_object()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_data"><code class="docutils literal notranslate"><span class="pre">get_project_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_data_in_model"><code class="docutils literal notranslate"><span class="pre">get_project_data_in_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_data_parameter"><code class="docutils literal notranslate"><span class="pre">get_project_data_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_file_names"><code class="docutils literal notranslate"><span class="pre">get_project_file_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_models"><code class="docutils literal notranslate"><span class="pre">get_project_models()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_project_references"><code class="docutils literal notranslate"><span class="pre">get_project_references()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_projects_list"><code class="docutils literal notranslate"><span class="pre">get_projects_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remote_file"><code class="docutils literal notranslate"><span class="pre">get_remote_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remote_host_dict"><code class="docutils literal notranslate"><span class="pre">get_remote_host_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remote_image"><code class="docutils literal notranslate"><span class="pre">get_remote_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remote_job_status"><code class="docutils literal notranslate"><span class="pre">get_remote_job_status()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remote_show_user_password"><code class="docutils literal notranslate"><span class="pre">get_remote_show_user_password()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remote_video"><code class="docutils literal notranslate"><span class="pre">get_remote_video()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_remotes"><code class="docutils literal notranslate"><span class="pre">get_remotes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_selectable_configuration_markings"><code class="docutils literal notranslate"><span class="pre">get_selectable_configuration_markings()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_session_status"><code class="docutils literal notranslate"><span class="pre">get_session_status()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_sid"><code class="docutils literal notranslate"><span class="pre">get_sid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_table_metadata"><code class="docutils literal notranslate"><span class="pre">get_table_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_table_sort_index"><code class="docutils literal notranslate"><span class="pre">get_table_sort_index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_time_series_names"><code class="docutils literal notranslate"><span class="pre">get_time_series_names()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_user"><code class="docutils literal notranslate"><span class="pre">get_user()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.get_user_config"><code class="docutils literal notranslate"><span class="pre">get_user_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.is_user_currently_active"><code class="docutils literal notranslate"><span class="pre">is_user_currently_active()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.job_time"><code class="docutils literal notranslate"><span class="pre">job_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.logout"><code class="docutils literal notranslate"><span class="pre">logout()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.model_command"><code class="docutils literal notranslate"><span class="pre">model_command()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.model_sensitive_command"><code class="docutils literal notranslate"><span class="pre">model_sensitive_command()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.open_id_authenticate"><code class="docutils literal notranslate"><span class="pre">open_id_authenticate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_events"><code class="docutils literal notranslate"><span class="pre">post_events()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_log"><code class="docutils literal notranslate"><span class="pre">post_log()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_model_arrayset_data"><code class="docutils literal notranslate"><span class="pre">post_model_arrayset_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_model_files"><code class="docutils literal notranslate"><span class="pre">post_model_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_model_finish"><code class="docutils literal notranslate"><span class="pre">post_model_finish()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_project_bookmarks"><code class="docutils literal notranslate"><span class="pre">post_project_bookmarks()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_project_models"><code class="docutils literal notranslate"><span class="pre">post_project_models()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_project_references"><code class="docutils literal notranslate"><span class="pre">post_project_references()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_projects"><code class="docutils literal notranslate"><span class="pre">post_projects()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_remote_browse"><code class="docutils literal notranslate"><span class="pre">post_remote_browse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_remote_command"><code class="docutils literal notranslate"><span class="pre">post_remote_command()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_remote_launch"><code class="docutils literal notranslate"><span class="pre">post_remote_launch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_remotes"><code class="docutils literal notranslate"><span class="pre">post_remotes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_remotes_smb"><code class="docutils literal notranslate"><span class="pre">post_remotes_smb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_smb_browse"><code class="docutils literal notranslate"><span class="pre">post_smb_browse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_submit_batch"><code class="docutils literal notranslate"><span class="pre">post_submit_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_upload_finished"><code class="docutils literal notranslate"><span class="pre">post_upload_finished()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.post_uploads"><code class="docutils literal notranslate"><span class="pre">post_uploads()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_model"><code class="docutils literal notranslate"><span class="pre">put_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_model_arrayset"><code class="docutils literal notranslate"><span class="pre">put_model_arrayset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_model_arrayset_array"><code class="docutils literal notranslate"><span class="pre">put_model_arrayset_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_model_arrayset_data"><code class="docutils literal notranslate"><span class="pre">put_model_arrayset_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_model_inputs"><code class="docutils literal notranslate"><span class="pre">put_model_inputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_model_parameter"><code class="docutils literal notranslate"><span class="pre">put_model_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_project"><code class="docutils literal notranslate"><span class="pre">put_project()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_project_csv_data"><code class="docutils literal notranslate"><span class="pre">put_project_csv_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_project_data_parameter"><code class="docutils literal notranslate"><span class="pre">put_project_data_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_reference"><code class="docutils literal notranslate"><span class="pre">put_reference()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.put_upload_file_part"><code class="docutils literal notranslate"><span class="pre">put_upload_file_part()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.require_array_json_parameter"><code class="docutils literal notranslate"><span class="pre">require_array_json_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.require_boolean_json_parameter"><code class="docutils literal notranslate"><span class="pre">require_boolean_json_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.require_integer_array_json_parameter"><code class="docutils literal notranslate"><span class="pre">require_integer_array_json_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.require_integer_parameter"><code class="docutils literal notranslate"><span class="pre">require_integer_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.require_json_parameter"><code class="docutils literal notranslate"><span class="pre">require_json_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.set_user_config"><code class="docutils literal notranslate"><span class="pre">set_user_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.tests_request"><code class="docutils literal notranslate"><span class="pre">tests_request()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.validate_table_byteorder"><code class="docutils literal notranslate"><span class="pre">validate_table_byteorder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.validate_table_columns"><code class="docutils literal notranslate"><span class="pre">validate_table_columns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.validate_table_rows"><code class="docutils literal notranslate"><span class="pre">validate_table_rows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.handlers.validate_table_sort"><code class="docutils literal notranslate"><span class="pre">validate_table_sort()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.hdf5.html">slycat.web.server.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.plugin.html">slycat.web.server.plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.remote.html">slycat.web.server.remote</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../python-api.html">Python API</a></li>
+      <li class="breadcrumb-item active">slycat.web.server.handlers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/slycat-packages/slycat.web.server.handlers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-slycat.web.server.handlers">
+<span id="slycat-web-server-handlers"></span><h1>slycat.web.server.handlers<a class="headerlink" href="#module-slycat.web.server.handlers" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.MyEncoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">MyEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_ascii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#MyEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.MyEncoder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">JSONEncoder</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.MyEncoder.default">
+<span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#MyEncoder.default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.MyEncoder.default" title="Permalink to this definition"></a></dt>
+<dd><p>Implement this method in a subclass such that it returns
+a serializable object for <code class="docutils literal notranslate"><span class="pre">o</span></code>, or calls the base implementation
+(to raise a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>).</p>
+<p>For example, to support arbitrary iterators, you could
+implement default like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="c1"># Let the base class default method raise the TypeError</span>
+    <span class="k">return</span> <span class="n">JSONEncoder</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.clean_project_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">clean_project_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#clean_project_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.clean_project_data" title="Permalink to this definition"></a></dt>
+<dd><p>cleans out project data that is not being pointed at
+by a parameter space model, and cleans up models that
+are not parameter space but point to project data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.clear_ssh_sessions">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">clear_ssh_sessions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#clear_ssh_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.clear_ssh_sessions" title="Permalink to this definition"></a></dt>
+<dd><p>clears out of the ssh session for the current user</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.create_project_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">create_project_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#create_project_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.create_project_data" title="Permalink to this definition"></a></dt>
+<dd><p>creates a project level data object that can be used to create new
+models in the current project
+:param mid: model ID
+:param aid: artifact ID
+:param file: file attachment
+:return: not used</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.create_project_data_from_pid">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">create_project_data_from_pid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#create_project_data_from_pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.create_project_data_from_pid" title="Permalink to this definition"></a></dt>
+<dd><p>creates a project level data object from a project id
+that can be used to create new
+models in the current project
+:param file_name: artifact ID
+:param file: file attachment
+:return: not used</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_job">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_job"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_job" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_model">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_model_in_project_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_model_in_project_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">did</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_model_in_project_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_model_in_project_data" title="Permalink to this definition"></a></dt>
+<dd><p>Removes a model id from project data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> – Model id</p></li>
+<li><p><strong>did</strong> – Project data id</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_model_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_model_parameter" title="Permalink to this definition"></a></dt>
+<dd><p>delete a model artifact
+:param mid: model Id
+:param aid: artifact id
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_project">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_project" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes a project and all its models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>pid {string} -- project</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_project_cache">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_project_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_project_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_project_cache" title="Permalink to this definition"></a></dt>
+<dd><p>clears all the cached images and videos for a project
+given a project ID
+:param pid: Project ID
+:return: status</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_project_cache_object">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_project_cache_object" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes an object from the project cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>pid {string} -- project</em>) – </p></li>
+<li><p><strong>cache</strong> (<em>key {string} -- key in the</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cherrypy.HTTPError</strong> – 404 not found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_project_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_project_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">did</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_project_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_project_data" title="Permalink to this definition"></a></dt>
+<dd><p>Delete a project data record from couchdb.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>did {string} -- project data</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nothing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_project_data_in_model">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_project_data_in_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">did</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_project_data_in_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_project_data_in_model" title="Permalink to this definition"></a></dt>
+<dd><p>Removes a project data id from a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>did</strong> – Project data id</p></li>
+<li><p><strong>mid</strong> – Model id</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_reference">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_reference" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_remote">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_remote" title="Permalink to this definition"></a></dt>
+<dd><p>TODO: this function needs review for deprecation as we no longer send the sid over</p>
+<p>Deletes a remote session created with POST /api/remotes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>sid {string} -- unique session</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.delete_upload">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">delete_upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#delete_upload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.delete_upload" title="Permalink to this definition"></a></dt>
+<dd><p>Delete an upload session used to upload files for storage as model artifacts.
+This function must be called once the client no longer needs the session,
+whether the upload(s) have been completed successfully or the
+client is cancelling an incomplete session.</p>
+<dl class="simple">
+<dt>status 204</dt><dd><p>The upload session and any temporary storage have been deleted.</p>
+</dd>
+<dt>status 409</dt><dd><p>The upload session cannot be deleted, because parsing is in progress.
+Try again later.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>uid</strong> – upload sessin id</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>not used</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_bookmark">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_bookmark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_bookmark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_bookmark" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves a bookmark - an arbitrary collection of client state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>bid {string} -- bookmark</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json – representation of client state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_checkjob">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_checkjob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_checkjob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_checkjob" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_ga_tracking_id">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_ga_tracking_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_ga_tracking_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_ga_tracking_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_markings">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_markings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_markings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_markings" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_parsers">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_parsers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_parsers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_parsers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_remote_hosts">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_remote_hosts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_remote_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_remote_hosts" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_smb_domains">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_smb_domains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_smb_domains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_smb_domains" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the SMB domains from the slycat web server
+configuration file
+:return: domain names</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_smb_remote_hosts">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_smb_remote_hosts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_smb_remote_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_smb_remote_hosts" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_support_email">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_support_email</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_support_email"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_support_email" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_version">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_version" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_configuration_wizards">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_configuration_wizards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_configuration_wizards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_configuration_wizards" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_job_output">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_job_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_job_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_job_output" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>mid {string} -- model</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json – represents a model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_array_attribute_chunk">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_array_attribute_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">arguments</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_array_attribute_chunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_array_attribute_chunk" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_arrayset_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_arrayset_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperchunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byteorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_arrayset_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_arrayset_data" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve data stored in arrayset darray attributes. The caller
+may request data stored using any combination of
+arrays, attributes, and hyperslices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>aid {string} -- artifact</em>) – </p></li>
+<li><p><strong>id</strong> – </p></li>
+<li><p><strong>parameter</strong> (<em>hyperchunks {string} -- The request must contain a</em>) – hyperchunks that specifies the arrays, attributes,
+and hyperslices to be returned, in Hyperchunks format.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>must</strong> (<em>byteorder {string} -- optional byteorder argument</em>) – be big or little. (default: {None})</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cherrypy.HTTPError</strong> – 400 aid is not an array artifact.</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 Not a valid hyperchunks specification</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 optional byteorder argument must be big or little.</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 404 aid not found</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>octet-stream – application/octet-stream</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_arrayset_metadata">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_arrayset_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_arrayset_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_arrayset_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Used to retrieve metadata and statistics for an arrayset artifact
+- a collection of dense, multidimensional darray objects. A darray
+is a dense, multi-dimensional, multi-attribute array,
+suitable for storage of arbitrarily-large data.</p>
+<p>The metadata for a single darray includes the name, type,
+half-open range of coordinate values, and shape for each
+dimension in the array, plus the name and type of each attribute.</p>
+<p>Statistics can be retrieved for individual darray attributes, and
+include minimum and maximum values, plus a count of unique
+values for an attribute. Although statistics are cached, retrieving
+them may be an extremely expensive operation, since they involve
+full scans through their respective attributes. Because of this,
+callers are encouraged to retrieve statistics only when needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>aid {string} -- artifact</em>) – </p></li>
+<li><p><strong>id</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>cherrypy.HTTPError</strong> – 404</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 aid is not an array artifact.</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 Not a valid hyperchunks specification.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json – statistical results of arrayset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_file">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_file" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves a file artifact from a model. File artifacts are effectively
+binary blobs that may contain arbitrary data with an explicit content
+type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>aid {string} -- artifact</em>) – </p></li>
+<li><p><strong>id</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>cherrypy.HTTPError</strong> – 404</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 aid is not a file artifact.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>any – file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_parameter" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves a model parameter (name / value pair) artifact. The result is a
+JSON expression and may be arbitrarily complex.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>aid {string} -- artifact</em>) – </p></li>
+<li><p><strong>id</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cherrypy.HTTPError</strong> – 404 Unknown artifact</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_statistics">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_statistics" title="Permalink to this definition"></a></dt>
+<dd><p>gets statistics on the model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ID</strong> (<em>mid {string} -- model</em>) – </p></li>
+<li><p><strong>caching</strong> (<em>time {int} -- time int to prevent</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cherrypy.HTTPError</strong> – 404 user not found</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mid {string} – mid
+hdf5_file_size {float} – hdf5_file_size
+total_server_data_size {float} – total_server_data_size
+hdf5_store_size {float} – total_hdf5_server_size
+model {string} – model
+delta_creation_time {float} – delta_creation_time
+couchdb_doc_size {float} – sys.getsizeof(model)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_table_chunk">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_table_chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_table_chunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_table_chunk" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_table_metadata">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_table_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_table_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_table_metadata" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_table_sorted_indices">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_table_sorted_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byteorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_table_sorted_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_table_sorted_indices" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_model_table_unsorted_indices">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_model_table_unsorted_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byteorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_model_table_unsorted_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_model_table_unsorted_indices" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project" title="Permalink to this definition"></a></dt>
+<dd><p>returns a project based on “content-type” header
+:param pid: project ID
+:return: Either html landing page of given project or the json
+representation of the project</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_cache_object">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_cache_object" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves an object from a project’s cache.
+Cache objects are opaque binary blobs that
+may contain arbitrary data, plus an explicit
+content type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>pid {string} -- project</em>) – </p></li>
+<li><p><strong>obj</strong> (<em>key {string} -- string key for</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cherrypy.HTTPError</strong> – 404 not found</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>attachment from database</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">did</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_data" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a project data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>did {string} -- data</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json – represents a project data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_data_in_model">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_data_in_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_data_in_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_data_in_model" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of the project data ids in a model as a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>mid {string} -- model</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json – represents the project data in the model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_data_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_data_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">did</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_data_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_data_parameter" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a project data parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>did {string} -- data</em>) – </p></li>
+<li><p><strong>return</strong> (<em>param {string} -- name</em><em> of </em><em>parameter to</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json – represents a project data parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_file_names">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_file_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_file_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_file_names" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all the stored filenames on the server that can be used to make models for a
+given project
+:param pid: project ID
+:return: array of found project data file names</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_models">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_models" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of project models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>pid {string} -- project</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json – list of models in project</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_project_references">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_project_references" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_projects_list">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_projects_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_projects_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_projects_list" title="Permalink to this definition"></a></dt>
+<dd><p>returns an array of projects
+:param _: time arg to stop caching
+:return: json projects list</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remote_file">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remote_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remote_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remote_file" title="Permalink to this definition"></a></dt>
+<dd><p>Uses an existing remote session to retrieve a remote file.  The remote
+session must have been created using <a class="reference internal" href="../POST-methods/POST-Remotes.html#post--api-remotes" title="POST /api/remotes"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes</span></code></a>.  Use
+<a class="reference internal" href="../POST-methods/POST-Remote-Browse.html#post--api-remotes-(hostname)-browse(path)" title="POST /api/remotes/(hostname)/browse(path)"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes/(hostname)/browse(path)</span></code></a> to lookup remote file paths.
+The returned file may be optionally cached on the server and retrieved
+using <a class="reference internal" href="../GET-methods/GET-Project-Cache-Object.html#get--api-projects-(pid)-cache-(key)" title="GET /api/projects/(pid)/cache/(key)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/(pid)/cache/(key)</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hostname</strong> (<em>string</em>) – connection host name</p></li>
+<li><p><strong>path</strong> (<em>string</em>) – path to file</p></li>
+<li><p><strong>kwargs</strong> (<em>json</em>) – <dl class="simple">
+<dt>cache: –</dt><dd><p>Optional cache identifier.
+Set to project to store the retrieved file in a project cache.</p>
+</dd>
+<dt>project: uuid</dt><dd><p>Project identifier. Required when cache is set to project.</p>
+</dd>
+<dt>key: uuid</dt><dd><p>Cached object key. Must be specified when cache is set to project.</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>file</strong> – the file that was asked for</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>binary</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>200 OK</strong> – The requested file is returned in the body of the response.</p></li>
+<li><p><strong>404 Not Found</strong> – The session doesn’t exist or has timed-out.</p></li>
+<li><p><strong>400 Bad Request</strong> – “Can’t read directory” The remote path is a directory instead of a file.</p></li>
+<li><p><strong>400 Bad Request</strong> – “File not found” The remote path doesn’t exist.</p></li>
+<li><p><strong>400 Bad Request</strong> – “Access denied” The session user doesn’t have permissions to access the file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remote_host_dict">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remote_host_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remote_host_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remote_host_dict" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remote_image">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remote_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remote_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remote_image" title="Permalink to this definition"></a></dt>
+<dd><p>Given a hostname and image path returns the image given
+by the path
+:param hostname: connection host name
+:param path: path to image
+:param kwargs:
+:return: image</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remote_job_status">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remote_job_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remote_job_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remote_job_status" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remote_show_user_password">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remote_show_user_password</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remote_show_user_password"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remote_show_user_password" title="Permalink to this definition"></a></dt>
+<dd><p>checks to see if the application needs to show password
+:return: json {show:bool, msg:msg}</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remote_video">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remote_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vsid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remote_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remote_video" title="Permalink to this definition"></a></dt>
+<dd><p>Given a hostname and vsid returns the video given
+by the vsid
+:param hostname: connection host name
+:param vsid: video uuid
+:return: video</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_remotes">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_remotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_remotes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_remotes" title="Permalink to this definition"></a></dt>
+<dd><p>Returns {status: True} if the hostname was found in the user’s
+session
+:param hostname: connection host name
+:return: {“status”:status, “msg”:msg}</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_selectable_configuration_markings">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_selectable_configuration_markings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_selectable_configuration_markings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_selectable_configuration_markings" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_session_status">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_session_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_session_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_session_status" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_sid">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_sid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_sid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_sid" title="Permalink to this definition"></a></dt>
+<dd><p>Takes a hostname address and returns the established sid value
+base on what is found in the users session
+raises 400 and 404
+:param hostname: name of the host we are trying to connect to
+:return: sid : uuid for the session name</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_table_metadata">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_table_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_table_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_table_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Return table-oriented metadata for a 1D array, plus an optional index column.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_table_sort_index">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_table_sort_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_table_sort_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_table_sort_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_time_series_names">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_time_series_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_time_series_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_time_series_names" title="Permalink to this definition"></a></dt>
+<dd><p>Parse a time series csv for all column names
+:param hostname: connection host name
+:param path: path to csv file
+:param kwargs:
+:return: json object of column names</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_user">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_user" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve directory information for a given user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>uid {string} -- users</em>) – </p></li>
+<li><p><strong>caching</strong> (<em>time {int} -- time int to prevent</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cherrypy.HTTPError</strong> – 404 user not found</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json – user info</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.get_user_config">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">get_user_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#get_user_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.get_user_config" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.is_user_currently_active">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">is_user_currently_active</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#is_user_currently_active"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.is_user_currently_active" title="Permalink to this definition"></a></dt>
+<dd><p>Checks when the most recent session activity occurred.
+If it occurred more than 10 minutes ago, returns true.
+If less than 10 minutes ago, returns false.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.job_time">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">job_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#job_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.job_time" title="Permalink to this definition"></a></dt>
+<dd><p>gives the time in seconds recommended given job meta data
+:param nodes: number of hpc nodes for job
+:param tasks: number of tasks per node for job
+:param size: size of data file used in the job
+:return: json time in seconds as an integer {‘time-seconds’: 1800}</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.login">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#login"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.login" title="Permalink to this definition"></a></dt>
+<dd><p>Takes the post object under cherrypy.request.json with the users name and password
+and determins with the user can be authenticated with slycat
+:return: authentication status</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.logout">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">logout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#logout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.logout" title="Permalink to this definition"></a></dt>
+<dd><p>See if the client has a valid session.
+If so delete it
+:return: the status of the request</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.model_command">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">model_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#model_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.model_command" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a custom model command.</p>
+<p>Plugins may register custom commands to be executed
+on the server, using an existing model as context.
+Custom commands are used to perform computation on
+the server instead of the client, and would typically
+use model artifacts as inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>mid {string} -- model</em>) – </p></li>
+<li><p><strong>category.</strong> (<em>type {string} -- Unique command</em>) – </p></li>
+<li><p><strong>name.</strong> (<em>command {string} -- Custom command</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cherrypy.HTTPError</strong> – 400 Unknown command:</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>any – whatever the registered command</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.model_sensitive_command">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">model_sensitive_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#model_sensitive_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.model_sensitive_command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.open_id_authenticate">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">open_id_authenticate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#open_id_authenticate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.open_id_authenticate" title="Permalink to this definition"></a></dt>
+<dd><p>takes the openid parameter sent
+to this function and logs in a user
+:param params: openid params as a dictionary
+:return: not used</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_events">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_events" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_log">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_log" title="Permalink to this definition"></a></dt>
+<dd><p>send post json {“message”:”message”} to log client errors onto the
+client server
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_model_arrayset_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_model_arrayset_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_model_arrayset_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_model_arrayset_data" title="Permalink to this definition"></a></dt>
+<dd><p>get the arrayset data based on aid, mid, byteorder, and hyperchunks</p>
+<p>requires hyperchunks to be included in the json payload</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> – model id</p></li>
+<li><p><strong>aid</strong> – artifact id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>stream of data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_model_files">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_model_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_model_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_model_files" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_model_finish">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_model_finish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_model_finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_model_finish" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_project_bookmarks">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_project_bookmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_project_bookmarks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_project_bookmarks" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_project_models">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_project_models" title="Permalink to this definition"></a></dt>
+<dd><p>When a pid along with json “model-type”, “marking”, “name” is sent with POST
+creates a model and saves it to the database
+:param pid: project ID for created model
+:return: json {“id” : mid}</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_project_references">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_project_references" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_projects">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_projects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_projects" title="Permalink to this definition"></a></dt>
+<dd><p>creates a new project
+:raises cherrypy.HTTPError – if the project name is missing from the post json raises 400:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>[json] – project id that was created</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_remote_browse">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_remote_browse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_remote_browse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_remote_browse" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_remote_command">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_remote_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_remote_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_remote_command" title="Permalink to this definition"></a></dt>
+<dd><p>run a remote command from the list of pre-registered commands
+that are located on a remote agent.
+:param hostname:
+:type hostname: str
+:param name of the hpc host:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>message: string
+a message that is supplied by the agent
+command: string
+an echo of the command that was sent to the server and the agent,
+error: bool
+boolean describing if there was an agent error,
+available_scripts:  list
+list of available scripts from the agent
+name: string
+script_name
+description: string
+script_description
+parameters: list
+name: string
+parameter_name as string,
+description: string
+description of the param string,
+example: string
+example usage string
+type: string
+field type eg string, int…</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>json</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_remote_launch">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_remote_launch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_remote_launch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_remote_launch" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_remotes">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_remotes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_remotes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_remotes" title="Permalink to this definition"></a></dt>
+<dd><p>Given username, hostname, password as a json payload
+establishes a session with the remote host and attaches
+it to the users session
+:return: {“sid”:sid, “status”:boolean, msg:””}</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_remotes_smb">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_remotes_smb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_remotes_smb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_remotes_smb" title="Permalink to this definition"></a></dt>
+<dd><p>Given username, hostname, password as a json payload
+establishes a session with the remote host and attaches
+it to the users session
+:return: {“sid”:sid, “status”:boolean, msg:””}
+user_name password</p>
+<p>encode with in js</p>
+<blockquote>
+<div><dl>
+<dt>b64EncodeUnicode(str) {</dt><dd><dl class="simple">
+<dt>return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {</dt><dd><p>return String.fromCharCode(‘0x’ + p1);</p>
+</dd>
+</dl>
+<p>}));</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_smb_browse">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_smb_browse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_smb_browse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_smb_browse" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_submit_batch">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_submit_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_submit_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_submit_batch" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_upload_finished">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_upload_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_upload_finished"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_upload_finished" title="Permalink to this definition"></a></dt>
+<dd><p>ask the server to finish the upload
+:param uid: upload session ID
+:return: status of upload</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.post_uploads">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">post_uploads</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#post_uploads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.post_uploads" title="Permalink to this definition"></a></dt>
+<dd><p>creates a session for uploading a file to
+:return: Upload ID</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_model">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_model_arrayset">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_model_arrayset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_model_arrayset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_model_arrayset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_model_arrayset_array">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_model_arrayset_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_model_arrayset_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_model_arrayset_array" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_model_arrayset_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_model_arrayset_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperchunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byteorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_model_arrayset_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_model_arrayset_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_model_inputs">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_model_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_model_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_model_inputs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_model_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_model_parameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_project">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_project" title="Permalink to this definition"></a></dt>
+<dd><p>Takes json in the format of
+acl:</p>
+<p>administrators: list of object
+user:username</p>
+<p>writers: list of object
+user:username</p>
+<p>readers: list of object
+user:username</p>
+<p>name: string
+name of the project</p>
+<p>description: string
+description of the project,
+and updates the project json from this object.
+all top order fields are optional</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>string</em>) – uui for project</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>cherrypy.HTTPError</strong> – 400 missing administrators</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 missing writers</p></li>
+<li><p><strong>cherrypy.HTTPError</strong> – 400 missing readers</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_project_csv_data">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_project_csv_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_project_csv_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_project_csv_data" title="Permalink to this definition"></a></dt>
+<dd><p>returns a project based on “content-type” header
+:param pid: project ID
+:param file_key: file_name
+:param parser: parser name
+:param mid: model ID
+:param aids: artifact IDs
+:return: status 404 if no file found or with json {“Status”: “Success”}</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_project_data_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_project_data_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">did</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_project_data_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_project_data_parameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_reference">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_reference" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.put_upload_file_part">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">put_upload_file_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#put_upload_file_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.put_upload_file_part" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.require_array_json_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">require_array_json_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#require_array_json_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.require_array_json_parameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.require_boolean_json_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">require_boolean_json_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#require_boolean_json_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.require_boolean_json_parameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.require_integer_array_json_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">require_integer_array_json_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#require_integer_array_json_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.require_integer_array_json_parameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.require_integer_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">require_integer_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#require_integer_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.require_integer_parameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.require_json_parameter">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">require_json_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#require_json_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.require_json_parameter" title="Permalink to this definition"></a></dt>
+<dd><p>checks to see if the parameter is in the cherrypy.request.json
+and errors gracefully if it is not there
+:param name: name of json param
+:return: value of the json param</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.set_user_config">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">set_user_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#set_user_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.set_user_config" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.tests_request">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">tests_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#tests_request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.tests_request" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.validate_table_byteorder">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">validate_table_byteorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">byteorder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#validate_table_byteorder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.validate_table_byteorder" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.validate_table_columns">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">validate_table_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#validate_table_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.validate_table_columns" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.validate_table_rows">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">validate_table_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#validate_table_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.validate_table_rows" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.handlers.validate_table_sort">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.handlers.</span></span><span class="sig-name descname"><span class="pre">validate_table_sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/handlers.html#validate_table_sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.handlers.validate_table_sort" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="slycat.web.server.engine.html" class="btn btn-neutral float-left" title="slycat.web.server.engine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="slycat.web.server.hdf5.html" class="btn btn-neutral float-right" title="slycat.web.server.hdf5" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

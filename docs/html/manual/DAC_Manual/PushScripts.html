@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Push Scripts &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Model Views" href="DACModelVis.html" />
+    <link rel="prev" title="Model Parse Log" href="ModelParseLog.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACData.html">Data Formats</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="DACInputFormats.html">DAC Input Formats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="NameModel.html">Name Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="LoadData.html">Loading Data and Progress Indicators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ModelParseLog.html">Model Parse Log</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Push Scripts</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../user-manual.html">Slycat User Manual</a></li>
+          <li class="breadcrumb-item"><a href="dac.model.html">Dial-A-Cluster Model</a></li>
+          <li class="breadcrumb-item"><a href="CreatingDACModel.html">Model Creation</a></li>
+      <li class="breadcrumb-item active">Push Scripts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/manual/DAC_Manual/PushScripts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="push-scripts">
+<h1>Push Scripts<a class="headerlink" href="#push-scripts" title="Permalink to this heading"></a></h1>
+<p>DAC models can also be created using Python scripts that will push files up to
+the Slycat server.  At present, these scripts are available only for TDMS data.</p>
+<section id="installing-slycat-web-client">
+<h2>Installing slycat-web-client<a class="headerlink" href="#installing-slycat-web-client" title="Permalink to this heading"></a></h2>
+<p>In order to use the push scripts, you must have Python installed on your computer,
+and you must further install the slycat-web-client from <a class="reference external" href="https://pypi.org">https://pypi.org</a>.  This
+is accomplised using, for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ pip install slycat-web-client
+</pre></div>
+</div>
+<p>If you are working behind a proxy, you might also need, e.g.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
+</pre></div>
+</div>
+</section>
+<section id="creating-a-tdms-model">
+<h2>Creating a TDMS Model<a class="headerlink" href="#creating-a-tdms-model" title="Permalink to this heading"></a></h2>
+<p>If you are able to successfully install the slycat-web-client package, you can create
+a model using the command line Python scripts <code class="docutils literal notranslate"><span class="pre">dac_tdms</span></code> or <code class="docutils literal notranslate"><span class="pre">dac_tdms_batch</span></code>.</p>
+<p>To upload a DAC TDMS model, use</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ dac_tdms data-file.TDM
+</pre></div>
+</div>
+<p>This will create a model from a single .TDM file.  You can also use .TDMS
+files and .zip archives containing .tdms files.  The options available
+for the creation of the models are the same as the options available using
+the DAC model creation wizard in the browser.  To see the options use
+the <code class="docutils literal notranslate"><span class="pre">--help</span></code> flag when calling the script.</p>
+<p>In addition, a batch script is available for uploading multiple DAC TDMS
+models.  To use this script, you must first create a file containing the
+options for each model.  The file has the following format.</p>
+<p>Line 1 contains the authentication information for the Slycat server that
+you would pass to the <code class="docutils literal notranslate"><span class="pre">dac_tdms</span></code> script, but separated by commas.
+For example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">user</span><span class="p">,</span><span class="n">smartin</span><span class="p">,</span><span class="o">--</span><span class="n">kerberos</span>
+</pre></div>
+</div>
+<p>If authentication information is unnecessary, just leave the line blank.</p>
+<p>Line 2 contains the project information for the project that will contain
+the DAC models to be created, e.g.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">project</span><span class="o">-</span><span class="n">name</span><span class="p">,</span><span class="n">Batch</span> <span class="n">TDMS</span> <span class="n">Models</span>
+</pre></div>
+</div>
+<p>Line 2 can also be left blank.  It will default to “Batch TDMS Models”.
+Lines 3 and beyond contain the model information for each model, such as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="mf">1.</span><span class="n">tdms</span><span class="p">,</span><span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">name</span><span class="p">,</span><span class="n">Model</span> <span class="mi">1</span>
+<span class="n">model</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="mf">2.</span><span class="n">tdms</span><span class="p">,</span><span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">name</span><span class="p">,</span><span class="n">Model</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>Note that you must supply a model file (or multiple files) in accordance
+with the <code class="docutils literal notranslate"><span class="pre">dac_tdms</span></code> script for each model.  Also note that if
+you want to put models into different projects, you can override the
+original project given in line 2, by using the <code class="docutils literal notranslate"><span class="pre">--project-name</span></code> flag
+again, e.g.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="n">n</span><span class="o">.</span><span class="n">tdms</span><span class="p">,</span><span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">name</span><span class="p">,</span><span class="n">Model</span> <span class="n">n</span><span class="p">,</span><span class="o">--</span><span class="n">project</span><span class="o">-</span><span class="n">name</span><span class="p">,</span><span class="n">Special</span> <span class="n">Project</span>
+</pre></div>
+</div>
+<p>After the batch file has been created, you can call the TDMS batch
+processor to create your models using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ dac_tdms_batch tdms-batch-file.txt
+</pre></div>
+</div>
+<p>where tdms-batch-file.txt is the .txt file containing the lines just
+described.</p>
+<p>Depending on how many models are being created, it is helpful to
+use the <code class="docutils literal notranslate"><span class="pre">--log_file</span></code> flag to specify a log file for recording any
+errors in the upload process.</p>
+<p>If you are having problems using <code class="docutils literal notranslate"><span class="pre">dac_tdms</span></code> or <code class="docutils literal notranslate"><span class="pre">dac_tdms</span> <span class="pre">batch</span></code>, it may be due
+to authentication and/or proxy problems when trying to communicate to
+the Slycat server.  These topics are described next.</p>
+</section>
+<section id="user-authentication">
+<h2>User Authentication<a class="headerlink" href="#user-authentication" title="Permalink to this heading"></a></h2>
+<p>The Slycat server requires user authentication.  The slycat.web.client
+module provides the options for the authentication process.</p>
+<p>For example, to use standard password authentication for a Slycat
+server running on <a class="reference external" href="https://localhost:9000">https://localhost:9000</a> without a security certificate,
+use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ python -m slycat.web.client.list_markings.py --user slycat --port 9000 --no-verify
+</pre></div>
+</div>
+<p>Or, to access a Kerberos authenticated server running at slycat.sandia.gov,
+use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ python -m slycat.web.client.list_markings.py --host https://slycat.sandia.gov --kerberos
+</pre></div>
+</div>
+</section>
+<section id="kerberos">
+<h2>Kerberos<a class="headerlink" href="#kerberos" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">--kerberos</span></code> option relies on a working Kerberos installation on your system.  Sometimes
+this will fail.  If you get an error related to Kerberos credentials (e.g. “Couldn’t find
+Kerberos ticket,” or “User not Kerberos authenticated”), try:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ kinit
+</pre></div>
+</div>
+<p>Then re-run the original command.</p>
+</section>
+<section id="proxies-certificates">
+<h2>Proxies/Certificates<a class="headerlink" href="#proxies-certificates" title="Permalink to this heading"></a></h2>
+<p>If you are separated from the Slycat server by a proxy, or have not set up a security
+certificate, you will have to use the slycat.web.client proxy settings.  The proxy
+settings are available using the flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--http-proxy</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--https-proxy</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--verify</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--no-verify</span></code></p></li>
+</ul>
+<p>The proxy flags are by default set to “no proxy”.  If you have proxies set in the
+environment variables, they will be ignored.  The proxy flags are used as follows
+(for example):</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--verify</span></code> flag can be used to pass a security certificate as a command line argument and
+the <code class="docutils literal notranslate"><span class="pre">--no-verify</span></code> flag can be used to ignore the security certificates altogether.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this heading"></a></h2>
+<p>If you want to write your own push scripts, see the documentation for the slycat.web.client
+package in <a class="reference internal" href="../../python-api.html#python-api"><span class="std std-ref">Python API</span></a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ModelParseLog.html" class="btn btn-neutral float-left" title="Model Parse Log" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DACModelVis.html" class="btn btn-neutral float-right" title="Model Views" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

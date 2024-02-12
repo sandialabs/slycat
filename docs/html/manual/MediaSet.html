@@ -1,88 +1,45 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Media Set &mdash; Slycat 3.0.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Media Set &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Automatic Scaling" href="AutoScale.html" />
     <link rel="prev" title="Point Color" href="PointColor.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
@@ -95,6 +52,7 @@
 <li class="toctree-l4"><a class="reference internal" href="PSVariableTable.html">Variable Table</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="DatatableCreation.html">Data Table Creation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
@@ -102,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
@@ -109,79 +68,36 @@
 <li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Slycat</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
-        
-          <li><a href="parameter.space.model.html">Parameter Space Model</a> &raquo;</li>
-        
-          <li><a href="PSModelVis.html">Parameter Space Model Visualization</a> &raquo;</li>
-        
-          <li><a href="ScatterplotView.html">Scatterplot View</a> &raquo;</li>
-        
-      <li>Media Set</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user-manual.html">Slycat User Manual</a></li>
+          <li class="breadcrumb-item"><a href="parameter.space.model.html">Parameter Space Model</a></li>
+          <li class="breadcrumb-item"><a href="PSModelVis.html">Parameter Space Model Visualization</a></li>
+          <li class="breadcrumb-item"><a href="ScatterplotView.html">Scatterplot View</a></li>
+      <li class="breadcrumb-item active">Media Set</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/manual/MediaSet.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="media-set">
-<h1>Media Set<a class="headerlink" href="#media-set" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="media-set">
+<h1>Media Set<a class="headerlink" href="#media-set" title="Permalink to this heading"></a></h1>
 <p>If media variables are present in any of the columns of the input data table, a <em>Media Set</em> button will appear to the right
 of the <em>Point Color</em> button.  Media files are broadly defined. We currently support viewing various image formats, videos,
 and STLs (geometry files for a 3D printer).  Each media variable in the input data table consists of a column with a shared
@@ -190,10 +106,12 @@ or video for media viewing to be used).  Typically, the files in a column share 
 final state of a simulation, or an event-triggered animation, or the geometry of a specific part at a specific time.  In all
 cases, a media file is described by a URI that provides a full path to a source file.  Each URI must have the format:
 <a class="reference external" href="file://machine_name/absolute_directory_path/filename.ext">file://machine_name/absolute_directory_path/filename.ext</a>.</p>
-<div class="figure align-center" id="id1">
+<figure class="align-center" id="id1">
 <img alt="../_images/Figure38.png" src="../_images/Figure38.png" />
-<p class="caption"><span class="caption-text"><strong>Figure 38: Media Set Selection of Image1.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Figure 38: Media Set Selection of Image1.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 <p>Initially, media retrieval is disabled because the <em>Media Set</em> selection is set to <em>None</em>.  Once a media variable has been
 selected, hovering over a scatterplot point will retrieve that point’s remote media file as defined by the URI.  For the
 first remote access, authentication will be required.  Hovering provides a convenient means for rapidly examining and comparing
@@ -208,10 +126,12 @@ the selected variable name (<em>Image1</em>) is highlighted in the dropdown, and
 darkened in the column header.  Once the selection is changed, hover will reference the new column’s URIs when retrieving remote
 files, but currently visible images will not be affected.  This allows you to compare different media variables from one or more
 simulations.  Selecting <em>None</em> (the first choice in the dropdown list) disables the hover response.</p>
-<div class="figure align-center" id="id2">
+<figure class="align-center" id="id2">
 <img alt="../_images/Figure39.png" src="../_images/Figure39.png" />
-<p class="caption"><span class="caption-text"><strong>Figure 39: Image viewer with close, download, index row, pinning, and resizing icons.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Figure 39: Image viewer with close, download, index row, pinning, and resizing icons.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 <p>The viewer in Figure 39 shows the set of standard viewer icons in the strip across the bottom of the image.  From left to
 right, each viewer has a close icon <img alt="DeleteIcon2" src="../_images/DeleteIcon2.png" />, a download icon <img alt="DownloadIcon2" src="../_images/DownloadIcon2.png" />, an index row icon <img alt="GotoRowIcon" src="../_images/GotoRowIcon.png" />, a
 pinning icon <img alt="PinIcon" src="../_images/PinIcon.png" />, and a resize icon <img alt="ResizeIcon" src="../_images/ResizeIcon.png" />. Viewers remain visible while the mouse remains within the viewer
@@ -224,8 +144,8 @@ and hold the left mouse button on the <img alt="ResizeIcon" src="../_images/Resi
 to your local machine, click the <img alt="DownloadIcon2" src="../_images/DownloadIcon2.png" /> icon.</p>
 <p>Note that Slycat™ video functionality is not available for all movie formats.  In fact, due to technical issues related to
 our web-based delivery, videos must be created in a very specific way to be viewable in Slycat™.</p>
-<div class="section" id="video-source-files">
-<h2>Video Source Files<a class="headerlink" href="#video-source-files" title="Permalink to this headline">¶</a></h2>
+<section id="video-source-files">
+<h2>Video Source Files<a class="headerlink" href="#video-source-files" title="Permalink to this heading"></a></h2>
 <p>There is no standardized support for videos between browsers.  We have found that the h264 codec in combination with an mp4
 container format is compatible with Firefox, Chrome, and Safari on both Windows and Mac platforms.  In our testing, we have
 found that initial key frames are frequently lost, rendering the following compressed frames useless.  This requires explicit
@@ -238,72 +158,47 @@ compatible movies as follows:</p>
 </div>
 <p>If your images are PNGs, they must be first converted to JPG format (ffmpeg won’t complain about the input images being PNG,
 but the movie that it generates won’t play).  If you already have JPG images, skip this step:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">mogrify</span> <span class="o">-</span><span class="nb">format</span> <span class="n">jpg</span> <span class="n">myImageName</span><span class="o">.</span><span class="mi">0</span><span class="o">*</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">mogrify</span> <span class="o">-</span><span class="nb">format</span> <span class="n">jpg</span> <span class="n">myImageName</span><span class="mf">.0</span><span class="o">*</span>
 </pre></div>
 </div>
 <p>This last step generates the mp4.  Don’t forget to enclose the image path in single quotes:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span>  <span class="n">ffmpeg</span> <span class="o">-</span><span class="n">pattern_type</span> <span class="n">glob</span> <span class="o">-</span><span class="n">i</span> <span class="s1">&#39;/someDisk/someUser/someDirectoryPath/myImageName.0*.jpg&#39;</span> <span class="o">-</span><span class="n">force_key_frames</span> <span class="mf">0.0</span><span class="p">,</span><span class="mf">0.04</span><span class="p">,</span><span class="mf">0.08</span> <span class="n">myMovieName</span><span class="o">.</span><span class="n">mp4</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="AutoScale.html" class="btn btn-neutral float-right" title="Automatic Scaling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="PointColor.html" class="btn btn-neutral float-left" title="Point Color" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PointColor.html" class="btn btn-neutral float-left" title="Point Color" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="AutoScale.html" class="btn btn-neutral float-right" title="Automatic Scaling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software
-
-    </p>
+rights in this software.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

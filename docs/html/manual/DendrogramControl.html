@@ -1,88 +1,45 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Dendrogram Expansion/Contraction &mdash; Slycat 3.0.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dendrogram Expansion/Contraction &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Dendrogram Visibility Filtering" href="DendrogramFiltering.html" />
     <link rel="prev" title="Dendrogram View" href="Dendrogram.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
@@ -103,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
@@ -110,167 +68,107 @@
 <li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Slycat</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
-        
-          <li><a href="timeseries.model.html">Timeseries Model</a> &raquo;</li>
-        
-          <li><a href="TSModelVis.html">Time Series Model Visualization</a> &raquo;</li>
-        
-          <li><a href="Dendrogram.html">Dendrogram View</a> &raquo;</li>
-        
-      <li>Dendrogram Expansion/Contraction</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user-manual.html">Slycat User Manual</a></li>
+          <li class="breadcrumb-item"><a href="timeseries.model.html">Timeseries Model</a></li>
+          <li class="breadcrumb-item"><a href="TSModelVis.html">Time Series Model Visualization</a></li>
+          <li class="breadcrumb-item"><a href="Dendrogram.html">Dendrogram View</a></li>
+      <li class="breadcrumb-item active">Dendrogram Expansion/Contraction</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/manual/DendrogramControl.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="dendrogram-expansion-contraction">
-<h1>Dendrogram Expansion/Contraction<a class="headerlink" href="#dendrogram-expansion-contraction" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="dendrogram-expansion-contraction">
+<h1>Dendrogram Expansion/Contraction<a class="headerlink" href="#dendrogram-expansion-contraction" title="Permalink to this heading"></a></h1>
 <p>The expansion or contraction of each node is individually controlled through the ‘+’ or ‘-‘ icons that appear to the left of
 each node, respectively above or below the line connecting the node to its parent.  In Figure 57, the subtree with 58 nodes
 in Figure 56 has been expanded by clicking the ‘+’.  Each expansion adds two levels of the tree to the dendrogram.  Note that
 leaf-level nodes are drawn as dots.</p>
-<div class="figure align-center" id="id1">
+<figure class="align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/Figure57.png"><img alt="../_images/Figure57.png" src="../_images/Figure57.png" style="width: 1032.0px; height: 646.0px;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 57: Expansion of second subtree from the top (previously shown as the subtree with 58 nodes in Figure 56).  Each expansion adds two additional levels.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Figure 57: Expansion of second subtree from the top (previously shown as the subtree with 58 nodes in Figure 56).  Each expansion adds two additional levels.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 <p>To expand a subtree all the way down to the leaves in a single action, click on the subtree triangle itself.   In Figure 58,
 the subtree with 9 nodes at the top of the dendrogram in Figure 56 has been expanded to the leaf level with this one-click
 operation.  Caution should be exercised when doing a full subtree expansion for subtrees over 20 or so nodes, since the
 dendrogram can become cluttered and largely unintelligible.   Figure 59 demonstrates the results of clicking on the subtree
 with 110 nodes at the bottom of the dendrogram in Figure 56.</p>
-<div class="figure align-center" id="id2">
+<figure class="align-center" id="id2">
 <a class="reference internal image-reference" href="../_images/Figure58.png"><img alt="../_images/Figure58.png" src="../_images/Figure58.png" style="width: 1034.0px; height: 648.0px;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 58: Subtree with 9 nodes expanded to leaf level by clicking triangular subtree icon.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-center" id="id3">
+<figcaption>
+<p><span class="caption-text"><strong>Figure 58: Subtree with 9 nodes expanded to leaf level by clicking triangular subtree icon.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id3">
 <a class="reference internal image-reference" href="../_images/Figure59.png"><img alt="../_images/Figure59.png" src="../_images/Figure59.png" style="width: 1035.0px; height: 647.0px;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 59: One-click expansion of subtree with 110 nodes.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Figure 59: One-click expansion of subtree with 110 nodes.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 <p>The operation of collapsing nodes reduces all of the nodes below the designated node (the node whose ‘-‘ icon is clicked)
 into a single subtree, regardless of the number of levels that are currently visible.  In Figure 60, the bottom half of
 the dendrogram in Figure 57 has been collapsed into a single subtree with 166 nodes.  This ability to expand and contract
 sections of the dendrogram controls the level of detail, maximizing the rendered portion of the tree around areas of
 interest.</p>
-<div class="figure align-center" id="id4">
+<figure class="align-center" id="id4">
 <a class="reference internal image-reference" href="../_images/Figure60.png"><img alt="../_images/Figure60.png" src="../_images/Figure60.png" style="width: 1033.0px; height: 649.0px;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 60: Collapsed subtree that combines the 4 subtrees from the lower half of the dendrogram in Figure 57.</strong></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
-</div>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Figure 60: Collapsed subtree that combines the 4 subtrees from the lower half of the dendrogram in Figure 57.</strong></span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="DendrogramFiltering.html" class="btn btn-neutral float-right" title="Dendrogram Visibility Filtering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="Dendrogram.html" class="btn btn-neutral float-left" title="Dendrogram View" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Dendrogram.html" class="btn btn-neutral float-left" title="Dendrogram View" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DendrogramFiltering.html" class="btn btn-neutral float-right" title="Dendrogram Visibility Filtering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software
-
-    </p>
+rights in this software.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

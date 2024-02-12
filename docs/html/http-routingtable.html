@@ -1,40 +1,19 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>HTTP Routing Table &mdash; Slycat 3.0.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP Routing Table &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
  
@@ -46,50 +25,28 @@
 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
-
-          
+          <a href="index.html" class="icon icon-home">
+            Slycat
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a></li>
@@ -97,70 +54,36 @@
 <li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Slycat</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>HTTP Routing Table</li>
-    
-    
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">HTTP Routing Table</li>
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
 
    <h1>HTTP Routing Table</h1>
 
    <div class="modindex-jumpbox">
-   <a href="#cap-/api"><strong>/api</strong></a>
+   <a href="#cap-/api"><strong>/api</strong></a> | 
+   <a href="#cap-/configuration"><strong>/configuration</strong></a> | 
+   <a href="#cap-/projects"><strong>/projects</strong></a>
    </div>
 
    <table class="indextable modindextable">
@@ -170,342 +93,444 @@
      <tr>
        <td></td>
        <td>
-       <a href="GET-Home.html#get--api-"><code class="xref">GET /api/</code></a></td><td>
+       <a href="GET-methods/GET-Home.html#get--api-"><code class="xref">GET /api/</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Bookmark.html#get--api-bookmarks-(bid)"><code class="xref">GET /api/bookmarks/(bid)</code></a></td><td>
+       <a href="GET-methods/GET-Bookmark.html#get--api-bookmarks-(bid)"><code class="xref">GET /api/bookmarks/(bid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model.html#get--api-models-(mid)"><code class="xref">GET /api/models/(mid)</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-GA-Tracking-ID.html#get--api-configuration-ga-tracking-id"><code class="xref">GET /api/configuration/ga-tracking-id</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Model-Arrayset-Data.html#get--api-models-(mid)-arraysets-(aid)-data"><code class="xref">GET /api/models/(mid)/arraysets/(aid)/data</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-Markings.html#get--api-configuration-markings"><code class="xref">GET /api/configuration/markings</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Arrayset-Metadata.html#get--api-models-(mid)-arraysets-(aid)-metadata"><code class="xref">GET /api/models/(mid)/arraysets/(aid)/metadata</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-Parsers.html#get--api-configuration-parsers"><code class="xref">GET /api/configuration/parsers</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Command.html#get--api-models-(mid)-commands-(type)-(command)"><code class="xref">GET /api/models/(mid)/commands/(type)/(command)</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-Remote-Hosts.html#get--api-configuration-remote-hosts"><code class="xref">GET /api/configuration/remote-hosts</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-File.html#get--api-models-(mid)-files-(aid)"><code class="xref">GET /api/models/(mid)/files/(aid)</code></a></td><td>
+       <a href="GET-methods/GET-Selectable-Configuration-Markings.html#get--api-configuration-selectable-markings"><code class="xref">GET /api/configuration/selectable-markings</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Parameter.html#get--api-models-(mid)-parameters-(aid)"><code class="xref">GET /api/models/(mid)/parameters/(aid)</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-SMB-Remote-Hosts.html#get--api-configuration-smb-remote-hosts"><code class="xref">GET /api/configuration/smb-remote-hosts</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Table-Chunk.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-chunk"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/chunk</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-Support-Email.html#get--api-configuration-support-email"><code class="xref">GET /api/configuration/support-email</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Table-Metadata.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-metadata"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/metadata</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-Version.html#get--api-configuration-version"><code class="xref">GET /api/configuration/version</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Table-Sorted-Indices.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-sorted-indices"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices</code></a></td><td>
+       <a href="GET-methods/GET-Configuration-Wizards.html#get--api-configuration-wizards"><code class="xref">GET /api/configuration/wizards</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Model-Table-Unsorted-Indices.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-unsorted-indices"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices</code></a></td><td>
+       <a href="GET-methods/GET-Model-Statistics.html#get--api-get-model-statistics-(mid)"><code class="xref">GET /api/get-model-statistics/(mid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Projects.html#get--api-projects"><code class="xref">GET /api/projects</code></a></td><td>
+       <a href="GET-methods/GET-Model.html#get--api-models-(mid)"><code class="xref">GET /api/models/(mid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Project.html#get--api-projects-(pid)"><code class="xref">GET /api/projects/(pid)</code></a></td><td>
+       <a href="POST-methods/POST-Model-Arrayset-Data.html#get--api-models-(mid)-arraysets-(aid)-data"><code class="xref">GET /api/models/(mid)/arraysets/(aid)/data</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Project-Cache-Object.html#get--api-projects-(pid)-cache-(key)"><code class="xref">GET /api/projects/(pid)/cache/(key)</code></a></td><td>
+       <a href="GET-methods/GET-Model-Arrayset-Metadata.html#get--api-models-(mid)-arraysets-(aid)-metadata"><code class="xref">GET /api/models/(mid)/arraysets/(aid)/metadata</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Project-Models.html#get--api-projects-(pid)-models"><code class="xref">GET /api/projects/(pid)/models</code></a></td><td>
+       <a href="GET-methods/GET-Model-Command.html#get--api-models-(mid)-commands-(type)-(command)"><code class="xref">GET /api/models/(mid)/commands/(type)/(command)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Remote-File.html#get--api-remotes-(hostname)-file(path)"><code class="xref">GET /api/remotes/(hostname)/file(path)</code></a></td><td>
+       <a href="GET-methods/GET-Model-File.html#get--api-models-(mid)-files-(aid)"><code class="xref">GET /api/models/(mid)/files/(aid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Remote-Image.html#get--api-remotes-(hostname)-image(path)"><code class="xref">GET /api/remotes/(hostname)/image(path)</code></a></td><td>
+       <a href="GET-methods/GET-Model-Parameter.html#get--api-models-(mid)-parameters-(aid)"><code class="xref">GET /api/models/(mid)/parameters/(aid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-Remote-Video.html#get--api-remotes-(hostname)-videos-(vsid)"><code class="xref">GET /api/remotes/(hostname)/videos/(vsid)</code></a></td><td>
+       <a href="GET-methods/GET-Model-Table-Chunk.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-chunk"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/chunk</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="GET-User.html#get--api-users-(uid)"><code class="xref">GET /api/users/(uid)</code></a></td><td>
+       <a href="GET-methods/GET-Model-Table-Metadata.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-metadata"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/metadata</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Events.html#post--api-events-(event)"><code class="xref">POST /api/events/(event)</code></a></td><td>
+       <a href="GET-methods/GET-Model-Table-Sorted-Indices.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-sorted-indices"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-login.html#post--api-login"><code class="xref">POST /api/login</code></a></td><td>
+       <a href="GET-methods/GET-Model-Table-Unsorted-Indices.html#get--api-models-(mid)-tables-(aid)-arrays-(array)-unsorted-indices"><code class="xref">GET /api/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Model-Command.html#post--api-models-(mid)-commands-(type)-(command)"><code class="xref">POST /api/models/(mid)/commands/(type)/(command)</code></a></td><td>
+       <a href="GET-methods/GET-Projects.html#get--api-projects"><code class="xref">GET /api/projects</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Model-Files.html#post--api-models-(mid)-files"><code class="xref">POST /api/models/(mid)/files</code></a></td><td>
+       <a href="GET-methods/GET-Project.html#get--api-projects-(pid)"><code class="xref">GET /api/projects/(pid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Model-Finish.html#post--api-models-(mid)-finish"><code class="xref">POST /api/models/(mid)/finish</code></a></td><td>
+       <a href="GET-methods/GET-Project-Cache-Object.html#get--api-projects-(pid)-cache-(key)"><code class="xref">GET /api/projects/(pid)/cache/(key)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Projects.html#post--api-projects"><code class="xref">POST /api/projects</code></a></td><td>
+       <a href="GET-methods/GET-Project-Models.html#get--api-projects-(pid)-models"><code class="xref">GET /api/projects/(pid)/models</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Project-Bookmark.html#post--api-projects-(pid)-bookmarks"><code class="xref">POST /api/projects/(pid)/bookmarks</code></a></td><td>
+       <a href="GET-methods/GET-Project-File-Names.html#get--api-projects-(pid)-name"><code class="xref">GET /api/projects/(pid)/name</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Project-Models.html#post--api-projects-(pid)-models"><code class="xref">POST /api/projects/(pid)/models</code></a></td><td>
+       <a href="GET-methods/GET-Project-References.html#get--api-projects-(pid)-references"><code class="xref">GET /api/projects/(pid)/references</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Project-Data.html#post--api-projects-data-(pid)"><code class="xref">POST /api/projects/data/(pid)</code></a></td><td>
+       <a href="GET-methods/GET-Project-Data.html#get--api-projects-data-(did)"><code class="xref">GET /api/projects/data/(did)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Remotes.html#post--api-remotes"><code class="xref">POST /api/remotes</code></a></td><td>
+       <a href="GET-methods/GET-Project-Data-In-Model.html#get--api-projects-data-model-(mid)"><code class="xref">GET /api/projects/data/model/(mid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Remote-Browse.html#post--api-remotes-(hostname)-browse(path)"><code class="xref">POST /api/remotes/(hostname)/browse(path)</code></a></td><td>
+       <a href="GET-methods/GET-Projects-List.html#get--api-projects_list"><code class="xref">GET /api/projects_list</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Cancel-Job.html#post--api-remotes-cancel-job"><code class="xref">POST /api/remotes/cancel-job</code></a></td><td>
+       <a href="GET-methods/GET-Remotes.html#get--api-remotes-(hostname)"><code class="xref">GET /api/remotes/(hostname)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Check-Job.html#post--api-remotes-checkjob"><code class="xref">POST /api/remotes/checkjob</code></a></td><td>
+       <a href="GET-methods/GET-Remote-File.html#get--api-remotes-(hostname)-file(path)"><code class="xref">GET /api/remotes/(hostname)/file(path)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Get-Job-Output.html#post--api-remotes-get-job-output"><code class="xref">POST /api/remotes/get-job-output</code></a></td><td>
+       <a href="GET-methods/GET-Remote-Image.html#get--api-remotes-(hostname)-image(path)"><code class="xref">GET /api/remotes/(hostname)/image(path)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Remote-Launch.html#post--api-remotes-launch"><code class="xref">POST /api/remotes/launch</code></a></td><td>
+       <a href="GET-methods/GET-Remote-Video.html#get--api-remotes-(hostname)-videos-(vsid)"><code class="xref">GET /api/remotes/(hostname)/videos/(vsid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Submit-Batch.html#post--api-remotes-submit-batch"><code class="xref">POST /api/remotes/submit-batch</code></a></td><td>
+       <a href="GET-methods/GET_Last_Active_Tme.html#get--api-server-last_active_time"><code class="xref">GET /api/server/last_active_time</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Uploads.html#post--api-uploads"><code class="xref">POST /api/uploads</code></a></td><td>
+       <a href="GET-methods/GET-User.html#get--api-users-(uid)"><code class="xref">GET /api/users/(uid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="POST-Upload-Finished.html#post--api-uploads-(uid)-finished"><code class="xref">POST /api/uploads/(uid)/finished</code></a></td><td>
+       <a href="POST-methods/POST-Events.html#post--api-events-(event)"><code class="xref">POST /api/events/(event)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model.html#put--api-models-(mid)"><code class="xref">PUT /api/models/(mid)</code></a></td><td>
+       <a href="POST-methods/POST-login.html#post--api-login"><code class="xref">POST /api/login</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model-Arrayset.html#put--api-models-(mid)-arraysets-(aid)"><code class="xref">PUT /api/models/(mid)/arraysets/(aid)</code></a></td><td>
+       <a href="POST-methods/POST-Model-Command.html#post--api-models-(mid)-commands-(type)-(command)"><code class="xref">POST /api/models/(mid)/commands/(type)/(command)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model-Arrayset-Array.html#put--api-models-(mid)-arraysets-(aid)-arrays-(array)"><code class="xref">PUT /api/models/(mid)/arraysets/(aid)/arrays/(array)</code></a></td><td>
+       <a href="POST-methods/POST-Model-Files.html#post--api-models-(mid)-files"><code class="xref">POST /api/models/(mid)/files</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model-Arrayset-Data.html#put--api-models-(mid)-arraysets-(aid)-data"><code class="xref">PUT /api/models/(mid)/arraysets/(aid)/data</code></a></td><td>
+       <a href="POST-methods/POST-Model-Finish.html#post--api-models-(mid)-finish"><code class="xref">POST /api/models/(mid)/finish</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model-Command.html#put--api-models-(mid)-commands-(type)-(command)"><code class="xref">PUT /api/models/(mid)/commands/(type)/(command)</code></a></td><td>
+       <a href="POST-methods/POST-Projects.html#post--api-projects"><code class="xref">POST /api/projects</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model-Inputs.html#put--api-models-(mid)-inputs"><code class="xref">PUT /api/models/(mid)/inputs</code></a></td><td>
+       <a href="POST-methods/POST-Project-Bookmark.html#post--api-projects-(pid)-bookmarks"><code class="xref">POST /api/projects/(pid)/bookmarks</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Model-Parameter.html#put--api-models-(mid)-parameters-(aid)"><code class="xref">PUT /api/models/(mid)/parameters/(aid)</code></a></td><td>
+       <a href="POST-methods/POST-Project-Models.html#post--api-projects-(pid)-models"><code class="xref">POST /api/projects/(pid)/models</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Project.html#put--api-projects-(pid)"><code class="xref">PUT /api/projects/(pid)</code></a></td><td>
+       <a href="POST-methods/POST-Project-Data.html#post--api-projects-data-(pid)"><code class="xref">POST /api/projects/data/(pid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="PUT-Upload-File-Part.html#put--api-uploads-(uid)-files-(fid)-parts-(pid)"><code class="xref">PUT /api/uploads/(uid)/files/(fid)/parts/(pid)</code></a></td><td>
+       <a href="POST-methods/POST-Remotes.html#post--api-remotes"><code class="xref">POST /api/remotes</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-logout.html#delete--api-logout"><code class="xref">DELETE /api/logout</code></a></td><td>
+       <a href="POST-methods/POST-Remote-Browse.html#post--api-remotes-(hostname)-browse(path)"><code class="xref">POST /api/remotes/(hostname)/browse(path)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Model-In-Project-Data.html#delete--api-model-(mid)-projects-data-(did)"><code class="xref">DELETE /api/model/(mid)/projects/data/(did)</code></a></td><td>
+       <a href="POST-methods/POST-Cancel-Job.html#post--api-remotes-cancel-job"><code class="xref">POST /api/remotes/cancel-job</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Model.html#delete--api-models-(mid)"><code class="xref">DELETE /api/models/(mid)</code></a></td><td>
+       <a href="POST-methods/POST-Check-Job.html#post--api-remotes-checkjob"><code class="xref">POST /api/remotes/checkjob</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Project.html#delete--api-projects-(pid)"><code class="xref">DELETE /api/projects/(pid)</code></a></td><td>
+       <a href="POST-methods/POST-Get-Job-Output.html#post--api-remotes-get-job-output"><code class="xref">POST /api/remotes/get-job-output</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Project-Cache-Object.html#delete--api-projects-(pid)-cache-(key)"><code class="xref">DELETE /api/projects/(pid)/cache/(key)</code></a></td><td>
+       <a href="POST-methods/POST-Remote-Launch.html#post--api-remotes-launch"><code class="xref">POST /api/remotes/launch</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Project-Cache.html#delete--api-projects-(pid)-delete-cache"><code class="xref">DELETE /api/projects/(pid)/delete-cache</code></a></td><td>
+       <a href="POST-methods/POST-Submit-Batch.html#post--api-remotes-submit-batch"><code class="xref">POST /api/remotes/submit-batch</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Project-Data.html#delete--api-projects-data-(did)"><code class="xref">DELETE /api/projects/data/(did)</code></a></td><td>
+       <a href="POST-methods/POST-Uploads.html#post--api-uploads"><code class="xref">POST /api/uploads</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Project-Data-In-Model.html#delete--api-projects-data-(did)-model-(mid)"><code class="xref">DELETE /api/projects/data/(did)/model/(mid)</code></a></td><td>
+       <a href="POST-methods/POST-Upload-Finished.html#post--api-uploads-(uid)-finished"><code class="xref">POST /api/uploads/(uid)/finished</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-reference.html#delete--api-references-(rid)"><code class="xref">DELETE /api/references/(rid)</code></a></td><td>
+       <a href="PUT-methods/PUT-Project-Data-Parameter.html#put--api-data-(did)-aids-(aid)"><code class="xref">PUT /api/data/(did)/aids/(aid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Remote.html#delete--api-remotes-(hostname)"><code class="xref">DELETE /api/remotes/(hostname)</code></a></td><td>
+       <a href="PUT-methods/PUT-Model.html#put--api-models-(mid)"><code class="xref">PUT /api/models/(mid)</code></a></td><td>
        <em></em></td></tr>
      <tr>
        <td></td>
        <td>
-       <a href="DELETE-Upload.html#delete--api-uploads-(uid)"><code class="xref">DELETE /api/uploads/(uid)</code></a></td><td>
+       <a href="PUT-methods/PUT-Model-Arrayset.html#put--api-models-(mid)-arraysets-(aid)"><code class="xref">PUT /api/models/(mid)/arraysets/(aid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Model-Arrayset-Array.html#put--api-models-(mid)-arraysets-(aid)-arrays-(array)"><code class="xref">PUT /api/models/(mid)/arraysets/(aid)/arrays/(array)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Model-Arrayset-Data.html#put--api-models-(mid)-arraysets-(aid)-data"><code class="xref">PUT /api/models/(mid)/arraysets/(aid)/data</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Model-Command.html#put--api-models-(mid)-commands-(type)-(command)"><code class="xref">PUT /api/models/(mid)/commands/(type)/(command)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Model-Inputs.html#put--api-models-(mid)-inputs"><code class="xref">PUT /api/models/(mid)/inputs</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Model-Parameter.html#put--api-models-(mid)-parameters-(aid)"><code class="xref">PUT /api/models/(mid)/parameters/(aid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Project.html#put--api-projects-(pid)"><code class="xref">PUT /api/projects/(pid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Project-CSV-Data.html#put--api-projects-(pid)-data-(file_key)-parser-(parser)-mid-(mid)-aids-(aids)"><code class="xref">PUT /api/projects/(pid)/data/(file_key)/parser/(parser)/mid/(mid)/aids/(aids)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="PUT-methods/PUT-Upload-File-Part.html#put--api-uploads-(uid)-files-(fid)-parts-(pid)"><code class="xref">PUT /api/uploads/(uid)/files/(fid)/parts/(pid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Model-Parameter.html#delete--api-delete-artifact-(mid)-(aid)"><code class="xref">DELETE /api/delete-artifact/(mid)/(aid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-logout.html#delete--api-logout"><code class="xref">DELETE /api/logout</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Model-In-Project-Data.html#delete--api-model-(mid)-projects-data-(did)"><code class="xref">DELETE /api/model/(mid)/projects/data/(did)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Model.html#delete--api-models-(mid)"><code class="xref">DELETE /api/models/(mid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Project.html#delete--api-projects-(pid)"><code class="xref">DELETE /api/projects/(pid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Project-Cache-Object.html#delete--api-projects-(pid)-cache-(key)"><code class="xref">DELETE /api/projects/(pid)/cache/(key)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Project-Cache.html#delete--api-projects-(pid)-delete-cache"><code class="xref">DELETE /api/projects/(pid)/delete-cache</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Project-Data.html#delete--api-projects-data-(did)"><code class="xref">DELETE /api/projects/data/(did)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Project-Data-In-Model.html#delete--api-projects-data-(did)-model-(mid)"><code class="xref">DELETE /api/projects/data/(did)/model/(mid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-reference.html#delete--api-references-(rid)"><code class="xref">DELETE /api/references/(rid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Remote.html#delete--api-remotes-(hostname)"><code class="xref">DELETE /api/remotes/(hostname)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Job.html#delete--api-remotes-delete-job-(hostname)-(jid)"><code class="xref">DELETE /api/remotes/delete-job/(hostname)/(jid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="DELETE-methods/DELETE-Upload.html#delete--api-uploads-(uid)"><code class="xref">DELETE /api/uploads/(uid)</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
+     <tr class="cap" id="cap-/configuration"><td></td><td>
+       <strong>/configuration</strong></td><td></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="GET-methods/GET-Configuration-SMB-Domains.html#get--configuration-smb-domains"><code class="xref">GET /configuration/smb-domains</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
+     <tr class="cap" id="cap-/projects"><td></td><td>
+       <strong>/projects</strong></td><td></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="GET-methods/GET-Project-Data-Parameter.html#get--projects-data-(did)-parameters-(param)"><code class="xref">GET /projects/data/(did)/parameters/(param)</code></a></td><td>
        <em></em></td></tr>
    </table>
 
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software
-
-    </p>
+rights in this software.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

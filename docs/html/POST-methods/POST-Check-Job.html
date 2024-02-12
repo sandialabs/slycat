@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POST Check Job &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="POST Events" href="POST-Events.html" />
+    <link rel="prev" title="POST Cancel Job" href="POST-Cancel-Job.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GET-methods/GET-rest-api.html">GET METHODS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="POST-rest-api.html">POST METHODS</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="POST-Cancel-Job.html">POST Cancel Job</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">POST Check Job</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Events.html">POST Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Get-Job-Output.html">POST Get Job Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-login.html">POST Login</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Arrayset-Data.html">POST Model Arrayset Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Command.html">POST Model Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Files.html">POST Model Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Finish.html">POST Model Finish</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Bookmark.html">POST Project Bookmark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Models.html">POST Project Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Data.html">POST Project Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Projects.html">POST Projects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Remote-Browse.html">POST Remote Browse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Remote-Launch.html">POST Remote Launch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Remotes.html">POST Remotes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Submit-Batch.html">POST Submit Batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Uploads.html">POST Uploads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Upload-Finished.html">POST Upload Finished</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Data.html">POST Project Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../PUT-methods/PUT-rest-api.html">PUT METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DELETE-methods/DELETE-rest-api.html">DELETE METHODS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../rest-api.html">REST API</a></li>
+          <li class="breadcrumb-item"><a href="POST-rest-api.html">POST METHODS</a></li>
+      <li class="breadcrumb-item active">POST Check Job</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/POST-methods/POST-Check-Job.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="post-check-job">
+<h1>POST Check Job<a class="headerlink" href="#post-check-job" title="Permalink to this heading"></a></h1>
+<dl class="http post">
+<dt class="sig sig-object http" id="post--api-remotes-checkjob">
+<span class="sig-name descname"><span class="pre">POST</span> </span><span class="sig-name descname"><span class="pre">/api/remotes/checkjob</span></span><a class="headerlink" href="#post--api-remotes-checkjob" title="Permalink to this definition"></a></dt>
+<dd><p>Uses an existing remote session to query the status of submitted SLURM job on a cluster.
+The session must have been created successfully using <a class="reference internal" href="POST-Remotes.html#post--api-remotes" title="POST /api/remotes"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Request JSON Object<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sid</strong> (<em>string</em>) – Unique remote session identifier.</p></li>
+<li><p><strong>jid</strong> (<em>string</em>) – Job ID.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Status Codes<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a></span> – The response contains the command, its output and possible errors.</p></li>
+<li><p><span><a class="reference external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a></span> – The request failed due to invalid parameters or a Slycat agent issue.</p></li>
+<li><p><span><a class="reference external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1">500 Internal Server Error</a></span> – The request failed due to no Slycat agent present and configured on the remote system.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Response Headers<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.rfc-editor.org/rfc/rfc7231#section-3.1.1.5">Content-Type</a></span> – application/json</p></li>
+<li><p><span><em>X-Slycat-Message</em></span> – For errors, contains a human-readable description of the problem.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Response JSON Object<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>jid</strong> (<em>int</em>) – Job ID.</p></li>
+<li><p><strong>status</strong> (<em>string</em>) – Status for the queried job.</p></li>
+<li><p><strong>errors</strong> (<em>string</em>) – Error information, if any.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The following status are reported: PENDING, RUNNING, COMPLETING, COMPLETED and CANCELLED.</p>
+<p><strong>Sample Request</strong></p>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/remotes/checkjob</span>  <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+
+{
+  sid: &quot;505d0e463d5ed4a32bb6b0fe9a000d36&quot;,
+  jid: 123456
+}
+</pre></div>
+</div>
+<p><strong>Sample Response</strong></p>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+
+{
+  &quot;jid&quot;: 123456,
+  &quot;status&quot;: &quot;PENDING&quot;,
+  &quot;errors&quot;: &quot;&quot;
+}
+</pre></div>
+</div>
+</dd></dl>
+
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="POST-Cancel-Job.html#post--api-remotes-cancel-job" title="POST /api/remotes/cancel-job"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes/cancel-job</span></code></a></p></li>
+<li><p><a class="reference internal" href="POST-Get-Job-Output.html#post--api-remotes-get-job-output" title="POST /api/remotes/get-job-output"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes/get-job-output</span></code></a></p></li>
+<li><p><a class="reference internal" href="POST-Remote-Launch.html#post--api-remotes-launch" title="POST /api/remotes/launch"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes/launch</span></code></a></p></li>
+<li><p><a class="reference internal" href="POST-Submit-Batch.html#post--api-remotes-submit-batch" title="POST /api/remotes/submit-batch"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes/submit-batch</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="POST-Cancel-Job.html" class="btn btn-neutral float-left" title="POST Cancel Job" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="POST-Events.html" class="btn btn-neutral float-right" title="POST Events" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

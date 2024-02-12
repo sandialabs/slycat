@@ -1,88 +1,45 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Canonical Correlation Analysis Model &mdash; Slycat 3.0.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canonical Correlation Analysis Model &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Cars Example Data Set" href="CarsExample.html" />
     <link rel="prev" title="Templates" href="Templates.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
@@ -98,6 +55,7 @@
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
@@ -105,79 +63,39 @@
 <li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Slycat</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
-        
-      <li>Canonical Correlation Analysis Model</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user-manual.html">Slycat User Manual</a></li>
+      <li class="breadcrumb-item active">Canonical Correlation Analysis Model</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/manual/cca.model.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="canonical-correlation-analysis-model">
-<h1>Canonical Correlation Analysis Model<a class="headerlink" href="#canonical-correlation-analysis-model" title="Permalink to this headline">¶</a></h1>
-<p>Canonical Correlation Analysis (CCA) was first proposed by Hotelling in 1936 <a class="footnote-reference brackets" href="#id5" id="id1">1</a>.  Because CCA finds correlations between
+             
+  <section id="canonical-correlation-analysis-model">
+<h1>Canonical Correlation Analysis Model<a class="headerlink" href="#canonical-correlation-analysis-model" title="Permalink to this heading"></a></h1>
+<p>Canonical Correlation Analysis (CCA) was first proposed by Hotelling in 1936 <a class="footnote-reference brackets" href="#id5" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.  Because CCA finds correlations between
 two multivariate data sets, CCA data structures are a good fit for exploring relationships between the input and output
 variables found in ensemble data sets (such as those generated for sensitivity studies, uncertainty quantification, model
 tuning, or parameter studies).  Slycat™ uses CCA to model the many-to-many relationships between multiple input parameters
 and multiple output metrics.  CCA is a linear method and a direct generalization of several standard statistical techniques,
-including Principal Component Analysis (PCA), Multiple Linear Regression (MLR), and Partial Least Squares (PLS) <a class="footnote-reference brackets" href="#id6" id="id2">2</a> <a class="footnote-reference brackets" href="#id7" id="id3">3</a>.</p>
+including Principal Component Analysis (PCA), Multiple Linear Regression (MLR), and Partial Least Squares (PLS) <a class="footnote-reference brackets" href="#id6" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#id7" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>.</p>
 <p>CCA operates on a table of scalar data, where each column is a single input or output variable across all runs, and each row
 consists of the values for each of the variables in a single simulation.  Slycat™ requires the number of rows (samples) to be
 greater than the minimum variable count of the inputs or the outputs.  A more meaningful result will be obtained if the ratio
@@ -195,7 +113,7 @@ denotes the standard Pearson correlation.</p>
 <p>The vectors <strong>a</strong><sup>T</sup><em>X</em> and <strong>b</strong><sup>T</sup><em>Y</em> are known as the first pair of canonical variables.  Further pairs
 of canonical variables are orthogonal and ordered by decreasing importance. In addition to the canonical variables, the
 <em>R</em><sup>2</sup> value for each variable pair is obtained, and various statistics can be computed to determine the significance
-of the correlation. A common statistic used in this context is the <em>p</em>-value associated with Wilks’ <em>λ</em> <a class="footnote-reference brackets" href="#id8" id="id4">4</a>.  Slycat™ provides
+of the correlation. A common statistic used in this context is the <em>p</em>-value associated with Wilks’ <em>λ</em> <a class="footnote-reference brackets" href="#id8" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>.  Slycat™ provides
 both <em>R</em><sup>2</sup> and <em>p</em>-values for each canonical component as part of the Correlation View (see the figure below).  Note
 that these statistics assume that the data is normally distributed.  If your data does not follow a normal distribution, be
 aware that these statistics will be suspect and adjust your interpretation of the results accordingly.</p>
@@ -208,10 +126,12 @@ coefficients are generally preferred over the canonical coefficients because the
 variables.  The structure coefficients are given by the correlations between the canonical variables and the original variables
 (e.g. corr (<strong>a</strong><sup>T</sup><em>X</em>, <em>X</em>) and corr (<strong>a</strong><sup>T</sup><em>Y</em>, <em>Y</em>)).  These are calculated using Pearson’s correlation
 between each column of <em>X</em> or <em>Y</em> and the corresponding canonical variable.</p>
-<div class="figure align-center" id="id9">
+<figure class="align-center" id="id9">
 <a class="reference internal image-reference" href="../_images/Figure23.png"><img alt="../_images/Figure23.png" src="../_images/Figure23.png" style="width: 1131.0px; height: 672.0px;" /></a>
-<p class="caption"><span class="caption-text"><strong>Canonical components are shown in the Correlation View in the upper left.</strong></span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Canonical components are shown in the Correlation View in the upper left.</strong></span><a class="headerlink" href="#id9" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="CarsExample.html"><em>Cars</em> Example Data Set</a></li>
@@ -241,78 +161,57 @@ between each column of <em>X</em> or <em>Y</em> and the corresponding canonical 
 </ul>
 </div>
 <p class="rubric">Footnotes</p>
-<dl class="footnote brackets">
-<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>Hotelling, H., Relations Between Two Sets of Variates.  <em>Biometrika</em>, 28, 321-377 (1936).</p>
-</dd>
-<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
-<dd><p>Adams, B.M., Ebeida, M.S., Eldred, M.S., Jakeman, J.D., Swiler, L.P., Bohnhoff, W.J., Dalbey,K.R., Eddy, J.P., Hu, K.T., Vigil, D.M., Bauman, L.E., and Hough, P.D., <em>Dakota, a Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.3.1 User’s Manual</em>. Tech. Rep. SAND2010-2183, Sandia National Laboratories (2013).</p>
-</dd>
-<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
-<dd><p>Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., <em>ParaView Catalyst: Enabling In Situ Data Analysis and Visualization</em>, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).</p>
-</dd>
-<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id4">4</a></span></dt>
-<dd><p>Krzanowski, W. J., <em>Principles of Multivariate Analysis.  A User’s Perspective</em>.  Oxford University Press, London (1988).</p>
-</dd>
-</dl>
-</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Hotelling, H., Relations Between Two Sets of Variates.  <em>Biometrika</em>, 28, 321-377 (1936).</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Adams, B.M., Ebeida, M.S., Eldred, M.S., Jakeman, J.D., Swiler, L.P., Bohnhoff, W.J., Dalbey,K.R., Eddy, J.P., Hu, K.T., Vigil, D.M., Bauman, L.E., and Hough, P.D., <em>Dakota, a Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.3.1 User’s Manual</em>. Tech. Rep. SAND2010-2183, Sandia National Laboratories (2013).</p>
+</aside>
+<aside class="footnote brackets" id="id7" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., <em>ParaView Catalyst: Enabling In Situ Data Analysis and Visualization</em>, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).</p>
+</aside>
+<aside class="footnote brackets" id="id8" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p>Krzanowski, W. J., <em>Principles of Multivariate Analysis.  A User’s Perspective</em>.  Oxford University Press, London (1988).</p>
+</aside>
+</aside>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="CarsExample.html" class="btn btn-neutral float-right" title="Cars Example Data Set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="Templates.html" class="btn btn-neutral float-left" title="Templates" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Templates.html" class="btn btn-neutral float-left" title="Templates" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="CarsExample.html" class="btn btn-neutral float-right" title="Cars Example Data Set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software
-
-    </p>
+rights in this software.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

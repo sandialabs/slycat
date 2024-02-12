@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>slycat.web.server.remote &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="slycat.web.server.plugin" href="slycat.web.server.plugin.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../python-api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.darray.html">slycat.darray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hdf5.html">slycat.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hyperchunks.html">slycat.hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.uri.html">slycat.uri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.client.html">slycat.web.client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.html">slycat.web.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.authentication.html">slycat.web.server.authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.database.couchdb.html">slycat.web.server.database.couchdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.engine.html">slycat.web.server.engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.handlers.html">slycat.web.server.handlers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.hdf5.html">slycat.web.server.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.plugin.html">slycat.web.server.plugin</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">slycat.web.server.remote</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.Session"><code class="docutils literal notranslate"><span class="pre">Session</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.accessed"><code class="docutils literal notranslate"><span class="pre">Session.accessed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.browse"><code class="docutils literal notranslate"><span class="pre">Session.browse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.cancel_job"><code class="docutils literal notranslate"><span class="pre">Session.cancel_job()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.checkjob"><code class="docutils literal notranslate"><span class="pre">Session.checkjob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.client"><code class="docutils literal notranslate"><span class="pre">Session.client</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.close"><code class="docutils literal notranslate"><span class="pre">Session.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.get_file"><code class="docutils literal notranslate"><span class="pre">Session.get_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.get_image"><code class="docutils literal notranslate"><span class="pre">Session.get_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.get_job_output"><code class="docutils literal notranslate"><span class="pre">Session.get_job_output()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.get_remote_job_status"><code class="docutils literal notranslate"><span class="pre">Session.get_remote_job_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.get_user_config"><code class="docutils literal notranslate"><span class="pre">Session.get_user_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.get_video"><code class="docutils literal notranslate"><span class="pre">Session.get_video()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.hostname"><code class="docutils literal notranslate"><span class="pre">Session.hostname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.launch"><code class="docutils literal notranslate"><span class="pre">Session.launch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.run_remote_command"><code class="docutils literal notranslate"><span class="pre">Session.run_remote_command()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.set_user_config"><code class="docutils literal notranslate"><span class="pre">Session.set_user_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.sftp"><code class="docutils literal notranslate"><span class="pre">Session.sftp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.submit_batch"><code class="docutils literal notranslate"><span class="pre">Session.submit_batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.username"><code class="docutils literal notranslate"><span class="pre">Session.username</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.server.remote.Session.write_file"><code class="docutils literal notranslate"><span class="pre">Session.write_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.cache_object"><code class="docutils literal notranslate"><span class="pre">cache_object()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.check_session"><code class="docutils literal notranslate"><span class="pre">check_session()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.create_session"><code class="docutils literal notranslate"><span class="pre">create_session()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.delete_session"><code class="docutils literal notranslate"><span class="pre">delete_session()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.get_session"><code class="docutils literal notranslate"><span class="pre">get_session()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.server.remote.get_session_server"><code class="docutils literal notranslate"><span class="pre">get_session_server()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../python-api.html">Python API</a></li>
+      <li class="breadcrumb-item active">slycat.web.server.remote</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/slycat-packages/slycat.web.server.remote.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-slycat.web.server.remote">
+<span id="slycat-web-server-remote"></span><h1>slycat.web.server.remote<a class="headerlink" href="#module-slycat.web.server.remote" title="Permalink to this heading"></a></h1>
+<p>Functions for managing cached remote ssh sessions.</p>
+<p>Slycat makes extensive use of ssh and the <cite>Slycat Agent</cite> to access remote
+resources located on the high performance computing platforms used to generate
+ensembles.  This module provides functionality to create cached remote ssh /
+agent sessions that can be used to retrieve data from remote hosts.  This
+functionality is used in a variety of ways:</p>
+<ul class="simple">
+<li><p>Web clients can browse the filesystem of a remote host.</p></li>
+<li><p>Web clients can create a Slycat model using data stored on a remote host.</p></li>
+<li><p>Web clients can retrieve images on a remote host (an essential part of the parameter-image-model).</p></li>
+<li><p>Web clients can retrieve video compressed from still images on a remote host.</p></li>
+</ul>
+<p>When a remote session is created, a connection to the remote host over ssh is
+created, an agent is started (only if the required configuration is present),
+and a unique session identifier is returned.  Callers use the session id to
+retrieve the cached session and communicate with the remote host / agent.  A
+“last access” time for each session is maintained and updated whenever the
+cached session is accessed.  If a session times-out (a threshold amount of time
+has elapsed since the last access) it is automatically deleted, and subsequent
+use of the expired session id will fail.</p>
+<p>Each session is bound to the IP address of the client that created it - only
+the same client IP address is allowed to access the session.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sftp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Encapsulates an open session connected to a remote host.</p>
+<p class="rubric">Examples</p>
+<p>Calling threads must serialize access to the Session object.  To facilitate this,
+a Session is a context manager - callers should always use a <cite>with statement</cite> when
+accessing a session:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">remote</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+<span class="gp">... </span>  <span class="nb">print</span> <span class="n">session</span><span class="o">.</span><span class="n">username</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.accessed">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accessed</span></span><a class="headerlink" href="#slycat.web.server.remote.Session.accessed" title="Permalink to this definition"></a></dt>
+<dd><p>Return the time the session was last accessed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.browse">
+<span class="sig-name descname"><span class="pre">browse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_reject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_allow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_reject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_allow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.browse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.browse" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.cancel_job">
+<span class="sig-name descname"><span class="pre">cancel_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.cancel_job"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.cancel_job" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a command to the slycat-agent to cancel a running job on a cluster running SLURM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jid</strong> (<em>int</em>) – Job ID</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response</strong> – A dictionary with the following keys: jid, output, errors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.checkjob">
+<span class="sig-name descname"><span class="pre">checkjob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.checkjob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.checkjob" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jid</strong> (<em>int</em>) – Job ID</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response</strong> – A dictionary with the following keys: jid, status, errors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.client">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">client</span></span><a class="headerlink" href="#slycat.web.server.remote.Session.client" title="Permalink to this definition"></a></dt>
+<dd><p>Return the IP address of the client that created the session.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.close" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.get_file">
+<span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.get_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.get_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.get_image">
+<span class="sig-name descname"><span class="pre">get_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.get_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.get_image" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.get_job_output">
+<span class="sig-name descname"><span class="pre">get_job_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.get_job_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.get_job_output" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a command to the slycat-agent to fetch the content of the a job’s output file from a cluster running SLURM.</p>
+<p>Note that the expected format for the output file is slurm-[jid].out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>jid</strong> (<em>int</em>) – Job ID</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response</strong> – A dictionary with the following keys: jid, output, errors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.get_remote_job_status">
+<span class="sig-name descname"><span class="pre">get_remote_job_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.get_remote_job_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.get_remote_job_status" title="Permalink to this definition"></a></dt>
+<dd><p>check of the status of a job running on an agent with a hostanemd session
+:param jid: job id
+:return:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.get_user_config">
+<span class="sig-name descname"><span class="pre">get_user_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.get_user_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.get_user_config" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a command to the slycat-agent to fetch the content of a user’s .slycatrc file in their home directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>response</strong> – A dictionary with the configuration values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.get_video">
+<span class="sig-name descname"><span class="pre">get_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vsid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.get_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.get_video" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.hostname">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hostname</span></span><a class="headerlink" href="#slycat.web.server.remote.Session.hostname" title="Permalink to this definition"></a></dt>
+<dd><p>Return the remote hostname accessed by the session.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.launch">
+<span class="sig-name descname"><span class="pre">launch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.launch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.launch" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a single command to a remote location via the slycat-agent or SSH.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>command</strong> (<em>string</em>) – Command</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response</strong> – A dictionary with the following keys: command, output, errors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.run_remote_command">
+<span class="sig-name descname"><span class="pre">run_remote_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.run_remote_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.run_remote_command" title="Permalink to this definition"></a></dt>
+<dd><p>run a remote command from an HPC source running a slycat
+agent. the command could be things such as starting an hpc
+script or batch job or something as simple as moving files.
+the only requirement is that the script is in our list of
+trusted scripts.
+this_func()-&gt;calls agent_command_func()-&gt;which runs_shell_command()
+-&gt; which launches_script()-&gt; sends_response_to_agent()-&gt;sends_response_to_server()
+-&gt;sends_status_response_to_client()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>command</strong> (<em>json</em>) – </p></li>
+<li><p><strong>run</strong> (<em>form</em><em> of </em><em>a command to be</em>) – </p></li>
+<li><p><strong>{</strong> – </p></li>
+<li><p><strong>&quot;scripts&quot;</strong> (<em>//pre defined scripts that are registerd with the server</em>) – </p></li>
+<li><p><strong>[</strong><strong>{</strong> – </p></li>
+<li><p><strong>&quot;script_name&quot;</strong> (<em>&quot;script_name&quot;</em><em>, </em><em>// key for the script lookup</em>) – </p></li>
+<li><p><strong>&quot;parameters&quot;</strong> (<em>[</em><em>{key:value}</em><em>,</em><em>...</em><em>] </em><em>// things such as number</em><em> of </em><em>nodes</em>) – </p></li>
+<li><p><strong>}</strong> – </p></li>
+<li><p><strong>...</strong><strong>]</strong> – </p></li>
+<li><p><strong>&quot;hpc&quot;</strong> (<em>// these are the hpc commands that may be add for thing such as slurm</em>) – </p></li>
+<li><p><strong>{</strong> – </p></li>
+<li><p><strong>&quot;is_hpc_job&quot;</strong> (<em>bol</em><em>, </em><em>// determins if this should be run as an hpc job</em>) – </p></li>
+<li><p><strong>&quot;parameters&quot;</strong> – </p></li>
+<li><p><strong>}</strong> – </p></li>
+<li><p><strong>}</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>obj</em></p></li>
+<li><p><strong>{“msg”</strong> (<em>“message from the agent”, “error”: boolean}</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.set_user_config">
+<span class="sig-name descname"><span class="pre">set_user_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.set_user_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.set_user_config" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a command to the slycat-agent to set the content of a user’s .slycatrc file in their home directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>response</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.sftp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sftp</span></span><a class="headerlink" href="#slycat.web.server.remote.Session.sftp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.submit_batch">
+<span class="sig-name descname"><span class="pre">submit_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.submit_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.submit_batch" title="Permalink to this definition"></a></dt>
+<dd><p>Submits a command to the slycat-agent to start an input batch file on a cluster running SLURM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>string</em>) – Name of the batch file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response</strong> – A dictionary with the following keys: filename, jid, errors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.username">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">username</span></span><a class="headerlink" href="#slycat.web.server.remote.Session.username" title="Permalink to this definition"></a></dt>
+<dd><p>Return the username used to create the session.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.server.remote.Session.write_file">
+<span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#Session.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.Session.write_file" title="Permalink to this definition"></a></dt>
+<dd><p>Todo: fill this section out</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.remote.cache_object">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.cache_object" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.remote.check_session">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">check_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#check_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.check_session" title="Permalink to this definition"></a></dt>
+<dd><p>Return a true if session is active</p>
+<p>If the session has timed-out or doesn’t exist, returns false</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>string</em>) – Unique session identifier returned by <a class="reference internal" href="#slycat.web.server.remote.create_session" title="slycat.web.server.remote.create_session"><code class="xref py py-func docutils literal notranslate"><span class="pre">slycat.web.server.remote.create_session()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.remote.create_session">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">create_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#create_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.create_session" title="Permalink to this definition"></a></dt>
+<dd><p>Create a cached remote session for the given host.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hostname</strong> (<em>string</em>) – Name of the remote host to connect via ssh.</p></li>
+<li><p><strong>username</strong> (<em>string</em>) – Username for ssh authentication.</p></li>
+<li><p><strong>password</strong> (<em>string</em>) – Password for ssh authentication.</p></li>
+<li><p><strong>agent</strong> (<em>bool</em>) – Used to require / prevent agent startup.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sid</strong> – A unique session identifier.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.remote.delete_session">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">delete_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#delete_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.delete_session" title="Permalink to this definition"></a></dt>
+<dd><p>Delete a cached remote session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique session identifier returned by <a class="reference internal" href="#slycat.web.server.remote.create_session" title="slycat.web.server.remote.create_session"><code class="xref py py-func docutils literal notranslate"><span class="pre">slycat.web.server.remote.create_session()</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.remote.get_session">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">get_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calling_client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#get_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.get_session" title="Permalink to this definition"></a></dt>
+<dd><p>Return a cached remote session.</p>
+<p>If the session has timed-out or doesn’t exist, raises a 404 exception.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>string</em>) – Unique session identifier returned by <a class="reference internal" href="#slycat.web.server.remote.create_session" title="slycat.web.server.remote.create_session"><code class="xref py py-func docutils literal notranslate"><span class="pre">slycat.web.server.remote.create_session()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>session</strong> – Session object that encapsulates the connection to a remote host.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#slycat.web.server.remote.Session" title="slycat.web.server.remote.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.web.server.remote.Session</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.server.remote.get_session_server">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.server.remote.</span></span><span class="sig-name descname"><span class="pre">get_session_server</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/remote.html#get_session_server"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.remote.get_session_server" title="Permalink to this definition"></a></dt>
+<dd><p>Return a cached remote session.</p>
+<p>If the session has timed-out or doesn’t exist, raises a 404 exception.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>string</em>) – Unique session identifier returned by <a class="reference internal" href="#slycat.web.server.remote.create_session" title="slycat.web.server.remote.create_session"><code class="xref py py-func docutils literal notranslate"><span class="pre">slycat.web.server.remote.create_session()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>session</strong> – Session object that encapsulates the connection to a remote host.
+:param client:</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#slycat.web.server.remote.Session" title="slycat.web.server.remote.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.web.server.remote.Session</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="slycat.web.server.plugin.html" class="btn btn-neutral float-left" title="slycat.web.server.plugin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
