@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PUT Upload File Part &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DELETE METHODS" href="../DELETE-methods/DELETE-rest-api.html" />
+    <link rel="prev" title="PUT Project Data Parameter" href="PUT-Project-Data-Parameter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GET-methods/GET-rest-api.html">GET METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../POST-methods/POST-rest-api.html">POST METHODS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="PUT-rest-api.html">PUT METHODS</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Arrayset-Array.html">PUT Model Arrayset Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Arrayset-Data.html">PUT Model Arrayset Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Arrayset.html">PUT Model Arrayset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Command.html">PUT Model Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Inputs.html">PUT Model Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Parameter.html">PUT Model Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model.html">PUT Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Project.html">PUT Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Project-CSV-Data.html">PUT Project CSV Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Project-Data-Parameter.html">PUT Project Data Parameter</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">PUT Upload File Part</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../DELETE-methods/DELETE-rest-api.html">DELETE METHODS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../rest-api.html">REST API</a></li>
+          <li class="breadcrumb-item"><a href="PUT-rest-api.html">PUT METHODS</a></li>
+      <li class="breadcrumb-item active">PUT Upload File Part</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/PUT-methods/PUT-Upload-File-Part.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="put-upload-file-part">
+<h1>PUT Upload File Part<a class="headerlink" href="#put-upload-file-part" title="Permalink to this heading"></a></h1>
+<dl class="http put">
+<dt class="sig sig-object http" id="put--api-uploads-(uid)-files-(fid)-parts-(pid)">
+<span class="sig-name descname"><span class="pre">PUT</span> </span><span class="sig-name descname"><span class="pre">/api/uploads/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">uid</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/files/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">fid</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/parts/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#put--api-uploads-(uid)-files-(fid)-parts-(pid)" title="Permalink to this definition"></a></dt>
+<dd><p>Upload a file (or part of a file) as part of an upload session created with
+<a class="reference internal" href="../POST-methods/POST-Uploads.html#post--api-uploads" title="POST /api/uploads"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/uploads</span></code></a>.</p>
+<p>Use the “pid” and “fid” parameters to specify that the data being uploaded
+is for part <span class="math notranslate nohighlight">\(M\)</span> of file <span class="math notranslate nohighlight">\(N\)</span>.  To upload a file from the client,
+specify the “file” parameter.  To upload a remote file, specify the “sid”
+and “path” parameters with a session id and remote filepath for the file to
+upload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uid</strong> (<em>string</em>) – Unique upload session identifier.</p></li>
+<li><p><strong>fid</strong> (<em>integer</em>) – Zero-based file index of the data to be uploaded.</p></li>
+<li><p><strong>pid</strong> (<em>integer</em>) – Zero-based part index of the data to be uploaded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Request Headers<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.rfc-editor.org/rfc/rfc7231#section-3.1.1.5">Content-Type</a></span> – form/multipart</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Form Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – Local file for upload.</p></li>
+<li><p><strong>path</strong> – Remote host absolute filesystem path.</p></li>
+<li><p><strong>sid</strong> – Remote session id.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Status Codes<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a></span> – The data was uploaded successfully.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../POST-methods/POST-Uploads.html#post--api-uploads" title="POST /api/uploads"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/uploads</span></code></a></p></li>
+<li><p><a class="reference internal" href="../POST-methods/POST-Upload-Finished.html#post--api-uploads-(uid)-finished" title="POST /api/uploads/(uid)/finished"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/uploads/(uid)/finished</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PUT-Project-Data-Parameter.html" class="btn btn-neutral float-left" title="PUT Project Data Parameter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../DELETE-methods/DELETE-rest-api.html" class="btn btn-neutral float-right" title="DELETE METHODS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

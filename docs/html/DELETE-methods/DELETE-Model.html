@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DELETE Model &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DELETE Project" href="DELETE-Project.html" />
+    <link rel="prev" title="DELETE Logout" href="DELETE-logout.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GET-methods/GET-rest-api.html">GET METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../POST-methods/POST-rest-api.html">POST METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../PUT-methods/PUT-rest-api.html">PUT METHODS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="DELETE-rest-api.html">DELETE METHODS</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="DELETE-logout.html">DELETE Logout</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">DELETE Model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Project.html">DELETE Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Project-Cache.html">DELETE Project Cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Project-Cache-Object.html">DELETE Project Cache Object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Project-Data.html">DELETE Project Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Project-Data-In-Model.html">DELETE Project Data In Model Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Model-In-Project-Data.html">DELETE Model In Project Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Model-Parameter.html">DELETE Model Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-reference.html">DELETE Reference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Remote.html">DELETE Remote</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Job.html">DELETE Job</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DELETE-Upload.html">DELETE Upload</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../rest-api.html">REST API</a></li>
+          <li class="breadcrumb-item"><a href="DELETE-rest-api.html">DELETE METHODS</a></li>
+      <li class="breadcrumb-item active">DELETE Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/DELETE-methods/DELETE-Model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="delete-model">
+<h1>DELETE Model<a class="headerlink" href="#delete-model" title="Permalink to this heading"></a></h1>
+<dl class="http delete">
+<dt class="sig sig-object http" id="delete--api-models-(mid)">
+<span class="sig-name descname"><span class="pre">DELETE</span> </span><span class="sig-name descname"><span class="pre">/api/models/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#delete--api-models-(mid)" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes a model and all its artifacts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em>) – Unique model identifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Status Codes<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5">204 No Content</a></span> – The model and its artifacts have been deleted.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Sample Request</strong></p>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/api/models/8b8122539570439cb3703c0f8806158e</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">*/*</span>
+<span class="na">Accept-Encoding</span><span class="o">:</span> <span class="l">gzip, deflate, br</span>
+<span class="na">Accept-Language</span><span class="o">:</span> <span class="l">en-US,en;q=0.9</span>
+<span class="na">Connection</span><span class="o">:</span> <span class="l">keep-alive</span>
+<span class="na">Cookie</span><span class="o">:</span> <span class="l">slycattimeout=timeout; slycatauth=52230b361ec442ffa6d608da64ab4617</span>
+<span class="na">DNT</span><span class="o">:</span> <span class="l">1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">localhost:9000</span>
+<span class="na">Origin</span><span class="o">:</span> <span class="l">https://localhost:9000</span>
+<span class="na">Referer</span><span class="o">:</span> <span class="l">https://localhost:9000/models/a0a6c7d6694b4f99a5b7aa635f3f44a4</span>
+<span class="na">User-Agent</span><span class="o">:</span> <span class="l">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36</span>
+<span class="na">X-Requested-With</span><span class="o">:</span> <span class="l">XMLHttpRequest</span>
+</pre></div>
+</div>
+<p><strong>Sample Response</strong></p>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">Model deleted.</span>
+<span class="na">X-Powered-By</span><span class="o">:</span> <span class="l">Express</span>
+<span class="na">expires</span><span class="o">:</span> <span class="l">0</span>
+<span class="na">server</span><span class="o">:</span> <span class="l">CherryPy/14.0.0</span>
+<span class="na">pragma</span><span class="o">:</span> <span class="l">no-cache</span>
+<span class="na">cache-control</span><span class="o">:</span> <span class="l">no-cache, no-store, must-revalidate</span>
+<span class="na">date</span><span class="o">:</span> <span class="l">Thu, 13 Jun 2019 21:33:05 GMT</span>
+<span class="na">content-type</span><span class="o">:</span> <span class="l">text/html;charset=utf-8</span>
+<span class="na">connection</span><span class="o">:</span> <span class="l">close</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../POST-methods/POST-Project-Models.html#post--api-projects-(pid)-models" title="POST /api/projects/(pid)/models"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/projects/(pid)/models</span></code></a></p></li>
+<li><p><a class="reference internal" href="../GET-methods/GET-Model.html#get--api-models-(mid)" title="GET /api/models/(mid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+<li><p><a class="reference internal" href="../PUT-methods/PUT-Model.html#put--api-models-(mid)" title="PUT /api/models/(mid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="DELETE-logout.html" class="btn btn-neutral float-left" title="DELETE Logout" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DELETE-Project.html" class="btn btn-neutral float-right" title="DELETE Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

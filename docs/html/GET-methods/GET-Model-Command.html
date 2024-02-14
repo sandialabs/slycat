@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GET Model Command &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GET Model File" href="GET-Model-File.html" />
+    <link rel="prev" title="GET Model Arrayset Metadata" href="GET-Model-Arrayset-Metadata.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="GET-rest-api.html">GET METHODS</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-Markings.html">GET Configuration Markings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Selectable-Configuration-Markings.html">GET Selectable Configuration Markings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-Parsers.html">GET Configuration Parsers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-Remote-Hosts.html">GET Configuration Remote Hosts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-SMB-Remote-Hosts.html">GET Configuration SMB Remote Hosts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-Support-Email.html">GET Configuration Support Email</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-GA-Tracking-ID.html">GET Configuration GA Tracking ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-Version.html">GET Configuration Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-Wizards.html">GET Configuration Wizards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Bookmark.html">GET Bookmark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Configuration-SMB-Domains.html">GET SMB Domain Names</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Home.html">GET Home</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Arrayset-Data.html">GET Model Arrayset Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Arrayset-Metadata.html">GET Model Arrayset Metadata</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">GET Model Command</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-File.html">GET Model File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Parameter.html">GET Model Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Table-Chunk.html">GET Model Table Chunk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Table-Metadata.html">GET Model Table Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Table-Sorted-Indices.html">GET Model Table Sorted Indices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Table-Unsorted-Indices.html">GET Model Table Unsorted Indices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model-Statistics.html">GET Model Statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Model.html">GET Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-Cache-Object.html">GET Project Cache Object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-Models.html">GET Project Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project.html">GET Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Projects.html">GET Projects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-References.html">GET Project References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Projects-List.html">GET Projects List</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-File-Names.html">GET Project File Names</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-Data.html">GET Project Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-Data-In-Model.html">GET Project Data In Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Project-Data-Parameter.html">GET Project Data Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Remote-File.html">GET Remote File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Remote-Image.html">GET Remote Image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Remote-Video.html">GET Remote Video</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Remotes.html">GET Remotes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-User.html">GET User</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET-Timeseries-Names.html">GET Timeseries Names</a></li>
+<li class="toctree-l3"><a class="reference internal" href="GET_Last_Active_Tme.html">GET Last Active Time</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../POST-methods/POST-rest-api.html">POST METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../PUT-methods/PUT-rest-api.html">PUT METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DELETE-methods/DELETE-rest-api.html">DELETE METHODS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../rest-api.html">REST API</a></li>
+          <li class="breadcrumb-item"><a href="GET-rest-api.html">GET METHODS</a></li>
+      <li class="breadcrumb-item active">GET Model Command</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/GET-methods/GET-Model-Command.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="get-model-command">
+<h1>GET Model Command<a class="headerlink" href="#get-model-command" title="Permalink to this heading"></a></h1>
+<dl class="http get">
+<dt class="sig sig-object http" id="get--api-models-(mid)-commands-(type)-(command)">
+<span class="sig-name descname"><span class="pre">GET</span> </span><span class="sig-name descname"><span class="pre">/api/models/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mid</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/commands/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">type</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">command</span></em><span class="sig-paren">)</span><a class="headerlink" href="#get--api-models-(mid)-commands-(type)-(command)" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a custom model command.</p>
+<p>Plugins may register custom commands to be executed on the server, using an
+existing model as context.  Custom commands are used to perform computation
+on the server instead of the client, and would typically use model artifacts
+as inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em>) – Unique model identifier.</p></li>
+<li><p><strong>type</strong> (<em>string</em>) – Unique command category.</p></li>
+<li><p><strong>command</strong> (<em>string</em>) – Custom command name.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Additional command-specific arguments may be passed using query strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Response Headers<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.rfc-editor.org/rfc/rfc7231#section-3.1.1.5">Content-Type</a></span> – */*</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Sample Request</strong></p>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/models/e32ef475e084432481655fe41348726b/commands/math-plugin/add</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">localhost:8093</span>
+<span class="na">Authorization</span><span class="o">:</span> <span class="l">Basic c2x5Y2F0OnNseWNhdA==</span>
+<span class="na">Accept-Encoding</span><span class="o">:</span> <span class="l">gzip, deflate, compress</span>
+<span class="na">accept</span><span class="o">:</span> <span class="l">application/json</span>
+<span class="na">User-Agent</span><span class="o">:</span> <span class="l">python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64</span>
+</pre></div>
+</div>
+<p><strong>Sample Response</strong></p>
+<div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Date</span><span class="o">:</span> <span class="l">Mon, 25 Nov 2013 20:36:01 GMT</span>
+<span class="na">Content-Length</span><span class="o">:</span> <span class="l">542</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+<span class="na">Server</span><span class="o">:</span> <span class="l">CherryPy/3.2.2</span>
+
+<span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;result&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../POST-methods/POST-Model-Command.html#post--api-models-(mid)-commands-(type)-(command)" title="POST /api/models/(mid)/commands/(type)/(command)"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/models/(mid)/commands/(type)/(command)</span></code></a></p></li>
+<li><p><a class="reference internal" href="../PUT-methods/PUT-Model-Command.html#put--api-models-(mid)-commands-(type)-(command)" title="PUT /api/models/(mid)/commands/(type)/(command)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/commands/(type)/(command)</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="GET-Model-Arrayset-Metadata.html" class="btn btn-neutral float-left" title="GET Model Arrayset Metadata" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="GET-Model-File.html" class="btn btn-neutral float-right" title="GET Model File" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

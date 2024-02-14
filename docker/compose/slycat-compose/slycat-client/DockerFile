@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:18
 # :lts-alpine
 # see https://github.com/sass/node-sass/issues/3077 locking down to node 15 until this is resolved
 WORKDIR /usr/src/slycat

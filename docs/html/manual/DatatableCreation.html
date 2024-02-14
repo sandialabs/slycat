@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Table Creation &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Timeseries Model" href="timeseries.model.html" />
+    <link rel="prev" title="Variable Table" href="PSVariableTable.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingPSModel.html">Creating a Parameter Space Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Data Table Creation</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user-manual.html">Slycat User Manual</a></li>
+          <li class="breadcrumb-item"><a href="parameter.space.model.html">Parameter Space Model</a></li>
+      <li class="breadcrumb-item active">Data Table Creation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/manual/DatatableCreation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-table-creation">
+<h1>Data Table Creation<a class="headerlink" href="#data-table-creation" title="Permalink to this heading"></a></h1>
+<p><strong>CSV File Format:</strong></p>
+<p>Most Slycat models can be created by supplying a CSV file.  The file is expected to follow the standard CSV format where each row is one set of samples.  The header row should name the values contained in the columns, and the delimiters should be commas. Columns may contain integers, real numbers, or strings.  Columns should be type consistent and missing data should be represented with an appropriate entry, such as “” for empty string or NAN for missing number.</p>
+<p>Here is a simple <strong>CSV file example</strong>:</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Simple CSV file</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>index</p></th>
+<th class="head"><p>value1</p></th>
+<th class="head"><p>value2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>47</p></td>
+<td><p>2.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>48</p></td>
+<td><p>2.4</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>49</p></td>
+<td><p>2.3</p></td>
+</tr>
+</tbody>
+</table>
+<p>To include a reference to a media file on a <strong>Linux file system</strong>, use this format:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>file://hostname/path/to/images/image.jpg
+</pre></div>
+</div>
+<p>To include a reference to a media file on a <strong>Windows file system</strong>, use this format:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>smb://somehost.example.com/drive/path/to/images/image.jpg
+</pre></div>
+</div>
+<p>Here is a CSV example for a <strong>Linux remote system</strong> that includes one media column:</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">Linux remote system</span><a class="headerlink" href="#id2" title="Permalink to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>index</p></th>
+<th class="head"><p>value1</p></th>
+<th class="head"><p>value2</p></th>
+<th class="head"><p>image</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>47</p></td>
+<td><p>2.5</p></td>
+<td><p><a class="reference external" href="file://hostname/scratch/bob/simulation_1/stress1.jpg">file://hostname/scratch/bob/simulation_1/stress1.jpg</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>48</p></td>
+<td><p>2.4</p></td>
+<td><p><a class="reference external" href="file://hostname/scratch/bob/simulation_2/stress1.jpg">file://hostname/scratch/bob/simulation_2/stress1.jpg</a></p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>49</p></td>
+<td><p>2.3</p></td>
+<td><p><a class="reference external" href="file://hostname/scratch/bob/simulation_3/stress1.jpg">file://hostname/scratch/bob/simulation_3/stress1.jpg</a></p></td>
+</tr>
+</tbody>
+</table>
+<p>Here is a CSV example for a <strong>remote Windows file system</strong>, that includes one media column:</p>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Remote Windows file system (SMB)</span><a class="headerlink" href="#id3" title="Permalink to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>index</p></th>
+<th class="head"><p>value1</p></th>
+<th class="head"><p>value2</p></th>
+<th class="head"><p>image</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>47</p></td>
+<td><p>2.5</p></td>
+<td><p><a class="reference external" href="smb://somehost.example.com/collab/myProject/exper_1/topView.jpg">smb://somehost.example.com/collab/myProject/exper_1/topView.jpg</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>48</p></td>
+<td><p>2.4</p></td>
+<td><p><a class="reference external" href="smb://somehost.example.com/collab/myProject/exper_2/topView.jpg">smb://somehost.example.com/collab/myProject/exper_2/topView.jpg</a></p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>49</p></td>
+<td><p>2.3</p></td>
+<td><p><a class="reference external" href="smb://somehost.example.com/collab/myProject/exper_3/topView.jpg">smb://somehost.example.com/collab/myProject/exper_3/topView.jpg</a></p></td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PSVariableTable.html" class="btn btn-neutral float-left" title="Variable Table" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="timeseries.model.html" class="btn btn-neutral float-right" title="Timeseries Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

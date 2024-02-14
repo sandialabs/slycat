@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POST Model Finish &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="POST Project Bookmark" href="POST-Project-Bookmark.html" />
+    <link rel="prev" title="POST Model Files" href="POST-Model-Files.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GET-methods/GET-rest-api.html">GET METHODS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="POST-rest-api.html">POST METHODS</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="POST-Cancel-Job.html">POST Cancel Job</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Check-Job.html">POST Check Job</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Events.html">POST Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Get-Job-Output.html">POST Get Job Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-login.html">POST Login</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Arrayset-Data.html">POST Model Arrayset Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Command.html">POST Model Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Model-Files.html">POST Model Files</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">POST Model Finish</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Bookmark.html">POST Project Bookmark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Models.html">POST Project Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Data.html">POST Project Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Projects.html">POST Projects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Remote-Browse.html">POST Remote Browse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Remote-Launch.html">POST Remote Launch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Remotes.html">POST Remotes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Submit-Batch.html">POST Submit Batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Uploads.html">POST Uploads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Upload-Finished.html">POST Upload Finished</a></li>
+<li class="toctree-l3"><a class="reference internal" href="POST-Project-Data.html">POST Project Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../PUT-methods/PUT-rest-api.html">PUT METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DELETE-methods/DELETE-rest-api.html">DELETE METHODS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../rest-api.html">REST API</a></li>
+          <li class="breadcrumb-item"><a href="POST-rest-api.html">POST METHODS</a></li>
+      <li class="breadcrumb-item active">POST Model Finish</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/POST-methods/POST-Model-Finish.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="post-model-finish">
+<h1>POST Model Finish<a class="headerlink" href="#post-model-finish" title="Permalink to this heading"></a></h1>
+<dl class="http post">
+<dt class="sig sig-object http" id="post--api-models-(mid)-finish">
+<span class="sig-name descname"><span class="pre">POST</span> </span><span class="sig-name descname"><span class="pre">/api/models/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mid</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/finish</span></span><a class="headerlink" href="#post--api-models-(mid)-finish" title="Permalink to this definition"></a></dt>
+<dd><p>Finish (internally compute) a waiting model.  The model must be in the waiting state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> – Unique model identifier.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../GET-methods/GET-Model.html#get--api-models-(mid)" title="GET /api/models/(mid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+<li><p><a class="reference internal" href="../PUT-methods/PUT-Model.html#put--api-models-(mid)" title="PUT /api/models/(mid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+<li><p><a class="reference internal" href="../DELETE-methods/DELETE-Model.html#delete--api-models-(mid)" title="DELETE /api/models/(mid)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="POST-Model-Files.html" class="btn btn-neutral float-left" title="POST Model Files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="POST-Project-Bookmark.html" class="btn btn-neutral float-right" title="POST Project Bookmark" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

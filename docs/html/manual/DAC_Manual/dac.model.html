@@ -1,88 +1,45 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Dial-A-Cluster Model &mdash; Slycat 3.0.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dial-A-Cluster Model &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Weather Example Data Set" href="WeatherExample.html" />
     <link rel="prev" title="Time Series Variable Table" href="../TSVariableTable.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
-
-          
+          <a href="../../index.html" class="icon icon-home">
+            Slycat
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
@@ -103,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
@@ -110,73 +68,33 @@
 <li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">Slycat</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
-        
-      <li>Dial-A-Cluster Model</li>
-    
-    
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../user-manual.html">Slycat User Manual</a></li>
+      <li class="breadcrumb-item active">Dial-A-Cluster Model</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../_sources/manual/DAC_Manual/dac.model.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="dial-a-cluster-model">
-<h1>Dial-A-Cluster Model<a class="headerlink" href="#dial-a-cluster-model" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="dial-a-cluster-model">
+<h1>Dial-A-Cluster Model<a class="headerlink" href="#dial-a-cluster-model" title="Permalink to this heading"></a></h1>
 <p>The Dial-A-Cluster (DAC) model allows interactive visualization of multivariate time series data.  A multivariate time series
 dataset consists of an ensemble of data points, where each data point consists of a set of time series curves.  The example
 of a DAC dataset used in this guide is a collection of 100 cities in the United States, where each city collects a year’s
@@ -188,17 +106,19 @@ change the relative influence of the temporal variables on the scatter plot.  Th
 that users can see how different time series variables affect the relative similarity of different data points in the
 ensemble – hence the name Dial-A-Cluster.</p>
 <p>DAC computations are performed using a weighted sum of time series distance matrices to produce a visualization via the
-classical multidimensional scaling (MDS) algorithm <a class="footnote-reference brackets" href="#id2" id="id1">1</a>.  In addition to ensemble visualization, DAC provides comparisons
+classical multidimensional scaling (MDS) algorithm <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.  In addition to ensemble visualization, DAC provides comparisons
 between user selected groups in the ensemble as well as the influence of any available metadata.</p>
 <p>DAC was developed independently outside of the Slycat™ project using Slycat’s plugin architecture.  Consequently, many
 of the user interface and representational conventions used in other Slycat™ models are missing or different in DAC.
 Although DAC operates on ensemble data (where an ensemble is a set of related samples defined using a set of shared
 variables), there is no concept of input or output variables as in other Slycat™ models, only a table of scalar metadata
 and multiple time-varying data sets for each ensemble member.</p>
-<div class="figure align-center" id="id3">
+<figure class="align-center" id="id3">
 <img alt="../../_images/overview.png" src="../../_images/overview.png" />
-<p class="caption"><span class="caption-text"><strong>Figure 1: DAC user interface consisting of four linked views.  In clockwise order, starting from the upper left corner, there is (1) a panel of sliders for adjusting temporal variable weights, (2) a scatterplot with a point per ensemble member, in which point proximity indicates member similarity, (3) time series plots for three temporal variables contrasting selected groups (red/blue/green sets) of ensemble members, and (4) a table of scalar and text metadata for each ensemble member (row).</strong></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-text"><strong>Figure 1: DAC user interface consisting of four linked views.  In clockwise order, starting from the upper left corner, there is (1) a panel of sliders for adjusting temporal variable weights, (2) a scatterplot with a point per ensemble member, in which point proximity indicates member similarity, (3) time series plots for three temporal variables contrasting selected groups (red/blue/green sets) of ensemble members, and (4) a table of scalar and text metadata for each ensemble member (row).</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 <p>The DAC model consists of four linked views, as shown in Figure 1: (1) a <em>Slider</em> panel (left view) for adjusting the
 importance of each temporal variable in the similarity calculation; (2) a <em>Scatterplot</em> (center top view) showing
 similarities between ensemble members; (3) <em>Time Series Plots</em> (right view) for comparing three sets of selected
@@ -217,69 +137,45 @@ values from shared scalar variables (columns) for individual ensemble members (r
 </ul>
 </div>
 <p class="rubric">Footnotes</p>
-<dl class="footnote brackets">
-<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>Martin, S., and Quach, T.-T., Interactive Visualization of Multivariate Time Series Data. Human Computer Interaction International (HCII), Foundations of Augmented Cognition: 322-332 (2016).  DOI 10.1007/978-3-319-39952-2_31</p>
-</dd>
-</dl>
-</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Martin, S., and Quach, T.-T., Interactive Visualization of Multivariate Time Series Data. Human Computer Interaction International (HCII), Foundations of Augmented Cognition: 322-332 (2016).  DOI 10.1007/978-3-319-39952-2_31</p>
+</aside>
+</aside>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="WeatherExample.html" class="btn btn-neutral float-right" title="Weather Example Data Set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../TSVariableTable.html" class="btn btn-neutral float-left" title="Time Series Variable Table" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../TSVariableTable.html" class="btn btn-neutral float-left" title="Time Series Variable Table" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="WeatherExample.html" class="btn btn-neutral float-right" title="Weather Example Data Set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software
-
-    </p>
+rights in this software.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
