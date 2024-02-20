@@ -224,7 +224,9 @@ class Connection(object):
     host_name = host_name[0]
 
     # host and port
-    self.host = host.replace(host_alias, host_name)
+    self.host = host
+    if host != HOST_DEFAULT:
+      self.host = host.replace(host_alias, host_name)
     if port:
       self.host = self.host + ':' + port
 

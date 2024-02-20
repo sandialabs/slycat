@@ -52,7 +52,7 @@ VERSION = slycat.__version__
 
 # development version
 # VERSION = VERSION
-VERSION = "4.0.0"
+VERSION = "4.1.0"
 
 # get README.md
 import pathlib
@@ -92,8 +92,7 @@ setup(
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",
-            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main",
-            "dac_tdms_batch_file=slycat.web.client.dac_tdms_batch_file:main",
+            "dac_tdms_batches=slycat.web.client.dac_tdms_batches:main",
             "ps_csv=slycat.web.client.ps_csv:main",
             "dac_gen=slycat.web.client.dac_gen:main"
         ]

@@ -23,12 +23,8 @@ import logging
 # file manipulation
 import os
 
-# the tdms file types allowed
-TDMS_MATCHES = ['Factory_Trigger', 'Acceptance_Trigger', 'PL', 'Pulse_Life', 
-                'Extended_Pulse_Life', 'Probe_Age']
-
 # sets up logging to screen or file, depending on user input
-def setup_logging(log_file):
+def setup_logging(log_file=None):
 
     # set up log file, or print to screen (default)
     if log_file:
@@ -60,7 +56,7 @@ def setup_logging(log_file):
 def catalog_batches(arguments, log):
 
     # read all meta data before further run chart specific filtering
-    metadata = dac_tdms_util.catalog_tdms_files(arguments, log, TDMS_MATCHES)
+    metadata = dac_tdms_util.catalog_tdms_files(arguments, log)
 
     # get batches discovered (we will create a model for each batch)
     batches = []
@@ -117,27 +113,44 @@ def create_models(arguments):
         catalog_batches(arguments, log)
     
     # alter agruments for dac tdms
-    arguments.model_description = str(arguments.tdms_file_matches)
-    del arguments.tdms_file_matches
     del arguments.input_data_dir
-    del arguments.part_num_match
+    del arguments.part_num
+    del arguments.batches
     del arguments.log_file
 
     for i in range(len(batches)):
 
         # keep track of model we are uploading
-        log('Processing DAC Batch ' + batches[i] + ': (' + str(i) + '/' + str(len(batches)) + ').')
+        log('Processing DAC Batch ' + batches[i] + ': (' + str(i + 1) + '/' + str(len(batches)) + ').')
 
-        # change project name, model name, description to describe batch
-        arguments.project_name = str(part_number)
-        arguments.model_name = str(part_number) + '_' + str(lot_number) + '_' + batches[i]
-
-        # add batch files
+        # add batch files, tally suffixes used
         batch_files = []
+        batch_suffixes = set()
         for j in batch_data[batches[i]]:
             for file in metadata[j]['tdms_files']:
                 batch_files.append(os.path.join(metadata[j]['source'], file))
+            for suffix in metadata[j]['include_suffixes']:
+                batch_suffixes.add(suffix)
         arguments.files = batch_files
+
+        # sort suffixes
+        batch_suffixes = list(batch_suffixes)
+        batch_suffixes.sort()
+
+        # keep track of what we are including/excluding
+        if arguments.exclude:
+            log("Excluding TDMS file suffixes:")
+            for suffix in arguments.exclude:
+                log("\t%s" % suffix)
+
+        log("Including TDMS file suffixes:")
+        for suffix in batch_suffixes:
+            log("\t%s" % suffix)
+
+        # change project name, model name, description to describe batch
+        arguments.model_description = str(batch_suffixes)
+        arguments.project_name = str(part_number)
+        arguments.model_name = str(part_number) + '_' + str(lot_number) + '_' + batches[i]
 
         # run dac
         dac_tdms.create_model(arguments, log)
@@ -155,10 +168,12 @@ def parser ():
              'according to part number.')
 
     # part number specification
-    parser.add_argument("part_num_match",
-        help='Part number to match when creating batch models, can included wildcards, ' +
-             'e.g. "XXXXXX_XX_*".  Note that part and lot numbers should be constant, ' +
-             'and you should use "" in Unix to pass wildcards.')
+    parser.add_argument("part_num",
+        help='Part number to match when creating batch models, e.g. "XXXXXX_XX".  ' +
+             'Note that part and lot numbers should be constant.')
+    parser.add_argument("batches", 
+        help='Batches to process, can be integers or ranges separated by commas, e.g. ' +
+             '"1,3,4-6,11-24".  Use "*" to designate all batches.')
 
     # optional flag to log results to file
     parser.add_argument('--log-file', default=None,
@@ -166,11 +181,6 @@ def parser ():
              "fails to upload, the script will not terminate, but will carry on " + 
              "trying to upload the remaaining data.  Log file will be overwritten " +
              "if it already exists.")
-
-    # TDMS types to use
-    parser.add_argument('--tdms-file-matches', nargs="+", choices=TDMS_MATCHES,
-        help='Use specified file matches to filter TDMS files, ' + 
-             'defaults to full list of choices.')
     
     # model and project names/descriptions
     parser.add_argument("--marking", default="cui", 

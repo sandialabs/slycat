@@ -204,7 +204,7 @@ def create_model (arguments, log):
 
     # echo back user input, starting with files
     log('*********** Creating DAC Model ***********')
-    log("Input files:")
+    log("Input file(s):")
     for file in file_list:
         log("\t%s" % file)
     
@@ -229,8 +229,8 @@ def create_model (arguments, log):
     log("Expecting TDMS data type: %s" % parser_parms[5])
     log("Combining mismatched time steps using: %s" % parser_parms[6])
     log("Infer channel units: %s" % parser_parms[7])
-    log("Infer time units: %s" % parser_parms[9])
-
+    log("Infer time units: %s" % parser_parms[8])
+    
     # upload model file(s)
     mid = upload_model (arguments, dac_parser, parser_parms, file_list, progress=True)
 
@@ -270,12 +270,6 @@ def parser ():
         help="New project description.  Default: %(default)s")
     parser.add_argument("--project-name", default="TDMS DAC Models", 
         help="New project name.  Default: %(default)s")
-
-    # exclude .tdms files from .zip upload
-    parser.add_argument("--exclude", nargs="+",
-        help='TDMS file suffixes to exclude within .zip files. ' + 
-             'If you want suffixes that include spaces, use quotes, ' +
-             'e.g. "suffix with space".')
 
     # add tmds options
     parser = dac_tdms_util.add_options (parser)
