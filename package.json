@@ -12,12 +12,8 @@
     "docs": "cd docs; make html",
     "clean": "rm -rf node_modules/",
     "update-tests": "./node_modules/.bin/jest -u",
-    "test-coverage": "./node_modules/.bin/jest --coverage",
-    "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
+    "test-coverage": "./node_modules/.bin/jest --coverage"
   },
-  "pre-commit": [
-    "precommit-msg"
-  ],
   "main": "index.js",
   "repository": "git@github.com:sandialabs/slycat.git",
   "author": "Alex M. Sielicki <alex@techmilo.com>",
@@ -110,7 +106,6 @@
     "less": "^4.0.0",
     "less-loader": "^11",
     "node-fetch-polyfill": "^2.0.6",
-    "pre-commit": "^1.2.2",
     "prettier": "^3",
     "react-test-renderer": "^18",
     "sass": "^1",
