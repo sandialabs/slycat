@@ -298,7 +298,9 @@
     <span class="n">host_name</span> <span class="o">=</span> <span class="n">host_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># host and port</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">host_alias</span><span class="p">,</span> <span class="n">host_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+    <span class="k">if</span> <span class="n">host</span> <span class="o">!=</span> <span class="n">HOST_DEFAULT</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">host_alias</span><span class="p">,</span> <span class="n">host_name</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">port</span><span class="p">:</span>
       <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">port</span>
 
@@ -1046,9 +1048,6 @@
 <span class="sd">    rid: string</span>
 <span class="sd">      Unique reference identifier.</span>
 
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    :http:post:`/api/projects/(pid)/references`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/references&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pid</span><span class="p">),</span> 

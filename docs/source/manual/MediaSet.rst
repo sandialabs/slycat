@@ -58,27 +58,22 @@ our web-based delivery, videos must be created in a very specific way to be view
 
 Video Source Files
 ==================
-There is no standardized support for videos between browsers.  We have found that the h264 codec in combination with an mp4
-container format is compatible with Firefox, Chrome, and Safari on both Windows and Mac platforms.  In our testing, we have 
-found that initial key frames are frequently lost, rendering the following compressed frames useless.  This requires explicit 
-key frame forcing during movie creation.  We use the ffmpeg utility to convert images into videos.  Make sure that your 
-version of ffmpeg was built with the h264 library, since some versions of ffmpeg don’t include this codec by default.
+There is no standardized support for videos between browsers. We have found that the h264 codec
+in combination with an mp4 container format is compatible with Firefox, Chrome, and Safari on both
+Windows and Mac platforms. In our testing, we have found that initial key frames are frequently lost,
+rendering the following compressed frames useless. This requires explicit key frame forcing during
+movie creation. We use the ffmpeg utility to convert images into videos. Make sure that your version of
+ffmpeg was built with the h264 library, since some versions of ffmpeg don’t include this codec by default.
 
-If you are within Sandia, we provide this custom version of the library on the cluster machines.  You can generate Slycat™ 
-compatible movies as follows:
-
-::
-
-   > module load slycat
-
-If your images are PNGs, they must be first converted to JPG format (ffmpeg won’t complain about the input images being PNG, 
-but the movie that it generates won’t play).  If you already have JPG images, skip this step:
+If your images are PNGs, they must be first converted to JPG format.  The ffmpeg utility won’t complain
+about the input images being PNG, but the movie that it generates won’t play. (If you already have JPG
+images, skip this step.)  Here’s one possible conversion method:
 
 ::
 
    > mogrify -format jpg myImageName.0*
 
-This last step generates the mp4.  Don’t forget to enclose the image path in single quotes:
+Here is our recommended syntax to generate an mp4 video. Don’t forget to enclose the image path in single quotes:
 
 ::
 

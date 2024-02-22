@@ -974,9 +974,6 @@ class Connection(object):
     rid: string
       Unique reference identifier.
 
-    See Also
-    --------
-    :http:post:`/api/projects/(pid)/references`
     """
 
     return self.request("POST", "/api/projects/%s/references" % (pid), 
