@@ -44,10 +44,6 @@
   border-left: 2px solid #1b809e !important;
 }
 
-.vertical-toggle-pane-resizer {
-  right-border: 2px solid rgb(231, 231, 231);
-}
-
 .fill-parent-height {
   height: 100%;
 }
