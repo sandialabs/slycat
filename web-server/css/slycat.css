@@ -5,9 +5,6 @@
 html {
   font-family: sans-serif;
   font-size: 16px;
-  -ms-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  -webkit-text-size-adjust: 100%;
   background-color: #f2f2f2;
 }
 
@@ -160,7 +157,6 @@ slycat-navbar nav .alert pre {
   display: inline-block;
   height: 40px;
   position: absolute;
-  -webkit-transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
   transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
   vertical-align: top;
   width: 40px;
@@ -199,9 +195,7 @@ slycat-navbar nav .alert pre {
   position: relative;
   flex: 1;
   background-color: #f2f2f2;
-  display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: column;
   flex-direction: column;
 }
 
@@ -215,33 +209,21 @@ slycat-navbar nav .alert pre {
 /* slycat-remote-browser component */
 
 .slycat-remote-browser {
-  display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: column;
   flex-direction: column;
   height: 100%;
 }
 
 .slycat-remote-browser-files {
-  -webkit-flex: 1;
   flex: 1;
-
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
   user-select: none;
-
   overflow-x: auto;
   overflow-y: auto;
-
   border: 1px solid #e5e5e5;
 }
 
 .slycat-remote-browser table {
   cursor: default;
-  -moz-user-select: none;
-  -webkit-user-select: none;
   user-select: none;
   min-width: 100%;
 }
@@ -306,8 +288,6 @@ slycat-navbar nav .alert pre {
   background: lightgray;
   border-radius: 6px;
   transition: background 0.25s ease-in-out;
-  -moz-transition: background 0.25s ease-in-out;
-  -webkit-transition: background 0.25s ease-in-out;
 }
 
 .slycat-scrollbar .thumb:hover,
@@ -334,8 +314,6 @@ slycat-navbar nav .alert pre {
   background: #7788ff;
   border-color: #7788ff;
   transition: all 0.25s ease-in-out;
-  -moz-transition: all 0.25s ease-in-out;
-  -webkit-transition: all 0.25s ease-in-out;
 }
 
 .slycat-range-slider.vertical .domain {
@@ -365,16 +343,12 @@ slycat-navbar nav .alert pre {
 .slycat-range-slider.dragging .range {
   background: #7788ff;
   transition: background 0.25s ease-in-out;
-  -moz-transition: background 0.25s ease-in-out;
-  -webkit-transition: background 0.25s ease-in-out;
 }
 
 .slycat-range-slider.invert:hover .range,
 .slycat-range-slider.dragging.invert .range {
   background: #ddd;
   transition: none;
-  -moz-transition: none;
-  -webkit-transition: none;
 }
 
 .slycat-range-slider.vertical .range {
@@ -401,8 +375,6 @@ slycat-navbar nav .alert pre {
   background: #aabbff;
   border-radius: 6px;
   transition: background 0.25s ease-in-out;
-  -moz-transition: background 0.25s ease-in-out;
-  -webkit-transition: background 0.25s ease-in-out;
 }
 
 .slycat-range-slider .thumb:hover,
@@ -448,11 +420,6 @@ slycat-navbar nav .alert pre {
 }
 .slycat-table-ingestion tbody th {
   padding-left: 5px;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
   cursor: pointer;
 }
