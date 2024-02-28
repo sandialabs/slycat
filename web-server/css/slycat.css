@@ -276,6 +276,7 @@ slycat-navbar nav .alert pre
   cursor: default;
   -moz-user-select: none;
   -webkit-user-select: none;
+  user-select: none;
   min-width: 100%;
 }
 
@@ -360,11 +361,6 @@ slycat-navbar nav .alert pre
 }
 
 /* slycat-range-slider component */
-
-.slycat-range-slider
-{
-}
-
 .slycat-range-slider .domain
 {
   background: #ddd;
@@ -574,7 +570,7 @@ slycat-navbar nav .alert pre
   font-weight: normal;
 }
 textarea,
-input,
+input
 {
   resize: none;
 }
