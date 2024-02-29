@@ -38,6 +38,7 @@ import {
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
+import { parseDate } from "js/slycat-dates";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -787,7 +788,8 @@ $.widget("parameter_image.scatterplot", {
 
   // Clones an ArrayBuffer or Array
   _cloneArrayBuffer: function (source) {
-    // Array.apply method of turning an ArrayBuffer into a normal array is very fast (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
+    // Array.apply method of turning an ArrayBuffer into a normal array is very fast
+    // (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
     // if(source.length > 1)
     // {
     //   return Array.apply( [], source );
@@ -798,7 +800,8 @@ $.widget("parameter_image.scatterplot", {
     // }
     // return [];
 
-    // For loop method is much shower (around 300ms for 250K) but works in WebKit. Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
+    // For loop method is much shower (around 300ms for 250K) but works in WebKit.
+    // Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
     var clone = [];
     for (var i = 0; i < source.length; i++) {
       clone.push(source[i]);
@@ -815,11 +818,12 @@ $.widget("parameter_image.scatterplot", {
     // Make a time scale for 'Date & Time' variable types
     if (type == "Date & Time") {
       let dates = [];
+      let parsedDate;
       for (let date of values) {
         // Make sure Date is valid before adding it to array, so we get a scale with usable min and max
-        date = new Date(date.toString());
-        if (!isNaN(date)) {
-          dates.push(date);
+        parsedDate = parseDate(date.toString());
+        if (!isNaN(parsedDate).valueOf()) {
+          dates.push(parsedDate);
         }
       }
       // console.log("unsorted dates: " + dates);
@@ -830,12 +834,12 @@ $.widget("parameter_image.scatterplot", {
 
       // Use custom range for min or max if we have one
       const min =
-        customMin != undefined && !isNaN(new Date(customMin.toString()).valueOf())
-          ? new Date(customMin.toString())
+        customMin != undefined && !isNaN(parseDate(customMin.toString()).valueOf())
+          ? parseDate(customMin.toString())
           : dates[0];
       const max =
-        customMax != undefined && !isNaN(new Date(customMax.toString()).valueOf())
-          ? new Date(customMax.toString())
+        customMax != undefined && !isNaN(parseDate(customMax.toString()).valueOf())
+          ? parseDate(customMax.toString())
           : dates[dates.length - 1];
 
       let domain = [min, max];
@@ -3680,6 +3684,6 @@ $.widget("parameter_image.scatterplot", {
   },
 
   format_for_scale: function (coordinate, scale_type) {
-    return scale_type == "Date & Time" ? new Date(coordinate.toString()) : coordinate;
+    return scale_type == "Date & Time" ? parseDate(coordinate.toString()) : coordinate;
   },
 });

@@ -15,7 +15,7 @@ import {
   ColumnTypesType,
   ValuesType,
 } from "./store";
-import { select } from "docs/html/_static/underscore-1.3.1";
+import { parseDate } from "js/slycat-dates";
 
 // Constants
 const X_AXIS_TICK_LABEL_HEIGHT = 40;
@@ -97,7 +97,7 @@ export const selectXValuesDate = createSelector(
   (xValues, selectXColumnType): (Date | undefined)[] => {
     return xValues.map((value) => {
       // Try to convert to a data object and return it. Otherwise return undefined.
-      const date = new Date(value.toString());
+      const date = parseDate(value.toString());
       if (isNaN(date.valueOf())) return undefined;
       return date;
     });
@@ -245,13 +245,13 @@ const getExtent = (
       // If we have a custom range, try to use that instead.
       const customRange = variableRanges[index];
       if (customRange?.min !== undefined) {
-        const minDate = new Date(customRange.min.toString());
+        const minDate = parseDate(customRange.min.toString());
         if (!isNaN(minDate.valueOf())) {
           extent[0] = minDate;
         }
       }
       if (customRange?.max !== undefined) {
-        const maxDate = new Date(customRange.max.toString());
+        const maxDate = parseDate(customRange.max.toString());
         if (!isNaN(maxDate.valueOf())) {
           extent[1] = maxDate;
         }
