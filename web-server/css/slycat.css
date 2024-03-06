@@ -2,18 +2,13 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-html
-{
+html {
   font-family: sans-serif;
   font-size: 16px;
-  -ms-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  -webkit-text-size-adjust: 100%;
   background-color: #f2f2f2;
 }
 
-body
-{
+body {
   color: #333333;
   background-color: #f2f2f2;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -23,25 +18,21 @@ body
   flex-direction: column;
 }
 html#slycat-model-page,
-html#slycat-model-page body
-{
+html#slycat-model-page body {
   height: 100%;
 }
 
-.bootstrap-styles .navbar
-{
+.bootstrap-styles .navbar {
   background-color: rgb(215, 215, 215);
   border: 0;
   border-radius: 0;
   margin: 0;
 }
-.bootstrap-styles .navbar.model .container
-{
+.bootstrap-styles .navbar.model .container {
   width: auto !important;
 }
 
-.bootstrap-styles .navbar-brand
-{
+.bootstrap-styles .navbar-brand {
   background: url("../img/slycat-logo-navbar.png") transparent 0 center no-repeat;
   min-height: 38px;
   background-size: auto 20px;
@@ -50,22 +41,17 @@ html#slycat-model-page body
   padding-left: 110px;
   color: #353535 !important;
 }
-.bootstrap-styles .navbar > .container .navbar-brand 
-{
+.bootstrap-styles .navbar > .container .navbar-brand {
   margin-left: 0;
 }
-.bootstrap-styles .navbar .breadcrumb
-{
+.bootstrap-styles .navbar .breadcrumb {
   margin-bottom: 0;
   background-color: transparent;
-
 }
-.bootstrap-styles .navbar .breadcrumb a
-{
+.bootstrap-styles .navbar .breadcrumb a {
   color: rgb(136, 0, 0);
 }
-.bootstrap-styles .navbar-btn
-{
+.bootstrap-styles .navbar-btn {
   margin-left: 0;
   margin-right: 15px;
 }
@@ -107,18 +93,15 @@ html#slycat-model-page body
 }
 */
 
-.bootstrap-styles .modal .jumbotron
-{
+.bootstrap-styles .modal .jumbotron {
   padding: 48px;
 }
 
-slycat-navbar nav .alert
-{
+slycat-navbar nav .alert {
   margin: 0 !important;
 }
 
-slycat-navbar nav .alert pre
-{
+slycat-navbar nav .alert pre {
   margin: 12px 0 0 0;
 }
 #slycat-wizard .slycat-remote-browser .path .alert {
@@ -127,446 +110,352 @@ slycat-navbar nav .alert pre
   display: none;
   clear: both;
 }
-#slycat-wizard .nav-pills a
-{
+#slycat-wizard .nav-pills a {
   cursor: default;
 }
-#slycat-wizard .nav-tabs, #slycat-wizard .nav-pills
-{
+#slycat-wizard .nav-tabs,
+#slycat-wizard .nav-pills {
   margin-bottom: 24px;
 }
 
-#slycat-wizard .steps
-{
-    display: inline-block;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+#slycat-wizard .steps {
+  display: inline-block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-#slycat-wizard .steps li
-{
-    background: #f8f8f8;
-    border-color: #ddd;
-    border-style: solid;
-    border-width: 1px 0;
-    float: left;
-    height: 40px;
-    padding: 0 30px;
-    line-height: 40px;
+#slycat-wizard .steps li {
+  background: #f8f8f8;
+  border-color: #ddd;
+  border-style: solid;
+  border-width: 1px 0;
+  float: left;
+  height: 40px;
+  padding: 0 30px;
+  line-height: 40px;
 }
 
-#slycat-wizard .steps li:first-child
-{
-    border-width: 1px 0 1px 1px;
+#slycat-wizard .steps li:first-child {
+  border-width: 1px 0 1px 1px;
 }
 
-#slycat-wizard .steps li.active
-{
-    background: yellow;
+#slycat-wizard .steps li.active {
+  background: yellow;
 }
 
-#slycat-wizard .steps li.active:after
-{
-    background: yellow;
+#slycat-wizard .steps li.active:after {
+  background: yellow;
 }
 
-#slycat-wizard .steps li:after
-{
-    background: #f8f8f8;
-    border-color: #bbb;
-    border-style: solid;
-    border-width: 1px 1px 0 0;
-    content: "";
-    display: inline-block;
-    height: 40px;
-    position: absolute;
-    -webkit-transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
-    transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
-    vertical-align: top;
-    width: 40px;
+#slycat-wizard .steps li:after {
+  background: #f8f8f8;
+  border-color: #bbb;
+  border-style: solid;
+  border-width: 1px 1px 0 0;
+  content: "";
+  display: inline-block;
+  height: 40px;
+  position: absolute;
+  transform: translate(10px, 0) scale(0.3, 0.7) rotate(45deg);
+  vertical-align: top;
+  width: 40px;
 }
 
-#slycat-wizard .steps li:last-child
-{
-    border-width: 1px 1px 1px 0;
+#slycat-wizard .steps li:last-child {
+  border-width: 1px 1px 1px 0;
 }
 
-#slycat-wizard .steps li:last-child:after
-{
-    background: transparent;
-    border-color: transparent;
+#slycat-wizard .steps li:last-child:after {
+  background: transparent;
+  border-color: transparent;
 }
-.bootstrap-styles #slycat-wizard input[type="file"]
-{
+.bootstrap-styles #slycat-wizard input[type="file"] {
   padding: 6px 0;
 }
-.bootstrap-styles #slycat-wizard .nav > li > a
-{
+.bootstrap-styles #slycat-wizard .nav > li > a {
   color: #333333;
 }
-.bootstrap-styles #slycat-wizard .nav > li > a:hover
-{
+.bootstrap-styles #slycat-wizard .nav > li > a:hover {
   background-color: transparent;
 }
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a,
-.bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover
-{
+.bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover {
   color: black;
   background-color: #d7d7d7;
 }
-.bootstrap-styles #slycat-wizard .modal-footer button i
-{
+.bootstrap-styles #slycat-wizard .modal-footer button i {
   display: none;
 }
-.bootstrap-styles #slycat-wizard .modal-footer button.disabled i
-{
+.bootstrap-styles #slycat-wizard .modal-footer button.disabled i {
   display: inline-block;
 }
 
-.slycat-content
-{
+.slycat-content {
   position: relative;
   flex: 1;
   background-color: #f2f2f2;
-  display: -webkit-flex;
   display: flex;
-  -webkit-flex-direction: column;
   flex-direction: column;
 }
 
 #slycat-projects .container,
 #slycat-models .container,
-#slycat-templates .container
-{
+#slycat-templates .container {
   padding-top: 15px;
   padding-bottom: 15px;
 }
 
 /* slycat-remote-browser component */
 
-.slycat-remote-browser
-{
-  display: -webkit-flex;
+.slycat-remote-browser {
   display: flex;
-  -webkit-flex-direction: column;
   flex-direction: column;
   height: 100%;
 }
 
-.slycat-remote-browser-files
-{
-  -webkit-flex: 1;
+.slycat-remote-browser-files {
   flex: 1;
-
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
   user-select: none;
-
   overflow-x: auto;
   overflow-y: auto;
-
   border: 1px solid #e5e5e5;
 }
 
-.slycat-remote-browser table
-{
+.slycat-remote-browser table {
   cursor: default;
-  -moz-user-select: none;
-  -webkit-user-select: none;
+  user-select: none;
   min-width: 100%;
 }
 
 .slycat-remote-browser tr.selected,
-.slycat-remote-browser tr.selected:hover
-{
-  background-color: #337AB7 !important;
+.slycat-remote-browser tr.selected:hover {
+  background-color: #337ab7 !important;
   color: white;
 }
 
-.slycat-remote-browser td:first-child
-{
+.slycat-remote-browser td:first-child {
   font-size: 120%;
   width: 24px;
 }
 
-.slycat-remote-browser tr:hover
-{
+.slycat-remote-browser tr:hover {
   background: #eee;
 }
 
 /* slycat-remote-browser uses flex layout to size itself to available space when displayed with other components  */
-.slycat-remote-browser-flex-layout
-{
+.slycat-remote-browser-flex-layout {
   display: flex;
   flex-flow: column;
   height: 100%;
 }
-.slycat-remote-browser-flex-layout slycat-remote-browser
-{
+.slycat-remote-browser-flex-layout slycat-remote-browser {
   flex-grow: 1;
   flex-shrink: 1;
   /* Seems that flex needs a height to grow and shrink, so assigning arbitrary one here. */
   height: 100px;
   margin-bottom: 15px;
 }
-.slycat-remote-browser-flex-layout slycat-remote-browser:last-child
-{
+.slycat-remote-browser-flex-layout slycat-remote-browser:last-child {
   margin-bottom: 0px;
 }
-.slycat-remote-browser-flex-layout slycat-parser-controls
-{
+.slycat-remote-browser-flex-layout slycat-parser-controls {
   flex-grow: 0;
   flex-shrink: 0;
 }
-.slycat-remote-browser-flex-layout slycat-parser-controls > .form-group
-{
+.slycat-remote-browser-flex-layout slycat-parser-controls > .form-group {
   margin-bottom: 0;
 }
 
-
 /* slycat-scrollbar component */
 
-.slycat-scrollbar
-{
+.slycat-scrollbar {
   border: 1px solid lightgray;
   border-radius: 6px;
 }
 
-.slycat-scrollbar.vertical, .slycat-scrollbar.vertical .thumb
-{
+.slycat-scrollbar.vertical,
+.slycat-scrollbar.vertical .thumb {
   width: 12px;
 }
 
-.slycat-scrollbar.horizontal, .slycat-scrollbar.horizontal .thumb
-{
+.slycat-scrollbar.horizontal,
+.slycat-scrollbar.horizontal .thumb {
   height: 12px;
 }
 
-.slycat-scrollbar .thumb
-{
+.slycat-scrollbar .thumb {
   background: lightgray;
   border-radius: 6px;
-  transition: background .25s ease-in-out;
-  -moz-transition: background .25s ease-in-out;
-  -webkit-transition: background .25s ease-in-out;
+  transition: background 0.25s ease-in-out;
 }
 
-.slycat-scrollbar .thumb:hover, .slycat-scrollbar.dragging .thumb, .slycat-scrollbar:hover .thumb
-{
+.slycat-scrollbar .thumb:hover,
+.slycat-scrollbar.dragging .thumb,
+.slycat-scrollbar:hover .thumb {
   background: gray;
 }
 
 /* slycat-range-slider component */
-
-.slycat-range-slider
-{
-}
-
-.slycat-range-slider .domain
-{
+.slycat-range-slider .domain {
   background: #ddd;
   border: 1px solid #ccc;
   border-radius: 6px;
 }
 
-.slycat-range-slider.invert .domain
-{
+.slycat-range-slider.invert .domain {
   background: #aabbff;
   border: 1px solid #aabbff;
   border-radius: 6px;
 }
 
 .slycat-range-slider.invert:hover .domain,
-.slycat-range-slider.dragging.invert .domain
-{
+.slycat-range-slider.dragging.invert .domain {
   background: #7788ff;
   border-color: #7788ff;
-  transition: all .25s ease-in-out;
-  -moz-transition: all .25s ease-in-out;
-  -webkit-transition: all .25s ease-in-out;
+  transition: all 0.25s ease-in-out;
 }
 
-.slycat-range-slider.vertical .domain
-{
+.slycat-range-slider.vertical .domain {
   left: 3px;
   right: 3px;
   top: 0;
   bottom: 0;
 }
 
-.slycat-range-slider.horizontal .domain
-{
+.slycat-range-slider.horizontal .domain {
   left: 0;
   right: 0;
   top: 3px;
   bottom: 3px;
 }
 
-.slycat-range-slider .range
-{
+.slycat-range-slider .range {
   background: #aabbff;
 }
 
-.slycat-range-slider.invert .range
-{
+.slycat-range-slider.invert .range {
   background: #ddd;
   border: 1px solid #ccc;
 }
 
 .slycat-range-slider:hover .range,
-.slycat-range-slider.dragging .range
-{
+.slycat-range-slider.dragging .range {
   background: #7788ff;
-  transition: background .25s ease-in-out;
-  -moz-transition: background .25s ease-in-out;
-  -webkit-transition: background .25s ease-in-out;
+  transition: background 0.25s ease-in-out;
 }
 
 .slycat-range-slider.invert:hover .range,
-.slycat-range-slider.dragging.invert .range
-{
+.slycat-range-slider.dragging.invert .range {
   background: #ddd;
   transition: none;
-  -moz-transition: none;
-  -webkit-transition: none;
 }
 
-.slycat-range-slider.vertical .range
-{
+.slycat-range-slider.vertical .range {
   left: 3px;
   right: 3px;
 }
 
-.slycat-range-slider.horizontal .range
-{
+.slycat-range-slider.horizontal .range {
   top: 3px;
   bottom: 3px;
 }
 
-.slycat-range-slider.vertical, .slycat-range-slider.vertical .thumb
-{
+.slycat-range-slider.vertical,
+.slycat-range-slider.vertical .thumb {
   width: 12px;
 }
 
-.slycat-range-slider.horizontal, .slycat-range-slider.horizontal .thumb
-{
+.slycat-range-slider.horizontal,
+.slycat-range-slider.horizontal .thumb {
   height: 12px;
 }
 
-.slycat-range-slider .thumb
-{
+.slycat-range-slider .thumb {
   background: #aabbff;
   border-radius: 6px;
-  transition: background .25s ease-in-out;
-  -moz-transition: background .25s ease-in-out;
-  -webkit-transition: background .25s ease-in-out;
+  transition: background 0.25s ease-in-out;
 }
 
-.slycat-range-slider .thumb:hover, .slycat-range-slider.dragging .thumb, .slycat-range-slider:hover .thumb
-{
+.slycat-range-slider .thumb:hover,
+.slycat-range-slider.dragging .thumb,
+.slycat-range-slider:hover .thumb {
   background: #7788ff;
 }
 
-.slycat-clickable
-{
+.slycat-clickable {
   cursor: pointer;
 }
 
 .slycat-unclickable,
-.slycat-unclickable a
-{
+.slycat-unclickable a {
   cursor: default;
 }
-.slycat-unclickable a:hover
-{
+.slycat-unclickable a:hover {
   text-decoration: none;
 }
 
 /* slycat-table-ingestion component */
 
-.slycat-table-ingestion table
-{
+.slycat-table-ingestion table {
   width: 100%;
 }
-.slycat-table-ingestion thead th .select-all-button
-{
+.slycat-table-ingestion thead th .select-all-button {
   display: block;
   cursor: pointer;
 }
-.slycat-table-ingestion thead th .select-all-button.disabled
-{
-  color: #CCCCCC;
+.slycat-table-ingestion thead th .select-all-button.disabled {
+  color: #cccccc;
   cursor: default;
 }
 .slycat-table-ingestion thead th,
-.slycat-table-ingestion td
-{
+.slycat-table-ingestion td {
   text-align: center;
 }
-.slycat-table-ingestion td.property-start
-{
-  border-left: 1px solid #DDD;
+.slycat-table-ingestion td.property-start {
+  border-left: 1px solid #ddd;
 }
-.slycat-table-ingestion td.property-end
-{
-  border-right: 1px solid #DDD;
+.slycat-table-ingestion td.property-end {
+  border-right: 1px solid #ddd;
 }
-.slycat-table-ingestion tbody th
-{
+.slycat-table-ingestion tbody th {
   padding-left: 5px;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
   cursor: pointer;
 }
-.slycat-table-ingestion tbody tr.disabled th
-{
+.slycat-table-ingestion tbody tr.disabled th {
   cursor: default;
 }
 .slycat-table-ingestion tbody tr:nth-child(odd) {
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 }
-.slycat-table-ingestion tbody tr.selected
-{
-  background-color: #337AB7;
+.slycat-table-ingestion tbody tr.selected {
+  background-color: #337ab7;
 }
-.slycat-table-ingestion tbody tr.selected th
-{
+.slycat-table-ingestion tbody tr.selected th {
   color: white;
 }
-.slycat-table-ingestion tbody tr.disabled th
-{
+.slycat-table-ingestion tbody tr.disabled th {
   color: #cccccc;
 }
 
 /* New PIP model wizard */
 #slycat-wizard .parameter-image-plus-model-wizard .local-browser,
 #slycat-wizard .parameter-image-plus-model-wizard .remote-controls,
-#slycat-wizard .parameter-image-plus-model-wizard .compute-interface
-{
+#slycat-wizard .parameter-image-plus-model-wizard .compute-interface {
   margin-left: 60px;
 }
-#slycat-wizard .parameter-image-plus-model-wizard .radio label
-{
+#slycat-wizard .parameter-image-plus-model-wizard .radio label {
   font-weight: bold;
 }
-#slycat-wizard .parameter-image-plus-model-wizard .radio.remote
-{
+#slycat-wizard .parameter-image-plus-model-wizard .radio.remote {
   margin-top: 60px;
 }
 #slycat-wizard .parameter-image-plus-model-wizard label.disabled,
-#slycat-wizard .parameter-image-plus-model-wizard #slycat-local-browser-file:disabled
-{
+#slycat-wizard .parameter-image-plus-model-wizard #slycat-local-browser-file:disabled {
   color: gray;
 }
-#slycat-wizard .parameter-image-plus-model-wizard .cluster-column
-{
+#slycat-wizard .parameter-image-plus-model-wizard .cluster-column {
   margin-top: 30px;
 }
 .bootstrap-styles .navbar .dropdown-header {
@@ -574,8 +463,7 @@ slycat-navbar nav .alert pre
   font-weight: normal;
 }
 textarea,
-input,
-{
+input {
   resize: none;
 }
 
@@ -602,20 +490,18 @@ input,
 }
 
 .bottom-margin,
-label.bottom-margin 
-{
+label.bottom-margin {
   margin-bottom: 20px;
 }
 
 /* toggle buttons can't show hover effect when not active because it looks like the button was never toggled from active state */
-.slycatControlsButtonToggle:not(.active):hover
-{
+.slycatControlsButtonToggle:not(.active):hover {
   background-color: transparent;
   color: #343a40;
 }
 
 .slycat-progress-bar {
-  padding:16px;
+  padding: 16px;
 }
 
 /* labels for required fields are followed by a red asterisk */
@@ -637,8 +523,7 @@ label.bottom-margin
   max-width: 70vw;
 }
 
-.slycat-big-scrolling-alert
-{
+.slycat-big-scrolling-alert {
   max-height: 159px;
   overflow-y: auto;
   white-space: pre-line;
@@ -650,8 +535,7 @@ label.bottom-margin
 }
 /* Making sure that controls dropdowns don't become wider than the screen. */
 #controls .dropdown-menu,
-#controls .dropdown-menu .dropdown-item 
-{
+#controls .dropdown-menu .dropdown-item {
   max-width: 70vw;
 }
 /* Attempting to force long menu items to wrap, but doesn't seem to be working. */
