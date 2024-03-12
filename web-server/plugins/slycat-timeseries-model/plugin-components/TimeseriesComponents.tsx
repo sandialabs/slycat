@@ -27,25 +27,28 @@ type Props = {
   } | undefined;
 };
 
-export default class TimeseriesComponents extends React.Component<Props> {
-  componentDidMount() {
-    if (this.props.model.state == "closed" && this.props.clusters && this.props.tableMetadata) {
+/**
+ * determine if we should mount the loading page or the actually timeseries model
+ * 
+ * @param props see Props type
+ * @returns JSX
+ */
+const TimeseriesComponents = (props: Props) => {
+  const { model, clusters, tableMetadata, dispatch, get_state, subscribe } = props;
+    if (model.state == "closed" && clusters && tableMetadata) {
       initialize_timeseries_model(
-        this.props.dispatch,
-        this.props.get_state,
-        this.props.subscribe,
-        this.props.model,
-        this.props.clusters,
-        this.props.tableMetadata
+        dispatch,
+        get_state,
+        subscribe,
+        model,
+        clusters,
+        tableMetadata
       );
     }
-  }
 
-  render() {
-    const { model, clusters, tableMetadata, dispatch, get_state, subscribe } = this.props;
-
-    // Show loading page if model is not ready
+    // check if we are running or wating on the cluster
     if (model["state"] === "waiting" || model["state"] === "running") {
+      // Show loading page
       return (
         <LoadingPage
           modelId={model._id}
@@ -66,5 +69,6 @@ export default class TimeseriesComponents extends React.Component<Props> {
         <Table modelId={model._id} />
       </>
     );
-  }
 }
+
+export default React.memo(TimeseriesComponents);

@@ -15,18 +15,13 @@ const App: React.FC<Props> = (props) => {
   const modelId = useAppSelector((state) => state.model.modelId);
   const {
     data: model,
-    isFetching: fetchingModel,
     isSuccess: successModel,
   } = useGetModelQuery(modelId);
   const {
-    data: tableMetadata,
-    isFetching: fetchingTableMetadata,
-    isSuccess: successTableMetadata,
+    data: tableMetadata
   } = useGetTableMetadataQuery(successModel ? model._id : skipToken);
   const {
-    data: clusters,
-    isFetching: fetchingClusters,
-    isSuccess: successClusters,
+    data: clusters
   } = useGetClustersQuery(successModel ? model._id : skipToken);
 
   // Only continue if we fetched all the data we need
