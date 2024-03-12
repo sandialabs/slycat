@@ -30,7 +30,7 @@ const App: React.FC<Props> = (props) => {
   } = useGetClustersQuery(successModel ? model._id : skipToken);
 
   // Only continue if we fetched all the data we need
-  if (successModel && successTableMetadata && successClusters) {
+  if (successModel) {
     return (
       <TimeseriesComponents
         model={model}

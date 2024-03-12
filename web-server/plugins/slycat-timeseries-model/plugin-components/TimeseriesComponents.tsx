@@ -21,15 +21,15 @@ type Props = {
     "artifact:jid": string;
     "artifact:hostname": string;
   };
-  clusters: [];
+  clusters: [] | undefined;
   tableMetadata: {
     "column-count": number;
-  };
+  } | undefined;
 };
 
 export default class TimeseriesComponents extends React.Component<Props> {
   componentDidMount() {
-    if (this.props.model.state == "closed") {
+    if (this.props.model.state == "closed" && this.props.clusters && this.props.tableMetadata) {
       initialize_timeseries_model(
         this.props.dispatch,
         this.props.get_state,
