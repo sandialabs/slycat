@@ -187,7 +187,9 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, 'xy-pairs', xy_pairs_verified)
             
             # Get the project data id if we have one for this model
-            did = model["project_data"][0] if model["project_data"] else False
+            did = None
+            if 'project_data' in model and len(model["project_data"]) > 0:
+                did = model["project_data"][0]
             # If we have a project data id, write variable-aliases to project data
             if did:
                 project_data = database.get("project_data", did)
