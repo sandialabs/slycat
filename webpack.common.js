@@ -18,6 +18,8 @@ const branch = execSync('git rev-parse --abbrev-ref HEAD')
 // importing vtk rules for for vtk.js package to work
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
 
+const favicon = 'web-server/img/favicon.ico';
+
 module.exports = {
   experiments: {
     // Support the Top Level Await Stage 3 proposal, it makes the module an async module when await is used on the top-level.
@@ -85,36 +87,43 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: 'web-server/plugins/slycat-run-command/ui.html',
       filename: 'ui_run_command.html',
+      favicon: favicon,
       chunks: ['ui_run_command'],
     }),
     new HtmlWebpackPlugin({
     template: 'web-server/plugins/slycat-smb/ui.html',
     filename: 'ui_smb.html',
+    favicon: favicon,
     chunks: ['ui_smb'],
     }),
     new HtmlWebpackPlugin({
       template: 'web-server/templates/slycat-projects.html',
       filename: 'slycat_projects.html',
+      favicon: favicon,
       chunks: ['slycat_projects'],
     }),
     new HtmlWebpackPlugin({
       template: 'web-server/templates/slycat-project.html',
       filename: 'slycat_project.html',
+      favicon: favicon,
       chunks: ['slycat_project'],
     }),
     new HtmlWebpackPlugin({
       template: 'web-server/templates/slycat-page.html',
       filename: 'slycat_page.html',
+      favicon: favicon,
       chunks: ['slycat_page'],
     }),
     new HtmlWebpackPlugin({
       template: 'web-server/templates/slycat-model-page.html',
       filename: 'slycat_model.html',
+      favicon: favicon,
       chunks: ['slycat_model'],
     }),
     new HtmlWebpackPlugin({
       template: 'web-server/slycat-login/index.html',
       filename: 'slycat_login.html',
+      favicon: favicon,
       chunks: ['slycat_login'],
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
