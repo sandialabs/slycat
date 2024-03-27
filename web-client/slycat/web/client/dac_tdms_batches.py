@@ -113,9 +113,8 @@ def create_models(arguments):
         catalog_batches(arguments, log)
     
     # alter agruments for dac tdms
-    del arguments.input_data_dir
-    del arguments.part_num
-    del arguments.batches
+    del arguments.input_tdms_batches
+    del arguments.input_tdms_glob
     del arguments.log_file
 
     for i in range(len(batches)):
@@ -162,18 +161,22 @@ def parser ():
     parser = slycat.web.client.ArgumentParser(description=
         "Creates a batch of Dial-A-Cluster models using specified .tdms files.")
 
-    # input data directory
-    parser.add_argument("input_data_dir", 
-        help='Directory containing .tdms output files, organized ' +
-             'according to part number.')
+    # input consists of tdms batch format or tdms file
+    group = parser.add_mutually_exclusive_group(required=True)
 
-    # part number specification
-    parser.add_argument("part_num",
-        help='Part number to match when creating batch models, e.g. "XXXXXX_XX".  ' +
-             'Note that part and lot numbers should be constant.')
-    parser.add_argument("batches", 
-        help='Batches to process, can be integers or ranges separated by commas, e.g. ' +
-             '"1,3,4-6,11-24".  Use "*" to designate all batches.')
+    group.add_argument("--input-tdms-glob", nargs=2,
+        help="Use tdms directory glob format as input, first argument is directroy, organized by " +
+             "part and lot as on the production server; second argument is part_num_match, speficied with " +
+             'a unix glob using wildcards, for example "XXXXXX*", or "XXXXXX_XX*". ' + 
+             'Note you should use "" in Unix to pass wildcards. Produces one run chart per directory.')
+
+    # input tdms batches
+    group.add_argument("--input-tdms-batches", nargs=3, 
+        help="Use tdms batch format as input, first argument is directory, organized by part and lot " +
+             'as on the production server; second argument is part_lot, e.g. "XXXXXX_XX", ' +
+             'where part and lot numbers should be constant; and third argument is batches, ' +
+             'e.g. "1,3,4-6,11-24".  Use "*" to designate all batches. Produces ' + 
+             "one run chart per directory.")
 
     # optional flag to log results to file
     parser.add_argument('--log-file', default=None,
