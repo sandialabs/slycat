@@ -4,5 +4,5 @@ FROM node:18
 WORKDIR /usr/src/slycat
 RUN git config --global http.sslVerify false
 RUN git clone --depth 1 https://github.com/sandialabs/slycat.git
-WORKDIR /usr/src/slycat/slycat
+WORKDIR /usr/src/slycat/test-client/test-client/
 CMD ls
