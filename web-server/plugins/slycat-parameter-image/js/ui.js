@@ -434,6 +434,12 @@ $(document).ready(function () {
               variableAliases: variable_aliases,
               media_columns: image_columns,
               xy_pairs: xy_pairs,
+              // Set "embed" to true if the "embed" query parameter is present
+              embed: URI(window.location).query(true).embed !== undefined,
+              hideControls: URI(window.location).query(true).hideControls !== undefined,
+              hideTable: URI(window.location).query(true).hideTable !== undefined,
+              hideScatterplot: URI(window.location).query(true).hideScatterplot !== undefined,
+              hideFilters: URI(window.location).query(true).hideFilters !== undefined,
             },
           };
 
@@ -514,12 +520,41 @@ $(document).ready(function () {
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
           let navbar = ko.contextFor(
-            document.getElementById("slycat-navbar-test").children[0],
+            document.getElementById("slycat-navbar-container").children[0],
           ).$component;
           // Get the role from slycat-navbar component
           const relation = navbar.relation();
           // Save it to redux state
           window.store.dispatch(setUserRole(relation));
+
+          // Add the "slycatEmbedded" class to the body if state has embed set to true
+          if (window.store.getState().derived.embed) {
+            document.body.classList.add("slycatEmbedded");
+            // Add the "hideControls" class to the body if state has hideControls set to true
+            if (window.store.getState().derived.hideControls) {
+              document.body.classList.add("hideControls");
+              layout.hide("north");
+            }
+            // Add the "hideTable" class to the body if state has hideTable set to true
+            if (window.store.getState().derived.hideTable) {
+              document.body.classList.add("hideTable");
+              layout.hide("south");
+            }
+            // Add the "hideScatterplot" class to the body if state has hideScatterplot set to true
+            if (window.store.getState().derived.hideScatterplot) {
+              document.body.classList.add("hideScatterplot");
+              layout.hide("center");
+              layout.close("center");
+              // layout.sizePane("south", $("#parameter-image-plus-layout").height() * 2);
+            }
+            // Add the "hideFilters" class to the body if state has hideFilters set to true
+            if (window.store.getState().derived.hideFilters) {
+              document.body.classList.add("hideFilters");
+              layout.hide("west");
+            }
+            // Resize the entire layout to fit its container, which probably changed size when the class was added.
+            layout.resizeAll();
+          }
 
           // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
           filter_manager.set_bookmark(bookmark);
