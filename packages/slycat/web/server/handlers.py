@@ -2702,7 +2702,6 @@ def post_remotes():
         msg = "login could not save session for remote host"
     return {"sid": sid, "status": True, "msg": msg}
 
-
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_remotes_smb():
@@ -2758,6 +2757,11 @@ def post_smb_browse(hostname, path):
     cherrypy.log.error("sid:%s path:%s hostname:%s" % (sid, path, hostname))
     with slycat.web.server.smb.get_session(sid) as session:
         return session.browse(path=path)
+
+def post_browse_hdf5(path, pid):
+    # Need to find the HDF5 stored on Slycat server, so we can query it for the path.
+    cherrypy.log.error('-- PID: %s' % str(pid))
+    return '...'
 
 @cherrypy.tools.json_out(on=True)
 def get_remotes(hostname):

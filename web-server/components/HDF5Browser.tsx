@@ -13,14 +13,15 @@ import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
  * returns the parser type (dakota or csv)
  * @member onReauthCallBack called every time we lose connection to the host
  * @export
- * @interface RemoteFileBrowserProps
+ * @interface HDF5BrowserProps
  */
-export interface RemoteFileBrowserProps { 
+export interface HDF5BrowserProps { 
   hostname: string
   persistenceId?: string
   onSelectFileCallBack: Function
   onSelectParserCallBack: Function
   onReauthCallBack: Function
+  pid: string
 }
 
 /**
@@ -34,9 +35,9 @@ export interface RemoteFileBrowserProps {
  * @member browserUpdating are we in the middle of getting data
  * @member selected id of selected file 
  * @export
- * @interface RemoteFileBrowserState
+ * @interface HDF5BrowserState
  */
-export interface RemoteFileBrowserState {
+export interface HDF5BrowserState {
   path:string
   pathInput:string
   persistenceId:string
@@ -44,7 +45,8 @@ export interface RemoteFileBrowserState {
   pathError: boolean
   browseError: boolean
   browserUpdating: boolean
-  selected:number
+  selected:number,
+  pid:string
 }
 
 /**
@@ -68,10 +70,10 @@ interface FileMetaData {
  *
  * @export
  * @class RemoteFileBrowser
- * @extends {React.Component<RemoteFileBrowserProps, RemoteFileBrowserState>}
+ * @extends {React.Component<HDF5BrowserProps, HDF5BrowserState>}
  */
-export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
-    public constructor(props:RemoteFileBrowserProps) {
+export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5BrowserState> {
+    public constructor(props:HDF5BrowserProps) {
       super(props)
       this.state = {
         path:"/",
@@ -81,7 +83,8 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
         browseError: false,
         persistenceId: props.persistenceId === undefined ? '' : props.persistenceId,
         browserUpdating: false,
-        selected:-1
+        selected:-1,
+        pid: props.pid
       }
     }
 
@@ -90,67 +93,45 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
      *
      * @param pathInput path to return all ls properties from
      * @private
-     * @memberof RemoteFileBrowser
+     * @memberof HDF5Browser
      */
     private browse = (pathInput:string) =>
     {
-      // First check if we have a remote connection...
-      client.get_remotes_fetch(this.props.hostname)
-        .then((json) => {
-          // If we have a session, go on.
-          if(json.status) {
-            pathInput = (pathInput === ""?"/":pathInput);
-            this.setState({
-              rawFiles:[], 
-              browserUpdating:true, 
-              selected:-1,
-              path:pathInput,
-              pathInput
-            });
-            client.post_remote_browse_smb(
+        client.post_browse_hdf5(
+        {
+            hostname : this.props.hostname,
+            path : pathInput,
+            pid: this.props.pid,
+            success : (results:any) =>
             {
-              hostname : this.props.hostname,
-              path : pathInput,
-              success : (results:any) =>
-              {
-                console.log(results);
-                localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
-                this.setState({
-                  browseError:false,
-                  pathError:false,
-                });
-
-                let files: FileMetaData[] = []
-                if(pathInput != "/")
-                  files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
-                for(let i = 0; i != results.names.length; ++i)
-                  files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mimeType:results["mime-types"][i]});
-                this.setState({
-                  rawFiles:files,
-                  browserUpdating:false
-                });
-              },
-              error : (results:any) =>
-              {
-                if(this.state.path != this.state.pathInput)
-                {
-                  this.setState({pathError:true, browserUpdating:false});
-                }
-                if(results.status == 400){
-                  alert("bad file path")
-                }
-                this.setState({browseError:true, browserUpdating:false});
-              }
+            localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
+            this.setState({
+                browseError:false,
+                pathError:false,
             });
-          }
-          // Otherwise...we don't have a session anymore, so 
-          // run the reauth callback if one was passed.
-          else {
-            if(this.props.onReauthCallBack) {
-              this.props.onReauthCallBack();
+
+            let files: FileMetaData[] = []
+            if(pathInput != "/")
+                files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
+            for(let i = 0; i != results.names.length; ++i)
+                files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mimeType:results["mime-types"][i]});
+            this.setState({
+                rawFiles:files,
+                browserUpdating:false
+            });
+            },
+            error : (results:any) =>
+            {
+            if(this.state.path != this.state.pathInput)
+            {
+                this.setState({pathError:true, browserUpdating:false});
             }
-          }
-      });
+            if(results.status == 400){
+                alert("bad file path")
+            }
+            this.setState({browseError:true, browserUpdating:false});
+            }
+        });
     }
 
     /**

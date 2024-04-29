@@ -9,7 +9,7 @@
 <div class="modal-body">
   <ul class="nav nav-pills">
     <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Locate Data</a></li>
-    <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: ps_type() == 'local' || ps_type() == 'hdf5'"><a class="nav-link">Upload Table</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: ps_type() == 'local'"><a class="nav-link">Upload Table</a></li>
     <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: ps_type() == 'remote' || ps_type() == 'smb'"><a class="nav-link">Choose Host</a></li>
     <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: ps_type() == 'remote' || ps_type() == 'smb'"><a class="nav-link">Select Table</a></li>
     <li class="nav-item" data-bind="css:{active:tab() == 4}"><a class="nav-link">Select Columns</a></li>
@@ -116,6 +116,31 @@
           progress:remote.progress,
           progress_status:remote.progress_status,
           reauth:reauth,"></slycat-remote-browser>
+        <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+        <div>
+          <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data" data-bind="checked: useProjectData">
+          <label for="matrix-local-or-remote-radios">Save original data to server</label>
+        </div>
+      </div>
+    </div>
+
+    <div data-bind="visible:tab() == 6" style="height: 600px">
+      <div class="hdf5-wizard-browse" data-bind="visible: ps_type() == 'local'">HDF5</div>
+      <div class="slycat-remote-browser-flex-layout" data-bind="visible:ps_type() == 'local'">
+        <label class="alert alert-danger slycat-big-scrolling-alert" role="alert"
+          data-bind="visible:error_messages().length > 0, text: error_messages()"></label>
+        <!-- <slycat-remote-browser params="
+          type:'remote',
+          sid:remote.sid,
+          hostname:remote.hostname,
+          selection:browser.selection,
+          path:browser.path,
+          open_file_callback:load_table,
+          session_exists:remote.session_exists,
+          persistence_id:'pi-table-file',
+          progress:remote.progress,
+          progress_status:remote.progress_status,
+          reauth:reauth,"></slycat-remote-browser> -->
         <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
         <div>
           <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data" data-bind="checked: useProjectData">

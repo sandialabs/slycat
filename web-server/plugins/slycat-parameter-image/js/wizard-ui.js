@@ -20,6 +20,7 @@ import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import SmbRemoteFileBrowser from "components/SmbRemoteFileBrowser.tsx";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
+import HDF5Browser from "components/HDF5Browser.tsx";
 
 function constructor(params) {
   var component = {};
@@ -197,7 +198,7 @@ function constructor(params) {
           } else {
 
             // only warnings, continue
-            component.tab(4);
+            component.tab(4); // <---------- HERE
             $(".browser-continue").toggleClass("disabled", false);
 
           }
@@ -205,8 +206,14 @@ function constructor(params) {
           component.error_messages(error_messages);
         }
         if (component.error_messages().length == 0) {
-          component.tab(4);
-          $(".browser-continue").toggleClass("disabled", false);
+          if (component.parser() == 'slycat-hdf5-parser') {
+            component.tab(6);
+            this.hdf5_browse();
+          }
+          else{
+            component.tab(4);
+            $(".browser-continue").toggleClass("disabled", false);
+          }
         }
       });
   };
@@ -382,6 +389,20 @@ function constructor(params) {
 
     fileUploader.uploadFile(fileObject, component.useProjectData());
   };
+
+  component.hdf5_browse = function () {
+    const hdf5_wizard_browse_root = createRoot(document.querySelector(".hdf5-wizard-browse"));
+    hdf5_wizard_browse_root.render(
+      <div>
+        <HDF5Browser
+          onSelectFileCallBack={onSelectTableFile}
+          onReauthCallBack={onReauth}
+          hostname={component.remote.hostname()}
+          pid={component.project._id()}
+        />
+      </div>)
+  }
+
   component.connectSMB = function () {
     component.remote.enable(false);
     component.remote.status_type("info");
