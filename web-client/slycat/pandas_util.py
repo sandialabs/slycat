@@ -33,6 +33,13 @@ def parse_file(file, file_name=False):
         if file_name:
             df = pd.read_csv(file)
         else:
+            
+            # convert to string, if not already
+            # uses latin-1 the most generic encoding
+            # (presumably it already failed to convert to utf-8)
+            if isinstance(file, bytes):
+                file = file.decode('latin-1')    
+
             df = pd.read_csv(StringIO(file))
 
     # return empty values if couldn't read file

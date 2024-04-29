@@ -47,12 +47,11 @@ copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 copyfile('../packages/slycat/pandas_util.py', 'slycat/pandas_util.py')
 
 # get Slycat version
-import slycat
-VERSION = slycat.__version__
+import slycat.web.client
+VERSION = slycat.web.client.__version__
 
 # development version
-# VERSION = VERSION
-VERSION = "4.0.0"
+VERSION = VERSION
 
 # get README.md
 import pathlib
@@ -92,8 +91,7 @@ setup(
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",
-            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main",
-            "dac_tdms_batch_file=slycat.web.client.dac_tdms_batch_file:main",
+            "dac_tdms_batches=slycat.web.client.dac_tdms_batches:main",
             "ps_csv=slycat.web.client.ps_csv:main",
             "dac_gen=slycat.web.client.dac_gen:main"
         ]

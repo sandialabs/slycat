@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running Slycat Server &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Design" href="design.html" />
+    <link rel="prev" title="Acknowledgements" href="manual/Acknowledgements.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Running Slycat Server</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-service-names">Docker service names</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#starting-slycat-services">Starting slycat services</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#list-of-helpful-docker-commands">List of helpful docker commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#start-the-services">Start the services</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stopping-slycat-services">Stopping slycat services</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-and-build-the-services">Start and build the services</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stopping-and-removing-slycat-services">Stopping and removing slycat services</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-slycat-services-in-the-background">Starting slycat services in the background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#attaching-to-slycat-services-logs-per-service">Attaching to slycat services logs per service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-the-images-separate-without-using-the-cache">Building the images separate without using the cache</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-the-images-and-starting-from-cached-images">Building the images and starting from cached images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Running Slycat Server</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/QuickStart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="running-slycat-server">
+<h1>Running Slycat Server<a class="headerlink" href="#running-slycat-server" title="Permalink to this heading"></a></h1>
+<p>You can use docker-compose to run an instance of the Slycat server on your
+local machine.  This is a non-production build of the server and is used
+by the Slycat team for development only.</p>
+<p>This procedure has been tested only in a Mac environment.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><cite>docker desktop for mac</cite>, see <a class="reference external" href="https://docs.docker.com/compose/install/">https://docs.docker.com/compose/install/</a></p></li>
+<li><p>git</p></li>
+</ul>
+</section>
+<section id="docker-service-names">
+<h2>Docker service names<a class="headerlink" href="#docker-service-names" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>haproxy</p></li>
+<li><p>slycat-web-server</p></li>
+<li><p>couchdb</p></li>
+<li><p>sshd</p></li>
+<li><p>slycat-client</p></li>
+</ul>
+<section id="starting-slycat-services">
+<h3>Starting slycat services<a class="headerlink" href="#starting-slycat-services" title="Permalink to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Clone the repo <code class="code docutils literal notranslate"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">clone</span> <span class="pre">--depth</span> <span class="pre">1</span> <span class="pre">-b</span> <span class="pre">master</span> <span class="pre">https://github.com/sandialabs/slycat.git</span></code></p></li>
+<li><p>Navigate into the repo to <code class="code docutils literal notranslate"><span class="pre">cd</span> <span class="pre">slycat/docker/compose/slycat-compose</span></code> in terminal the following commands control our services and use the docker-compose yaml found in the directory in the repo.</p></li>
+<li><p>Start the docker services <code class="code docutils literal notranslate"><span class="pre">$</span> <span class="pre">docker-compose</span> <span class="pre">up</span></code> this step should take some time on the first load to download the images.</p></li>
+<li><p>After the <code class="code docutils literal notranslate"><span class="pre">slycat-client_1</span> <span class="pre">|</span> <span class="pre">ℹ</span> <span class="pre">｢wdm｣:</span> <span class="pre">Compiled</span> <span class="pre">successfully.</span></code> displays, then everything has finished building and is running waiting for a connection.</p></li>
+<li><p>The client is served at <a class="reference external" href="https://localhost:9000">https://localhost:9000</a>, NOTE: the browser will show a security warning when navigating to localhost because Slycat generates a self signed certificate.</p></li>
+<li><p>admin::password is slycat::slycat</p></li>
+</ol>
+</section>
+</section>
+<section id="list-of-helpful-docker-commands">
+<h2>List of helpful docker commands<a class="headerlink" href="#list-of-helpful-docker-commands" title="Permalink to this heading"></a></h2>
+<section id="start-the-services">
+<h3>Start the services<a class="headerlink" href="#start-the-services" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>up
+</pre></div>
+</div>
+</section>
+<section id="stopping-slycat-services">
+<h3>Stopping slycat services<a class="headerlink" href="#stopping-slycat-services" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>down
+</pre></div>
+</div>
+</section>
+<section id="start-and-build-the-services">
+<h3>Start and build the services<a class="headerlink" href="#start-and-build-the-services" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>--build
+</pre></div>
+</div>
+</section>
+<section id="stopping-and-removing-slycat-services">
+<h3>Stopping and removing slycat services<a class="headerlink" href="#stopping-and-removing-slycat-services" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>down<span class="w"> </span>--remove-orphans
+</pre></div>
+</div>
+</section>
+<section id="starting-slycat-services-in-the-background">
+<h3>Starting slycat services in the background<a class="headerlink" href="#starting-slycat-services-in-the-background" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</pre></div>
+</div>
+</section>
+<section id="attaching-to-slycat-services-logs-per-service">
+<h3>Attaching to slycat services logs per service<a class="headerlink" href="#attaching-to-slycat-services-logs-per-service" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>&lt;name_of_service&gt;
+</pre></div>
+</div>
+</section>
+<section id="building-the-images-separate-without-using-the-cache">
+<h3>Building the images separate without using the cache<a class="headerlink" href="#building-the-images-separate-without-using-the-cache" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>build<span class="w"> </span>--no-cache
+</pre></div>
+</div>
+</section>
+<section id="building-the-images-and-starting-from-cached-images">
+<h3>Building the images and starting from cached images<a class="headerlink" href="#building-the-images-and-starting-from-cached-images" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>--build
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="manual/Acknowledgements.html" class="btn btn-neutral float-left" title="Acknowledgements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="design.html" class="btn btn-neutral float-right" title="Design" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

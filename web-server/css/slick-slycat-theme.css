@@ -2,11 +2,11 @@
 
 /* Absolute positioning SlickGrid container to get it to fit the box completely */
 #timeseries-table-slickgrid {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 /* Bootstrap applies 
    box-sizing: border-box 
@@ -20,184 +20,180 @@
 #mp-datapoints-table *::after,
 #dac-datapoints-table *,
 #dac-datapoints-table *::before,
-#dac-datapoints-table *::after
-{
+#dac-datapoints-table *::after {
   box-sizing: content-box;
 }
 .ui-widget {
-	font-family: helvetica,arial,sans-serif;
+  font-family: helvetica, arial, sans-serif;
 }
 .slick-header-columns,
 .slick-header-column,
-.slick-header-column:hover, 
-.slick-header-column-active
-{
+.slick-header-column:hover,
+.slick-header-column-active {
   background-image: none;
 }
 .slick-header-column.headerSimId.selected {
-	background-color: #888888;
-	color: white;
+  background-color: #888888;
+  color: white;
 }
 .slick-header-column.headerInput.selected {
-	background-color: #3CA654;
-	color: white;
+  background-color: #3ca654;
+  color: white;
 }
 .slick-header {
-	background-color: transparent;
-	background-image: none;
+  background-color: transparent;
+  background-image: none;
 }
 .headerSimId,
 .headerOther {
-	background-color: transparent;
+  background-color: transparent;
 }
 .rowSimId,
 .rowOther {
-	background-color: transparent;
+  background-color: transparent;
 }
 .rowSimId.selected,
 .rowOther.selected {
-	background-color: #DDDDDD;
+  background-color: #dddddd;
 }
 .headerInput {
-    background-color: #EEFFE0;
+  background-color: #eeffe0;
 }
 .rowInput {
-	background-color: #C7E9C0;
+  background-color: #c7e9c0;
 }
 .rowInput.selected {
-	background-color: #3CA654;
-	color: white;
+  background-color: #3ca654;
+  color: white;
 }
 .headerOutput {
-    background-color: #EEEEFF;
+  background-color: #eeeeff;
 }
 .rowOutput {
-	background-color: #DBD9EB;
+  background-color: #dbd9eb;
 }
 .rowOutput.selected {
-	background-color: #7767B0;
-	color: white;
+  background-color: #7767b0;
+  color: white;
 }
 
 /* Removing zebra striping */
-.slick-row[row$="1"], .slick-row[row$="3"], .slick-row[row$="5"], .slick-row[row$="7"], .slick-row[row$="9"] {
-    background-color: transparent;
+.slick-row[row$="1"],
+.slick-row[row$="3"],
+.slick-row[row$="5"],
+.slick-row[row$="7"],
+.slick-row[row$="9"] {
+  background-color: transparent;
 }
 .slick-row.odd {
-	background-color: white;
+  background-color: white;
 }
 
 .slick-cell,
-.slick-header-column
-{
-	color: #666655;
-	font-size: small;
+.slick-header-column {
+  color: #666655;
+  font-size: small;
 }
 .slick-header-column {
-	font-weight: bold;
+  font-weight: bold;
 }
 .highlight {
-	padding: 0;
-	height: auto !important;
+  padding: 0;
+  height: auto !important;
 }
 .highlightWrapper {
   color: white;
-	padding: 2px 4px 3px 4px;
+  padding: 2px 4px 3px 4px;
 }
 .highlightWrapper.light {
-	/*color: #666655;*/
-	color: black;
+  /*color: #666655;*/
+  color: black;
 }
 /* Stripe backgrounds generated using http://www.stripegenerator.com */
 .highlightWrapper.null {
-	background: #DDDDDD url(../img/stripe2.png) !important;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
+  background: #dddddd url(../img/stripe2.png) !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 .selected .highlightWrapper.null {
-	background-image: url(../img/stripe1.png) !important;
+  background-image: url(../img/stripe1.png) !important;
 }
 .highlight .highlightWrapper.null {
-	position: static;
+  position: static;
 }
 
 /* Removing borders around cells */
-.slick-cell, .slick-headerrow-column {
-	border-width: 0px;
+.slick-cell,
+.slick-headerrow-column {
+  border-width: 0px;
 }
 .slick-header-columns {
-	border-bottom-width: 0px;
+  border-bottom-width: 0px;
 }
 
 /* Styling sort controls */
 .icon-sort-off {
-	border: 1px solid transparent;
+  border: 1px solid transparent;
 }
 .slick-header-column:hover .icon-sort-off {
-	border: 1px solid transparent;
-	background: transparent url(../img/sort-asc-light.png) no-repeat center center;
+  border: 1px solid transparent;
+  background: transparent url(../img/sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
-	border: 1px solid #C7C7C7 !important;
+  border: 1px solid #c7c7c7 !important;
 }
 .icon-sort-ascending {
-	border: 1px solid transparent;
-	background: transparent url(../img/sort-asc-gray.png) no-repeat center center;
+  border: 1px solid transparent;
+  background: transparent url(../img/sort-asc-gray.png) no-repeat center center;
 }
 .icon-sort-descending {
-	border: 1px solid transparent;
-	background: transparent url(../img/sort-desc-gray.png) no-repeat center center;
+  border: 1px solid transparent;
+  background: transparent url(../img/sort-desc-gray.png) no-repeat center center;
 }
 .icon-sort-ascending:hover,
-.icon-sort-descending:hover
-{
-	border: 1px solid #878787;
+.icon-sort-descending:hover {
+  border: 1px solid #878787;
 }
 
 /* Alex making buttons always have space */
-.slick-column-name, 
-.slick-sort-indicator
-{
-	display: inline;
-	float: none;
-	margin-bottom: 0px;
+.slick-column-name,
+.slick-sort-indicator {
+  display: inline;
+  float: none;
+  margin-bottom: 0px;
 }
 .slick-header-button {
-	float: none;
-	position: absolute;
-	top: 3px;
+  float: none;
+  position: absolute;
+  top: 3px;
   right: 3px;
 }
 .slick-header-button.image-test-class {
   right: 20px;
 }
 .slick-header-column {
-	padding-right: 23px !important;
+  padding-right: 23px !important;
 }
 .slick-row.nullRow .slick-cell,
-.slick-row.nullRow .slick-cell .highlightWrapper
-{
-	background-color: white !important;
-	color: #666655 !important;
+.slick-row.nullRow .slick-cell .highlightWrapper {
+  background-color: white !important;
+  color: #666655 !important;
 }
 .slick-row.nullRow .slick-cell.selected,
-.slick-row.nullRow .slick-cell.selected .highlightWrapper
-{
-	background-color: #DDDDDD !important;
-	color: #666655 !important;
+.slick-row.nullRow .slick-cell.selected .highlightWrapper {
+  background-color: #dddddd !important;
+  color: #666655 !important;
 }
 .slick-row.hiddenRow .slick-cell,
-.slick-row.hiddenRow .slick-cell .highlightWrapper
-{
-	background-color: white !important;
-	color: #c7c7c7 !important;
+.slick-row.hiddenRow .slick-cell .highlightWrapper {
+  background-color: white !important;
+  color: #c7c7c7 !important;
 }
 .slick-row.hiddenRow .slick-cell.selected,
-.slick-row.hiddenRow .slick-cell.selected .highlightWrapper
-{
-	background-color: #F5F5DC !important;
-	color: #c7c7c7 !important;
+.slick-row.hiddenRow .slick-cell.selected .highlightWrapper {
+  background-color: #f5f5dc !important;
+  color: #c7c7c7 !important;
 }

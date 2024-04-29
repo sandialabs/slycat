@@ -21,7 +21,6 @@ $.widget("parameter_image.controls", {
     "y-variable": null,
     "image-variable": null,
     "color-variable": null,
-    "auto-scale": true,
     x_variables: [],
     y_variables: [],
     axes_variables: [],
@@ -127,7 +126,6 @@ $.widget("parameter_image.controls", {
         element={self.element}
         dropdowns={dropdowns}
         axes_variables={axes_items}
-        auto_scale={self.options["auto-scale"]}
         selection={self.options.selection}
         pid={self.options.pid}
         mid={self.options.mid}

@@ -38,10 +38,6 @@ import pandas as pd
 # output zip file
 from zipfile import ZipFile
 
-# the tdms file types allowed
-TDMS_MATCHES = ['Factory_Trigger', 'Acceptance_Trigger', 'PL', 'Pulse_Life', 
-                'Extended_Pulse_Life', 'Probe_Age']
-
 # the group run chart variables allowed
 RUN_CHART_MATCHES = ['TAD', 'Rp', 'Ip', 'DBV']
 RUN_CHART_UNITS = ['nsec', 'kOhms', 'Amps', 'V']
@@ -50,7 +46,7 @@ RUN_CHART_UNITS = ['nsec', 'kOhms', 'Amps', 'V']
 def catalog_tdms_files (arguments, log):
 
     # read all meta data before further run chart specific filtering
-    metadata = dac_tdms_util.catalog_tdms_files(arguments, log, TDMS_MATCHES)
+    metadata = dac_tdms_util.catalog_tdms_files(arguments, log)
 
     # get common set of tdms types
     common_tdms_types = set(metadata[0]["tdms_types"])
@@ -93,6 +89,26 @@ def catalog_tdms_files (arguments, log):
         metadata[row]["tdms_types"] = list(np.asarray(row_tdms_types)[tdms_inds])
         metadata[row]["tdms_files"] = list(np.asarray(row_tdms_files)[tdms_inds])
 
+    # tally suffixes used
+    suffixes = set()
+    for data in metadata:
+        for suffix in data['include_suffixes']:
+            suffixes.add(suffix)
+
+    # sort suffixes
+    suffixes = list(suffixes)
+    suffixes.sort()
+
+    # keep track of what we are including/excluding
+    if arguments.exclude:
+        log("Excluding TDMS file suffixes:")
+        for suffix in arguments.exclude:
+            log("\t%s" % suffix)
+
+    log("Including TDMS file suffixes:")
+    for suffix in suffixes:
+        log("\t%s" % suffix)
+    
     return metadata 
 
 # read all tdms run chart data
@@ -374,7 +390,6 @@ def read_timesteps (metadata):
 # construct variable matrices
 def read_variable_matrices (metadata, time_steps, arguments, log):
 
-    
     # put maximum number of time steps
     # in format of run chart data
     max_time_steps = []
@@ -527,7 +542,7 @@ def create_model(arguments, log):
 
     # read tdms data
     metadata = read_tdms_files(metadata, run_chart_matches, log)
-
+    
     # construct metadata table
     meta_col_names, meta_rows = read_metadata_table(metadata, arguments, log)
 
@@ -577,15 +592,27 @@ def parser ():
     parser = slycat.web.client.ArgumentParser(description=
         "Creates a Dial-A-Cluster model using run charts from .tdms files.")
 
-    # input data directory
-    parser.add_argument("input_data_dir", 
-        help='Directory containing .tdms output files, organized ' +
-             'according to part number.')
+    # input consists of tdms batch format or tdms file
+    group = parser.add_mutually_exclusive_group(required=True)
 
-    # part number specification
-    parser.add_argument("part_num_match",
-        help='Part number to match when creating run chart model, can included wildcards, ' +
-             'e.g. "XXXXXX*", or "XXXXXX_XX*".  Note you should use "" in Unix to pass wildcards.')
+    group.add_argument("--input-tdms-glob", nargs=2,
+        help="Use tdms directory glob format as input, first argument is directroy, organized by " +
+             "part and lot as on the production server; second argument is part_num_match, speficied with " +
+             'a unix glob using wildcards, for example "XXXXXX*", or "XXXXXX_XX*". ' + 
+             'Note you should use "" in Unix to pass wildcards. Produces one run chart per directory.')
+
+    # input tdms batches
+    group.add_argument("--input-tdms-batches", nargs=3, 
+        help="Use tdms batch format as input, first argument is directory, organized by part and lot " +
+             'as on the production server; second argument is part_lot, e.g. "XXXXXX_XX", ' +
+             'where part and lot numbers should be constant; and third argument is batches, ' +
+             'e.g. "1,3,4-6,11-24".  Use "*" to designate all batches. Produces ' + 
+             "one run chart per directory.")
+
+    # input tdms directory
+    group.add_argument("--input-tdms-dir", nargs=1,
+        help="Use all .tdms files in root directory as input. Produces one run chart per " +
+             "subdirectory found containing .tdms files.")
 
     # output file for dac generic format, mandatory
     parser.add_argument("output_zip_file",
@@ -594,7 +621,7 @@ def parser ():
 
     # delete output file after successful model creation
     parser.add_argument("--clean-up-output", action="store_true",
-        help="Delete output .zip file after successful model creation).")
+        help="Delete output .zip file after successful model creation.")
 
     # do not upload to slycat
     parser.add_argument("--do-not-upload", action="store_true",
@@ -619,9 +646,6 @@ def parser ():
         help="Expecting sprytron data.")
 
     # run-chart file selection
-    parser.add_argument('--tdms-file-matches', nargs="+", choices=TDMS_MATCHES,
-        help='Use specified file matches to filter TDMS files, ' + 
-             'defaults to full list of choices.')
     parser.add_argument("--use-run-charts", nargs="+", choices=RUN_CHART_MATCHES,
         help="Use specified variables for run-charts, otherwise run-charts " + 
              "are inferred from non-constant values.")
@@ -641,6 +665,12 @@ def parser ():
     parser.add_argument("--num-PCA-comps", default=10, type=int,
         help="Number of PCA components to use, integer >= 2.  " +
              "Default: %(default)s")
+
+    # exclude .tdms files
+    parser.add_argument("--exclude", nargs="+",
+        help='TDMS file suffixes to exclude. ' + 
+             'If you want suffixes that include spaces, use quotes, ' +
+             'e.g. "suffix with space".')
 
     return parser
 

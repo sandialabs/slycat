@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>slycat.hdf5 &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="slycat.hyperchunks" href="slycat.hyperchunks.html" />
+    <link rel="prev" title="slycat.darray" href="slycat.darray.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../python-api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.darray.html">slycat.darray</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">slycat.hdf5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.hdf5.ArraySet"><code class="docutils literal notranslate"><span class="pre">ArraySet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.ArraySet.array_count"><code class="docutils literal notranslate"><span class="pre">ArraySet.array_count()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.ArraySet.keys"><code class="docutils literal notranslate"><span class="pre">ArraySet.keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.ArraySet.start_array"><code class="docutils literal notranslate"><span class="pre">ArraySet.start_array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.ArraySet.store_array"><code class="docutils literal notranslate"><span class="pre">ArraySet.store_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.hdf5.DArray"><code class="docutils literal notranslate"><span class="pre">DArray</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.attributes"><code class="docutils literal notranslate"><span class="pre">DArray.attributes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.dimensions"><code class="docutils literal notranslate"><span class="pre">DArray.dimensions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.get_data"><code class="docutils literal notranslate"><span class="pre">DArray.get_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.get_statistics"><code class="docutils literal notranslate"><span class="pre">DArray.get_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.get_unique"><code class="docutils literal notranslate"><span class="pre">DArray.get_unique()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.ndim"><code class="docutils literal notranslate"><span class="pre">DArray.ndim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.set_data"><code class="docutils literal notranslate"><span class="pre">DArray.set_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.shape"><code class="docutils literal notranslate"><span class="pre">DArray.shape</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.hdf5.DArray.size"><code class="docutils literal notranslate"><span class="pre">DArray.size</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.hdf5.dtype"><code class="docutils literal notranslate"><span class="pre">dtype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.hdf5.path"><code class="docutils literal notranslate"><span class="pre">path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.hdf5.start_arrayset"><code class="docutils literal notranslate"><span class="pre">start_arrayset()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hyperchunks.html">slycat.hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.uri.html">slycat.uri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.client.html">slycat.web.client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.html">slycat.web.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.authentication.html">slycat.web.server.authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.database.couchdb.html">slycat.web.server.database.couchdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.engine.html">slycat.web.server.engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.handlers.html">slycat.web.server.handlers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.hdf5.html">slycat.web.server.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.plugin.html">slycat.web.server.plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.remote.html">slycat.web.server.remote</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../python-api.html">Python API</a></li>
+      <li class="breadcrumb-item active">slycat.hdf5</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/slycat-packages/slycat.hdf5.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-slycat.hdf5">
+<span id="slycat-hdf5"></span><h1>slycat.hdf5<a class="headerlink" href="#module-slycat.hdf5" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="slycat.hdf5.ArraySet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.hdf5.</span></span><span class="sig-name descname"><span class="pre">ArraySet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#ArraySet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.ArraySet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wraps an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">h5py.File</span></code> to implement a Slycat arrayset.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.ArraySet.array_count">
+<span class="sig-name descname"><span class="pre">array_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#ArraySet.array_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.ArraySet.array_count" title="Permalink to this definition"></a></dt>
+<dd><p>Note: this assumes that array indices are contiguous, which we don’t explicitly enforce.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.ArraySet.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#ArraySet.keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.ArraySet.keys" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.ArraySet.start_array">
+<span class="sig-name descname"><span class="pre">start_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#ArraySet.start_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.ArraySet.start_array" title="Permalink to this definition"></a></dt>
+<dd><p>Add an uninitialized darray to the arrayset.</p>
+<p>An existing array with the same index will be overwritten.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array_index</strong> (<em>integer</em><em>, </em><em>required.</em>) – Zero-based index of the array to create.</p></li>
+<li><p><strong>dimensions</strong> (<em>list</em><em> of </em><em>dicts</em><em>, </em><em>required.</em>) – Description of the new array dimensions.</p></li>
+<li><p><strong>attributes</strong> (<em>list</em><em> of </em><em>dicts</em><em>, </em><em>required.</em>) – Description of the new array attributes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>array</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#slycat.hdf5.DArray" title="slycat.hdf5.DArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.hdf5.DArray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.ArraySet.store_array">
+<span class="sig-name descname"><span class="pre">store_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#ArraySet.store_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.ArraySet.store_array" title="Permalink to this definition"></a></dt>
+<dd><p>Store a <a class="reference internal" href="slycat.darray.html#slycat.darray.Prototype" title="slycat.darray.Prototype"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.darray.Prototype</span></code></a> in the arrayset.</p>
+<p>An existing array with the same index will be overwritten.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array_index</strong> (<em>integer</em><em>, </em><em>required.</em>) – The index of the array to be created / overwritten.</p></li>
+<li><p><strong>array</strong> (<a class="reference internal" href="slycat.darray.html#slycat.darray.Prototype" title="slycat.darray.Prototype"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.darray.Prototype</span></code></a>, required.) – Existing darray to be stored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>array</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#slycat.hdf5.DArray" title="slycat.hdf5.DArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.hdf5.DArray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.hdf5.</span></span><span class="sig-name descname"><span class="pre">DArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">storage</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#DArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.DArray" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="slycat.darray.html#slycat.darray.Prototype" title="slycat.darray.Prototype"><code class="xref py py-class docutils literal notranslate"><span class="pre">Prototype</span></code></a></p>
+<p>Slycat darray implementation that stores data in an HDF5 file.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.attributes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#slycat.hdf5.DArray.attributes" title="Permalink to this definition"></a></dt>
+<dd><p>Return metadata describing the darray attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>attributes</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.dimensions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dimensions</span></span><a class="headerlink" href="#slycat.hdf5.DArray.dimensions" title="Permalink to this definition"></a></dt>
+<dd><p>Return metadata describing the darray dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dimensions</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#DArray.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.DArray.get_data" title="Permalink to this definition"></a></dt>
+<dd><p>Return a reference to the data storage for a darray attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>attribute</strong> (<em>integer</em><em>, </em><em>optional</em>) – The integer index of the attribute data to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>data</strong> – An object implementing a subset of the <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> interface
+that contains the attribute data.  Note that the returned object only
+<cite>references</cite> the underlying data - data is not retrieved from the file
+until you access it using the <cite>[]</cite> operator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>reference to a numpy-array-like object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.get_statistics">
+<span class="sig-name descname"><span class="pre">get_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#DArray.get_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.DArray.get_statistics" title="Permalink to this definition"></a></dt>
+<dd><p>Return statistics describing one attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.get_unique">
+<span class="sig-name descname"><span class="pre">get_unique</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperslice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#DArray.get_unique"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.DArray.get_unique" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.ndim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ndim</span></span><a class="headerlink" href="#slycat.hdf5.DArray.ndim" title="Permalink to this definition"></a></dt>
+<dd><p>Return the number of dimensions in the darray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ndim</strong> – The number of dimensions in the darray.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>integer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperslice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#DArray.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.DArray.set_data" title="Permalink to this definition"></a></dt>
+<dd><p>Overwrite the contents of a darray attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attribute</strong> (<em>integer</em>) – The zero-based integer index of the attribute to be overwritten.</p></li>
+<li><p><strong>hyperslice</strong> (integer, <code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Ellipsis</span></code>, or tuple containing one or more integer, <code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code>, and <code class="xref py py-class docutils literal notranslate"><span class="pre">Ellipsis</span></code> instances.) – Defines the attribute region to be overwritten.</p></li>
+<li><p><strong>data</strong> (<em>numpy.ndarray</em>) – Data to be written to the attribute.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#slycat.hdf5.DArray.shape" title="Permalink to this definition"></a></dt>
+<dd><p>Return the darray shape (its size along each dimension).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>shape</strong> – The size of the darray along each dimension.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of integers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="slycat.hdf5.DArray.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#slycat.hdf5.DArray.size" title="Permalink to this definition"></a></dt>
+<dd><p>Return the darray size (total number of elements stored in the darray).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – The total number of elements stored in the darray.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>integer</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.hdf5.dtype">
+<span class="sig-prename descclassname"><span class="pre">slycat.hdf5.</span></span><span class="sig-name descname"><span class="pre">dtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.dtype" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a string attribute type into a dtype suitable for use with h5py.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.hdf5.path">
+<span class="sig-prename descclassname"><span class="pre">slycat.hdf5.</span></span><span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.path" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.hdf5.start_arrayset">
+<span class="sig-prename descclassname"><span class="pre">slycat.hdf5.</span></span><span class="sig-name descname"><span class="pre">start_arrayset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/hdf5.html#start_arrayset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.hdf5.start_arrayset" title="Permalink to this definition"></a></dt>
+<dd><p>Create a new array set using an open hdf5 file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">h5py.File</span></code>, required.) – An hdf5 file open for writing.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>arrayset</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#slycat.hdf5.ArraySet" title="slycat.hdf5.ArraySet"><code class="xref py py-class docutils literal notranslate"><span class="pre">slycat.hdf5.ArraySet</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="slycat.darray.html" class="btn btn-neutral float-left" title="slycat.darray" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="slycat.hyperchunks.html" class="btn btn-neutral float-right" title="slycat.hyperchunks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

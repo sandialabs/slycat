@@ -21,12 +21,13 @@ import {
 } from "../actions";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
+import { v4 as uuidv4 } from "uuid";
+import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
 
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      auto_scale: this.props.auto_scale,
       video_sync: this.props.video_sync,
       var_settings: this.props.var_settings,
     };
@@ -46,10 +47,10 @@ class ControlsBar extends React.Component {
     this.setAutoScaleTooptip();
   }
 
-  setAutoScaleTooptip = (auto_scale_status) => {
+  setAutoScaleTooptip = () => {
     // console.log(`Initializing popover tooltips. Used for auto scale button.`);
 
-    const status = auto_scale_status !== undefined ? auto_scale_status : this.state.auto_scale;
+    const status = this.props.auto_scale;
     const status_text = status ? "On" : "Off";
     let content_text = "Auto scale is disabled. Click to turn it on.";
     let content_class = "";
@@ -115,22 +116,12 @@ class ControlsBar extends React.Component {
   };
 
   set_selected = (state_label, key, trigger, e, props) => {
-    // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-    if (key === this.props[state_label]) {
-      // console.debug(`doing nothing because state hasn't changed`);
-      return;
-    }
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);
   };
 
   set_auto_scale = (e) => {
-    this.setState((prevState, props) => {
-      const new_auto_scale = !prevState.auto_scale;
-      this.props.element.trigger("auto-scale", new_auto_scale);
-      this.setAutoScaleTooptip(new_auto_scale);
-      return { auto_scale: new_auto_scale };
-    });
+    this.props.toggleAutoScale();
   };
 
   set_video_sync = (e) => {
@@ -268,6 +259,35 @@ class ControlsBar extends React.Component {
 
     const dropdowns = aliased_dropdowns.map((dropdown) => {
       if (dropdown.items.length > 1) {
+        // If this dropdown is the y-axis-dropdown
+        if (dropdown.id == "y-axis-dropdown") {
+          // If show_histogram is true
+          if (this.props.show_histogram) {
+            // Iterate through each item in the dropdown
+            dropdown.items.forEach((item) => {
+              // If the item is not a divider or header
+              if (item.type != "divider" && item.type != "header") {
+                // Deselect it because we are showing the histogram, which displays a different y axis
+                item.selected = false;
+              }
+            });
+          }
+          // Add a separator and an item to display the histogram
+          const unique_histogram_dropdown_item_key = uuidv4();
+          dropdown.items.push(
+            {
+              type: "divider",
+            },
+            {
+              // key is a unique identifier to make sure it doesn't clash with any other dropdown items
+              key: unique_histogram_dropdown_item_key,
+              name: "Frequency of X Axis Variable",
+              set_selected: this.props.toggleShowHistogram,
+              selected: this.props.show_histogram,
+            },
+          );
+        }
+
         return (
           <ControlsDropdown
             button_style={button_style}
@@ -375,7 +395,7 @@ class ControlsBar extends React.Component {
             <ControlsGroup id={this.selection_id} class="btn-group ml-3">
               <ControlsButtonToggle
                 icon={faExternalLinkAlt}
-                active={this.state.auto_scale}
+                active={this.props.auto_scale}
                 set_active_state={this.set_auto_scale}
                 button_style={`${button_style} ${this.button_style_auto_scale}`}
                 id={this.autoScaleId}
@@ -500,14 +520,15 @@ const mapStateToProps = (state, ownProps) => {
     variable_aliases: state.derived.variableAliases,
     active_filters: state.active_filters,
     sync_scaling: state.sync_scaling,
-    selected_simulations: state.selected_simulations,
+    selected_simulations: state.data.selected_simulations,
     xy_pairs_items: xy_pairs_items,
     xy_pairs_indexes: xy_pairs_indexes,
     xy_pair_selected: xy_pair_selected,
-    selection: state.selected_simulations,
-    hidden_simulations: state.hidden_simulations,
+    hidden_simulations: state.data.hidden_simulations,
     video_sync_time: state.video_sync_time,
     colormap: state.colormap,
+    show_histogram: state.scatterplot.show_histogram,
+    auto_scale: state.scatterplot.auto_scale,
   };
 };
 
@@ -518,11 +539,13 @@ export default connect(
     toggleSyncThreeDColorvar,
     setVideoSyncTime,
     setColormap,
+    toggleShowHistogram,
+    toggleAutoScale,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this
   // ControlsBar component so we can set its state from outside React. This option makes it so that
   // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
   // https://react-redux.js.org/api/connect#forwardref-boolean
-  { forwardRef: true }
+  { forwardRef: true },
 )(ControlsBar);

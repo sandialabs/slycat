@@ -5,9 +5,10 @@ Space model is an exploratory visual interface that combines a filterable scatte
 images, videos, and other media-based ensemble data.  
 
 .. toctree::
-  :maxdepth: 3
+  :maxdepth: 4
   
   TAISDataSet.rst
   CreatingPSModel.rst
   PSModelVis.rst
+  DatatableCreation.rst
   

@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>slycat.web.client &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="slycat.web.server" href="slycat.web.server.html" />
+    <link rel="prev" title="slycat.uri" href="slycat.uri.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../python-api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.darray.html">slycat.darray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hdf5.html">slycat.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hyperchunks.html">slycat.hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.uri.html">slycat.uri</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">slycat.web.client</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.client.ArgumentParser"><code class="docutils literal notranslate"><span class="pre">ArgumentParser</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.ArgumentParser.parse_args"><code class="docutils literal notranslate"><span class="pre">ArgumentParser.parse_args()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.client.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.delete_model"><code class="docutils literal notranslate"><span class="pre">Connection.delete_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.delete_project"><code class="docutils literal notranslate"><span class="pre">Connection.delete_project()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.delete_project_cache_object"><code class="docutils literal notranslate"><span class="pre">Connection.delete_project_cache_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.delete_reference"><code class="docutils literal notranslate"><span class="pre">Connection.delete_reference()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.delete_remote"><code class="docutils literal notranslate"><span class="pre">Connection.delete_remote()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.delete_upload"><code class="docutils literal notranslate"><span class="pre">Connection.delete_upload()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.find_or_create_project"><code class="docutils literal notranslate"><span class="pre">Connection.find_or_create_project()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.find_project"><code class="docutils literal notranslate"><span class="pre">Connection.find_project()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_bookmark"><code class="docutils literal notranslate"><span class="pre">Connection.get_bookmark()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_configuration_markings"><code class="docutils literal notranslate"><span class="pre">Connection.get_configuration_markings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_configuration_parsers"><code class="docutils literal notranslate"><span class="pre">Connection.get_configuration_parsers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_configuration_remote_hosts"><code class="docutils literal notranslate"><span class="pre">Connection.get_configuration_remote_hosts()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_configuration_support_email"><code class="docutils literal notranslate"><span class="pre">Connection.get_configuration_support_email()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_configuration_version"><code class="docutils literal notranslate"><span class="pre">Connection.get_configuration_version()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_configuration_wizards"><code class="docutils literal notranslate"><span class="pre">Connection.get_configuration_wizards()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_model"><code class="docutils literal notranslate"><span class="pre">Connection.get_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_model_arrayset_metadata"><code class="docutils literal notranslate"><span class="pre">Connection.get_model_arrayset_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_model_file"><code class="docutils literal notranslate"><span class="pre">Connection.get_model_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_model_parameter"><code class="docutils literal notranslate"><span class="pre">Connection.get_model_parameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_project"><code class="docutils literal notranslate"><span class="pre">Connection.get_project()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_project_cache_object"><code class="docutils literal notranslate"><span class="pre">Connection.get_project_cache_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_project_models"><code class="docutils literal notranslate"><span class="pre">Connection.get_project_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_project_references"><code class="docutils literal notranslate"><span class="pre">Connection.get_project_references()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_projects"><code class="docutils literal notranslate"><span class="pre">Connection.get_projects()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_remote_file"><code class="docutils literal notranslate"><span class="pre">Connection.get_remote_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_remote_image"><code class="docutils literal notranslate"><span class="pre">Connection.get_remote_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.get_user"><code class="docutils literal notranslate"><span class="pre">Connection.get_user()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.join_model"><code class="docutils literal notranslate"><span class="pre">Connection.join_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_events"><code class="docutils literal notranslate"><span class="pre">Connection.post_events()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_model_files"><code class="docutils literal notranslate"><span class="pre">Connection.post_model_files()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_model_finish"><code class="docutils literal notranslate"><span class="pre">Connection.post_model_finish()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_project_bookmarks"><code class="docutils literal notranslate"><span class="pre">Connection.post_project_bookmarks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_project_models"><code class="docutils literal notranslate"><span class="pre">Connection.post_project_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_project_references"><code class="docutils literal notranslate"><span class="pre">Connection.post_project_references()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_projects"><code class="docutils literal notranslate"><span class="pre">Connection.post_projects()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_remote_browse"><code class="docutils literal notranslate"><span class="pre">Connection.post_remote_browse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_remotes"><code class="docutils literal notranslate"><span class="pre">Connection.post_remotes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_upload_finished"><code class="docutils literal notranslate"><span class="pre">Connection.post_upload_finished()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.post_uploads"><code class="docutils literal notranslate"><span class="pre">Connection.post_uploads()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_model"><code class="docutils literal notranslate"><span class="pre">Connection.put_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_model_arrayset"><code class="docutils literal notranslate"><span class="pre">Connection.put_model_arrayset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_model_arrayset_array"><code class="docutils literal notranslate"><span class="pre">Connection.put_model_arrayset_array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_model_arrayset_data"><code class="docutils literal notranslate"><span class="pre">Connection.put_model_arrayset_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_model_inputs"><code class="docutils literal notranslate"><span class="pre">Connection.put_model_inputs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_model_parameter"><code class="docutils literal notranslate"><span class="pre">Connection.put_model_parameter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_project"><code class="docutils literal notranslate"><span class="pre">Connection.put_project()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.put_upload_file_part"><code class="docutils literal notranslate"><span class="pre">Connection.put_upload_file_part()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.request"><code class="docutils literal notranslate"><span class="pre">Connection.request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.update_model"><code class="docutils literal notranslate"><span class="pre">Connection.update_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slycat.web.client.Connection.upload_files"><code class="docutils literal notranslate"><span class="pre">Connection.upload_files()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#slycat.web.client.connect"><code class="docutils literal notranslate"><span class="pre">connect()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.html">slycat.web.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.authentication.html">slycat.web.server.authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.database.couchdb.html">slycat.web.server.database.couchdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.engine.html">slycat.web.server.engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.handlers.html">slycat.web.server.handlers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.hdf5.html">slycat.web.server.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.plugin.html">slycat.web.server.plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.remote.html">slycat.web.server.remote</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../python-api.html">Python API</a></li>
+      <li class="breadcrumb-item active">slycat.web.client</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/slycat-packages/slycat.web.client.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-slycat.web.client">
+<span id="slycat-web-client"></span><h1>slycat.web.client<a class="headerlink" href="#module-slycat.web.client" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="slycat.web.client.ArgumentParser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">ArgumentParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#ArgumentParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.ArgumentParser" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ArgumentParser</span></code></p>
+<p>Return an instance of argparse.ArgumentParser, pre-configured with arguments to
+connect to a Slycat server.</p>
+<p>Pre-configured options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>--host</strong> – the URL of the Slycat server.</p></li>
+<li><p><strong>--port</strong> – the port of the Slycat server.</p></li>
+<li><p><strong>--http-proxy</strong> – the URL for an http proxy.</p></li>
+<li><p><strong>--https-proxy</strong> – the URL for an https proxy.</p></li>
+<li><p><strong>--verify</strong> – an SSL certificate to verify https host.</p></li>
+<li><p><strong>--no-verify</strong> – disable https verification.</p></li>
+<li><p><strong>--file-slice-size</strong> – maximum number of bytes to upload at once.</p></li>
+<li><p><strong>--user</strong> – user name.</p></li>
+<li><p><strong>--passowrd</strong> – user password.</p></li>
+<li><p><strong>--kerberos</strong> – enable kerberos authentication.</p></li>
+<li><p><strong>--log-level</strong> – log detail to display.</p></li>
+</ul>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.ArgumentParser.parse_args">
+<span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#ArgumentParser.parse_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.ArgumentParser.parse_args" title="Permalink to this definition"></a></dt>
+<dd><p>Overrides argparse parse_args command.  Parses slycat.web.client arguments
+in addition to any arguments added by users of the class.  Can also be used to
+parse a list of arguments passed from a Python function, such as</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">([</span><span class="s2">&quot;--host&quot;</span><span class="p">,</span> <span class="s2">&quot;slycat.sandia.gov&quot;</span><span class="p">,</span> <span class="s2">&quot;--kerberos&quot;</span><span class="p">])</span><span class="o">.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="slycat.web.client.Connection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kerberos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_slice_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Provides a class to facilitate communication with the Slycat web server.
+To use, open a connection and submit requests.  For example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arguments</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">connection</span> <span class="o">=</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">projects</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_projects</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.delete_model">
+<span class="sig-name descname"><span class="pre">delete_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_model" title="Permalink to this definition"></a></dt>
+<dd><p>Delete an existing model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique model identifier.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../DELETE-methods/DELETE-Model.html#delete--api-models-(mid)" title="DELETE /api/models/(mid)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/models/(mid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.delete_project">
+<span class="sig-name descname"><span class="pre">delete_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_project" title="Permalink to this definition"></a></dt>
+<dd><p>Delete an existing project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique project identifier.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../DELETE-methods/DELETE-Project.html#delete--api-projects-(pid)" title="DELETE /api/projects/(pid)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/projects/(pid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.delete_project_cache_object">
+<span class="sig-name descname"><span class="pre">delete_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_project_cache_object" title="Permalink to this definition"></a></dt>
+<dd><p>Delete an existing project cache object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique project identifier.</p></li>
+<li><p><strong>key</strong> (<em>string</em><em>, </em><em>required</em>) – Unique cache object key.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../DELETE-methods/DELETE-Project-Cache-Object.html#delete--api-projects-(pid)-cache-(key)" title="DELETE /api/projects/(pid)/cache/(key)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/projects/(pid)/cache/(key)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.delete_reference">
+<span class="sig-name descname"><span class="pre">delete_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_reference" title="Permalink to this definition"></a></dt>
+<dd><p>Delete an existing reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique reference identifier.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../DELETE-methods/DELETE-reference.html#delete--api-references-(rid)" title="DELETE /api/references/(rid)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/references/(rid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.delete_remote">
+<span class="sig-name descname"><span class="pre">delete_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_remote" title="Permalink to this definition"></a></dt>
+<dd><p>Delete an existing remote session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique remote session identifier.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../DELETE-methods/DELETE-Remote.html#delete--api-remotes-(hostname)" title="DELETE /api/remotes/(hostname)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/remotes/(hostname)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.delete_upload">
+<span class="sig-name descname"><span class="pre">delete_upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_upload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_upload" title="Permalink to this definition"></a></dt>
+<dd><p>Delete uploaded files from Slycat server</p>
+<p>Delete an upload session used to upload files for storage as model artifacts.
+This function must be called once the client no longer needs the session,
+whether the upload(s) have been completed successfully or the client is cancelling
+an incomplete session.</p>
+<p>Note that you can examine the return codes to see if the files have been completely
+parsed by Slycat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>uid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique file upload session ID.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>status_code</strong> –</p>
+<p>Http status code:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>204 No Content – The upload session and temporary storage has been deleted.</p></li>
+<li><p>409 Conflict – The upload session cannot be deleted, parsing is in progress.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Uploads.html#post--api-uploads" title="POST /api/uploads"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/uploads</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.find_or_create_project">
+<span class="sig-name descname"><span class="pre">find_or_create_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.find_or_create_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.find_or_create_project" title="Permalink to this definition"></a></dt>
+<dd><p>Return a project identified by name, or newly created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>required</em>) – The name of the project to return (or create).</p></li>
+<li><p><strong>description</strong> (<em>string</em><em>, </em><em>optional</em>) – Description to use for the new project (if a new project is created).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>pid</strong> – Unique identifier of the matching (or newly created) project.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If more than one project matches the given name.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#slycat.web.client.Connection.post_projects" title="slycat.web.client.Connection.post_projects"><code class="xref py py-func docutils literal notranslate"><span class="pre">post_projects()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.find_project">
+<span class="sig-name descname"><span class="pre">find_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.find_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.find_project" title="Permalink to this definition"></a></dt>
+<dd><p>Return a project identified by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>string</em><em>, </em><em>required</em>) – The name of the project to return.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>project</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The matching project, which is an arbitrary collection of JSON-compatible data.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If a project with a matching name can’t be found, or more than one project matches the name.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#slycat.web.client.Connection.find_or_create_project" title="slycat.web.client.Connection.find_or_create_project"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_or_create_project()</span></code></a>, <a class="reference internal" href="#slycat.web.client.Connection.get_projects" title="slycat.web.client.Connection.get_projects"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_projects()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_bookmark">
+<span class="sig-name descname"><span class="pre">get_bookmark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_bookmark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_bookmark" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve an existing bookmark.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique bookmark identifier.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bookmark</strong> – The bookmark object, which is an arbitrary collection of
+JSON-compatible data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Bookmark.html#get--api-bookmarks-(bid)" title="GET /api/bookmarks/(bid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/bookmarks/(bid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_markings">
+<span class="sig-name descname"><span class="pre">get_configuration_markings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_markings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_markings" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve marking information from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>markings</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>server marking information.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Configuration-Markings.html#get--api-configuration-markings" title="GET /api/configuration/markings"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/configuration/markings</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_parsers">
+<span class="sig-name descname"><span class="pre">get_configuration_parsers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_parsers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_parsers" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve parser plugin information from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parsers</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>server parser plugin information.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Configuration-Parsers.html#get--api-configuration-parsers" title="GET /api/configuration/parsers"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/configuration/parsers</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_remote_hosts">
+<span class="sig-name descname"><span class="pre">get_configuration_remote_hosts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_remote_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_remote_hosts" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve remote host information from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>remote_hosts</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>server remote host information.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Configuration-Remote-Hosts.html#get--api-configuration-remote-hosts" title="GET /api/configuration/remote-hosts"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/configuration/remote-hosts</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_support_email">
+<span class="sig-name descname"><span class="pre">get_configuration_support_email</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_support_email"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_support_email" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve support email information from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>email</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>server support email information.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Configuration-Support-Email.html#get--api-configuration-support-email" title="GET /api/configuration/support-email"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/configuration/support-email</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_version">
+<span class="sig-name descname"><span class="pre">get_configuration_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_version" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve version information from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>version</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>server version information.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Configuration-Version.html#get--api-configuration-version" title="GET /api/configuration/version"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/configuration/version</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_wizards">
+<span class="sig-name descname"><span class="pre">get_configuration_wizards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_wizards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_wizards" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve wizard plugin information from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>wizards</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>server wizard plugin information.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Configuration-Wizards.html#get--api-configuration-wizards" title="GET /api/configuration/wizards"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/configuration/wizards</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve an existing model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique model identifier</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>model</strong> – The model object, which is an arbitrary collection of
+JSON-compatible data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Model.html#get--api-models-(mid)" title="GET /api/models/(mid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/models/(mid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_model_arrayset_metadata">
+<span class="sig-name descname"><span class="pre">get_model_arrayset_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_arrayset_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_arrayset_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve metadata describing an existing model arrayset artifact.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – The unique artifact identifier.</p></li>
+<li><p><strong>arrays</strong> (<em>string</em><em>, </em><em>optional</em>) – A set of arrays, specified using HQL.</p></li>
+<li><p><strong>statistics</strong> (<em>string</em><em>, </em><em>optional</em>) – A set of attributes, specified using HQL.</p></li>
+<li><p><strong>unique</strong> (<em>string</em><em>, </em><em>optional</em>) – A set of attributes, specified using HQL.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>metadata</strong> – The arrayset metadata, which is an arbitrary collection of
+JSON-compatible data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Model-Arrayset-Metadata.html#get--api-models-(mid)-arraysets-(aid)-metadata" title="GET /api/models/(mid)/arraysets/(aid)/metadata"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/models/(mid)/arraysets/(aid)/metadata</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_model_file">
+<span class="sig-name descname"><span class="pre">get_model_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_file" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the file corresponding to a given model and artifacts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique (with the model) artifact id.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>file</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>File data corresponding to artifact.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Model-File.html#get--api-models-(mid)-files-(aid)" title="GET /api/models/(mid)/files/(aid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/models/(mid)/files/(aid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_model_parameter">
+<span class="sig-name descname"><span class="pre">get_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_parameter" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve a model parameter artifact.</p>
+<p>Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+as part of its database record, so they should be limited in size (larger data should be stored using
+arraysets or files).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique (within the model) artifact id.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>parameter</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON-compatible object.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model-Parameter.html#put--api-models-(mid)-parameters-(aid)" title="PUT /api/models/(mid)/parameters/(aid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/parameters/(aid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_project">
+<span class="sig-name descname"><span class="pre">get_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve an existing project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>project</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Arbitrary collection of JSON-compatible data.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Project.html#get--api-projects-(pid)" title="GET /api/projects/(pid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/(pid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_project_cache_object">
+<span class="sig-name descname"><span class="pre">get_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_cache_object" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve an object from a project cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p></li>
+<li><p><strong>key</strong> (<em>string</em><em>, </em><em>required</em>) – Cache object identifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>content</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cached object content.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Project-Cache-Object.html#get--api-projects-(pid)-cache-(key)" title="GET /api/projects/(pid)/cache/(key)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/(pid)/cache/(key)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_project_models">
+<span class="sig-name descname"><span class="pre">get_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_models" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve every model in a oroject.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>models</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON-compatible object.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Project-Models.html#get--api-projects-(pid)-models" title="GET /api/projects/(pid)/models"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/(pid)/models</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_project_references">
+<span class="sig-name descname"><span class="pre">get_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_references" title="Permalink to this definition"></a></dt>
+<dd><p>Returns every reference in a project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>references</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON-compatible object.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Project-References.html#get--api-projects-(pid)-references" title="GET /api/projects/(pid)/references"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/(pid)/references</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_projects">
+<span class="sig-name descname"><span class="pre">get_projects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_projects" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve all projects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>projects</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of projects.  Each project is an arbitrary collection of JSON-compatible data.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Projects.html#get--api-projects" title="GET /api/projects"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_remote_file">
+<span class="sig-name descname"><span class="pre">get_remote_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_remote_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_remote_file" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve a file using a remote session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique remote session identifier.</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – Remote filesystem path (must be absolute).</p></li>
+<li><p><strong>cache</strong> (<em>string</em><em>, </em><em>optional</em>) – Optional server-side cache for the retrieved file.  Must be <cite>None</cite> or “project”.</p></li>
+<li><p><strong>project</strong> (<em>string</em><em>, </em><em>optional</em>) – If <cite>cache</cite> is set to “project”, this must specify a unique project identifier.</p></li>
+<li><p><strong>key</strong> (<em>string</em><em>, </em><em>optional</em>) – if <cite>cache</cite> is set to “project”, this must specify a unique key for the cached object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>file</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Remote file contents.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Remote-File.html#get--api-remotes-(hostname)-file(path)" title="GET /api/remotes/(hostname)/file(path)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/remotes/(hostname)/file(path)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_remote_image">
+<span class="sig-name descname"><span class="pre">get_remote_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_remote_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_remote_image" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve an image using a remote session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique remote session identifier.</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – Remote filesystem path (must be absolute).</p></li>
+<li><p><strong>cache</strong> (<em>string</em><em>, </em><em>optional</em>) – Optional server-side cache for the retrieved image.  Must be <cite>None</cite> or “project”.</p></li>
+<li><p><strong>project</strong> (<em>string</em><em>, </em><em>optional</em>) – If <cite>cache</cite> is set to “project”, this must specify a unique project identifier.</p></li>
+<li><p><strong>key</strong> (<em>string</em><em>, </em><em>optional</em>) – if <cite>cache</cite> is set to “project”, this must specify a unique key for the cached object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>image</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Remote image contents.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-Remote-Image.html#get--api-remotes-(hostname)-image(path)" title="GET /api/remotes/(hostname)/image(path)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/remotes/(hostname)/image(path)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.get_user">
+<span class="sig-name descname"><span class="pre">get_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_user" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve directory information about an existing user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>uid</strong> (<em>string</em><em>, </em><em>optional</em>) – Unique user identifier.  If unspecified, returns information about the user making the call.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>user</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Arbitrary collection of JSON-compatible data.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../GET-methods/GET-User.html#get--api-users-(uid)" title="GET /api/users/(uid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/users/(uid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.join_model">
+<span class="sig-name descname"><span class="pre">join_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.join_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.join_model" title="Permalink to this definition"></a></dt>
+<dd><p>Wait for a model to complete before returning.</p>
+<p>A Slycat model goes through several distinct phases over its lifetime:</p>
+<ol class="arabic simple">
+<li><p>The model is created.</p></li>
+<li><p>Input artifacts are pushed into the model.</p></li>
+<li><p>The model is marked “finished”.</p></li>
+<li><p>Optional one-time computation is performed on the server, storing output artifacts.</p></li>
+<li><p>The model is complete and ready to be viewed.</p></li>
+</ol>
+<p>Use this function in scripts that have performed steps 1, 2, and 3 and need to wait until
+step 4 completes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>A model that hasn’t been finished will never complete - you should
+ensure that post_model_finish() is called successfully before calling
+join_model().</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#slycat.web.client.Connection.post_model_finish" title="slycat.web.client.Connection.post_model_finish"><code class="xref py py-func docutils literal notranslate"><span class="pre">post_model_finish()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_events">
+<span class="sig-name descname"><span class="pre">post_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_events" title="Permalink to this definition"></a></dt>
+<dd><p>Post event to be logged on Slycat server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – Path-like URI describing event to be logged.</p></li>
+<li><p><strong>parameters</strong> (<em>dictionary</em><em>, </em><em>optional</em>) – JSON type object describing event.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Events.html#post--api-events-(event)" title="POST /api/events/(event)"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/events/(event)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_model_files">
+<span class="sig-name descname"><span class="pre">post_model_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_model_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_model_files" title="Permalink to this definition"></a></dt>
+<dd><p>Stores model file artifacts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aids</strong> (<em>array</em><em>, </em><em>required</em>) – Artifact IDs for model storage.</p></li>
+<li><p><strong>files</strong> (<em>array</em><em>, </em><em>required</em>) – Local files for upload.</p></li>
+<li><p><strong>parser</strong> (<em>string</em><em>, </em><em>required</em>) – Name of Slycat parser that will process the files.</p></li>
+<li><p><strong>input</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Set as true (default) to store as model artifacts.</p></li>
+<li><p><strong>parametrs</strong> (<em>dictionary</em><em>, </em><em>optional</em>) – Additional data to pass to parser.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Model-Files.html#post--api-models-(mid)-files" title="POST /api/models/(mid)/files"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/models/(mid)/files</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_model_finish">
+<span class="sig-name descname"><span class="pre">post_model_finish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_model_finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_model_finish" title="Permalink to this definition"></a></dt>
+<dd><p>Notify the server that a model is fully initialized.</p>
+<p>When called, the server will perform one-time computation
+for the given model type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Model-Finish.html#post--api-models-(mid)-finish" title="POST /api/models/(mid)/finish"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/models/(mid)/finish</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_project_bookmarks">
+<span class="sig-name descname"><span class="pre">post_project_bookmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bookmark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_bookmarks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_bookmarks" title="Permalink to this definition"></a></dt>
+<dd><p>Store a bookmark.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p></li>
+<li><p><strong>bookmark</strong> (<em>object</em>) – Arbitrary collection of JSON-compatible data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>bid</strong> – Unique bookmark identifier.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Project-Bookmark.html#post--api-projects-(pid)-bookmarks" title="POST /api/projects/(pid)/bookmarks"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/projects/(pid)/bookmarks</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_project_models">
+<span class="sig-name descname"><span class="pre">post_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marking</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_models" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a new model, returning the model ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p></li>
+<li><p><strong>mtype</strong> (<em>string</em><em>, </em><em>required</em>) – Model type.</p></li>
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>required</em>) – Model name.</p></li>
+<li><p><strong>marking</strong> (<em>string</em><em>, </em><em>optional</em>) – Model marking.</p></li>
+<li><p><strong>description</strong> (<em>string</em><em>, </em><em>optional</em>) – Description of model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>mid</strong> – New model identifier.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Project-Models.html#post--api-projects-(pid)-models" title="POST /api/projects/(pid)/models"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/projects/(pid)/models</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_project_references">
+<span class="sig-name descname"><span class="pre">post_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_references" title="Permalink to this definition"></a></dt>
+<dd><p>Store a project reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p></li>
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>required</em>) – Reference name.</p></li>
+<li><p><strong>mtype</strong> (<em>string</em><em>, </em><em>optional</em>) – Optional model type.</p></li>
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>optional</em>) – Optional model identifier.</p></li>
+<li><p><strong>bid</strong> (<em>string</em><em>, </em><em>optional</em>) – Optional bookmark identifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rid</strong> – Unique reference identifier.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_projects">
+<span class="sig-name descname"><span class="pre">post_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_projects" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a new project, returning the project ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>required</em>) – Name of project to be created.</p></li>
+<li><p><strong>description</strong> (<em>string</em><em>, </em><em>optional</em>) – Description of new project.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>pid</strong> – Unique project identifier.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Projects.html#post--api-projects" title="POST /api/projects"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/projects</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_remote_browse">
+<span class="sig-name descname"><span class="pre">post_remote_browse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_allow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_allow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_remote_browse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_remote_browse" title="Permalink to this definition"></a></dt>
+<dd><p>Uses an existing remote session to retrieve remote filesystem information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sid</strong> (<em>string</em><em>, </em><em>required</em>) – Session ID for connection.</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – Remote file system path (must be absolute).</p></li>
+<li><p><strong>file_reject</strong> (<em>string</em><em>, </em><em>optional</em>) – Regular expression for rejecting files.</p></li>
+<li><p><strong>file_allow</strong> (<em>string</em><em>, </em><em>optional</em>) – Regular expression for retaining files.</p></li>
+<li><p><strong>directory_reject</strong> (<em>string</em><em>, </em><em>optional</em>) – Regular expression for rejecting directories.</p></li>
+<li><p><strong>directory_allow</strong> (<em>string</em><em>, </em><em>optional</em>) – Regular expression for retaining directories.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response_body</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>JSON like object.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Remote-Browse.html#post--api-remotes-(hostname)-browse(path)" title="POST /api/remotes/(hostname)/browse(path)"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes/(hostname)/browse(path)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_remotes">
+<span class="sig-name descname"><span class="pre">post_remotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_remotes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_remotes" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a new remote connection from the Slycat server to another host.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hostname</strong> (<em>string</em><em>, </em><em>required</em>) – Name of remote host.</p></li>
+<li><p><strong>username</strong> (<em>string</em><em>, </em><em>required</em>) – User name for connection.</p></li>
+<li><p><strong>password</strong> (<em>string</em><em>, </em><em>required</em>) – Password to authenticate connection.</p></li>
+<li><p><strong>agent</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Create an agent upon establishing connection.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sid</strong> – Session ID for connection.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Remotes.html#post--api-remotes" title="POST /api/remotes"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/remotes</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_upload_finished">
+<span class="sig-name descname"><span class="pre">post_upload_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_parts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_upload_finished"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_upload_finished" title="Permalink to this definition"></a></dt>
+<dd><p>Notify Slycat server that file upload is finished</p>
+<p>Notify the server that all files have been uploaded for the given upload
+session, and processing can begin. The request must include the uploaded
+parameter, which specifies the number of files that were uploaded,
+and the number of parts in each file. The server uses this information to
+validate that it received every part of every file that the client sent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique file upload session ID.</p></li>
+<li><p><strong>file_parts</strong> (<em>array</em><em>, </em><em>required</em>) – Array of length number of files,
+with each entry number of slices for that file.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Upload-Finished.html#post--api-uploads-(uid)-finished" title="POST /api/uploads/(uid)/finished"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/uploads/(uid)/finished</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.post_uploads">
+<span class="sig-name descname"><span class="pre">post_uploads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_uploads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_uploads" title="Permalink to this definition"></a></dt>
+<dd><p>Create Slycat file upload session.</p>
+<p>Create an upload session used to upload files for storage as model artifacts.
+Once an upload session has been created, use upload_file put_upload_file_part
+to upload files directly from the client to the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>parser</strong> (<em>string</em><em>,</em>) – Name of parser to call after completion of upload.</p></li>
+<li><p><strong>aids</strong> (<em>array</em><em>, </em><em>required</em>) – Artifact IDs for storage.</p></li>
+<li><p><strong>input</strong> (<em>boolean</em><em>, </em><em>optional</em>) – True to create input artifacts for the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>uid</strong> – Upload session ID.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../POST-methods/POST-Uploads.html#post--api-uploads" title="POST /api/uploads"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/uploads</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_model">
+<span class="sig-name descname"><span class="pre">put_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model" title="Permalink to this definition"></a></dt>
+<dd><p>Modify a Slycat model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Model identifier.</p></li>
+<li><p><strong>model</strong> (<em>dictionary</em><em>, </em><em>required</em>) – <p>JSON like dictionary with fields to modified model including:</p>
+<blockquote>
+<div><ul>
+<li><p>name (<em>string, optional</em>)</p></li>
+<li><p>description (<em>string, optional</em>)</p></li>
+<li><p>state (<em>string, optional</em>)</p></li>
+<li><p>progress (<em>float, optional</em>)</p></li>
+<li><p>message (<em>string, optional</em>)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model.html#put--api-models-(mid)" title="PUT /api/models/(mid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_arrayset">
+<span class="sig-name descname"><span class="pre">put_model_arrayset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset" title="Permalink to this definition"></a></dt>
+<dd><p>Starts a new model array set artifact, ready to receive data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique artifact identifier.</p></li>
+<li><p><strong>input</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Set to true (default) if array set is a model input.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model-Arrayset.html#put--api-models-(mid)-arraysets-(aid)" title="PUT /api/models/(mid)/arraysets/(aid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/arraysets/(aid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_arrayset_array">
+<span class="sig-name descname"><span class="pre">put_model_arrayset_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset_array" title="Permalink to this definition"></a></dt>
+<dd><p>Starts a new array set array, ready to receive data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique artifact identifier.</p></li>
+<li><p><strong>array</strong> (<em>int</em><em>, </em><em>required</em>) – Unique array index.</p></li>
+<li><p><strong>dimensions</strong> (<em>array</em><em>, </em><em>required</em>) – Array dimensions.</p></li>
+<li><p><strong>attributes</strong> (<em>array</em><em>, </em><em>required</em>) – Array attributes (data types).</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model-Arrayset-Array.html#put--api-models-(mid)-arraysets-(aid)-arrays-(array)" title="PUT /api/models/(mid)/arraysets/(aid)/arrays/(array)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/arraysets/(aid)/arrays/(array)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_arrayset_data">
+<span class="sig-name descname"><span class="pre">put_model_arrayset_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperchunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset_data" title="Permalink to this definition"></a></dt>
+<dd><p>Write data to an arrayset artifact on the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique (to the model) arrayset artifact id.</p></li>
+<li><p><strong>hyperchunks</strong> (<em>string</em><em>, </em><em>required</em>) – Specifies where the data will be stored, in <a class="reference internal" href="../hyperchunks.html#hyperchunks"><span class="std std-ref">Hyperchunks</span></a> format.</p></li>
+<li><p><strong>data</strong> (<em>iterable</em><em>, </em><em>required</em><em>)</em>) – A collection of numpy.ndarray data chunks to be uploaded.  The number of
+data chunks must match the number implied by the <cite>hyperchunks</cite> parameter.</p></li>
+<li><p><strong>force_json</strong> (<em>bool</em><em>, </em><em>optional</em><em>)</em>) – Force the client to upload data using JSON instead of the binary format.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model-Arrayset-Data.html#put--api-models-(mid)-arraysets-(aid)-data" title="PUT /api/models/(mid)/arraysets/(aid)/data"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/arraysets/(aid)/data</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_inputs">
+<span class="sig-name descname"><span class="pre">put_model_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_inputs" title="Permalink to this definition"></a></dt>
+<dd><p>Copies the input artifacts from one model to another. Both models
+must be part of the same project. By default, array artifacts are copied
+by reference instead of value for efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>string</em><em>, </em><em>required</em>) – Model ID source of artifacts.</p></li>
+<li><p><strong>target</strong> (<em>string</em><em>, </em><em>required</em>) – Model ID target for artifacts.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model-Inputs.html#put--api-models-(mid)-inputs" title="PUT /api/models/(mid)/inputs"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/inputs</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_parameter">
+<span class="sig-name descname"><span class="pre">put_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_parameter" title="Permalink to this definition"></a></dt>
+<dd><p>Store a model parameter artifact.</p>
+<p>Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
+as part of its database record, so they should be limited in size (larger data should be stored using
+arraysets or files).</p>
+<p>To get the value of a parameter artifact, use <a class="reference internal" href="#slycat.web.client.Connection.get_model" title="slycat.web.client.Connection.get_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_model()</span></code></a> and read the value
+directly from the model record.  An artifact id <cite>foo</cite> will be accessible in the
+record as <cite>model[“artifact:foo”]</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique model identifier.</p></li>
+<li><p><strong>aid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique (within the model) artifact id.</p></li>
+<li><p><strong>value</strong> (<em>object</em><em>, </em><em>required</em>) – An arbitrary collection of JSON-compatible data.</p></li>
+<li><p><strong>input</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Marks whether this artifact is a model input.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Model-Parameter.html#put--api-models-(mid)-parameters-(aid)" title="PUT /api/models/(mid)/parameters/(aid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/models/(mid)/parameters/(aid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_project">
+<span class="sig-name descname"><span class="pre">put_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_project" title="Permalink to this definition"></a></dt>
+<dd><p>Modifies a project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique project identifier.</p></li>
+<li><p><strong>project</strong> (<em>dictionary</em><em>, </em><em>required</em>) – <p>JSON like dictionary with fields to modified model including:</p>
+<blockquote>
+<div><ul>
+<li><p>name (<em>string, optional</em>)</p></li>
+<li><p>description (<em>string, optional</em>)</p></li>
+<li><p>acl (<em>string, optional</em>) – access control list</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Project.html#put--api-projects-(pid)" title="PUT /api/projects/(pid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/projects/(pid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.put_upload_file_part">
+<span class="sig-name descname"><span class="pre">put_upload_file_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_upload_file_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_upload_file_part" title="Permalink to this definition"></a></dt>
+<dd><p>Upload a file or part of a file to Slycat.</p>
+<p>Upload a file (or part of a file) as part of an upload session created with
+post_uploads.</p>
+<p>Use the “pid” and “fid” parameters to specify that the data being uploaded is
+for part M of file N. To upload a file from the client, specify the “file” parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uid</strong> (<em>string</em><em>, </em><em>required</em>) – Unique file upload session ID.</p></li>
+<li><p><strong>pid</strong> (<em>string</em><em>, </em><em>required</em>) – Zero-based part ID of file being uploaded.</p></li>
+<li><p><strong>fid</strong> (<em>string</em><em>, </em><em>required</em>) – Zero-based file ID for file being uploaded.</p></li>
+<li><p><strong>file</strong> (<em>file part in bytes</em><em>, </em><em>required</em>) – File part to upload.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../PUT-methods/PUT-Upload-File-Part.html#put--api-uploads-(uid)-files-(fid)-parts-(pid)" title="PUT /api/uploads/(uid)/files/(fid)/parts/(pid)"><code class="xref http http-put docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/api/uploads/(uid)/files/(fid)/parts/(pid)</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.request">
+<span class="sig-name descname"><span class="pre">request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.request" title="Permalink to this definition"></a></dt>
+<dd><p>Basic request to Slycat server using open session.  To make a request
+provide the HTTP method and path, and this method will return the body of
+the response.  Additional keyword arguments must be compatible with the
+Python requests library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>string</em><em>, </em><em>required</em>) – The HTTP method to use, e.g. “GET”, “PUT”, etc.</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – The extension to the URL for the Slycat server, e.g. “/api/models/(mid)”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>response</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the body of the Server response.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.update_model">
+<span class="sig-name descname"><span class="pre">update_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.update_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.update_model" title="Permalink to this definition"></a></dt>
+<dd><p>Update model state.</p>
+<p>This function provides a more convenient alternative to <a class="reference internal" href="#slycat.web.client.Connection.put_model" title="slycat.web.client.Connection.put_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">put_model()</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#slycat.web.client.Connection.put_model" title="slycat.web.client.Connection.put_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">put_model()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="slycat.web.client.Connection.upload_files">
+<span class="sig-name descname"><span class="pre">upload_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser_parms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.upload_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.upload_files" title="Permalink to this definition"></a></dt>
+<dd><p>Upload a list of files for a given model to the Slycat server.
+The files will be parsed by specified parser.  This is not a direct call
+to the API, but rather a convenience call to load/parse a list of files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em><em>, </em><em>required</em>) – Model ID associated with the files to be uploaded.</p></li>
+<li><p><strong>file_list</strong> (<em>string array</em><em>, </em><em>required</em>) – Local files to be uploaded to the Slycat server.  This can be one file,
+but it should be passed as an array with one file.</p></li>
+<li><p><strong>parser</strong> (<em>string</em><em>, </em><em>required</em>) – Name of parser to use on the Slycat server.</p></li>
+<li><p><strong>parser_parms</strong> (<em>array</em><em>, </em><em>required</em>) – Any parameters to be passed to the parser (passed using aids when the
+upload session is established).</p></li>
+<li><p><strong>progress</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Display a download progress indicator using standard out (will not
+be logged to the log file).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="slycat.web.client.connect">
+<span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.connect" title="Permalink to this definition"></a></dt>
+<dd><p>Factory function for client connections that takes an option parser as input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arguments</strong> (<em>argument parser object</em><em>, </em><em>required</em>) – Parsed command line arguments.</p></li>
+<li><p><strong>keywords</strong> (<em>dictionary</em><em>, </em><em>optional</em>) – Additional options to pass to requests.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>connection</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>session for submitting requests to Slycat sever.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="slycat.uri.html" class="btn btn-neutral float-left" title="slycat.uri" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="slycat.web.server.html" class="btn btn-neutral float-right" title="slycat.web.server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -57,19 +57,6 @@ or
 $ python -m slycat.web.client.list_markings
 ```
 
-In addition, there are two main entry points defined for the Slycat Dial-A-Cluster plugin
-
-```sh
-$ dac_tdms
-```
-and
-
-```sh
-$ dac_gen
-```
-
-These are described in greater detail below.
-
 ## User Authentication
 
 The Slycat server requires user authentication.  The slycat.web.client
@@ -183,92 +170,9 @@ $ dac_gen dac-gen.zip
 This will create a model from a single .zip file containing the appropriate
 folders with the pre-computed distance or PCA matrices.
 
-## Dial-A-Cluster TDMS Models
-
-To upload a DAC TDMS model, use
-
-```sh
-$ dac_tdms data-file.TDM
-```
-
-This will create a model from a single .TDM file.  You can also use .TDMS
-files and .zip archives containing .tdms files.  The options available
-for the creation of the models are the same as the options available using
-the DAC model creation wizard in the browser.  To see the options use
-the "--help" flag when calling the script.
-
-In addition, there are two methods for uploading batches of multiple DAC
-TDMS models.  The first method uses the dac_tdms_batch script.  This script
-takes as input a part-num match (see also dac_run_chart) and creates
-the corresponding batches.  For example,
-
-```sh
-$ dac_tdms_batch root-data-directory part-num
-```
-
-The second method uses the dac_tdms_batch_file script.  To use this script, 
-you must first create a file containing the options for each model.  The file 
-has the following format.
-
-Line 1 contains the authentication information for the Slycat server that
-you would pass to the dac_tdms script, but separated by commas.
-For example,
-
-    --user,user-name,--kerberos
-
-If authentication information is unnecessary, just leave the line blank.
-
-Line 2 contains the project information for the project that will contain
-the DAC models to be created, e.g.
-
-    --project-name,Batch TDMS Models
-
-Line 2 can also be left blank.  It will default to "Batch TDMS Models".
-Lines 3 and beyond contain the model information for each model, such as
-
-    model-data-file-1.tdms,--model-name,Model 1,--project-name,Batch TDMS Models
-    model-data-file-2.tdms,--model-name,Model 2,--project-name,Batch TDMS Models
-
-Note that you must supply a model file (or multiple files) in accordance
-with the dac_tdms script for each model.  Also note that if 
-you want to put models into different projects, you can override the 
-original project given in line 2, by using the "--project-name" flag 
-again, e.g.
-
-    model-data-file-n.tdms,--model-name,Model n,--project-name,Special Project
-
-After the batch file has been created, you can call the TDMS batch 
-processor to create your models using:
-
-```sh
-$ dac_tdms_batch tdms-batch-file.txt
-```
-
-where tdms-batch-file.txt is the .txt file containing the lines just 
-described.
-
-Depending on how many models are being created, it is helpful to
-use the "--log_file" flag to specify a log file for recording any
-errors in the upload process.
-
-## Dial-A-Cluster Run Chart Models
-
-To create Dial-A-Cluster run chart model, use the dac_run_chart.py script.
-From the command line:
-
-```sh
-$ python -m slycat.web.client.dac_run_chart root-data-directory part-num run-charts.zip
-```
-
-where root-data-directory is the root directory containing the data directories
-indexed by part number, and part-num is the prefix for the data directories and
-associated structure of sub directories.  By specifying the (mandatory) output zip file you
-get a .zip file that can be loaded into dial-a-cluster through the wizard (or the dac_gen
-script).  You can later delete this file if it is not needed.
-
 ## Parameter Space Models
 
-A Paraneter Space model can be created from .csv file using the 
+A Parameter Space model can be created from .csv file using the 
 ps_csv script.  From the command line, use:
 
 ```sh

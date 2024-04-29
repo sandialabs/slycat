@@ -56,6 +56,12 @@ def add_options(parser):
         help="Do not infer time units. Default is to assume unspecified units " +
              "are seconds.")
 
+    # exclude .tdms files
+    parser.add_argument("--exclude", nargs="+",
+        help='TDMS file suffixes to exclude. ' + 
+             'If you want suffixes that include spaces, use quotes, ' +
+             'e.g. "suffix with space".')
+
     return parser
 
 # parse tmds input parameters
@@ -150,49 +156,250 @@ def parse_run_chart (run_chart):
     # split run_chart string on "_" to get identifiers
     run_chart_id = run_chart.split("_")
 
-    # there should be four identifiers
-    if len(run_chart_id) != 4:
-        run_chart_id = None
+    # keep only first four identifiers, if they exist
+    if len(run_chart_id) >= 4:
+        run_chart_id = run_chart_id[0:4]
+    else:
+        run_chart_id = [None, None, None, None]
     
     return run_chart_id
 
-# enumerate tdms files based on command line inputs
-# TDMS_MATCHES gives a list of TDMS file type for filtering
-def catalog_tdms_files (arguments, log, TDMS_MATCHES):
+# helper function for catalog_tmds_files, converts string specifying batch
+# numbers into a python list, e.g. 1-3,5 -> [1,2,3,5]
+def convert_batches(batch_str, log):
 
-    # gather data directories for given part number
-    root_dir = arguments.input_data_dir
-    part_num_match = arguments.part_num_match
+    # an asterisk indicates any match is OK
+    if batch_str == '*': 
+        return None
 
+    batches = set()
+    try:
+        for part in batch_str.split(','):
+            x = part.split('-')
+            batches.update(range(int(x[0]), int(x[-1]) + 1))
+    except:
+        log('Input batches = "' + batch_str + '" is an invalid batch specifier.')
+        raise ValueError('Input batches = "' + batch_str + '" is an invalid batch specifier.')
+
+    return sorted(batches)
+
+# get suffix from a single file
+def get_suffix (file):
+
+    # get file name and extension
+    head, tail = os.path.split(file)
+    ext = tail.split(".")[-1].lower()
+
+    # is it a tdms file?
+    suffix = None
+    if ext == 'tdms' or ext =='tdm':
+
+        # get suffix
+        suffix = tail.split("_")[-1].split(".")[0]
+
+    return suffix
+
+# get file suffixes for file list
+def get_suffixes (file_list):
+
+    # save results as a set
+    tdms_suffixes = set()
+
+    # go through each file and parse out suffix
+    for file in file_list:
+
+        # add suffix to set
+        tdms_suffixes.add(get_suffix(file))
+
+    return tdms_suffixes
+
+# exclude any suffixes not desired
+def exclude_suffixes (arguments, file_list):
+
+    # get all suffixes
+    include_suffixes = get_suffixes(file_list)
+
+    # exclude suffixes as requested
+    if arguments.exclude:
+
+        # exclude and print list of excluded suffixes
+        for suffix in arguments.exclude:
+            include_suffixes.discard(suffix)
+
+    # sort suffixes
+    list_suffixes = list(include_suffixes)
+    list_suffixes.sort()
+
+    return list_suffixes
+
+# catalog tdms types and matches
+def list_tdms_types (file_list, list_suffixes, run_chart_ids, part_lot_batch_sn=True):
+
+    # screen for .tdms files according to argument parameters
+    run_chart_tdms_matches = []
+    run_chart_tdms_types = []
+    for run_chart_file in file_list:
+
+        # get file suffix
+        suffix = get_suffix(run_chart_file)
+        
+        # check if we want to include that suffix
+        if suffix not in list_suffixes:
+            continue
+
+        # check that .tdms file has matching part_lot_batch_sn
+        if part_lot_batch_sn == True:
+            if not run_chart_file.startswith(
+                run_chart_ids[0] + "_" + 
+                run_chart_ids[1] + "_" + 
+                run_chart_ids[2] + "_" + 
+                run_chart_ids[3]):
+                continue
+
+        # keep track of files and types
+        run_chart_tdms_types.append(suffix)
+        run_chart_tdms_matches.append(run_chart_file)
+
+    return run_chart_tdms_types, run_chart_tdms_matches
+
+# enumerate all tdms subdirectories with files in a given directory
+def catalog_tdms_dir (arguments, log):
+
+    # gather data directories
+    root_dir = arguments.input_tdms_dir[0]
+    
     # check that root dir exists
     if not os.path.isdir(root_dir):
         raise TDMSUploadError("Input data directory does not exist.  Please provide " +
-              "a different directory and try again.")
+            "a different directory and try again.")
+
+    # look for subdirectories with tdms files
+    possible_run_chart_dirs = set()
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        tdms_files = [f for f in filenames if f.lower().endswith(".tdms") or f.lower().endswith(".tdm")]
+        for filename in tdms_files:
+            possible_run_chart_dirs.add(dirpath)
+    possible_run_chart_dirs = list(possible_run_chart_dirs)
+    possible_run_chart_dirs.sort()
+
+    # check that we found data directories
+    if len(possible_run_chart_dirs) == 0:
+        raise TDMSUploadError('No data subdirectories found for part number match "' + 
+            part_num_match + '".')
+
+    # go through each run chart directory
+    metadata = []
+    for run_chart_dir in possible_run_chart_dirs:
+
+        # get file name (ignore path)
+        base_dir = os.path.basename(run_chart_dir)
+
+        # check for part_lot_batch_sn format
+        run_chart_ids = parse_run_chart(base_dir)
+
+        # find .tdms files in run chart directory
+        run_chart_files = os.listdir(run_chart_dir)
+        run_chart_tdms_files = [run_chart_file for run_chart_file in run_chart_files 
+                                if run_chart_file.lower().endswith('.tdms') or
+                                    run_chart_file.lower().endswith('.tdm')]
     
-    # look for directories containing data for part number provided
-    root_subdirs = os.listdir(root_dir)
-    part_subdirs = fnmatch.filter(root_subdirs, part_num_match)
+        # check that we have .tdms files
+        if len(run_chart_tdms_files) == 0:
+            log ('Skipping subdirectory "' + str(run_chart_ids[0]) + '" -- does not ' +
+                    'contain any TDMS files.')
+            continue
+
+        # get all suffixes
+        list_suffixes = exclude_suffixes(arguments, run_chart_tdms_files)
+
+        # check for tdms types and matches
+        run_chart_tdms_types, run_chart_tdms_matches = \
+            list_tdms_types(run_chart_tdms_files, list_suffixes, run_chart_ids)
+
+        # check that we have matching .tdms files
+        if len(run_chart_tdms_matches) == 0:
+            log ('Skipping subdirectory "' + str(run_chart_ids[0]) + '" -- does not ' +
+                    'contain any TDMS files with file matches.')
+            continue
+
+        # store in metadata structure
+        metadata.append({"part": str(run_chart_ids[0]),
+                        "lot": str(run_chart_ids[1]),
+                        "batch": str(run_chart_ids[2]),
+                        "sn": str(run_chart_ids[3]),
+                        "source": os.path.abspath(run_chart_dir),
+                        "tdms_files": run_chart_tdms_matches,
+                        "tdms_types": run_chart_tdms_types,
+                        "include_suffixes": list_suffixes})
+
+    return metadata
+
+# enumerate tdms files based on command line inputs, according to directory list
+def catalog_tdms_files (arguments, log):
+
+    # check for directory list style inputs
+    if arguments.input_tdms_batches is not None:
+
+        # gather data directories for given part number
+        root_dir = arguments.input_tdms_batches[0]
+        part_num_match = arguments.input_tdms_batches[1]
+
+        # convert specified batches to python list
+        batches = convert_batches(arguments.input_tdms_batches[2], log)
+
+        # check that root dir exists
+        if not os.path.isdir(root_dir):
+            raise TDMSUploadError("Input data directory does not exist.  Please provide " +
+                "a different directory and try again.")
+        
+        # look for directories containing data for part number provided
+        root_subdirs = os.listdir(root_dir)
+        part_subdirs = fnmatch.filter(root_subdirs, part_num_match + "_*")
+
+        # look for directories containing batches
+        batch_subdirs = []
+        for subdir in part_subdirs:
+            subdir_nums = subdir.split('_')        
+            try:
+                subdir_batch = int(subdir_nums[2])
+                if batches == None:
+                    batch_subdirs.append(subdir)
+                elif subdir_batch in batches:
+                    batch_subdirs.append(subdir)
+            except:
+                pass
     
+    # check for glob style input with part_num match
+    elif arguments.input_tdms_glob is not None:
+
+        # gather data directories for given part number
+        root_dir = arguments.input_tdms_glob[0]
+        part_num_match = arguments.input_tdms_glob[1]
+
+        # check that root dir exists
+        if not os.path.isdir(root_dir):
+            raise TDMSUploadError("Input data directory does not exist.  Please provide " +
+                "a different directory and try again.")
+
+        # look for directories containing data for part number provided
+        root_subdirs = os.listdir(root_dir)
+        batch_subdirs = fnmatch.filter(root_subdirs, part_num_match)
+        
+    # check for directory input where subdirectories are run charts
+    elif arguments.input_tdms_dir is not None:
+        return catalog_tdms_dir (arguments, log)
+
     # are there any subdirectories?
-    if len(part_subdirs) == 0:
-        raise TDMSUploadError('Could not find any subdirectories for part number matching "' +
+    if len(batch_subdirs) == 0:
+        raise TDMSUploadError('Could not find any subdirectories for part, number matching "' +
               part_num_match + '".')
 
     # put subdirectories in order
-    part_subdirs.sort()
-
-    # get list of .tdms file matches
-    tdms_matches = TDMS_MATCHES
-    if arguments.tdms_file_matches is not None:
-        tdms_matches = arguments.tdms_file_matches
-    tdms_matches = [file_match.replace('_', ' ') for file_match in tdms_matches]
-
-    # report on tdms file being used
-    log("Using .tdms file matches in: " + str(tdms_matches))
+    batch_subdirs.sort()
 
     # look through each subdirectory for run chart data
     metadata = []
-    for subdir in part_subdirs:
+    for subdir in batch_subdirs:
 
         # look for test data directory
         test_data_dir = os.path.join(root_dir, subdir, 'Test Data')
@@ -221,45 +428,34 @@ def catalog_tdms_files (arguments, log, TDMS_MATCHES):
             run_chart_ids = parse_run_chart(run_chart_dir)
 
             # if it's not a run chart then skip it
-            if run_chart_ids is None:
-                log('Skipping run chart subdirectory "' + run_chart_dir + 
+            if run_chart_ids[0] is None:
+                log('Skipping subdirectory "' + run_chart_dir + 
                     '" because it does not conform to "part_lot_batch_serial" string format.')
                 continue
         
             # find .tdms files in run chart directory
             run_chart_files = os.listdir(os.path.join(test_data_dir, run_chart_dir))
             run_chart_tdms_files = [run_chart_file for run_chart_file in run_chart_files 
-                                    if run_chart_file.endswith('.tdms')]
+                                    if run_chart_file.lower().endswith('.tdms') or
+                                       run_chart_file.lower().endswith('.tdm')]
         
             # check that we have .tdms files
             if len(run_chart_tdms_files) == 0:
-                log ('Skipping subdirectory "' + run_chart_ids[0] + '" -- does not ' +
+                log ('Skipping subdirectory "' + str(run_chart_ids[0]) + '" -- does not ' +
                       'contain any TDMS files.')
                 continue
 
-            # screen for .tdms files according to argument parameters
-            run_chart_tdms_matches = []
-            run_chart_tdms_types = []
-            for run_chart_file in run_chart_tdms_files:
-                for match in tdms_matches:
-                    if match in run_chart_file:
+            # get all suffixes
+            list_suffixes = exclude_suffixes(arguments, run_chart_tdms_files)
 
-                        # check that .tdms file has matching part_lot_batch_sn
-                        if not run_chart_file.startswith(
-                            run_chart_ids[0] + "_" + 
-                            run_chart_ids[1] + "_" + 
-                            run_chart_ids[2] + "_" + 
-                            run_chart_ids[3]):
-                            continue
-                        
-                        # keep track of files and types
-                        run_chart_tdms_types.append(match)
-                        run_chart_tdms_matches.append(run_chart_file)
+            # check for tdms types and matches
+            run_chart_tdms_types, run_chart_tdms_matches = \
+                list_tdms_types(run_chart_tdms_files, list_suffixes, run_chart_ids)
 
             # check that we have matching .tdms files
             if len(run_chart_tdms_matches) == 0:
                 log ('Skipping subdirectory "' + run_chart_ids[0] + '" -- does not ' +
-                      'contain any TDMS files with file matches.')
+                     'contain any TDMS files with file matches.')
                 continue
 
             # store in metadata structure
@@ -270,10 +466,12 @@ def catalog_tdms_files (arguments, log, TDMS_MATCHES):
                              "source": os.path.join(os.path.abspath(test_data_dir), 
                                                     run_chart_dir),
                              "tdms_files": run_chart_tdms_matches,
-                             "tdms_types": run_chart_tdms_types})
-
+                             "tdms_types": run_chart_tdms_types,
+                             "include_suffixes": list_suffixes})
+            
     # check that files were found
     if metadata == []:
         raise TDMSUploadError("No TDMS files matching selection criterion were found.")
 
     return metadata
+    

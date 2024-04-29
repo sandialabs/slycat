@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PUT Model &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PUT Project" href="PUT-Project.html" />
+    <link rel="prev" title="PUT Model Parameter" href="PUT-Model-Parameter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../GET-methods/GET-rest-api.html">GET METHODS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../POST-methods/POST-rest-api.html">POST METHODS</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="PUT-rest-api.html">PUT METHODS</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Arrayset-Array.html">PUT Model Arrayset Array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Arrayset-Data.html">PUT Model Arrayset Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Arrayset.html">PUT Model Arrayset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Command.html">PUT Model Command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Inputs.html">PUT Model Inputs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Model-Parameter.html">PUT Model Parameter</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">PUT Model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Project.html">PUT Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Project-CSV-Data.html">PUT Project CSV Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Project-Data-Parameter.html">PUT Project Data Parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PUT-Upload-File-Part.html">PUT Upload File Part</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../DELETE-methods/DELETE-rest-api.html">DELETE METHODS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../rest-api.html">REST API</a></li>
+          <li class="breadcrumb-item"><a href="PUT-rest-api.html">PUT METHODS</a></li>
+      <li class="breadcrumb-item active">PUT Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/PUT-methods/PUT-Model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="put-model">
+<h1>PUT Model<a class="headerlink" href="#put-model" title="Permalink to this heading"></a></h1>
+<dl class="http put">
+<dt class="sig sig-object http" id="put--api-models-(mid)">
+<span class="sig-name descname"><span class="pre">PUT</span> </span><span class="sig-name descname"><span class="pre">/api/models/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#put--api-models-(mid)" title="Permalink to this definition"></a></dt>
+<dd><p>Modifies a model. Callers may change the model name, description, state,
+result status, progress, and message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>string</em>) – Unique model identifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Request Headers<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.rfc-editor.org/rfc/rfc7231#section-3.1.1.5">Content-Type</a></span> – application/json</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Request JSON Object<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em>) – optional, New model name.</p></li>
+<li><p><strong>description</strong> (<em>string</em>) – optional, New model description.</p></li>
+<li><p><strong>state</strong> (<em>string</em>) – optional, New model state.</p></li>
+<li><p><strong>progress</strong> (<em>float</em>) – optional, New model progress percent.</p></li>
+<li><p><strong>message</strong> (<em>string</em>) – optional, New model status message.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../GET-methods/GET-Model.html#get--api-models-(mid)" title="GET /api/models/(mid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+<li><p><a class="reference internal" href="../POST-methods/POST-Model-Finish.html#post--api-models-(mid)-finish" title="POST /api/models/(mid)/finish"><code class="xref http http-post docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/models/(mid)/finish</span></code></a></p></li>
+<li><p><a class="reference internal" href="../DELETE-methods/DELETE-Model.html#delete--api-models-(mid)" title="DELETE /api/models/(mid)"><code class="xref http http-delete docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/api/models/(mid)</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PUT-Model-Parameter.html" class="btn btn-neutral float-left" title="PUT Model Parameter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PUT-Project.html" class="btn btn-neutral float-right" title="PUT Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

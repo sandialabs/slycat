@@ -1,88 +1,45 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>slycat.web.server &mdash; Slycat 3.0.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>slycat.web.server &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
-
-          
+          <a href="../../../index.html" class="icon icon-home">
+            Slycat
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../coding-guidelines.html">Coding Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../colophon.html">Colophon</a></li>
@@ -90,67 +47,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../python-api.html">Python API</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">Slycat</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-        
-      <li>slycat.web.server</li>
-    
-    
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">slycat.web.server</li>
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for slycat.web.server</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract</span>
 <span class="c1"># DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government</span>
@@ -182,28 +102,29 @@
 <span class="n">model_locks</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">project_data_locks</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="tonative"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.tonative">[docs]</a><span class="k">def</span> <span class="nf">tonative</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the given string as a native string in the given encoding.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="tonative"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.tonative">[docs]</a><span class="k">def</span> <span class="nf">tonative</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the given string as a native string in the given encoding.&quot;&quot;&quot;</span>
     <span class="c1"># In Python 2, the native string type is bytes.</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">):</span>  <span class="c1"># unicode for Python 2</span>
         <span class="k">return</span> <span class="n">n</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">n</span></div>
 
-<div class="viewcode-block" id="base64_decode"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.base64_decode">[docs]</a><span class="k">def</span> <span class="nf">base64_decode</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">):</span>	
-    <span class="sd">&quot;&quot;&quot;Return the native string base64-decoded (as a native string).&quot;&quot;&quot;</span>	
+<div class="viewcode-block" id="base64_decode"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.base64_decode">[docs]</a><span class="k">def</span> <span class="nf">base64_decode</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">):</span>	
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the native string base64-decoded (as a native string).&quot;&quot;&quot;</span>	
     <span class="n">decoded</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">decodestring</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>	
     <span class="k">return</span> <span class="n">tonative</span><span class="p">(</span><span class="n">decoded</span><span class="p">,</span> <span class="n">encoding</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="mix"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.mix">[docs]</a><span class="k">def</span> <span class="nf">mix</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Linear interpolation between two numbers.  Useful for computing model progress.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="mix"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.mix">[docs]</a><span class="k">def</span> <span class="nf">mix</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Linear interpolation between two numbers.  Useful for computing model progress.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">amount</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">amount</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span></div>
 
 
 <span class="c1"># @cache_it</span>
-<div class="viewcode-block" id="evaluate"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.evaluate">[docs]</a><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">expression_type</span><span class="p">,</span> <span class="n">expression_level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Evaluate a hyperchunk expression.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="evaluate"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.evaluate">[docs]</a><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">expression_type</span><span class="p">,</span> <span class="n">expression_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hyperslice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate a hyperchunk expression.&quot;&quot;&quot;</span>
     <span class="c1"># cherrypy.log.error(&quot;%sEvaluating %s expression: %s&quot; % (</span>
     <span class="c1">#     &quot;  &quot; * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))</span>
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">expression</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
@@ -211,7 +132,10 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">expression</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hyperchunks</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">AttributeIndex</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">hdf5_array</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">index</span><span class="p">)[</span><span class="o">...</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">hyperslice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hdf5_array</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">index</span><span class="p">)[</span><span class="o">...</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hdf5_array</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">index</span><span class="p">)[</span><span class="n">hyperslice</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hyperchunks</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">BinaryOperator</span><span class="p">):</span>
         <span class="n">left</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">expression</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">expression_type</span><span class="p">,</span> <span class="n">expression_level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">operand</span> <span class="ow">in</span> <span class="n">expression</span><span class="o">.</span><span class="n">operands</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
@@ -247,7 +171,10 @@
         <span class="k">return</span> <span class="n">left</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hyperchunks</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">FunctionCall</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">expression</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">hdf5_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="n">expression</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">hyperslice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">hdf5_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="n">expression</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">hdf5_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)[</span><span class="n">expression</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">hyperslice</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">expression</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;rank&quot;</span><span class="p">:</span>
             <span class="n">values</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">expression</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">expression_type</span><span class="p">,</span> <span class="n">expression_level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">order</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
@@ -264,8 +191,8 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown expression: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">expression</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="update_model"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.update_model">[docs]</a><span class="k">def</span> <span class="nf">update_model</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="update_model"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.update_model">[docs]</a><span class="k">def</span> <span class="nf">update_model</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update the model, and signal any waiting threads that it&#39;s changed.</span>
 <span class="sd">    will only update model base on &quot;state&quot;, &quot;result&quot;, &quot;started&quot;, &quot;finished&quot;, &quot;progress&quot;, &quot;message&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -276,8 +203,8 @@
               <span class="n">model</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
       <span class="n">database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="parse_existing_file"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.parse_existing_file">[docs]</a><span class="k">def</span> <span class="nf">parse_existing_file</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">attachment</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="parse_existing_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.parse_existing_file">[docs]</a><span class="k">def</span> <span class="nf">parse_existing_file</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">attachment</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    calls the parse function specified by the registered parser</span>
 <span class="sd">    :return: not used</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -294,7 +221,7 @@
 
 <span class="nd">@cache_it</span>
 <span class="k">def</span> <span class="nf">get_model_arrayset_metadata</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">arrays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Retrieve metadata describing an arrayset artifact.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve metadata describing an arrayset artifact.</span>
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
 <span class="sd">  database: database object, required</span>
@@ -399,7 +326,7 @@
 
 <span class="nd">@cache_it</span>
 <span class="k">def</span> <span class="nf">get_model_arrayset_data</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">hyperchunks</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read data from an arrayset artifact.</span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -416,27 +343,60 @@
 <span class="sd">    --------</span>
 <span class="sd">    `/api/models/(mid)/arraysets/(aid)/data`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># parse hyperchunks</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hyperchunks</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">hyperchunks</span> <span class="o">=</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hyperchunks</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">hyperchunks</span><span class="p">)</span>
     <span class="n">return_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># get lock and open file</span>
     <span class="k">with</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;artifact:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">aid</span><span class="p">],</span> <span class="s2">&quot;r+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+
+            <span class="c1"># instatiate arrayset</span>
             <span class="n">hdf5_arrayset</span> <span class="o">=</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">ArraySet</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+            <span class="c1"># go through each array in arrayset</span>
             <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hyperchunks</span><span class="o">.</span><span class="n">arrays</span><span class="p">(</span><span class="n">hyperchunks</span><span class="p">,</span> <span class="n">hdf5_arrayset</span><span class="o">.</span><span class="n">array_count</span><span class="p">()):</span>
+
+                <span class="c1"># instatiate array</span>
                 <span class="n">hdf5_array</span> <span class="o">=</span> <span class="n">hdf5_arrayset</span><span class="p">[</span><span class="n">array</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+                <span class="c1"># return values in hyperchunk order</span>
                 <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">order</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">)</span>
+
+                <span class="c1"># go through each attribute in array</span>
                 <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">attributes</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hdf5_array</span><span class="o">.</span><span class="n">attributes</span><span class="p">)):</span>
-                    <span class="n">values</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">attribute</span><span class="o">.</span><span class="n">expression</span><span class="p">,</span> <span class="s2">&quot;attribute&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># previous code: this pulls entire dataset!                 </span>
+                    <span class="c1"># values = evaluate(hdf5_array, attribute.expression, &quot;attribute&quot;)</span>
+
+                    <span class="c1"># if order is present, we still pull entire dataset</span>
+                    <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                       <span class="n">values</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">attribute</span><span class="o">.</span><span class="n">expression</span><span class="p">,</span> <span class="s2">&quot;attribute&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># get each hyperslice</span>
                     <span class="k">for</span> <span class="n">hyperslice</span> <span class="ow">in</span> <span class="n">attribute</span><span class="o">.</span><span class="n">hyperslices</span><span class="p">():</span>
+
+                        <span class="c1"># put in order, if necessary</span>
                         <span class="k">if</span> <span class="n">array</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                             <span class="n">return_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">order</span><span class="p">][</span><span class="n">hyperslice</span><span class="p">])</span>
+                            
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="n">return_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">hyperslice</span><span class="p">])</span>
+
+                            <span class="c1"># prevous code -- select hyperslices from all values</span>
+                            <span class="c1"># return_list.append(values[hyperslice]) </span>
+
+                            <span class="c1"># new code: only pull one hyperslice at a time</span>
+                            <span class="n">values</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">hdf5_array</span><span class="p">,</span> <span class="n">attribute</span><span class="o">.</span><span class="n">expression</span><span class="p">,</span> <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
+                                <span class="n">hyperslice</span><span class="o">=</span><span class="n">hyperslice</span><span class="p">)</span>
+                            <span class="n">return_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">return_list</span>
 
 
-<div class="viewcode-block" id="get_model_parameter"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_model_parameter">[docs]</a><span class="k">def</span> <span class="nf">get_model_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
+<div class="viewcode-block" id="get_model_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_model_parameter">[docs]</a><span class="k">def</span> <span class="nf">get_model_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
     <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;artifact:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">aid</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
         <span class="c1"># cherrypy.log.error(&quot;slycat.web.server.__init__.py get_model_parameter&quot;, &quot;Unknown artifact: %s&quot; % aid)</span>
@@ -444,8 +404,8 @@
     <span class="k">return</span> <span class="n">model</span><span class="p">[</span><span class="s2">&quot;artifact:&quot;</span> <span class="o">+</span> <span class="n">aid</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="put_model_arrayset"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_model_arrayset">[docs]</a><span class="k">def</span> <span class="nf">put_model_arrayset</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="put_model_arrayset"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_model_arrayset">[docs]</a><span class="k">def</span> <span class="nf">put_model_arrayset</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">  Start a new model array set artifact.</span>
 <span class="sd">  :param database: the database with our model</span>
 <span class="sd">  :param model: the model</span>
@@ -469,8 +429,8 @@
                 <span class="n">database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="put_model_array"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_model_array">[docs]</a><span class="k">def</span> <span class="nf">put_model_array</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="put_model_array"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_model_array">[docs]</a><span class="k">def</span> <span class="nf">put_model_array</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">  store array for model</span>
 <span class="sd">  </span>
 <span class="sd">  :param database: database of model</span>
@@ -489,8 +449,8 @@
             <span class="n">slycat</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">ArraySet</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">start_array</span><span class="p">(</span><span class="n">array_index</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="put_model_arrayset_data"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_model_arrayset_data">[docs]</a><span class="k">def</span> <span class="nf">put_model_arrayset_data</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">hyperchunks</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write data to an arrayset artifact.</span>
+<div class="viewcode-block" id="put_model_arrayset_data"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_model_arrayset_data">[docs]</a><span class="k">def</span> <span class="nf">put_model_arrayset_data</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">hyperchunks</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write data to an arrayset artifact.</span>
 
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
@@ -500,7 +460,7 @@
 <span class="sd">    Unique (to the model) arrayset artifact id.</span>
 <span class="sd">  hyperchunks: string or hyperchunks parse tree, required</span>
 <span class="sd">    Specifies where the data will be stored, in :ref:`Hyperchunks` format.</span>
-<span class="sd">  data: iterable, required)</span>
+<span class="sd">  data: iterable, required</span>
 <span class="sd">    A collection of numpy.ndarray data chunks to be stored.  The number of</span>
 <span class="sd">    data chunks must match the number implied by the `hyperchunks` parameter.</span>
 
@@ -535,7 +495,7 @@
             <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="put_model_file"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_model_file">[docs]</a><span class="k">def</span> <span class="nf">put_model_file</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="put_model_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_model_file">[docs]</a><span class="k">def</span> <span class="nf">put_model_file</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">get_model_lock</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">]):</span>
         <span class="n">fid</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="n">model</span><span class="p">[</span>
@@ -548,7 +508,7 @@
         <span class="k">return</span> <span class="n">model</span></div>
 
 
-<div class="viewcode-block" id="get_model_file"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_model_file">[docs]</a><span class="k">def</span> <span class="nf">get_model_file</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
+<div class="viewcode-block" id="get_model_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_model_file">[docs]</a><span class="k">def</span> <span class="nf">get_model_file</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
     <span class="n">artifact</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;artifact:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">aid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">artifact</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
@@ -559,7 +519,7 @@
     <span class="k">return</span> <span class="n">database</span><span class="o">.</span><span class="n">get_attachment</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fid</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="put_model_inputs"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_model_inputs">[docs]</a><span class="k">def</span> <span class="nf">put_model_inputs</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">deep_copy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="put_model_inputs"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_model_inputs">[docs]</a><span class="k">def</span> <span class="nf">put_model_inputs</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">deep_copy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">update_model</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Copying existing model inputs.&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">aid</span> <span class="ow">in</span> <span class="n">source</span><span class="p">[</span><span class="s2">&quot;input-artifacts&quot;</span><span class="p">]:</span>
         <span class="n">original_type</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="s2">&quot;artifact-types&quot;</span><span class="p">][</span><span class="n">aid</span><span class="p">]</span>
@@ -596,19 +556,19 @@
                 <span class="s2">&quot;_rev&quot;</span><span class="p">]</span>  <span class="c1"># This is a workaround for the fact that put_attachment() doesn&#39;t update the revision number for us.</span>
             <span class="n">database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="get_project_data_lock"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_project_data_lock">[docs]</a><span class="k">def</span> <span class="nf">get_project_data_lock</span><span class="p">(</span><span class="n">did</span><span class="p">):</span>
+<div class="viewcode-block" id="get_project_data_lock"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_project_data_lock">[docs]</a><span class="k">def</span> <span class="nf">get_project_data_lock</span><span class="p">(</span><span class="n">did</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">did</span> <span class="ow">in</span> <span class="n">project_data_locks</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">project_data_locks</span><span class="p">[</span><span class="n">did</span><span class="p">]</span>
     <span class="n">project_data_locks</span><span class="p">[</span><span class="n">did</span><span class="p">]</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">project_data_locks</span><span class="p">[</span><span class="n">did</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="get_model_lock"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_model_lock">[docs]</a><span class="k">def</span> <span class="nf">get_model_lock</span><span class="p">(</span><span class="n">model_id</span><span class="p">):</span>
+<div class="viewcode-block" id="get_model_lock"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_model_lock">[docs]</a><span class="k">def</span> <span class="nf">get_model_lock</span><span class="p">(</span><span class="n">model_id</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="n">model_locks</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">model_locks</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span>
     <span class="n">model_locks</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">model_locks</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="put_project_data_parameter"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_project_data_parameter">[docs]</a><span class="k">def</span> <span class="nf">put_project_data_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">project_data</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="put_project_data_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_project_data_parameter">[docs]</a><span class="k">def</span> <span class="nf">put_project_data_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">project_data</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">get_project_data_lock</span><span class="p">(</span><span class="n">project_data</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">]):</span>
         <span class="n">project_data</span><span class="p">[</span><span class="s2">&quot;artifact:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">aid</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="c1"># Alex commenting this out since it results in a KeyError: &#39;artifact-types&#39;</span>
@@ -618,7 +578,7 @@
             <span class="n">project_data</span><span class="p">[</span><span class="s2">&quot;input-artifacts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">project_data</span><span class="p">[</span><span class="s2">&quot;input-artifacts&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">aid</span><span class="p">]))</span>
         <span class="n">database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">project_data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="get_project_data_parameter"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_project_data_parameter">[docs]</a><span class="k">def</span> <span class="nf">get_project_data_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">project_data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+<div class="viewcode-block" id="get_project_data_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_project_data_parameter">[docs]</a><span class="k">def</span> <span class="nf">get_project_data_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">project_data</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
     <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">param</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">project_data</span><span class="p">:</span>
         <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.__init__.py get_project_data_parameter&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown parameter: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">param</span><span class="p">)</span>
@@ -626,7 +586,7 @@
     <span class="k">return</span> <span class="n">project_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
         
 
-<div class="viewcode-block" id="put_model_parameter"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.put_model_parameter">[docs]</a><span class="k">def</span> <span class="nf">put_model_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="put_model_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.put_model_parameter">[docs]</a><span class="k">def</span> <span class="nf">put_model_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">get_model_lock</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">]):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">model</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">])</span>
@@ -645,8 +605,8 @@
             <span class="n">database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="delete_model_parameter"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.delete_model_parameter">[docs]</a><span class="k">def</span> <span class="nf">delete_model_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="delete_model_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.delete_model_parameter">[docs]</a><span class="k">def</span> <span class="nf">delete_model_parameter</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Delete a model parameter in the couch database</span>
 <span class="sd">    :param database: </span>
 <span class="sd">    :param model: model from the couchdb</span>
@@ -658,8 +618,8 @@
         <span class="k">del</span> <span class="n">model</span><span class="p">[</span><span class="s2">&quot;artifact-types&quot;</span><span class="p">][</span><span class="n">aid</span><span class="p">]</span>
         <span class="n">database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="create_session"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.create_session">[docs]</a><span class="k">def</span> <span class="nf">create_session</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create a cached remote session for the given host.</span>
+<div class="viewcode-block" id="create_session"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.create_session">[docs]</a><span class="k">def</span> <span class="nf">create_session</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a cached remote session for the given host.</span>
 
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
@@ -678,8 +638,8 @@
     <span class="k">return</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">remote</span><span class="o">.</span><span class="n">create_session</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="checkjob"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.checkjob">[docs]</a><span class="k">def</span> <span class="nf">checkjob</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">jid</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.</span>
+<div class="viewcode-block" id="checkjob"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.checkjob">[docs]</a><span class="k">def</span> <span class="nf">checkjob</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">jid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.</span>
 
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
@@ -697,8 +657,8 @@
         <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">checkjob</span><span class="p">(</span><span class="n">jid</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_remote_file"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_remote_file">[docs]</a><span class="k">def</span> <span class="nf">get_remote_file</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the content of a file from a remote system.</span>
+<div class="viewcode-block" id="get_remote_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_remote_file">[docs]</a><span class="k">def</span> <span class="nf">get_remote_file</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the content of a file from a remote system.</span>
 
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
@@ -715,8 +675,8 @@
     <span class="k">with</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">remote</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="write_remote_file"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.write_remote_file">[docs]</a><span class="k">def</span> <span class="nf">write_remote_file</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the content of a file from a remote system.</span>
+<div class="viewcode-block" id="write_remote_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.write_remote_file">[docs]</a><span class="k">def</span> <span class="nf">write_remote_file</span><span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the content of a file from a remote system.</span>
 
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
@@ -733,8 +693,8 @@
     <span class="k">with</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">remote</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="get_remote_file_server"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_remote_file_server">[docs]</a><span class="k">def</span> <span class="nf">get_remote_file_server</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns the content of a file from a remote system.</span>
+<div class="viewcode-block" id="get_remote_file_server"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_remote_file_server">[docs]</a><span class="k">def</span> <span class="nf">get_remote_file_server</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the content of a file from a remote system.</span>
 
 <span class="sd">  Parameters</span>
 <span class="sd">  ----------</span>
@@ -752,7 +712,7 @@
         <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="post_model_file"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.post_model_file">[docs]</a><span class="k">def</span> <span class="nf">post_model_file</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="post_model_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.post_model_file">[docs]</a><span class="k">def</span> <span class="nf">post_model_file</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">input</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.__init__.py put_model_file&quot;</span><span class="p">,</span> <span class="s2">&quot;Required input parameter is missing.&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Required input parameter is missing.&quot;</span><span class="p">)</span>
@@ -788,7 +748,7 @@
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ssh_connect"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.ssh_connect">[docs]</a><span class="k">def</span> <span class="nf">ssh_connect</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ssh_connect"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.ssh_connect">[docs]</a><span class="k">def</span> <span class="nf">ssh_connect</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">ssh</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SSHClient</span><span class="p">()</span>
     <span class="n">ssh</span><span class="o">.</span><span class="n">set_missing_host_key_policy</span><span class="p">(</span><span class="n">paramiko</span><span class="o">.</span><span class="n">AutoAddPolicy</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">hostname</span> <span class="o">==</span> <span class="s1">&#39;localhost&#39;</span> <span class="ow">and</span> <span class="s1">&#39;localhost&#39;</span> <span class="ow">in</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;slycat-web-server&quot;</span><span class="p">][</span><span class="s2">&quot;remote-authentication&quot;</span><span class="p">]:</span>
@@ -821,7 +781,7 @@
     <span class="k">return</span> <span class="n">ssh</span></div>
 
 
-<div class="viewcode-block" id="get_password_function"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.get_password_function">[docs]</a><span class="k">def</span> <span class="nf">get_password_function</span><span class="p">():</span>
+<div class="viewcode-block" id="get_password_function"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.get_password_function">[docs]</a><span class="k">def</span> <span class="nf">get_password_function</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">get_password_function</span><span class="o">.</span><span class="n">password_check</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;password-check&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;slycat-web-server&quot;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="s2">&quot;500 No password check configured.&quot;</span><span class="p">)</span>
@@ -841,8 +801,8 @@
 <span class="n">get_password_function</span><span class="o">.</span><span class="n">password_check</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="response_url"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.response_url">[docs]</a><span class="k">def</span> <span class="nf">response_url</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="response_url"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.response_url">[docs]</a><span class="k">def</span> <span class="nf">response_url</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get the resonse_url and clean it to make sure</span>
 <span class="sd">    that we are not being spoofed</span>
 <span class="sd">    :return: url to route to once signed in</span>
@@ -869,8 +829,8 @@
     <span class="k">return</span> <span class="n">cleaned_url</span></div>
 
 
-<div class="viewcode-block" id="decode_username_and_password"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.decode_username_and_password">[docs]</a><span class="k">def</span> <span class="nf">decode_username_and_password</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="decode_username_and_password"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.decode_username_and_password">[docs]</a><span class="k">def</span> <span class="nf">decode_username_and_password</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    decode the url from the json that was passed to us</span>
 <span class="sd">    :return: decoded url and password as a tuple</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -878,22 +838,16 @@
         <span class="c1"># cherrypy.log.error(&quot;decoding username and password&quot;)</span>
         <span class="n">user_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base64_decode</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s2">&quot;user_name&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
         <span class="n">password</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base64_decode</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s2">&quot;password&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
-
-        <span class="c1"># try and get the redirect path for after successful login</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">location</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s2">&quot;location&quot;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">location</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="c1"># cherrypy.log.error(&quot;no location provided moving on&quot;)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="c1"># cherrypy.log.error(&quot;username and password could not be decoded&quot;)</span>
         <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat-standard-authentication.py authenticate&quot;</span><span class="p">,</span> <span class="s2">&quot;cherrypy.HTTPError 400&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="mi">400</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">user_name</span><span class="p">,</span> <span class="n">password</span></div>
 
 
-<div class="viewcode-block" id="clean_up_old_session"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.clean_up_old_session">[docs]</a><span class="k">def</span> <span class="nf">clean_up_old_session</span><span class="p">(</span><span class="n">user_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="clean_up_old_session"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.clean_up_old_session">[docs]</a><span class="k">def</span> <span class="nf">clean_up_old_session</span><span class="p">(</span><span class="n">user_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    try and delete any outdated sessions</span>
 <span class="sd">    for the user if they have the cookie for it</span>
 <span class="sd">    :return:no-op</span>
@@ -925,8 +879,8 @@
             <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="check_user"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.check_user">[docs]</a><span class="k">def</span> <span class="nf">check_user</span><span class="p">(</span><span class="n">session_user</span><span class="p">,</span> <span class="n">apache_user</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="check_user"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.check_user">[docs]</a><span class="k">def</span> <span class="nf">check_user</span><span class="p">(</span><span class="n">session_user</span><span class="p">,</span> <span class="n">apache_user</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    check to see if the session user is equal to the apache user raise 403 and delete the</span>
 <span class="sd">    session if they are not equal</span>
 <span class="sd">    :param session_user: user_name in the couchdb use session</span>
@@ -956,8 +910,8 @@
         <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="mi">403</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="create_single_sign_on_session"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.create_single_sign_on_session">[docs]</a><span class="k">def</span> <span class="nf">create_single_sign_on_session</span><span class="p">(</span><span class="n">remote_ip</span><span class="p">,</span> <span class="n">auth_user</span><span class="p">,</span> <span class="n">secure</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="create_single_sign_on_session"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.create_single_sign_on_session">[docs]</a><span class="k">def</span> <span class="nf">create_single_sign_on_session</span><span class="p">(</span><span class="n">remote_ip</span><span class="p">,</span> <span class="n">auth_user</span><span class="p">,</span> <span class="n">secure</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    WSGI/RevProxy no-login session creations.</span>
 <span class="sd">    Successful authentication and access verification,</span>
 <span class="sd">    create a session and return.</span>
@@ -992,7 +946,7 @@
     <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">login</span> <span class="o">=</span> <span class="n">auth_user</span></div>
 
 
-<div class="viewcode-block" id="check_rules"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.check_rules">[docs]</a><span class="k">def</span> <span class="nf">check_rules</span><span class="p">(</span><span class="n">groups</span><span class="p">):</span>
+<div class="viewcode-block" id="check_rules"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.check_rules">[docs]</a><span class="k">def</span> <span class="nf">check_rules</span><span class="p">(</span><span class="n">groups</span><span class="p">):</span>
     <span class="c1"># cherrypy.log.error(&quot;%s@%s: Password check succeeded. checking for rules&quot; % (user_name, remote_ip))</span>
     <span class="c1"># Successful authentication, now check access rules.</span>
     <span class="n">authentication_kwargs</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;slycat-web-server&quot;</span><span class="p">][</span><span class="s2">&quot;authentication&quot;</span><span class="p">][</span><span class="s2">&quot;kwargs&quot;</span><span class="p">]</span>
@@ -1031,8 +985,8 @@
                 <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="s2">&quot;403 User denied by authentication rules.&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="check_https_get_remote_ip"><a class="viewcode-back" href="../../../slycat.web.server.html#slycat.web.server.check_https_get_remote_ip">[docs]</a><span class="k">def</span> <span class="nf">check_https_get_remote_ip</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="check_https_get_remote_ip"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.server.html#slycat.web.server.check_https_get_remote_ip">[docs]</a><span class="k">def</span> <span class="nf">check_https_get_remote_ip</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    checks that the connection is https and then returns the users remote ip</span>
 <span class="sd">    :return: remote ip</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1045,51 +999,32 @@
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software
-
-    </p>
+rights in this software.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

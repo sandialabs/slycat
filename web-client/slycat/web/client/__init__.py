@@ -4,6 +4,8 @@
 
 # This module supports interacting with the Slycat server from Python and the command line.
 
+__version__ = "4.2.0"
+
 # standard libraries
 
 # parse arguments
@@ -224,7 +226,9 @@ class Connection(object):
     host_name = host_name[0]
 
     # host and port
-    self.host = host.replace(host_alias, host_name)
+    self.host = host
+    if host != HOST_DEFAULT:
+      self.host = host.replace(host_alias, host_name)
     if port:
       self.host = self.host + ':' + port
 
@@ -972,9 +976,6 @@ class Connection(object):
     rid: string
       Unique reference identifier.
 
-    See Also
-    --------
-    :http:post:`/api/projects/(pid)/references`
     """
 
     return self.request("POST", "/api/projects/%s/references" % (pid), 

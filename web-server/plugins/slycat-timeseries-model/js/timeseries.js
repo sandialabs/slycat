@@ -584,11 +584,19 @@ export default function initialize_timeseries_model(
         selected_variable_changed(parameters.variable[0]);
         $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
       });
+
+      // Call setup_widgets when table is finished initializing because 
+      // dendrogram waits for table to be ready so it can send it the selected node
+      // and table can render the appropriate rows.
+      setup_widgets();
     }
 
     // Setup the dendrogram ...
     if (
       !dendrogram_ready &&
+      // Make sure the table is ready because dendrogram initialization calls the table
+      // and lets it know which node is selected so it can render the appropriate rows.
+      table_ready &&
       bookmark &&
       s_to_a(clusters) &&
       cluster_index !== null &&
@@ -624,7 +632,7 @@ export default function initialize_timeseries_model(
         dendrogram_options.dendrogram_sort_order = false;
       }
 
-      // Respond to note selection changes. This needs to be above the instantiation of the dendrogram
+      // Respond to node selection changes. This needs to be above the instantiation of the dendrogram
       // because the table needs to know which node is selected in order for it to initialize. If this
       // event handler is registered after the dendrogram is initialized, its first node-selection-changed
       // event never makes it to the table and we end up with a blank table.
