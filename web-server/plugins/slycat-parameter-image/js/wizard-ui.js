@@ -399,6 +399,7 @@ function constructor(params) {
           onReauthCallBack={onReauth}
           hostname={component.remote.hostname()}
           pid={component.project._id()}
+          mid={component.model._id()}
         />
       </div>)
   }

@@ -1396,7 +1396,7 @@ module.post_browse_hdf5 = function (params) {
     contentType: 'application/json',
     data: JSON.stringify({}),
     type: 'POST',
-    url: `${api_root}hdf5/browse${params.path}/${params.pid}`,
+    url: `${api_root}hdf5/browse${params.path}/${params.pid}/${params.mid}`,
     success(result) {
       if (params.success) params.success(result);
     },

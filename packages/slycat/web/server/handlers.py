@@ -2758,10 +2758,41 @@ def post_smb_browse(hostname, path):
     with slycat.web.server.smb.get_session(sid) as session:
         return session.browse(path=path)
 
-def post_browse_hdf5(path, pid):
+def post_browse_hdf5(path, pid, mid):
+    def allkeys_single_level(obj, tree_structure):
+        path = obj.name # This is current top level path
+        tree_structure['path'] = path
+        tree_structure['name'] = []
+        tree_structure['sizes'] = []
+        tree_structure['types'] = []
+        tree_structure['mtimes'] = []
+        tree_structure['mime-types'] = []
+        all_items = obj.items()
+        for key, value in all_items:
+            # key will be all the sub groups and datasets in the current path
+            tree_structure['name'].append(key)
+            tree_structure['sizes'].append(0)
+            tree_structure['types'].append('f')
+            tree_structure['mtimes'].append('2024')
+            if isinstance(value, h5py.Group):
+                tree_structure['mime-types'].append('group')
+            else:
+                tree_structure['mime-types'].append('dataset')
+        return tree_structure
     # Need to find the HDF5 stored on Slycat server, so we can query it for the path.
-    cherrypy.log.error('-- PID: %s' % str(pid))
-    return '...'
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    did = model['project_data'][0]
+    project_data = database.get("project_data", did)
+    file_name = project_data['hdf5_name']
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+    h5 = h5py.File(hdf5_path, 'r')
+    tree_structure = {}
+    current_level = allkeys_single_level(h5['interfaces/'], tree_structure)
+    json_payload = json.dumps(current_level)
+    cherrypy.log.error('-- CURRENT LEVEL: %s' % str(current_level))
+
+    return json_payload
 
 @cherrypy.tools.json_out(on=True)
 def get_remotes(hostname):

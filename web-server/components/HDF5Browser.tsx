@@ -22,6 +22,7 @@ export interface HDF5BrowserProps {
   onSelectParserCallBack: Function
   onReauthCallBack: Function
   pid: string
+  mid: string
 }
 
 /**
@@ -46,7 +47,8 @@ export interface HDF5BrowserState {
   browseError: boolean
   browserUpdating: boolean
   selected:number,
-  pid:string
+  pid:string,
+  mid:string
 }
 
 /**
@@ -84,7 +86,8 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
         persistenceId: props.persistenceId === undefined ? '' : props.persistenceId,
         browserUpdating: false,
         selected:-1,
-        pid: props.pid
+        pid: props.pid,
+        mid: props.mid
       }
     }
 
@@ -102,6 +105,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
             hostname : this.props.hostname,
             path : pathInput,
             pid: this.props.pid,
+            mid: this.props.mid,
             success : (results:any) =>
             {
             localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
@@ -109,12 +113,12 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
                 browseError:false,
                 pathError:false,
             });
-
+            let json_results = JSON.parse(results)
             let files: FileMetaData[] = []
             if(pathInput != "/")
                 files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
-            for(let i = 0; i != results.names.length; ++i)
-                files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mimeType:results["mime-types"][i]});
+            for(let i = 0; i != json_results['name'].length; ++i)
+                files.push({name:json_results['name'][i], size:json_results['sizes'][i], type:json_results['types'][i], mtime:json_results['mtimes'][i], mimeType:json_results["mime-types"][i]});
             this.setState({
                 rawFiles:files,
                 browserUpdating:false
