@@ -2772,14 +2772,16 @@ def post_browse_hdf5(path, pid, mid):
             # key will be all the sub groups and datasets in the current path
             tree_structure['name'].append(key)
             tree_structure['sizes'].append(0)
-            tree_structure['types'].append('f')
             tree_structure['mtimes'].append('2024')
             if isinstance(value, h5py.Group):
-                tree_structure['mime-types'].append('group')
+                tree_structure['mime-types'].append('application/x-directory')
+                tree_structure['types'].append('d')
             else:
-                tree_structure['mime-types'].append('dataset')
+                tree_structure['mime-types'].append('file')
+                tree_structure['types'].append('f')
         return tree_structure
     # Need to find the HDF5 stored on Slycat server, so we can query it for the path.
+    path = path.replace('-', '/')
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     did = model['project_data'][0]
@@ -2788,9 +2790,8 @@ def post_browse_hdf5(path, pid, mid):
     hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
     h5 = h5py.File(hdf5_path, 'r')
     tree_structure = {}
-    current_level = allkeys_single_level(h5['interfaces/'], tree_structure)
+    current_level = allkeys_single_level(h5[path], tree_structure)
     json_payload = json.dumps(current_level)
-    cherrypy.log.error('-- CURRENT LEVEL: %s' % str(current_level))
 
     return json_payload
 

@@ -100,6 +100,11 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
      */
     private browse = (pathInput:string) =>
     {
+        let first_char = Array.from(pathInput)[0];
+        if(first_char != '/') {
+          pathInput = '/' + pathInput;
+        }
+        pathInput = pathInput.replace(/(?!^)\//g, "-");
         client.post_browse_hdf5(
         {
             hostname : this.props.hostname,
