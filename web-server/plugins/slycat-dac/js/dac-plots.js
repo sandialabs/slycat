@@ -109,6 +109,10 @@ var y_label = [];
 // mouse-over line for plots
 var mouse_over_line = [];
 
+// scatter plot radii
+var scatter_radius = 2;
+var scatter_focus = 3;
+
 // set up initial private variables, user interface
 module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
@@ -262,8 +266,8 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 			.append("svg:rect")
 			.attr("id", "clip-rect")
 			.attr("x", plot_adjustments.padding_left
-					 + plot_adjustments.y_label_padding)
-			.attr("y", plot_adjustments.padding_top);
+					 + plot_adjustments.y_label_padding - scatter_focus)
+			.attr("y", plot_adjustments.padding_top - scatter_focus);
 
 		// mouse-over line
 		mouse_over_line[i] = plot[i].append("line")
@@ -793,14 +797,14 @@ module.draw = function()
 		plot[i].attr("width", width)
 			   .attr("height", height);
 
-		// update size of clip rectangle
+		// update size of clip rectangle (+4 is for scatter plot points)
 		plot[i].selectAll("#clip-rect")
 			.attr("width", Math.max(width - plot_adjustments.padding_left
 								 - plot_adjustments.y_label_padding
-								 - plot_adjustments.padding_right, 0))
+								 - plot_adjustments.padding_right + 2*scatter_focus, 0))
 			.attr("height", Math.max(height - plot_adjustments.padding_bottom
 								   - plot_adjustments.x_label_padding
-								   - plot_adjustments.padding_top, 0));
+								   - plot_adjustments.padding_top + 2*scatter_focus, 0));
 
 		// update mouse-over line plot limits
 		mouse_over_line[i].attr("x1", plot_adjustments.padding_left +
@@ -1020,6 +1024,7 @@ function update_data_d3(i)
 
 	// remove any data already present
 	plot[i].selectAll(".curve").remove();
+	plot[i].selectAll(".points").remove();
 
 	// remove focus curve if present
 	plot[i].selectAll(".focus").remove();
@@ -1079,11 +1084,52 @@ function update_data_d3(i)
 					   .attr("stroke-width", 2)
 					   .attr("fill", "none")
 					   .on("click", deselect_curve);
+			}
 
+		} else if ($.trim(plot_type[plots_selected[i]]) == 'Scatter') {
+
+			// set (or re-set) zoom brushing & vertical line
+			plot[i].selectAll("g.brush").remove();
+			plot[i].append("g")
+				   .attr("class", "brush")
+				   .call(d3.svg.brush()
+				   .x(x_scale[i])
+				   .y(y_scale[i])
+				   .on("brushend", zoom))
+				   .on("mouseover", vertical_line_start)
+				   .on("mousemove", vertical_line_move)
+				   .on("mouseout", vertical_line_end);
+
+			// add points to curves
+			plot[i].selectAll(".points")
+				   .data(generate_point_data(i))
+				   .attr("class", "points")
+				   .enter()
+				   .append("circle")
+				   .attr("class", "points")
+				   .attr("fill", function(d) { return sel_color[d[2]]; })
+				   .attr("r", scatter_radius)
+				   .on("click", select_points);
+
+			// draw focus curve (on top of other curves) if data is available
+			if ((selections.focus() != null) &&
+				(focus_curve_ind() != -1)) {
+
+				// draw focus points
+				plot[i].selectAll(".focus")
+					   .data([d3.transpose([plots_selected_time[i],
+										plots_selected_data[i][focus_curve_ind()]])][0])
+					   .attr("class", "focus")
+					   .enter()
+					   .append("circle")
+					   .attr("class", "focus")
+					   .attr("fill", focus_color)
+					   .attr("r", scatter_focus)
+					   .on("click", deselect_curve);
 			}
 
 		} else {
-			dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
+			dialog.ajax_error ('Only "Curve" or "Scatter" type plots are implemented.')("","","");
 		};
 
 	};
@@ -1177,6 +1223,24 @@ function generate_curve_data (i)
 	return curve_data;
 }
 
+// generate a d3 style set of point data corresponding to the timeseries curves.
+function generate_point_data(i)
+{
+
+	// point data is just curve data transposed
+	var curve_data = generate_curve_data(i);
+
+	// stack curve data and add curve index (used for selection)
+	var point_data = [];
+	for (var j = 0; j < curve_data.length; j++) {
+		for (var k = 0; k < curve_data[j].length; k++) {
+			point_data.push(curve_data[j][k].concat(j));
+		}
+	}
+
+	return point_data;
+}
+
 // draw a plot with specific axis, labels, etc.
 function draw_plot_d3(i)
 {
@@ -1190,10 +1254,18 @@ function draw_plot_d3(i)
 							.y(function(d) { return y_scale[i](d[1]); }))
 			   .attr("clip-path", "url(#clip)");
 
+	} else if ($.trim(plot_type[plots_selected[i]]) == 'Scatter') {
+
+		plot[i].selectAll("circle")
+			   .attr("cx", function(d) { return x_scale[i](d[0]); } )
+		       .attr("cy", function(d) { return y_scale[i](d[1]); } )
+			   .attr("clip-path", "url(#clip)");
+
 	} else {
 
 		// note: this will never happen using the PTS wizard
-		dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
+		dialog.ajax_error ('Only "Curve" or "Scatter" type plots are implemented.')("","","");
+
 	};
 
 	// label axes (if necessary re-draw)
@@ -1391,10 +1463,24 @@ function identify_plots_to_update (i) {
 // user hovered over a curve
 function select_curve (d,i)
 {
-
+	
     // get selection index
     var sel_ind = d[0][2];
 
+    // find index of curve selected
+	var curve_id = identify_curve(sel_ind, i);
+
+	// highlight selected curve in other views
+	var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+										 active_sel: curve_id,
+										 active: true} });
+	document.body.dispatchEvent(selectionEvent);
+
+}
+
+// identify curve based on section index (r,g,b) and index into list of curve(i)
+function identify_curve (sel_ind, i)
+{
     // find index of curve selected
     var curve_id = null;
     var curr_sel_ind = 0;
@@ -1413,10 +1499,22 @@ function select_curve (d,i)
         curr_sel_ind = curr_sel_ind + Math.min(curr_sel.length, max_num_plots);
     }
 
+	return curve_id;
+}
+// user selected scatter plot curve
+function select_points (d,i)
+{
+
+	// get selection index, curve index
+	var sel_ind = d[2];
+	var i = d[3];
+
+	var curve_id = identify_curve(sel_ind,i);
+
 	// highlight selected curve in other views
 	var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
-										 active_sel: curve_id,
-										 active: true} });
+		active_sel: curve_id,
+		active: true} });
 	document.body.dispatchEvent(selectionEvent);
 
 }
