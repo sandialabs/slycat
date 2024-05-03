@@ -49,6 +49,26 @@ services:
       - ../../../:/usr/src/app/slycat
     restart: always
 
+  slycat-test-client:
+    build:
+      context: .
+      dockerfile: ./slycat-test-client/DockerFile
+    working_dir: /usr/src/app/slycat/test-client/test-client/
+    command:
+      - bash
+      - -c
+      - | 
+        npm config set strict-ssl false \
+        && NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
+        && npm run dev
+    ports:
+      - 9001:9001
+    networks:
+      - sly-net
+    volumes:
+      - ../../../:/usr/src/app/slycat
+    restart: always
+
   # http://host_os_ip/haproxy?stats  usr:admin, password:admin
   haproxy:
     build:
