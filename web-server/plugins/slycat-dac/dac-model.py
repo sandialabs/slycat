@@ -563,14 +563,18 @@ def register_slycat_plugin(context):
             range_change.append(range_change_x[i] or range_change_y[i])
 
             # find indices within user selected range for each variable
-            range_inds = numpy.where((time_points[i] >= zoom_x[i][0]) & \
-                (time_points[i] <= zoom_x[i][1]))[0]
+            range_inds = list(numpy.where((time_points[i] >= zoom_x[i][0]) & \
+                (time_points[i] <= zoom_x[i][1]))[0])
 
             # make sure something was selected
             if len(range_inds) == 0:
                 range_inds_min = numpy.amax(numpy.where(time_points[i] < zoom_x[i][0])[0])
-                range_inds_max = numpy.amin(numpy.where(time_points[i] > zoom_y[i][1])[0])
+                range_inds_max = numpy.amin(numpy.where(time_points[i] > zoom_x[i][1])[0])
                 range_inds = list(range(range_inds_min, range_inds_max+1))
+
+            # add to end of range, unless entire range selected
+            elif range_inds[-1] < (len(time_points[i])-1):
+                range_inds.append(range_inds[-1] + 1)
 
             # add indices just before and just after user selected range
             if range_inds[0] > 0:
