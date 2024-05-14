@@ -217,7 +217,7 @@ $(document).ready(function () {
       // Create the bookmarker now that we have the project
       bookmarker = bookmark_manager.create(
         redux_state_tree.derived.model.project,
-        redux_state_tree.derived.model_id
+        redux_state_tree.derived.model_id,
       );
       // Retrieve bookmarked state information ...
       bookmarker.getState(function (bookmark) {
