@@ -292,3 +292,10 @@ a {
 #legend g.legend {
   cursor: move;
 }
+
+/* When we have a .slycatEmbedded parent (i.e., slycat is being embedded in another application,
+   hide the following elements: */
+/* Navbar */
+.slycatEmbedded #slycat-navbar-container {
+  display: none !important;
+}

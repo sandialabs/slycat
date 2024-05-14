@@ -54,6 +54,7 @@ $(document).ready(function () {
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
 
+  let layout = null;
   var bookmarker = null;
   var store = null;
 
@@ -90,6 +91,11 @@ $(document).ready(function () {
         //   values: [], // All values for the column in an array
         // }
       },
+      // Set "embed" to true if the "embed" query parameter is present
+      embed: URI(window.location).query(true).embed !== undefined,
+      hideControls: URI(window.location).query(true).hideControls !== undefined,
+      hideTable: URI(window.location).query(true).hideTable !== undefined,
+      hideBarplot: URI(window.location).query(true).hideBarplot !== undefined,
     },
     colormap: "night", // String reprsenting current color map
     simulations_selected: [], // Array containing which simulations are selected. Empty for none.
@@ -156,7 +162,7 @@ $(document).ready(function () {
 
   // Layout resizable panels ...
   get_model_promise.then(function () {
-    $("#cca-model").layout({
+    layout = $("#cca-model").layout({
       applyDefaultStyles: false,
       north: {
         size: 39,
@@ -540,6 +546,37 @@ $(document).ready(function () {
       });
     };
     store.subscribe(bookmarkReduxStateTree);
+
+    // Add the "slycatEmbedded" class to the body if state has embed set to true
+    if (store.getState().derived.embed) {
+      document.body.classList.add("slycatEmbedded");
+      // Add the "hideControls" class to the body if state has hideControls set to true
+      if (store.getState().derived.hideControls) {
+        document.body.classList.add("hideControls");
+        layout.hide("north");
+      }
+      // Add the "hideTable" class to the body if state has hideTable set to true
+      if (store.getState().derived.hideTable) {
+        document.body.classList.add("hideTable");
+        layout.hide("south");
+      }
+      // Add the "hideScatterplot" class to the body if state has hideScatterplot set to true.
+      // We don't currently support hiding the scatterplot in embedded mode, but we can add the class
+      // to the body in case we want to support it in the future.
+      if (store.getState().derived.hideScatterplot) {
+        document.body.classList.add("hideScatterplot");
+        // Neither of these work to hide the scatterplot pane because it's the center pane.
+        // layout.hide("center");
+        // layout.close("center");
+      }
+      // Add the "hideBarplot" class to the body if state has hideBarplot set to true
+      if (store.getState().derived.hideBarplot) {
+        document.body.classList.add("hideBarplot");
+        layout.hide("west");
+      }
+      // Resize the entire layout to fit its container, which probably changed size when the class was added.
+      layout.resizeAll();
+    }
 
     render_components();
   }
