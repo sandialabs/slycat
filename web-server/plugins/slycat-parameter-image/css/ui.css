@@ -1029,9 +1029,6 @@ button#controls-button-var-options {
 /* When we have a .slycatEmbedded parent (i.e., slycat is being embedded in another application,
    hide the following elements: */
 /* Navbar */
-.slycatEmbedded #slycat-navbar-container,
-/* Markings */
-.slycatEmbedded .slycat-marking
-{
+.slycatEmbedded #slycat-navbar-container {
   display: none !important;
 }
