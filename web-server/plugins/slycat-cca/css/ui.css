@@ -1,55 +1,48 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-.ui-layout-resizer
-{
+.ui-layout-resizer {
   background-color: #ddc;
 }
 
-.ui-layout-toggler
-{
+.ui-layout-toggler {
   background-color: #ccb;
 }
 
-.ui-layout-resizer-open.ui-layout-resizer-hover, .ui-layout-resizer-dragging, .ui-layout-toggler-hover
-{
+.ui-layout-resizer-open.ui-layout-resizer-hover,
+.ui-layout-resizer-dragging,
+.ui-layout-toggler-hover {
   background-color: #fc6;
 }
 
-.ui-layout-pane, .ui-layout-container
-{
+.ui-layout-pane,
+.ui-layout-container {
   background: white;
   padding: 0;
   border: 0;
   margin: 0;
 }
-#controls-pane
-{
+#controls-pane {
   z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
 }
-.center
-{
+.center {
   text-align: center;
 }
-#color-switcher ul.dropdown-menu
-{
-  background-color: #F2F2F2;
+#color-switcher ul.dropdown-menu {
+  background-color: #f2f2f2;
 }
-.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
-{
-  background-color: #E4E4E4;
+.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover {
+  background-color: #e4e4e4;
 }
-.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
-{
-  background-color: #337AB7;
+.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover {
+  background-color: #337ab7;
 }
 
-#table
-{
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+#table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* New CCA table styles */
@@ -78,14 +71,13 @@
 }
 .wrapper {
   /*No longer using box-sizing since we are sizing cells based on an wrapper div inside them*/
-/*  box-sizing: border-box;
+  /*  box-sizing: border-box;
   -moz-box-sizing: border-box;*/
 }
 .barplotHeaderColumn .wrapper {
   padding: 3px;
 }
-.mask
-{
+.mask {
   background-color: white;
   position: relative; /* needed to get this cell to cover scrolling header row */
   z-index: 1;
@@ -94,7 +86,6 @@
   padding: 3px;
 }
 .barplotViewport {
-
 }
 .barplotGroup {
   overflow: hidden;
@@ -108,20 +99,17 @@
 .barplotHeader,
 .barplotColumn,
 .mask,
-.inputs .ui-resizable-s
-{
-  border-color: #C0C0C0;
+.inputs .ui-resizable-s {
+  border-color: #c0c0c0;
   border-style: solid;
   border-width: 0;
 }
 /*.barplotGroup.inputs,*/
-.barplotHeader
-{
+.barplotHeader {
   border-bottom-width: 1px;
 }
 .barplotColumn,
-.mask
-{
+.mask {
   border-right-width: 1px;
 }
 .inputs .ui-resizable-s {
@@ -129,10 +117,10 @@
   height: 3px;
   border-bottom-width: 1px;
   border-top-width: 1px;
-  background-color: #DDDDCC;
+  background-color: #ddddcc;
 }
 .inputs .ui-resizable-s.ui-resizable-hover {
-  background-color: #FFCC66;
+  background-color: #ffcc66;
 }
 .noVerticalResize .ui-resizable-s {
   display: none !important;
@@ -141,11 +129,11 @@
   width: 50px;
   height: 100%;
   margin: 0 auto;
-  background-color: #CCCCBB;
+  background-color: #ccccbb;
 }
 .toggle-control-s.toggle-control-hover {
   cursor: pointer;
-  background-color: #FFCC66;
+  background-color: #ffcc66;
 }
 /*.barplotGroup.inputs {
   border-bottom: 7px solid red;
@@ -170,42 +158,35 @@
   text-align: right;
 }
 .rowInput,
-.rowOutput
-{
+.rowOutput {
   cursor: pointer;
 }
 .cca-barplot-table .inputLabel .wrapper,
-.cca-barplot-table .outputLabel .wrapper
-{
+.cca-barplot-table .outputLabel .wrapper {
   padding: 3px;
 }
 .cca-barplot-table .inputLabel,
 .cca-barplot-table .outputLabel,
 .barplotCell.col0,
-.barplotHeaderColumn
-{
+.barplotHeaderColumn {
   font-weight: bold;
   text-align: center;
 }
-.cca-barplot-table .inputLabel
-{
+.cca-barplot-table .inputLabel {
   background: #eeffe0;
 }
 .cca-barplot-table .inputLabel.selected-variable,
 .cca-barplot-table .barplotRow.rowInput.selected-variable,
-.cca-barplot-table .barplotCell.rowInput.selected-variable
-{
+.cca-barplot-table .barplotCell.rowInput.selected-variable {
   background: #3ca654;
   color: white;
 }
-.cca-barplot-table .outputLabel
-{
+.cca-barplot-table .outputLabel {
   background: #eeeeff;
 }
 .cca-barplot-table .outputLabel.selected-variable,
 .cca-barplot-table .barplotRow.rowOutput.selected-variable,
-.cca-barplot-table .barplotCell.rowOutput.selected-variable
-{
+.cca-barplot-table .barplotCell.rowOutput.selected-variable {
   background: #7767b0;
   color: white;
 }
@@ -215,19 +196,16 @@
 .barplotCellValue,
 .selected-component .spacer,
 .negative,
-.positive
-{
+.positive {
   display: inline-block;
 }
-.barplotCellValue
-{
+.barplotCellValue {
   padding: 3px 23px 3px 18px;
   width: 40px;
 }
 .selected-component .barplotCellValue,
-.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
-{
-  background-color: #DDDDDD;
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper {
+  background-color: #dddddd;
   border-width: 0px 1px;
   border-style: solid;
   border-color: #808080;
@@ -236,43 +214,35 @@
 .barplotHeaderColumn.selected-component .wrapper {
   padding: 0;
 }
-.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
-{
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper {
   padding: 3px 3px 3px 3px;
   width: 75px;
 }
-.spacer
-{
+.spacer {
   width: 100px;
   display: none;
 }
-.negativeSpacer
-{
+.negativeSpacer {
   text-align: right;
 }
-.positiveSpacer
-{
+.positiveSpacer {
   text-align: left;
 }
 .negative,
-.positive
-{
+.positive {
   height: 12px;
 }
-.negative
-{
+.negative {
   background-color: blue;
   border-top-left-radius: 2px;
   border-bottom-left-radius: 2px;
 }
-.positive
-{
+.positive {
   background-color: red;
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
-.cca-barplot-table span.sortCCAComponent 
-{
+.cca-barplot-table span.sortCCAComponent {
   width: 15px;
   height: 15px;
   display: inline-block;
@@ -283,34 +253,28 @@
   margin-left: 3px;
 }
 .cca-barplot-table .barplotHeaderColumn:hover .icon-sort-off,
-.icon-sort-off:hover 
-{
+.icon-sort-off:hover {
   background: transparent url(../../../img/sort-desc-light.png) no-repeat center center;
 }
-.icon-sort-off:hover 
-{
-  border: 1px solid #C7C7C7 !important;
+.icon-sort-off:hover {
+  border: 1px solid #c7c7c7 !important;
 }
 .icon-sort-ascending:hover,
-.icon-sort-descending:hover
-{
+.icon-sort-descending:hover {
   border: 1px solid #878787 !important;
 }
 .barplotHeaderColumn.mask.col0 {
   vertical-align: top;
 }
 .legend-axis path,
-.legend-axis line
-{
+.legend-axis line {
   fill: none;
   stroke: black;
 }
-a
-{
+a {
   cursor: pointer;
 }
-#controls-pane .bootstrap-styles .dropdown-menu
-{
+#controls-pane .bootstrap-styles .dropdown-menu {
   max-height: 500px;
   overflow-y: auto;
 }
