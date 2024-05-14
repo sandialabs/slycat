@@ -540,12 +540,14 @@ $(document).ready(function () {
               document.body.classList.add("hideTable");
               layout.hide("south");
             }
-            // Add the "hideScatterplot" class to the body if state has hideScatterplot set to true
+            // Add the "hideScatterplot" class to the body if state has hideScatterplot set to true.
+            // We don't currently support hiding the scatterplot in embedded mode, but we can add the class
+            // to the body in case we want to support it in the future.
             if (window.store.getState().derived.hideScatterplot) {
               document.body.classList.add("hideScatterplot");
-              layout.hide("center");
-              layout.close("center");
-              // layout.sizePane("south", $("#parameter-image-plus-layout").height() * 2);
+              // Neither of these work to hide the scatterplot pane because it's the center pane.
+              // layout.hide("center");
+              // layout.close("center");
             }
             // Add the "hideFilters" class to the body if state has hideFilters set to true
             if (window.store.getState().derived.hideFilters) {
