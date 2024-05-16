@@ -352,7 +352,10 @@ def read_units_table (metadata, arguments, log):
                 units = RUN_CHART_UNITS[RUN_CHART_MATCHES.index(run_chart)]
             
             # construct row of table
-            meta_vars.append([rc_name, 'Run', units, 'Curve'])
+            if arguments.curve:
+                meta_vars.append([rc_name, 'Run', units, 'Curve'])
+            else:
+                meta_vars.append([rc_name, 'Run', units, 'Scatter'])
 
     # note if we inferred units
     if not arguments.do_not_infer_chart_units:
@@ -596,7 +599,7 @@ def parser ():
     group = parser.add_mutually_exclusive_group(required=True)
 
     group.add_argument("--input-tdms-glob", nargs=2,
-        help="Use tdms directory glob format as input, first argument is directroy, organized by " +
+        help="Use tdms directory glob format as input, first argument is directory, organized by " +
              "part and lot as on the production server; second argument is part_num_match, speficied with " +
              'a unix glob using wildcards, for example "XXXXXX*", or "XXXXXX_XX*". ' + 
              'Note you should use "" in Unix to pass wildcards. Produces one run chart per directory.')
@@ -672,6 +675,10 @@ def parser ():
              'If you want suffixes that include spaces, use quotes, ' +
              'e.g. "suffix with space".')
 
+    # use curve plots for run charts
+    parser.add_argument("--curve", action="store_true",
+        help="Use curves for run charts instead of scatter plots.")
+    
     return parser
 
 # tdms entry point
