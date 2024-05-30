@@ -78,7 +78,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
     public constructor(props:HDF5BrowserProps) {
       super(props)
       this.state = {
-        path:"/",
+        path:"//",
         pathInput: "//",
         rawFiles: [],
         pathError: false,
@@ -174,6 +174,18 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
         new_path += "/";
       new_path += right;
       return new_path;
+    }
+
+    private browseUpDirectory = (currentPath:string) => {
+      let split_path = currentPath.split('/');
+      let parent_directory = '';
+      for (let i = 1; i < split_path.length - 1; i++) {
+        parent_directory = parent_directory + '/' + split_path[i];
+      }
+      if (parent_directory == '/' || parent_directory == '') {
+        parent_directory = '//';
+      }
+      this.browse(parent_directory);
     }
 
     /**
@@ -350,7 +362,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
                 <div className="btn-group" role="group" style={{float: 'right'}}>
                   <button className="btn btn-secondary" type="button" title="Navigate to parent directory"
                     onClick={() => {
-                      this.browse(this.pathDirname(this.state.path))}
+                      this.browseUpDirectory(this.state.pathInput)}
                     }
                   >
                     <i className="fa fa-level-up" aria-hidden="true"></i>
