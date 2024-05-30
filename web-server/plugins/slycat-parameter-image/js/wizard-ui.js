@@ -248,7 +248,6 @@ function constructor(params) {
   };
 
   const onSelectTableFile = function (path, fileType, file) {
-    console.log(`newPath:: ${path}, fileType:: ${fileType}, file:: ${file}`);
     if (fileType === "f") {
       component.browser.path(path);
     }
