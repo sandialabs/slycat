@@ -99,48 +99,48 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
      * @memberof HDF5Browser
      */
     private browse = (pathInput:string) => {
-        let first_char = Array.from(pathInput)[0];
-        if(first_char != '/') {
-          pathInput = '/' + pathInput;
-        }
-        this.setState({pathInput:pathInput});
-        pathInput = pathInput.replace(/(?!^)\//g, "-");
-        client.post_browse_hdf5(
-        {
-            hostname : this.props.hostname,
-            path : pathInput,
-            pid: this.props.pid,
-            mid: this.props.mid,
-            success : (results:any) =>
-            {
-            localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
-            this.setState({
-                browseError:false,
-                pathError:false,
-            });
-            let json_results = JSON.parse(results)
-            let files: FileMetaData[] = []
-            if(pathInput != "/")
-                files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
-            for(let i = 0; i != json_results['name'].length; ++i)
-                files.push({name:json_results['name'][i], size:json_results['sizes'][i], type:json_results['types'][i], mtime:json_results['mtimes'][i], mimeType:json_results["mime-types"][i]});
-            this.setState({
-                rawFiles:files,
-                browserUpdating:false
-            });
-            },
-            error : (results:any) =>
-            {
-            if(this.state.path != this.state.pathInput)
-            {
-                this.setState({pathError:true, browserUpdating:false});
-            }
-            if(results.status == 400){
-                alert("bad file path")
-            }
-            this.setState({browseError:true, browserUpdating:false});
-            }
-        });
+      let first_char = Array.from(pathInput)[0];
+      if(first_char != '/') {
+        pathInput = '/' + pathInput;
+      }
+      this.setState({pathInput:pathInput});
+      pathInput = pathInput.replace(/(?!^)\//g, "-");
+      client.post_browse_hdf5(
+      {
+          hostname : this.props.hostname,
+          path : pathInput,
+          pid: this.props.pid,
+          mid: this.props.mid,
+          success : (results:any) =>
+          {
+          localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
+          this.setState({
+              browseError:false,
+              pathError:false,
+          });
+          let json_results = JSON.parse(results)
+          let files: FileMetaData[] = []
+          if(pathInput != "/")
+              files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
+          for(let i = 0; i != json_results['name'].length; ++i)
+              files.push({name:json_results['name'][i], size:json_results['sizes'][i], type:json_results['types'][i], mtime:json_results['mtimes'][i], mimeType:json_results["mime-types"][i]});
+          this.setState({
+              rawFiles:files,
+              browserUpdating:false
+          });
+          },
+          error : (results:any) =>
+          {
+          if(this.state.path != this.state.pathInput)
+          {
+              this.setState({pathError:true, browserUpdating:false});
+          }
+          if(results.status == 400){
+              alert("bad file path")
+          }
+          this.setState({browseError:true, browserUpdating:false});
+          }
+      });
     }
 
     /**
