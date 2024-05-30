@@ -79,7 +79,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
       super(props)
       this.state = {
         path:"/",
-        pathInput: "/",
+        pathInput: "//",
         rawFiles: [],
         pathError: false,
         browseError: false,
@@ -98,12 +98,12 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
      * @private
      * @memberof HDF5Browser
      */
-    private browse = (pathInput:string) =>
-    {
+    private browse = (pathInput:string) => {
         let first_char = Array.from(pathInput)[0];
         if(first_char != '/') {
           pathInput = '/' + pathInput;
         }
+        this.setState({pathInput:pathInput});
         pathInput = pathInput.replace(/(?!^)\//g, "-");
         client.post_browse_hdf5(
         {
@@ -194,17 +194,28 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
       // If the file is a directory, move down the hierarchy.
       else if(file.type === "d")
       {
-        this.browse(this.pathJoin(this.state.path, file.name));
+        let current_path = this.state.pathInput;
+        let new_path = '';
+        if(current_path == '//') {
+          current_path = current_path.substring(1);
+          new_path = current_path + file.name;
+        }
+        else {
+          new_path = current_path + '/' + file.name;
+        }
+        let substr = new_path.substring(0, 2);
+        if(substr == '//') {
+          new_path = new_path.substring(1);
+        }
+        this.browse(new_path);
       }
     }
 
     keyPress = (event:any, pathInput:string) => {
         if (event.key == 'Enter'){
-          // How would I trigger the button that is in the render? I have this so far.
           this.browse(pathInput);
         }
     }
-
 
     /**
      * Given a row id and file info set the selected file and 
@@ -285,12 +296,12 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
     }
 
     public async componentDidMount() {
-      const path = localStorage.getItem("slycat-remote-browser-path-" 
-        + this.state.persistenceId 
-        + this.props.hostname);
-      if(path != null){
-        this.setState({path,pathInput:path});
-        await this.browse(this.pathDirname(path));
+      // const path = localStorage.getItem("slycat-remote-browser-path-" 
+      //   + this.state.persistenceId 
+      //   + this.props.hostname);
+      if(this.state.pathInput != null){
+        // this.setState({path,pathInput:path});
+        this.browse(this.state.pathInput);
       }
     }
 
