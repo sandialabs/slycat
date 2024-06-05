@@ -61,18 +61,30 @@ $(document).ready(function () {
 
                 // Match the model's marking with the ones currently registered
                 let current_marking = values[1].find((obj) => obj.type == page.marking);
+                const embed = URI(window.location).query(true).embed !== undefined;
                 let template = document.createElement("template");
                 let html = "";
 
-                // Check if the current marking has code that needs to be prepended to the template
-                if (current_marking && current_marking["page-before"] != null)
+                // Check if the current marking has code that needs to be prepended to the template.
+
+                if (
+                  current_marking &&
+                  current_marking["page-before"] != null &&
+                  // Hide marking code if we are in embed mode.
+                  !embed
+                )
                   html += current_marking["page-before"].trim();
 
                 // Add the template code
                 html += values[0];
 
                 // Check if the current marking has code that needs to be appended to the template
-                if (current_marking && current_marking["page-after"] != null)
+                if (
+                  current_marking &&
+                  current_marking["page-after"] != null &&
+                  // Hide marking code if we are in embed mode.
+                  !embed
+                )
                   html += current_marking["page-after"].trim();
 
                 // Inject the code into the .slycat-content node
@@ -98,7 +110,7 @@ $(document).ready(function () {
                       marking={page.marking}
                       project_id={page.project_id}
                       warning_element={warning_element}
-                    />
+                    />,
                   );
                 }
               };
@@ -108,7 +120,7 @@ $(document).ready(function () {
               Promise.all([loadTemplatePromise, loadMarkingPromise]).then(loadTemplateFinish);
               // For testing purposes, to simulate a slow network, uncomment this setTimeout
               // }, 10000);
-            }
+            },
           );
         },
         error: function (request, status, reason_phrase) {
