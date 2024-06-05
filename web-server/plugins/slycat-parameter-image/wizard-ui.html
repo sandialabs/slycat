@@ -129,23 +129,7 @@
       <div class="slycat-remote-browser-flex-layout" data-bind="visible:ps_type() == 'local'">
         <label class="alert alert-danger slycat-big-scrolling-alert" role="alert"
           data-bind="visible:error_messages().length > 0, text: error_messages()"></label>
-        <!-- <slycat-remote-browser params="
-          type:'remote',
-          sid:remote.sid,
-          hostname:remote.hostname,
-          selection:browser.selection,
-          path:browser.path,
-          open_file_callback:load_table,
-          session_exists:remote.session_exists,
-          persistence_id:'pi-table-file',
-          progress:remote.progress,
-          progress_status:remote.progress_status,
-          reauth:reauth,"></slycat-remote-browser> -->
         <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
-        <div>
-          <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data" data-bind="checked: useProjectData">
-          <label for="matrix-local-or-remote-radios">Save original data to server</label>
-        </div>
       </div>
     </div>
 
