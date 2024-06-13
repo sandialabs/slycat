@@ -339,10 +339,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
         border: "1px solid rgb(222, 226, 230)",
       }
       return (
-        <div className="slycat-remote-browser">
-            <label className='font-weight-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
-            {this.props.hostname}:
-            </label>
+        <div className="slycat-hdf5-browser">
             <div className="form-group row path mb-3">
               <div className="col-sm-12">
                 <div className="input-group" 
@@ -394,11 +391,6 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
-          {/* <SlycatSelector
-            onSelectCallBack={this.props.onSelectParserCallBack}
-            label={'Filetype'}
-            options={options}
-          /> */}
         </div>
     );
     }
