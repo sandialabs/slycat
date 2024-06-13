@@ -394,11 +394,11 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
-          <SlycatSelector
+          {/* <SlycatSelector
             onSelectCallBack={this.props.onSelectParserCallBack}
             label={'Filetype'}
             options={options}
-          />
+          /> */}
         </div>
     );
     }
