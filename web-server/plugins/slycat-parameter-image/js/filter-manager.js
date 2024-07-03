@@ -444,8 +444,9 @@ FilterManager.prototype.build_sliders = function () {
           return one.order() < two.order() ? -1 : 1;
         })
       );
+      vm.hideFilters = window.store.getState().derived.embed && window.store.getState().derived.hideFilters;
 
-      if (vm.activeFilters().length > 0) {
+      if (vm.activeFilters().length > 0 && !vm.hideFilters) {
         self.layout.open("west");
       }
 
@@ -474,7 +475,7 @@ FilterManager.prototype.build_sliders = function () {
         // console.debug(`vm.activateFilter function in filter-manager.js`);
 
         // Open filter pane if it's not already open (no active filters)
-        if (vm.activeFilters().length === 0) {
+        if (vm.activeFilters().length === 0 && !vm.hideFilters) {
           self.layout.open("west");
         }
         var activateFilter = event.target.dataset.value;

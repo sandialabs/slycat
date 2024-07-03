@@ -47,12 +47,11 @@ copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 copyfile('../packages/slycat/pandas_util.py', 'slycat/pandas_util.py')
 
 # get Slycat version
-import slycat
-VERSION = slycat.__version__
+import slycat.web.client
+VERSION = slycat.web.client.__version__
 
 # development version
-# VERSION = VERSION
-VERSION = "4.1.0"
+VERSION = VERSION
 
 # get README.md
 import pathlib
