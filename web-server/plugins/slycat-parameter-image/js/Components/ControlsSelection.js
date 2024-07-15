@@ -42,7 +42,7 @@ class ControlsSelection extends React.PureComponent {
             } else if (fails_numeric_check) {
               alertText = "Please enter a numeric value.";
             } else if (fails_log_check) {
-              alertText = "Please enter a value greater than 0.";
+              alertText = "Please enter a value greater than 0. This variable is on a log scale.";
             }
             self.set_value(variable, variableIndex, userValue, alertText);
           }
