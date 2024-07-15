@@ -241,9 +241,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
         undefined;
       // Check if variable is greater than zero
       const isGreaterThanZero = this.props.table_statistics?.[index]?.min > 0;
-      // If not numeric or not greater than zero, add to disabledLogVariables
+      // Check if custom axis min variable range is 0 or less
+      const isCustomAxisMinZeroOrLess = this.props.variableRanges?.[index]?.min <= 0;
+      // If not numeric or not greater than zero or custom min variablel range is 0 or less,
+      // add to disabledLogVariables
       // so we don't allow them for log scales.
-      if (!isNumericVariable || !isGreaterThanZero) {
+      if (!isNumericVariable || !isGreaterThanZero || isCustomAxisMinZeroOrLess) {
         disabledLogVariables.push(index);
       }
     }
