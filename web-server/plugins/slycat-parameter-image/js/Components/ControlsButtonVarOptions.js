@@ -132,7 +132,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
           // Maybe it was deleted.
           // Let's save to the model's artifact instead.
           console.log(
-            "Oops, we have a pointer to project data but can't save to it. Let's save to the model's artifact instead."
+            "Oops, we have a pointer to project data but can't save to it. Let's save to the model's artifact instead.",
           );
           self.writeAliasesToModelArtifact();
         },
@@ -156,11 +156,11 @@ class ControlsButtonVarOptions extends React.PureComponent {
       },
       error: function () {
         console.log(
-          "Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog."
+          "Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog.",
         );
         $("#" + self.modalId).modal("hide");
         dialog.ajax_error(
-          "There was an error saving the variable alias labels to the model's artifact."
+          "There was an error saving the variable alias labels to the model's artifact.",
         )();
       },
     });
@@ -659,7 +659,7 @@ const mapStateToProps = (state, ownProps) => {
         min: value.min,
         max: value.max,
       };
-    }
+    },
   );
 
   return {
