@@ -198,6 +198,11 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
      */
     private browseUpByFile = (file:FileMetaData) => {
       this.setState({selected:-1});
+      // If it's a table, need to parse
+      if(file.type === "f") {
+        // callback
+      }
+
       // If the file is our parent directory, move up the hierarchy.
       if(file.name === "..")
       {
@@ -254,7 +259,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
 
       this.setState({selected:i},() => {
         // tell our create what we selected
-        this.props.onSelectFileCallBack(newPath, file.type, file);
+        this.props.onSelectFileCallBack((this.state.pathInput + '/' + file.name), file.type, file);
       })
     }
 
