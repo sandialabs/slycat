@@ -125,7 +125,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const handleBinClick = (
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     bin: {
-      range: number[];
+      range: (number | undefined)[];
       count: number;
       index: number;
       bins_length: number;

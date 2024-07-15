@@ -19,7 +19,6 @@ import VariableAliasLabels from "components/VariableAliasLabels";
 import ScatterplotOptions from "components/ScatterplotOptions";
 import VariableRanges from "components/VariableRanges";
 import "js/slycat-table-ingestion";
-import ko from "knockout";
 import "../../css/controls-button-var-options.css";
 import $ from "jquery";
 import client from "js/slycat-web-client";

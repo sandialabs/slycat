@@ -35,7 +35,7 @@ type HistogramProps = {
     },
   ) => void;
   handleBackgroundClick: (event: React.MouseEvent) => void;
-  tickFormatter: (value: number) => string;
+  tickFormatter: ((value: number, index?: number) => string) | null;
 };
 
 const Histogram: React.FC<HistogramProps> = (props) => {
@@ -207,13 +207,13 @@ const Histogram: React.FC<HistogramProps> = (props) => {
       })
       .append("title")
       .text((bin) => {
-        const x0 = tickFormatter ? tickFormatter(bin.x0) : bin.x0;
-        const x1 = tickFormatter ? tickFormatter(bin.x1) : bin.x1;
+        const x0 = tickFormatter && bin.x0 !== undefined ? tickFormatter(bin.x0) : bin.x0;
+        const x1 = tickFormatter && bin.x1 !== undefined ? tickFormatter(bin.x1) : bin.x1;
         return `Count: ${bin.length}\n\nRange: ${x0} (inclusive) to \n${x1} (exclusive, except for last bar)`;
       });
 
     let x_axis = d3.axisBottom(x_scale).tickSizeOuter(0);
-    
+
     // Create tick values by combining the x0 and x1 values of each bin.
     // That way we get a tick at start and end of each bin.
     let tickValues = [...bins.map((bin) => bin.x0), ...bins.map((bin) => bin.x1)];
