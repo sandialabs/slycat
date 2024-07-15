@@ -18,13 +18,17 @@ class ControlsSelection extends React.PureComponent {
         { className: "btn-primary", label: "Apply" },
       ],
       callback: function (button, valueIn) {
-        if (button.label === "Apply") {
-          let userValue = valueIn().trim();
-          let numeric = self.props.metadata["column-types"][variableIndex] !== "string";
-          let valueValid = userValue.length > 0;
-          if (valueValid && numeric && isNaN(Number(userValue))) {
-            valueValid = false;
-          }
+        if (button?.label === "Apply") {
+          const userValue = valueIn().trim();
+          const numeric = self.props.metadata["column-types"][variableIndex] !== "string";
+          const log_scale_type = self.props.axes_variables_scale?.[variableIndex] == "Log";
+
+          // Perform validity checks
+          const fails_length_check = userValue.length <= 0;
+          const fails_numeric_check = numeric && isNaN(Number(userValue));
+          const fails_log_check = log_scale_type && userValue <= 0;
+          const valueValid = !fails_length_check && !fails_numeric_check && !fails_log_check;
+
           if (valueValid) {
             self.props.element.trigger("set-value", {
               selection: self.props.selection,
@@ -32,9 +36,13 @@ class ControlsSelection extends React.PureComponent {
               value: numeric ? userValue : '"' + userValue + '"',
             });
           } else {
-            let alertText = "Please enter a value.";
-            if (numeric) {
+            let alertText;
+            if (fails_length_check) {
+              alertText = "Please enter a value.";
+            } else if (fails_numeric_check) {
               alertText = "Please enter a numeric value.";
+            } else if (fails_log_check) {
+              alertText = "Please enter a value greater than 0.";
             }
             self.set_value(variable, variableIndex, userValue, alertText);
           }
@@ -161,7 +169,7 @@ class ControlsSelection extends React.PureComponent {
     // console.log(`current_selection_pinned is ${current_selection_pinned}`);
     // Find the unpinned items in the current selection that are visible (i.e, not off axes).
     const unpinned_selection_not_off_axes = unpinned_selection.filter(
-      (unpinned_selected_item) => !this._is_off_axes(unpinned_selected_item)
+      (unpinned_selected_item) => !this._is_off_axes(unpinned_selected_item),
     );
     // console.log(`unpinned_selection_not_off_axes is ${unpinned_selection_not_off_axes}`);
     // Check if entire unpinned selection is off axes, because we will be
@@ -356,6 +364,7 @@ const mapStateToProps = (state, ownProps) => {
     media_index: state.media_index,
     xValues: state.derived.xValues,
     yValues: state.derived.yValues,
+    axes_variables_scale: state.axesVariables,
   };
 };
 
