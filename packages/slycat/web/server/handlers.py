@@ -2758,6 +2758,30 @@ def post_smb_browse(hostname, path):
     with slycat.web.server.smb.get_session(sid) as session:
         return session.browse(path=path)
 
+def post_hdf5_table(path, pid, mid):
+    # Need to find the HDF5 stored on Slycat server, so we can query it for the path.
+    path = path.replace('-', '/')
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    did = model['project_data'][0]
+    project_data = database.get("project_data", did)
+    file_name = project_data['hdf5_name']
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+    h5 = h5py.File(hdf5_path, 'r')
+    table = list(h5[path])
+    column_headers = list(h5[path].dims[1][0])
+    headers = []
+    attributes = []
+    dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(table[0])}]
+
+    if 'hdf5-inputs' not in model:
+        model['hdf5-inputs'] = path
+    else:
+        model['hdf5-outputs'] = path
+    database.save(model)
+
+    return '...'
+
 def post_browse_hdf5(path, pid, mid):
     def allkeys_single_level(obj, tree_structure):
         path = obj.name # This is current top level path

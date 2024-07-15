@@ -208,7 +208,7 @@ function constructor(params) {
         if (component.error_messages().length == 0) {
           if (component.parser() == 'slycat-hdf5-parser') {
             component.tab(6);
-            this.hdf5_browse();
+            this.hdf5_input_browse();
           }
           else{
             component.tab(4);
@@ -304,42 +304,50 @@ function constructor(params) {
   var upload_success = function (uploader) {
     uploader.progress(95);
     uploader.progress_status("Finishing...");
-    client.get_model_command({
-      mid: component.model._id(),
-      type: "parameter-image",
-      command: "media-columns",
-      success: function (media_columns) {
-        client.get_model_table_metadata({
-          mid: component.model._id(),
-          aid: "data-table",
-          success: function (metadata) {
-            uploader.progress(100);
-            uploader.progress_status("Finished");
-            var attributes = [];
-            for (var i = 0; i != metadata["column-names"].length; ++i)
-              attributes.push({
-                name: metadata["column-names"][i],
-                type: metadata["column-types"][i],
-                input: false,
-                output: false,
-                category: false,
-                rating: false,
-                image: media_columns.indexOf(i) !== -1,
-                Classification: "Neither",
-                Categorical: false,
-                Editable: false,
-                hidden: media_columns.indexOf(i) !== -1,
-                selected: false,
-                lastSelected: false,
-                disabled: false,
-                tooltip: "",
-              });
-            mapping.fromJS(attributes, component.attributes);
-            component.get_error_messages();
-          },
-        });
-      },
-    });
+    // Don't need to get column headers if HDF5 file
+    if(component.parser() == 'slycat-hdf5-parser') {
+      uploader.progress(100);
+      uploader.progress_status("Finished");
+      component.get_error_messages();
+    }
+    else {
+      client.get_model_command({
+        mid: component.model._id(),
+        type: "parameter-image",
+        command: "media-columns",
+        success: function (media_columns) {
+          client.get_model_table_metadata({
+            mid: component.model._id(),
+            aid: "data-table",
+            success: function (metadata) {
+              uploader.progress(100);
+              uploader.progress_status("Finished");
+              var attributes = [];
+              for (var i = 0; i != metadata["column-names"].length; ++i)
+                attributes.push({
+                  name: metadata["column-names"][i],
+                  type: metadata["column-types"][i],
+                  input: false,
+                  output: false,
+                  category: false,
+                  rating: false,
+                  image: media_columns.indexOf(i) !== -1,
+                  Classification: "Neither",
+                  Categorical: false,
+                  Editable: false,
+                  hidden: media_columns.indexOf(i) !== -1,
+                  selected: false,
+                  lastSelected: false,
+                  disabled: false,
+                  tooltip: "",
+                });
+              mapping.fromJS(attributes, component.attributes);
+              component.get_error_messages();
+            },
+          });
+        },
+      });
+    }
   };
 
   component.existing_table = function () {
@@ -363,7 +371,6 @@ function constructor(params) {
     // get file data
     $(".local-browser-continue").toggleClass("disabled", true);
     var file = component.browser.selection()[0];
-
     var fileObject = {
       pid: component.project._id(),
       mid: component.model._id(),
@@ -389,8 +396,22 @@ function constructor(params) {
     fileUploader.uploadFile(fileObject, component.useProjectData());
   };
 
-  component.hdf5_browse = function () {
-    const hdf5_wizard_browse_root = createRoot(document.querySelector(".hdf5-wizard-browse"));
+  component.hdf5_input_browse = function () {
+    const hdf5_wizard_browse_root = createRoot(document.querySelector(".hdf5-wizard-input-browse"));
+    hdf5_wizard_browse_root.render(
+      <div>
+        <HDF5Browser
+          onSelectFileCallBack={onSelectTableFile}
+          onReauthCallBack={onReauth}
+          hostname={component.remote.hostname()}
+          pid={component.project._id()}
+          mid={component.model._id()}
+        />
+      </div>)
+  }
+
+  component.hdf5_output_browse = function () {
+    const hdf5_wizard_browse_root = createRoot(document.querySelector(".hdf5-wizard-output-browse"));
     hdf5_wizard_browse_root.render(
       <div>
         <HDF5Browser
@@ -497,8 +518,62 @@ function constructor(params) {
     }
   };
 
+  component.load_hdf5_input = function () {
+    // console.log(component.browser.path()); // THIS IS THE PATH TO THE SELECTED TABLE
+    // console.log(component.parser());
+    $(".remote-browser-continue").toggleClass("disabled", true);
+    const file_name = component.browser.path().split("/")[
+      component.browser.path().split("/").length - 1
+    ];
+
+    let pathInput = component.browser.path();
+    pathInput = pathInput.replace(/(?!^)\//g, "-");
+    client.post_hdf5_table({
+      path : pathInput,
+      pid: component.project._id(),
+      mid: component.model._id(),
+      aids: [["data-table"], file_name],
+      success : (results) =>
+      {
+        console.log('Success!');
+        component.tab(7);
+        component.hdf5_output_browse();
+      },
+      error : (results) =>
+      {
+        console.log('Failure...');
+      }
+    });
+  }
+
+  component.load_hdf5_output = function () {
+    // console.log(component.browser.path()); // THIS IS THE PATH TO THE SELECTED TABLE
+    // console.log(component.parser());
+    $(".remote-browser-continue").toggleClass("disabled", true);
+    const file_name = component.browser.path().split("/")[
+      component.browser.path().split("/").length - 1
+    ];
+
+    let pathInput = component.browser.path();
+    pathInput = pathInput.replace(/(?!^)\//g, "-");
+    client.post_hdf5_table({
+      path : pathInput,
+      pid: component.project._id(),
+      mid: component.model._id(),
+      aids: [["data-table"], file_name],
+      success : (results) =>
+      {
+        console.log('Success!');
+        // Next step -- call web service that combines input and output tables, then creates model
+      },
+      error : (results) =>
+      {
+        console.log('Failure...');
+      }
+    });
+  }
+
   component.load_table_smb = function () {
-    console.log("component.browser.path()", component.browser.path());
     $(".remote-browser-continue").toggleClass("disabled", true);
     const file_name = component.browser.path().split("/")[
       component.browser.path().split("/").length - 1
