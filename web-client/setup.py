@@ -87,7 +87,7 @@ setup(
     include_package_data=True,
     install_requires=["requests", "requests-kerberos",
                       "numpy", "cherrypy", "scikit-learn", 
-                      "nptdms==1.6.0", "pandas"],
+                      "nptdms==1.6.0", "pandas", "natsort"],
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",

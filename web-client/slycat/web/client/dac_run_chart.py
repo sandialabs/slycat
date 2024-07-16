@@ -27,6 +27,8 @@ from argparse import Namespace
 
 # processing tables
 import numpy as np
+from natsort import natsorted
+from copy import deepcopy
 
 # compute PCA with sklearn
 from sklearn.decomposition import PCA
@@ -99,6 +101,22 @@ def catalog_tdms_files (arguments, log):
     suffixes = list(suffixes)
     suffixes.sort()
 
+    # check any combined suffixes
+    if arguments.combine:
+        for i in range(len(arguments.combine)):
+            combine_i = arguments.combine[i]
+
+            # check that each combined run chart is at least a pair
+            if len(combine_i) < 2:
+                raise TDMSUploadError("--combine flag used with less than two TDMS suffixes, " + 
+                    "please try again with at least two suffixes.")
+
+            # check that combinations are in list of suffixes
+            for j in range(len(combine_i)):
+                if combine_i[j] not in suffixes:
+                    raise TDMSUploadError('TDMS file suffix "' + combine_i[j] +
+                        '" to combine was not found in the data directory.')
+                
     # keep track of what we are including/excluding
     if arguments.exclude:
         log("Excluding TDMS file suffixes:")
@@ -108,7 +126,7 @@ def catalog_tdms_files (arguments, log):
     log("Including TDMS file suffixes:")
     for suffix in suffixes:
         log("\t%s" % suffix)
-    
+
     return metadata 
 
 # read all tdms run chart data
@@ -120,6 +138,10 @@ def read_tdms_files(metadata, run_chart_matches, log):
 
         root_properties = []
         run_charts = []
+        shot_numbers = []
+        module_ID = []
+        module_SN = []
+        module_ID_SN = []
         run_chart_headers = []
         tdms_types = []
         for tdms_file_ind in range(len(metadata[row]["tdms_files"])):
@@ -149,7 +171,7 @@ def read_tdms_files(metadata, run_chart_matches, log):
 
                     # this should never happen
                     elif group_header != list(group.properties.keys()):
-                        TDMSUploadError('Group headers in file "' + tdms_file_name + 
+                        raise TDMSUploadError('Group headers in file "' + tdms_file_name + 
                                         '" do not match.')
 
                     # keep track of table values
@@ -196,11 +218,25 @@ def read_tdms_files(metadata, run_chart_matches, log):
                     # also save run chart header matches
                     run_chart_headers.append(rc_matches)
 
+                    # also save shot numbers
+                    shot_numbers.append(group_df["Shot Number"])
+
+                    # check for module SN
+                    module_ID_i = check_module_col(group_df, "Module ID", tdms_file_path, log)
+                    module_ID.append(module_ID_i)
+                    module_SN_i = check_module_col(group_df, "Module SN", tdms_file_path, log)
+                    module_SN.append(module_SN_i)
+                    module_ID_SN.append("/".join([str(module_ID_i), str(module_SN_i)]))
+
         # add to metadata
         metadata[row]["root_properties"] = root_properties
         metadata[row]["run_charts"] = run_charts
         metadata[row]["run_chart_headers"] = run_chart_headers
-    
+        metadata[row]["shot_numbers"] = shot_numbers
+        metadata[row]["module_ID"] = module_ID
+        metadata[row]["module_SN"] = module_SN
+        metadata[row]["module_ID_SN"] = module_ID_SN
+
     # remove skipped rows
     for row in reversed(range(len(metadata))):
         if skipped_rows[row]:
@@ -220,6 +256,25 @@ def read_tdms_files(metadata, run_chart_matches, log):
                     metadata[row]["source"] + '", can not continue.')
 
     return metadata
+
+# check for constant module ID/SN column
+def check_module_col (group_df, header, tdms_file_path, log):
+
+    # check for module ID
+    if header not in group_df.columns:
+        log(header + ' not found for "' + tdms_file_path + '" -- using NaN value.')
+        module_ID_i = "NaN"
+
+    # check that module ID is constant
+    else:
+        module_ID_i = group_df[header][0]
+        for module_ID_j in group_df[header]:
+            if module_ID_i != module_ID_j:
+                log('Inconsistent ' + header + ' for "' + tdms_file_path + 
+                    '" -- using NaN value.')
+                module_ID_i = "NaN"
+
+    return module_ID_i
 
 # fill in metadata table
 def read_metadata_table (metadata, arguments, log):
@@ -279,12 +334,11 @@ def read_metadata_table (metadata, arguments, log):
                 curr_val = root_props[j].iloc[0][root_head[k]]
                 if curr_val != const_val:
                     constants[k] = 0
-                    
-    
+
     # collect constant/variable/nan columns
     const_cols = list(np.asarray(root_head)[np.where(constants)[0]])
     var_cols = list(np.asarray(root_head)[np.where(constants==0)[0]])
-    
+
     # exclude "Configuration Data XML" column by default
     if not arguments.include_configuration_XML:
 
@@ -300,11 +354,17 @@ def read_metadata_table (metadata, arguments, log):
             pass
 
     # construct metadata table header
-    meta_column_names = ['Part', 'Lot', 'Batch', 'Serial Number', 'Source'] + const_cols
-    for tmds_type in metadata[0]["tdms_types"]:
-        meta_column_names = meta_column_names + \
-            [header + " [" + tmds_type + "]" for header in var_cols]
-    
+    meta_column_names = ['Part', 'Lot', 'Batch', 'Serial Number', 'Source']
+    for tdms_type in metadata[0]["tdms_types"]:
+        meta_column_names += ['Module ID [' + tdms_type + ']']
+    for tdms_type in metadata[0]["tdms_types"]:
+        meta_column_names += ['Module SN [' + tdms_type + ']']
+    for tdms_type in metadata[0]["tdms_types"]:
+        meta_column_names += ['Module ID/SN [' + tdms_type + ']']
+    meta_column_names += const_cols
+    for tdms_type in metadata[0]["tdms_types"]:
+        meta_column_names += [header + " [" + tdms_type + "]" for header in var_cols]
+
     # construct metadata table rows
     meta_rows = []
     for row in range(len(metadata)):
@@ -313,6 +373,10 @@ def read_metadata_table (metadata, arguments, log):
         meta_row = [metadata[row]["part"], metadata[row]["lot"], metadata[row]["batch"],
             metadata[row]["sn"], metadata[row]["source"]]
         
+        # module IDs/SNs
+        meta_row += metadata[row]["module_ID"] + metadata[row]["module_SN"] + \
+                    metadata[row]["module_ID_SN"]
+
         # data from tdms files
         root_props = metadata[row]["root_properties"]
 
@@ -340,6 +404,9 @@ def read_units_table (metadata, arguments, log):
 
     # fill in variables.meta table
     meta_vars = []
+    meta_units = dict()
+    var_inds = dict()
+    ind = 0
     for tdms_type in range(len(metadata[0]["tdms_types"])):
         for run_chart in metadata[0]["run_chart_headers"][tdms_type]:
 
@@ -353,15 +420,68 @@ def read_units_table (metadata, arguments, log):
             
             # construct row of table
             if arguments.curve:
-                meta_vars.append([rc_name, 'Run', units, 'Curve'])
+                meta_vars.append([rc_name, 'Shot', units, 'Curve'])
             else:
-                meta_vars.append([rc_name, 'Run', units, 'Scatter'])
+                meta_vars.append([rc_name, 'Shot', units, 'Scatter'])
+
+            # keep track of units for each tdms type
+            meta_units[metadata[0]["tdms_types"][tdms_type]] = units
+
+            # keep track of indices for variables
+            var_inds[rc_name] = ind
+
+            # next row
+            ind = ind + 1
+
+    # add any combined curves
+    rc_inds = []
+    if arguments.combine:
+
+        # go through each combination and construct each run chart
+        for i in range(len(arguments.combine)):
+
+            # document combinations
+            log("Combining TDMS types: " + str([j for j in arguments.combine[i]]))
+            
+            # get units
+            combine_i = arguments.combine[i]
+            units = meta_units[combine_i[0]]
+
+            # check that units are the same for each TDMS type in combination
+            combined_headers = []
+            for j in range(len(combine_i)):
+                if meta_units[combine_i[j]] != units:
+                    raise TDMSUploadError('Inconsistent units found between combined TDMS types "' +
+                        str(combine_i) + ".")
+                combined_headers.append(combine_i[j])
+            
+            # truncate headers to first word or combine_length
+            trunc_headers = []
+            for j in range(len(combined_headers)):
+                trunc_header = combined_headers[j].split()[0]
+                trunc_header = trunc_header[0:arguments.combine_length]
+                trunc_headers.append(trunc_header)
+            combined_header = '/'.join(trunc_headers)
+
+            # make a row for each run chart
+            for run_chart in metadata[0]["run_chart_headers"][tdms_type]:
+                rc_name = run_chart + " [" + combined_header + "]"
+                if arguments.curve:
+                    meta_vars.append([rc_name, 'Shot', units, 'Curve'])
+                else:
+                    meta_vars.append([rc_name, 'Shot', units, 'Scatter'])
+                
+                # keep track of indices into variables for combinations
+                rc_inds_row = []
+                for j in range(len(combined_headers)):
+                    rc_inds_row.append(var_inds[run_chart + " [" + combined_headers[j] + "]"])
+                rc_inds.append(rc_inds_row)
 
     # note if we inferred units
     if not arguments.do_not_infer_chart_units:
         log('Inferred run chart units from names.')
 
-    return meta_var_names, meta_vars
+    return meta_var_names, meta_vars, rc_inds
 
 # construct time step vectors
 def read_timesteps (metadata):
@@ -376,19 +496,42 @@ def read_timesteps (metadata):
             time_steps_row = time_steps_row + \
                 [metadata[row]["run_charts"][tdms_type].shape[0]] * \
                 len(metadata[0]["run_chart_headers"][tdms_type])
-
+        
         # get maximum time steps for all rows
         if row == 0:
             time_steps_max = time_steps_row
         else:
             time_steps_max = np.maximum(time_steps_max, time_steps_row)
-  
+
     # construct time steps matrix
     time_steps = []
     for max in time_steps_max:
         time_steps.append(list(np.asarray(range(max)) + 1))
 
     return time_steps
+
+# construct shot numbers vectors instead of time steps
+def read_shot_numbers (metadata):
+
+    # go through data and construct shot number unions
+    shot_numbers = []
+    for row in range(len(metadata)):
+
+        # combine shot numbers (union)
+        if row == 0:
+            shot_numbers = [set(metadata[row]["shot_numbers"][tdms_type]) for
+            tdms_type in range(len(metadata[0]['tdms_types']))]
+        else:
+            shot_numbers = [shot_numbers[tdms_type].union(
+                set(metadata[row]["shot_numbers"][tdms_type])) for
+                tdms_type in range(len(metadata[0]['tdms_types']))]
+
+    # sort resulting shot numbers using natural sort
+    shot_numbers = [[natsorted(list(shot_numbers[tdms_type]))] * 
+        len(metadata[0]["run_chart_headers"][tdms_type]) for 
+        tdms_type in range(len(metadata[0]['tdms_types']))]
+
+    return shot_numbers
 
 # construct variable matrices
 def read_variable_matrices (metadata, time_steps, arguments, log):
@@ -407,14 +550,17 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
     # variable matrices are a list of matrices, one for each variable
     # rows are variable values, columns are time
     var_data = []
+    var_data_nan = []
     inferred_variables = False
     for tdms_type in range(len(metadata[0]["tdms_types"])):
         for run_chart in range(len(metadata[0]["run_chart_headers"][tdms_type])):
             variable_i = []
+            variable_i_nan = []
             for row in range(len(metadata)):
                 
                 # get run chart data
                 run_chart_data = list(metadata[row]["run_charts"][tdms_type].iloc[:,run_chart])
+                run_chart_data_nan = list(metadata[row]["run_charts"][tdms_type].iloc[:,run_chart])
 
                 # check for NaN values
                 if np.isnan(run_chart_data).any():
@@ -424,12 +570,15 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
                     # skip NaN values (we already checked that there 
                     # are some non-nan values when first reading tdms files)
                     run_chart_data = [x for x in run_chart_data if not np.isnan(x)]
-                
+                    run_chart_data_nan = [x for x in run_chart_data_nan if not np.isnan(x)]
+
                 # extend run chart data by last value
                 if len(run_chart_data) < max_time_steps[tdms_type][run_chart]:
                     if arguments.infer_last_value:
                         run_chart_data = run_chart_data + [run_chart_data[-1]] * \
                             (max_time_steps[tdms_type][run_chart] - len(run_chart_data))
+                        run_chart_data_nan = run_chart_data_nan + [np.nan] * \
+                            (max_time_steps[tdms_type][run_chart] - len(run_chart_data_nan))
                         inferred_variables = True
                     else:
                         raise TDMSUploadError('Found run chart length discrepancy in file "' +
@@ -438,14 +587,171 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
     
                 # add run chart to current variable
                 variable_i.append(run_chart_data)
+                variable_i_nan.append(run_chart_data_nan)
 
             # add variable matrix to list
             var_data.append(variable_i)
+            var_data_nan.append(variable_i_nan)
 
     if inferred_variables:
         log("Variables inferred to correct run chart length discrepancies.")
 
-    return var_data
+    return var_data, var_data_nan
+
+# get variables for shot numbers
+def read_variable_shot_matrices (metadata, shot_numbers, combined_inds, arguments, log):
+
+    # put maximum number of shots
+    # in format of run chart data
+    max_shot_numbers = []
+    for i in range(len(shot_numbers)):
+        run_chart_max_shot_numbers = []
+        for j in range(len(shot_numbers[i])):
+            run_chart_max_shot_numbers.append(len(shot_numbers[i][j]))
+        max_shot_numbers.append(run_chart_max_shot_numbers)
+
+    # variable matrices are number variables by number files by number shots
+    # when using shot numbers var data will almost certainly contain NaNs
+    # however, we still need inferred variables for PCA
+    var_data = []
+    var_data_nan = []
+    inferred_variables = False
+    for tdms_type in range(len(metadata[0]["tdms_types"])):
+        for run_chart in range(len(metadata[0]["run_chart_headers"][tdms_type])):
+
+            variable_i = []
+            variable_i_nan = []
+            for row in range(len(metadata)):
+
+                # get run chart data
+                run_chart_data = list(metadata[row]["run_charts"][tdms_type].iloc[:,run_chart])
+                run_chart_shots = metadata[row]["shot_numbers"][tdms_type]
+
+                # fill out run chart data with NaNs
+                run_chart_data_nan = np.empty ((max_shot_numbers[tdms_type][run_chart]))
+                run_chart_data_nan[:] = np.nan
+
+                # replace known entries with numbers
+                for i in range(len(run_chart_shots)):
+                    run_chart_data_nan[shot_numbers[tdms_type][run_chart].index(
+                        run_chart_shots[i])] = run_chart_data[i]
+
+                # infer variables for NaN values
+                run_chart_data = np.copy(run_chart_data_nan)
+                mask = np.isnan(run_chart_data)
+                if any(mask):
+                    if arguments.infer_last_value:
+                        run_chart_data[mask] = np.interp(np.flatnonzero(mask), 
+                            np.flatnonzero(~mask), run_chart_data[~mask])
+                        inferred_variables = True
+                    else:
+                        raise TDMSUploadError('Found run chart length discrepancy in file "' +
+                            metadata[row]["tdms_files"][tdms_type] + '".  Use inference options' +
+                            ' (e.g. --infer-last-value) to correct lengths by inferring data.')
+
+                # add run chart to current variable
+                variable_i.append(run_chart_data.tolist())
+                variable_i_nan.append(run_chart_data_nan.tolist())
+
+            # add variable matrix to list
+            var_data.append(variable_i)
+            var_data_nan.append(variable_i_nan)
+
+    # we also have to convert time steps to numbers (e.g. strip a/b/c values)
+    if not arguments.highlight_shot_numbers:
+        shot_numbers = strip_abc(shot_numbers)
+    
+    # otherwise we convert as nan values 
+    else:
+        shot_numbers = convert_abc(shot_numbers)
+
+    time_steps = []
+    for i in range(len(shot_numbers)):
+        time_steps = time_steps + shot_numbers[i]
+
+    if inferred_variables:
+        log("Variables inferred to correct run chart shot number discrepancies.")
+    
+    # add combined variables, if requested
+    if arguments.combine:
+
+        # go through each combination to extend matrices
+        for i in range(len(combined_inds)):
+            combined_time_steps = []
+            combine_i = combined_inds[i]
+
+            # check that time steps are non-intersecting
+            for j in range(len(combine_i)):
+                if time_steps[combine_i[j]] not in combined_time_steps:
+                    combined_time_steps += time_steps[combine_i[j]]
+                else:
+                    raise TDMSUploadError('Shot number intersection for combined TDMS types, ' +
+                        'please try a different combination.')
+
+            # check that time steps are in order
+            if sorted(combined_time_steps) != combined_time_steps:
+                raise TDMSUploadError('Shot numbers are out of order for combined TDMS types, ' +
+                    'please try a different combination order.')
+
+            # add combined_time_steps to time steps matrix
+            time_steps.append(combined_time_steps)
+
+            # add variables to variable matrices
+            combined_var_data = deepcopy(var_data[combine_i[0]])
+            combined_var_data_nan = deepcopy(var_data_nan[combine_i[0]])
+            for j in range(1, len(combine_i)):
+                for k in range(len(combined_var_data)):
+                    combined_var_data[k] = combined_var_data[k] + var_data[combine_i[j]][k]
+                    combined_var_data_nan[k] = combined_var_data_nan[k] + var_data_nan[combine_i[j]][k]
+                                                                                       
+            # append combined matrix to variable matrices
+            var_data.append(combined_var_data)
+            var_data_nan.append(combined_var_data_nan)
+
+    return var_data, var_data_nan, time_steps
+
+# helper function for read_variable_shot_matrices
+# converts strings to integers and converts a/b/c to fractions
+# for example '31' would be 31 and '31a' would be 31.25
+def strip_abc(item):
+
+    if isinstance(item, list):
+        return [strip_abc(x) for x in item]
+    
+    else:
+        if item[-1] in ['a', 'b', 'c']:
+
+            # convert 'a' to 1/4, 'b' to 1/2, 'c' to 3/4
+            suffix = (['a', 'b', 'c'].index(item[-1]) + 1)/4
+
+            try:
+                return int(item[:-1]) + suffix
+            except:
+                raise ValueError ("Shot number not an integer.")
+        else:
+
+            try:
+                return int(item)
+            except:
+                raise ValueError ("Shot number not an integer.")
+
+# helper function for read_variable_shot_matrices
+# converts strings to integers and converts a/b/c to nan
+def convert_abc(item):
+
+    if isinstance(item, list):
+        return [convert_abc(x) for x in item]
+    
+    else:
+        if item[-1] in ['a', 'b', 'c']:
+            return np.nan
+        
+        else:
+
+            try:
+                return int(item)
+            except:
+                raise ValueError ("Shot number not an integer.")
 
 # compute PCA for variables
 def compute_PCA (var_data, arguments, log):
@@ -523,6 +829,21 @@ def mat2str (mat):
 # check arguments and create model
 def create_model(arguments, log):
 
+    # if you have --curve, you must also have --plot-last-value
+    if arguments.curve:
+        if not arguments.plot_last_value:
+            raise TDMSUploadError('Must use "--plot-last-value" with "--curve".')
+        
+    # if you have --highlight-shot-numbers, you also have to have --use-shot-numbers
+    if arguments.highlight_shot_numbers:
+        if not arguments.use_shot_numbers:
+            raise TDMSUploadError('Must use "--use-shot-numbers" with "--highlight-shot-numbers".')
+    
+    # if you have --combine, you must also have --use-shot-numbers
+    if arguments.combine:
+        if not arguments.use_shot_numbers:
+            raise TDMSUploadError('Must use "--use-shot-numbers" with "--combine".')
+
     # can't have both overvoltage and sprytron
     if arguments.overvoltage and arguments.sprytron:
         raise TDMSUploadError("Can't use both overvoltage and sprytron options " +
@@ -545,25 +866,32 @@ def create_model(arguments, log):
 
     # read tdms data
     metadata = read_tdms_files(metadata, run_chart_matches, log)
-    
+
     # construct metadata table
     meta_col_names, meta_rows = read_metadata_table(metadata, arguments, log)
 
     # construct units table
-    meta_var_names, meta_vars = read_units_table(metadata, arguments, log)
+    meta_var_names, meta_vars, combined_inds = read_units_table(metadata, arguments, log)
 
-    # construct time matrix
-    time_steps = read_timesteps (metadata)
-    
-    # construct variable matrices
-    var_data = read_variable_matrices (metadata, time_steps, arguments, log)
+    # construct time/variable data
+    if arguments.use_shot_numbers:
+        shot_numbers = read_shot_numbers(metadata)
+        var_data, var_data_nan, time_steps = \
+            read_variable_shot_matrices (metadata, shot_numbers, combined_inds, arguments, log)
+    else:
+        time_steps = read_timesteps(metadata)
+        var_data, var_data_nan = read_variable_matrices (metadata, time_steps, arguments, log)
 
     # compute PCA representation
     var_dist = compute_PCA (var_data, arguments, log)
     
-    # save files
-    write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
-                  time_steps, var_data, var_dist, arguments)
+    # save files, use nans in plot if requested
+    if arguments.plot_last_value:
+        write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
+                    time_steps, var_data, var_dist, arguments)
+    else:
+        write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
+                    time_steps, var_data_nan, var_dist, arguments)
 
     # add output file for dac_gen script
     dac_gen_args = Namespace(**vars(arguments), **{'dac_gen_zip': arguments.output_zip_file})
@@ -659,7 +987,9 @@ def parser ():
              "from variable name.")
     parser.add_argument("--infer-last-value", action="store_true", 
         help="Fill out short run charts with last given value.")
-
+    parser.add_argument("--plot-last-value", action="store_true",
+        help="Plot filled values in run charts.")
+    
     # exclude XML by default
     parser.add_argument("--include_configuration_XML", action="store_true",
         help='Include "Configuration Data XML" if present in data.')
@@ -678,6 +1008,26 @@ def parser ():
     # use curve plots for run charts
     parser.add_argument("--curve", action="store_true",
         help="Use curves for run charts instead of scatter plots.")
+
+    # use shot numbers to line up plots
+    parser.add_argument('--use-shot-numbers', action="store_true",
+        help="Use actual shot numbers (default is to use shot number order only).")
+    
+    # add vertical lines to indicate non-numeric time steps
+    parser.add_argument('--highlight-shot-numbers', action="store_true",
+        help="Highlight non-numeric a/b/c shot numbers using vertical lines, otherwise they "+
+             "are converted to values of (.25, .5, .75).")
+    
+    
+    # combination time series
+    parser.add_argument('--combine', nargs="+", action="append",
+        help="Concatenate TDMS suffixes into a single run chart, e.g. " +
+             '--combine "Acceptance Trigger Operation" "Factory Trigger Operation" ' +
+             "would concatenate the run charts from those two TDMS shots into " +
+             "a single run chart.  Can be use multiple times with different TDMS files.")
+    parser.add_argument('--combine-length', default=10, type=int,
+        help="Truncation length for each header in combined header.  Truncates to first " +
+              'word or "--combine-length", whichever is less).')
     
     return parser
 

@@ -482,7 +482,6 @@ def register_slycat_plugin(context):
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
 
-
         # get input parameters
 
         # first parameter is just passed along then echoed back as a result
@@ -534,7 +533,6 @@ def register_slycat_plugin(context):
             time_points_max = numpy.amax(time_points[i])
             time_points_range.append([time_points_min, time_points_max])
 
-
         # test requested range time (x) for each variable
         zoom_x, range_change_x = test_range(zoom_x, time_points_range)
 
@@ -566,6 +564,10 @@ def register_slycat_plugin(context):
             range_inds = list(numpy.where((time_points[i] >= zoom_x[i][0]) & \
                 (time_points[i] <= zoom_x[i][1]))[0])
 
+            # extend indices to include nans
+            if range_inds:
+                range_inds = list(range(range_inds[0], range_inds[-1] + 1))
+
             # make sure something was selected
             if len(range_inds) == 0:
                 range_inds_min = numpy.amax(numpy.where(time_points[i] < zoom_x[i][0])[0])
@@ -591,10 +593,20 @@ def register_slycat_plugin(context):
             if sub_inds[-1] != range_inds[-1]:
                 sub_inds = numpy.append(sub_inds, range_inds[-1])
 
-            # get subsamples
-            time_points_subsample.append(time_points[i][sub_inds].tolist())
+            # get time points subsample (convert NaNs, if any, to Nones for JSON)
+            time_points_subsample_i = time_points[i][sub_inds].tolist()
+            time_points_subsample_nan = numpy.isnan(time_points_subsample_i)
+            time_points_subsample_none = numpy.where(time_points_subsample_nan, None,
+                                                     time_points_subsample_i)
+            time_points_subsample.append(time_points_subsample_none.tolist())
+
+            # also convert var_data_subsample
             if num_rows > 0:
-                var_data_subsample.append(var_data[i][:, sub_inds].tolist())
+                var_data_subsample_i = var_data[i][:, sub_inds].tolist()
+                var_data_subsample_nan = numpy.isnan(var_data_subsample_i)
+                var_data_subsample_none = numpy.where(var_data_subsample_nan, None,
+                                                      var_data_subsample_i)
+                var_data_subsample.append(var_data_subsample_none.tolist())
 
             # convert ranges to java-script returnable result
             data_range_x.append([float2str(zoom_x[i][0]), float2str(zoom_x[i][1])])
