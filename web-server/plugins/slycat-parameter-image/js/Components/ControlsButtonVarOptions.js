@@ -19,7 +19,6 @@ import VariableAliasLabels from "components/VariableAliasLabels";
 import ScatterplotOptions from "components/ScatterplotOptions";
 import VariableRanges from "components/VariableRanges";
 import "js/slycat-table-ingestion";
-import ko from "knockout";
 import "../../css/controls-button-var-options.css";
 import $ from "jquery";
 import client from "js/slycat-web-client";
@@ -133,7 +132,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
           // Maybe it was deleted.
           // Let's save to the model's artifact instead.
           console.log(
-            "Oops, we have a pointer to project data but can't save to it. Let's save to the model's artifact instead."
+            "Oops, we have a pointer to project data but can't save to it. Let's save to the model's artifact instead.",
           );
           self.writeAliasesToModelArtifact();
         },
@@ -157,11 +156,11 @@ class ControlsButtonVarOptions extends React.PureComponent {
       },
       error: function () {
         console.log(
-          "Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog."
+          "Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog.",
         );
         $("#" + self.modalId).modal("hide");
         dialog.ajax_error(
-          "There was an error saving the variable alias labels to the model's artifact."
+          "There was an error saving the variable alias labels to the model's artifact.",
         )();
       },
     });
@@ -242,9 +241,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
         undefined;
       // Check if variable is greater than zero
       const isGreaterThanZero = this.props.table_statistics?.[index]?.min > 0;
-      // If not numeric or not greater than zero, add to disabledLogVariables
+      // Check if custom axis min variable range is 0 or less
+      const isCustomAxisMinZeroOrLess = this.props.variableRanges?.[index]?.min <= 0;
+      // If not numeric or not greater than zero or custom min variablel range is 0 or less,
+      // add to disabledLogVariables
       // so we don't allow them for log scales.
-      if (!isNumericVariable || !isGreaterThanZero) {
+      if (!isNumericVariable || !isGreaterThanZero || isCustomAxisMinZeroOrLess) {
         disabledLogVariables.push(index);
       }
     }
@@ -660,7 +662,7 @@ const mapStateToProps = (state, ownProps) => {
         min: value.min,
         max: value.max,
       };
-    }
+    },
   );
 
   return {
