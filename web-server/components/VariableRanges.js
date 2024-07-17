@@ -82,7 +82,8 @@ export default class VariableRanges extends React.Component {
         </div>`,
       placement: "bottom",
       trigger: "hover",
-      content: "Axis Min must be less than Axis Max.",
+      content:
+        "Axis Min must be less than Axis Max. Both must be greater than 0 if this variable is using a log axis scale.",
     });
     // Disabling popover tooltips for valid input fields.
     $(`.${this.class} .validationPopover.valid`).popover("disable");
@@ -146,7 +147,7 @@ export default class VariableRanges extends React.Component {
         oppositeNum,
         !min,
         oppositeCompare,
-        index
+        index,
       ),
     };
   };
@@ -161,9 +162,15 @@ export default class VariableRanges extends React.Component {
       return true;
     }
     // NaNs are invalid
-    else if (Number.isNaN(inputNum)) {
+    if (Number.isNaN(inputNum)) {
       return false;
-    } else if (min ? inputNum < compare : inputNum > compare) {
+    }
+    // Zero and negative values are invalid for log scales
+    if (this.props.axesVariablesScale?.[key] === "Log" && inputNum <= 0) {
+      return false;
+    }
+    // Validate if not empty and not NaN and not 0 or less for log scale
+    if (min ? inputNum < compare : inputNum > compare) {
       // Save min or max to redux store since it's valid
       this.props.setVariableRange(key, inputNum, min ? "min" : "max");
       return true;
