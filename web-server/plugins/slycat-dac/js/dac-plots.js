@@ -1010,7 +1010,7 @@ function draw_plots(plot_list)
 			}
 
 		},
-		error: function ()
+		error: function (result)
 		{
 			dialog.ajax_error ('Server failure: could not subsample variable data.')("","","");
 		}
@@ -1025,6 +1025,7 @@ function update_data_d3(i)
 	// remove any data already present
 	plot[i].selectAll(".curve").remove();
 	plot[i].selectAll(".points").remove();
+	plot[i].selectAll(".lines").remove();
 
 	// remove focus curve if present
 	plot[i].selectAll(".focus").remove();
@@ -1100,6 +1101,21 @@ function update_data_d3(i)
 				   .on("mousemove", vertical_line_move)
 				   .on("mouseout", vertical_line_end);
 
+			// add indicator lines
+			plot[i].selectAll(".lines")
+			       .data(generate_line_data(i))
+				   .attr("class", "lines")
+				   .enter()
+				   .append("line")
+				   .attr("class", "lines")
+				   .attr("y1", $("#dac-plots").height()/3 -
+							   plot_adjustments.pull_down_height -
+							   plot_adjustments.padding_bottom -
+							   plot_adjustments.x_label_padding)
+				   .attr("y2", plot_adjustments.padding_top)
+				   .attr("stroke", function(d) { return sel_color[d[1]]; })
+				   .attr("stroke-width", scatter_radius)
+
 			// add points to curves
 			plot[i].selectAll(".points")
 				   .data(generate_point_data(i))
@@ -1108,7 +1124,7 @@ function update_data_d3(i)
 				   .append("circle")
 				   .attr("class", "points")
 				   .attr("fill", function(d) { return sel_color[d[2]]; })
-				   .attr("r", scatter_radius)
+				   .attr("r", function(d) { return d[4] == 0 ? scatter_radius : scatter_focus } )
 				   .on("click", select_points);
 
 			// draw focus curve (on top of other curves) if data is available
@@ -1143,8 +1159,8 @@ function set_default_domain(i)
 	if (plots_selected_zoom_x[i][0] == "-Inf" || plots_selected_zoom_x[i][1] == "Inf") {
 
 		// undetermined scale, must look at data
-		x_scale[i].domain([Math.min.apply(Math, plots_selected_time[i]),
-						   Math.max.apply(Math, plots_selected_time[i])]);
+		x_scale[i].domain([min_ignore_null(plots_selected_time[i]),
+						   max_ignore_null(plots_selected_time[i])]);
 	} else {
 
 		// scale already known
@@ -1159,10 +1175,13 @@ function set_default_domain(i)
 		var plot_min = Infinity;
 		var plot_max = -Infinity;
 		for (var j = 0; j < plots_selected_data[i].length; j++) {
-			plot_min = Math.min(plot_min, Math.min.apply(Math,
-				plots_selected_data[i][j]));
-			plot_max = Math.max(plot_max, Math.max.apply(Math,
-				plots_selected_data[i][j]));
+			for (var k = 0; k < plots_selected_time[i].length; k++) {
+				if (plots_selected_time[i][k] !== null) {
+					plot_min = Math.min(plot_min, plots_selected_data[i][j][k]);
+					plot_max = Math.max(plot_max, plots_selected_data[i][j][k]);
+				}
+			}
+
 		};
 
 		// if lower limit was non-infinite reset to finite value
@@ -1186,41 +1205,81 @@ function set_default_domain(i)
 	}
 }
 
+// helper function for set_default_domain to find max while ignoring nulls
+function max_ignore_null (array)
+{
+	return Math.max.apply(Math, array.map(function(x) {
+		return x == null ? -Infinity : x;
+	}))
+}
+
+// helper function for set_default_domain to find min while ignoring nulls
+function min_ignore_null (array)
+{
+	return Math.min.apply(Math, array.map(function(x) {
+		return x == null ? Infinity : x;
+	}))
+}
+
+// generate raw curve data, including nans, each curve is an (x,y,c) array
+function generate_raw_data (i)
+{
+
+	    // make data arrays for each selection
+		var curve_data = [];
+		var curr_sel_ind = 0;
+	
+		for (var k = 0; k < max_num_sel; k++) {
+	
+			// make array of indices into selection colors
+			var curr_sel_color = [];
+			for (var j = 0; j < plots_selected_time[i].length; j++) {
+				curr_sel_color.push(k);
+			}
+	
+			// get current selection
+			var curr_sel = selections.filtered_sel(k+1);
+	
+			// make array of data for current selection
+			for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
+				curve_data.push(d3.transpose([plots_selected_time[i],
+					  plots_selected_data[i][j + curr_sel_ind],
+					  curr_sel_color]));
+			};
+	
+			// update selection index
+			curr_sel_ind = curr_sel_ind + Math.min(curr_sel.length, max_num_plots);
+		}
+	
+		return curve_data;
+
+}
+
 // generate a d3 style version of the data for a selection of curves,
 // which is an array of arrays of curves, where each curve is an (x,y,c) array
 // where x,y is position and c is color
 // NOTE: in the second position we now push the curve id for use by the selection
 // routines (all the rest are still color)
+// nan values for x-axis are ignored
 function generate_curve_data (i)
 {
 
-    // make data arrays for each selection
-    var curve_data = [];
-    var curr_sel_ind = 0;
+	// get all data, including nans
+	var curve_data = generate_raw_data (i)
 
-    for (var k = 0; k < max_num_sel; k++) {
+	// filter nans in x-axis
+	var filtered_data = []
+	for (var j = 0; j < curve_data.length; j++) {
+		var filtered_curve = []
+		for (var k = 0; k < curve_data[j].length; k++) {
+			if (curve_data[j][k][0] !== null) {
+				filtered_curve.push(curve_data[j][k]);
+			}
+		}
+		filtered_data.push(filtered_curve);
+	}
 
-        // make array of indices into selection colors
-        var curr_sel_color = [];
-        for (var j = 0; j < plots_selected_time[i].length; j++) {
-		    curr_sel_color.push(k);
-	    }
-
-	    // get current selection
-	    var curr_sel = selections.filtered_sel(k+1);
-
-	    // make array of data for current selection
-	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
-		    curve_data.push(d3.transpose([plots_selected_time[i],
-				  plots_selected_data[i][j + curr_sel_ind],
-				  curr_sel_color]));
-	    };
-
-	    // update selection index
-	    curr_sel_ind = curr_sel_ind + Math.min(curr_sel.length, max_num_plots);
-    }
-
-	return curve_data;
+	return filtered_data
 }
 
 // generate a d3 style set of point data corresponding to the timeseries curves.
@@ -1228,17 +1287,51 @@ function generate_point_data(i)
 {
 
 	// point data is just curve data transposed
-	var curve_data = generate_curve_data(i);
+	var curve_data = generate_raw_data(i);
 
 	// stack curve data and add curve index (used for selection)
+	// also include data for whether or not point lies on indicator line
 	var point_data = [];
 	for (var j = 0; j < curve_data.length; j++) {
+		var prev_time_step = curve_data[j][0][0];
 		for (var k = 0; k < curve_data[j].length; k++) {
-			point_data.push(curve_data[j][k].concat(j));
+			if (curve_data[j][k][0] !== null) {
+				point_data.push(curve_data[j][k].concat([j,0]))
+			}
+			else if ((prev_time_step !== null) &&
+			    	 (curve_data[j][k][1] !== null)) {
+				point_data[point_data.length - 1][4] = 1
+			}
+		prev_time_step = curve_data[j][k][0];
 		}
 	}
 
 	return point_data;
+}
+
+// generate lines for indicators on x-axis
+function generate_line_data(i)
+{
+	// get curve data
+	var curve_data = generate_raw_data(i);
+
+	// create data set with (x,c) for curves in plot i if 
+	// x is null and y is not null
+	var line_data = [];
+	for (var j = 0; j < curve_data.length; j++) {
+		var prev_time_step = curve_data[j][0][0];
+		for (var k = 0; k < curve_data[j].length; k++) {
+			if ((prev_time_step !== null) &&
+			    (curve_data[j][k][0] === null) &&
+			    (curve_data[j][k][1] !== null)) {
+					line_data.push([prev_time_step, curve_data[j][k][2]])
+				}
+			prev_time_step = curve_data[j][k][0];
+		}
+	}
+
+	return line_data
+
 }
 
 // draw a plot with specific axis, labels, etc.
@@ -1256,9 +1349,14 @@ function draw_plot_d3(i)
 
 	} else if ($.trim(plot_type[plots_selected[i]]) == 'Scatter') {
 
+		plot[i].selectAll(".lines")
+		       .attr("x1", function(d) { return x_scale[i](d[0]); } )
+			   .attr("x2", function(d) { return x_scale[i](d[0]); } )
+
 		plot[i].selectAll("circle")
 			   .attr("cx", function(d) { return x_scale[i](d[0]); } )
 		       .attr("cy", function(d) { return y_scale[i](d[1]); } )
+			   .attr("opacity", function(d) { return d[1] == null ? 0 : 1 })
 			   .attr("clip-path", "url(#clip)");
 
 	} else {
