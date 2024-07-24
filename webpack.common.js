@@ -258,12 +258,10 @@ module.exports = {
   },
   ignoreWarnings: [
     {
-      // Ignoring warnings about the deprecated abs() function in Bootstrap 4
+      // Ignoring warnings about the deprecated SCSS stuff in Bootstrap 4
       // since we can't upgrade to 5 yet and the warning gets in the way of developing.
       // Module ends with slycat-bootstrap.scss
       module: /slycat-bootstrap\.scss$/,
-      // Message contains a line that starts with the following
-      message: /^Passing percentage units to the global abs\(\) function is deprecated/m,
     },
   ],
 };
