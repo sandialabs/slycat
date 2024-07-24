@@ -160,6 +160,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-smb-browse", "/smb/remotes/:hostname/browse{path:.*}", slycat.web.server.handlers.post_smb_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-hdf5-browse", "/hdf5/browse/:path/:pid/:mid", slycat.web.server.handlers.post_browse_hdf5, conditions={"method" : ["POST"]})
   dispatcher.connect("post-hdf5-table", "/hdf5/table/:path/:pid/:mid", slycat.web.server.handlers.post_hdf5_table, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-combine-hdf5-tables", "/hdf5/combine/:mid", slycat.web.server.handlers.post_combine_hdf5_tables, conditions={"method": ["POST"]})
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset", "/models/:mid/arraysets/:aid", slycat.web.server.handlers.put_model_arrayset, conditions={"method" : ["PUT"]})

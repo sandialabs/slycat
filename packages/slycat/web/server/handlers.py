@@ -2782,6 +2782,62 @@ def post_hdf5_table(path, pid, mid):
 
     return '...'
 
+def post_combine_hdf5_tables(mid):
+    # 1. Get model from mid
+    # 2. Get input path and output path from model in couch
+    # 3. Get input and output tables using the paths
+    # 4. Combine input and output tables (follow method in hdf5 parser)
+    # 5. Create the model
+
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    input_path = '/' + model['hdf5-inputs']
+    output_path = '/' + model['hdf5-outputs']
+    did = model['project_data'][0]
+    project_data = database.get("project_data", did)
+    file_name = project_data['hdf5_name']
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+    h5 = h5py.File(hdf5_path, 'r')
+
+    unformatted_input = list(h5[input_path])
+    unformatted_output = list(h5[output_path])
+
+    combined_dataset = []
+    separated_dataset = [] # This will get sent to create_project_data for saving the inputs and output separately
+    response_headers = []
+    variable_headers = []
+    attributes = []
+
+    column_headers_input = list(h5[input_path].dims[1][0])
+    column_headers_output = list(h5[output_path].dims[1][0])
+
+    # Once we have column headers, this is how we can get/store them. 
+    for i, column in enumerate(column_headers_input):
+        variable_headers.append(str(column.decode('utf-8')))
+        attributes.append({"name": str(column.decode('utf-8')), "type": str(type(unformatted_input[0][i])).split('numpy.')[1].split("'>")[0]})
+    for j, column in enumerate(column_headers_output):
+        response_headers.append(str(column.decode('utf-8')))
+        attributes.append({"name": str(column.decode('utf-8')), "type": str(type(unformatted_output[0][j])).split('numpy.')[1].split("'>")[0]})
+
+    combined_headers = numpy.concatenate((response_headers, variable_headers), axis=0)
+    combined_headers = combined_headers.tolist()
+    combined_data = numpy.concatenate((unformatted_input, unformatted_output), axis=1)
+    combined_data = numpy.transpose(combined_data)
+
+    combined_data = combined_data.tolist()
+
+    for row in combined_data:
+        combined_dataset.append(numpy.asarray(row))
+
+    dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(combined_dataset[0])}]
+
+    array_index = 0
+    slycat.web.server.put_model_arrayset(database, model, 'data-table', input)
+    slycat.web.server.put_model_array(database, model, 'data-table', 0, attributes, dimensions)
+    slycat.web.server.put_model_arrayset_data(database, model, 'data-table', "%s/.../..." % array_index, combined_data)
+
+    return '...'
+
 def post_browse_hdf5(path, pid, mid):
     def allkeys_single_level(obj, tree_structure):
         path = obj.name # This is current top level path

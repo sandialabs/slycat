@@ -1391,6 +1391,21 @@ module.post_remote_command = function (params) {
   });
 };
 
+module.post_combine_hdf5_tables = function (params) {
+  $.ajax({
+    contentType: 'application/json',
+    data: JSON.stringify({}),
+    type: 'POST',
+    url: `${api_root}hdf5/combine/${params.mid}`,
+    success(result) {
+      if (params.success) params.success(result);
+    },
+    error(request, status, reason_phrase) {
+      if (params.error) params.error(request, status, reason_phrase);
+    }
+  });
+}
+
 module.post_hdf5_table = function (params) {
   $.ajax({
     contentType: 'application/json',
