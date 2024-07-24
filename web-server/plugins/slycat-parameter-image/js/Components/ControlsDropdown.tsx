@@ -17,8 +17,8 @@ type SetSelectedFunction = (
   state_label: string,
   key: string,
   trigger: string,
-  e?: React.MouseEvent<HTMLAnchorElement>,
-  props?: Record<string, unknown>
+  e?: React.MouseEvent<HTMLButtonElement>,
+  props?: Record<string, unknown>,
 ) => void;
 
 interface ControlsDropdownProps {
@@ -61,15 +61,14 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
       default:
         // Get the set_selected function from the item if it's been set, or use the one passed in from props
         const set_selected_function = item.set_selected ?? this.props.set_selected;
-        // There are many times when item.selected is undefined. 
-        // In those cases, we determine selected by looking at what's set in props.selected. 
-        // But in cases where item.selected is already set to true or false, we just go with that value. 
+        // There are many times when item.selected is undefined.
+        // In those cases, we determine selected by looking at what's set in props.selected.
+        // But in cases where item.selected is already set to true or false, we just go with that value.
         // This lets you specify the selected item on the item itself or by passing it as a prop, with the item taking precedence.
         const selected = item.selected ?? item.key == this.props.selected;
         return (
           <button
             type="button"
-            alex="test"
             key={item.key}
             className={"dropdown-item" + (selected ? " active" : "")}
             onClick={(e) =>
@@ -78,7 +77,7 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
                 item.key,
                 this.props.trigger,
                 e,
-                this.props
+                this.props,
               )
             }
             style={item.style}
