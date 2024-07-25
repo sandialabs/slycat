@@ -519,9 +519,6 @@ function constructor(params) {
   };
 
   component.load_hdf5_input = function () {
-    // console.log(component.browser.path()); // THIS IS THE PATH TO THE SELECTED TABLE
-    // console.log(component.parser());
-    $(".remote-browser-continue").toggleClass("disabled", true);
     const file_name = component.browser.path().split("/")[
       component.browser.path().split("/").length - 1
     ];
@@ -547,9 +544,6 @@ function constructor(params) {
   }
 
   component.load_hdf5_output = function () {
-    // console.log(component.browser.path()); // THIS IS THE PATH TO THE SELECTED TABLE
-    // console.log(component.parser());
-    $(".remote-browser-continue").toggleClass("disabled", true);
     const file_name = component.browser.path().split("/")[
       component.browser.path().split("/").length - 1
     ];
