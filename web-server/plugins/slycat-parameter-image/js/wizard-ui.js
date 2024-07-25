@@ -557,20 +557,12 @@ function constructor(params) {
       aids: [["data-table"], file_name],
       success : (results) =>
       {
-        console.log('Success!');
-        // Next step -- call web service that combines input and output tables, then creates model
         component.finish();
         client.post_combine_hdf5_tables({
           mid: component.model._id(),
           success : (results) =>
           {
-            console.log('Combined tables!');
-            client.post_model_finish({
-              mid: component.model._id(),
-              success: function () {
-                component.go_to_model();
-              },
-            });
+            component.tab(5);
           }
         })
       },
@@ -747,7 +739,6 @@ function constructor(params) {
   component.name_model = function (formElement) {
     // Validating
     formElement.classList.add("was-validated");
-
     // If valid...
     if (formElement.checkValidity() === true) {
       // Clearing form validation
