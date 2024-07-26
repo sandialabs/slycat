@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { changeThreeDColormap, updateThreeDColorBy, toggleThreeDSync } from "../actions";
 import ControlsGroup from "components/ControlsGroup";
 import ControlsButtonToggle from "./ControlsButtonToggle";
-import ControlsDropdown from "./ControlsDropdown";
+import ControlsDropdown from "components/ControlsDropdown";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
