@@ -14,7 +14,7 @@ class ControlsThreeD extends React.Component {
     super(props);
   }
 
-  changeThreeDColorBy = (label, key) => {
+  changeThreeDColorBy = (key, label) => {
     this.props.updateThreeDColorBy(this.props.currentFrame.uid, key);
   };
 

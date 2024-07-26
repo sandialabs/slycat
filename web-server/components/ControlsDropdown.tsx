@@ -73,8 +73,8 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
             className={"dropdown-item" + (selected ? " active" : "")}
             onClick={(e) =>
               set_selected_function(
-                this.props.state_label,
                 item.key,
+                this.props.state_label,
                 this.props.trigger,
                 e,
                 this.props,

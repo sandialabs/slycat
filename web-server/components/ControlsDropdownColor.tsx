@@ -1,6 +1,6 @@
 import React from "react";
 // @ts-ignore
-import ControlsDropdown from "components/ControlsDropdownOld";
+import ControlsDropdown from "components/ControlsDropdown";
 import ColorMaps from "js/slycat-color-maps";
 import d3 from "d3";
 
@@ -79,7 +79,6 @@ export default class ControlsDropdownColor extends React.Component<ControlsDropd
 
     return (
       <ControlsDropdown
-        key={this.props.key_id}
         id={this.props.id}
         label={this.props.label}
         title={this.props.title}
