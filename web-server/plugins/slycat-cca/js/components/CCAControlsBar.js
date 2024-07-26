@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from 'react-redux';
 import { setVariableSelected, } from '../actions';
 import { setColormap, } from 'components/actionsColor';
-import ControlsDropdown from 'components/ControlsDropdown';
+import ControlsDropdown from 'components/ControlsDropdownOld';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
 import ControlsDropdownColor from 'components/ControlsDropdownColor';

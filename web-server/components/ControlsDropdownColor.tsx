@@ -1,6 +1,6 @@
 import React from "react";
 // @ts-ignore
-import ControlsDropdown from "components/ControlsDropdown";
+import ControlsDropdown from "components/ControlsDropdownOld";
 import ColorMaps from "js/slycat-color-maps";
 import d3 from "d3";
 
