@@ -5,7 +5,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "jquery-ui";
-import ControlsBar from "./Components/PSControlsBar";
+import PSControlsBar from "./Components/PSControlsBar";
 import "bootstrap";
 import $ from "jquery";
 
@@ -120,7 +120,7 @@ $.widget("parameter_image.controls", {
     const controls_bar_ref = React.createRef();
 
     const controls_bar = (
-      <ControlsBar
+      <PSControlsBar
         ref={controls_bar_ref}
         store={window.store}
         element={self.element}
