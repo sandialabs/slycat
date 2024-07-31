@@ -303,9 +303,8 @@ class ControlsBar extends React.Component {
             dispatch={dropdown.dispatch}
           />
         );
-      } else {
-        return false;
       }
+      return false;
     });
 
     // Video and playback controls
