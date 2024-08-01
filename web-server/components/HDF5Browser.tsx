@@ -273,9 +273,6 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
      */
     private getFilesAsJsx = ():JSX.Element[] => {
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
-        if (!rawFile.mtime){
-          return null
-        }
         return (
           <tr
           className={this.state.selected==i?'selected':''} 
@@ -344,7 +341,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
         border: "1px solid rgb(222, 226, 230)",
       }
       return (
-        <div className="slycat-hdf5-browser">
+        <div className="slycat-remote-browser">
             <div className="form-group row path mb-3">
               <div className="col-sm-12">
                 <div className="input-group" 

@@ -2800,7 +2800,12 @@ def post_combine_hdf5_tables(mid):
     h5 = h5py.File(hdf5_path, 'r')
 
     unformatted_input = list(h5[input_path])
+    input_column_headers = [i for i in range(0, len(unformatted_input[0]))]
     unformatted_output = list(h5[output_path])
+    output_column_headers = [i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))]
+
+    slycat.web.server.put_model_parameter(database, model, 'input-columns', input_column_headers, True)
+    slycat.web.server.put_model_parameter(database, model, 'output-columns', output_column_headers, True)
 
     combined_dataset = []
     separated_dataset = [] # This will get sent to create_project_data for saving the inputs and output separately
