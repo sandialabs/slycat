@@ -78,15 +78,19 @@ def parse_file(file, model, database):
         
 def parse(database, model, input, files, aids, **kwargs):
     # Read HDF5 file
+    slycat.web.server.handlers.create_project_data(model['_id'], aids, files)
     start = time.time()
-    parsed = [parse_file(file, model, database) for file in files]
-    array_index = int(kwargs.get("array", "0"))
-    for (attributes, dimensions, combined_data, separate_data), aid in zip(parsed, aids):
-        slycat.web.server.put_model_arrayset(database, model, aid, input)
-        slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, combined_data)
+
+    # parsed = [parse_file(file, model, database) for file in files]
+    # array_index = int(kwargs.get("array", "0"))
+    # for (attributes, dimensions, combined_data, separate_data), aid in zip(parsed, aids):
+    #     slycat.web.server.put_model_arrayset(database, model, aid, input)
+    #     slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
+    #     slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, combined_data)
+
     end = time.time()
     model = database.get("model", model['_id'])
+    slycat.web.server.put_model_parameter(database, model, "error-messages", "")
     model["db_creation_time"] = (end - start)
     database.save(model)
 

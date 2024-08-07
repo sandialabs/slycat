@@ -13,14 +13,16 @@ import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
  * returns the parser type (dakota or csv)
  * @member onReauthCallBack called every time we lose connection to the host
  * @export
- * @interface RemoteFileBrowserProps
+ * @interface HDF5BrowserProps
  */
-export interface RemoteFileBrowserProps { 
+export interface HDF5BrowserProps { 
   hostname: string
   persistenceId?: string
   onSelectFileCallBack: Function
   onSelectParserCallBack: Function
   onReauthCallBack: Function
+  pid: string
+  mid: string
 }
 
 /**
@@ -34,9 +36,9 @@ export interface RemoteFileBrowserProps {
  * @member browserUpdating are we in the middle of getting data
  * @member selected id of selected file 
  * @export
- * @interface RemoteFileBrowserState
+ * @interface HDF5BrowserState
  */
-export interface RemoteFileBrowserState {
+export interface HDF5BrowserState {
   path:string
   pathInput:string
   persistenceId:string
@@ -44,7 +46,9 @@ export interface RemoteFileBrowserState {
   pathError: boolean
   browseError: boolean
   browserUpdating: boolean
-  selected:number
+  selected:number,
+  pid:string,
+  mid:string
 }
 
 /**
@@ -68,20 +72,22 @@ interface FileMetaData {
  *
  * @export
  * @class RemoteFileBrowser
- * @extends {React.Component<RemoteFileBrowserProps, RemoteFileBrowserState>}
+ * @extends {React.Component<HDF5BrowserProps, HDF5BrowserState>}
  */
-export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
-    public constructor(props:RemoteFileBrowserProps) {
+export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5BrowserState> {
+    public constructor(props:HDF5BrowserProps) {
       super(props)
       this.state = {
-        path:"/",
-        pathInput: "/",
+        path:"//",
+        pathInput: "//",
         rawFiles: [],
         pathError: false,
         browseError: false,
         persistenceId: props.persistenceId === undefined ? '' : props.persistenceId,
         browserUpdating: false,
-        selected:-1
+        selected:-1,
+        pid: props.pid,
+        mid: props.mid
       }
     }
 
@@ -90,65 +96,49 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
      *
      * @param pathInput path to return all ls properties from
      * @private
-     * @memberof RemoteFileBrowser
+     * @memberof HDF5Browser
      */
-    private browse = (pathInput:string) =>
-    {
-      // First check if we have a remote connection...
-      client.get_remotes_fetch(this.props.hostname)
-        .then((json) => {
-          // If we have a session, go on.
-          if(json.status) {
-            pathInput = (pathInput === ""?"/":pathInput);
-            this.setState({
-              rawFiles:[], 
-              browserUpdating:true, 
-              selected:-1,
-              path:pathInput,
-              pathInput
-            });
-            client.post_remote_browse_smb(
-            {
-              hostname : this.props.hostname,
-              path : pathInput,
-              success : (results:any) =>
-              {
-                console.log(results);
-                localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
-                this.setState({
-                  browseError:false,
-                  pathError:false,
-                });
-
-                let files: FileMetaData[] = []
-                if(pathInput != "/")
-                  files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
-                for(let i = 0; i != results.names.length; ++i)
-                  files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mimeType:results["mime-types"][i]});
-                this.setState({
-                  rawFiles:files,
-                  browserUpdating:false
-                });
-              },
-              error : (results:any) =>
-              {
-                if(this.state.path != this.state.pathInput)
-                {
-                  this.setState({pathError:true, browserUpdating:false});
-                }
-                if(results.status == 400){
-                  alert("bad file path")
-                }
-                this.setState({browseError:true, browserUpdating:false});
-              }
-            });
+    private browse = (pathInput:string) => {
+      let first_char = Array.from(pathInput)[0];
+      if(first_char != '/') {
+        pathInput = '/' + pathInput;
+      }
+      this.setState({pathInput:pathInput});
+      pathInput = pathInput.replace(/(?!^)\//g, "-");
+      client.post_browse_hdf5(
+      {
+          hostname : this.props.hostname,
+          path : pathInput,
+          pid: this.props.pid,
+          mid: this.props.mid,
+          success : (results:any) =>
+          {
+          localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
+          this.setState({
+              browseError:false,
+              pathError:false,
+          });
+          let json_results = JSON.parse(results)
+          let files: FileMetaData[] = []
+          if(pathInput != "/")
+              files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
+          for(let i = 0; i != json_results['name'].length; ++i)
+              files.push({name:json_results['name'][i], size:json_results['sizes'][i], type:json_results['types'][i], mtime:json_results['mtimes'][i], mimeType:json_results["mime-types"][i]});
+          this.setState({
+              rawFiles:files,
+              browserUpdating:false
+          });
+          },
+          error : (results:any) =>
+          {
+          if(this.state.path != this.state.pathInput)
+          {
+              this.setState({pathError:true, browserUpdating:false});
           }
-          // Otherwise...we don't have a session anymore, so 
-          // run the reauth callback if one was passed.
-          else {
-            if(this.props.onReauthCallBack) {
-              this.props.onReauthCallBack();
-            }
+          if(results.status == 400){
+              alert("bad file path")
+          }
+          this.setState({browseError:true, browserUpdating:false});
           }
       });
     }
@@ -186,6 +176,18 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
       return new_path;
     }
 
+    private browseUpDirectory = (currentPath:string) => {
+      let split_path = currentPath.split('/');
+      let parent_directory = '';
+      for (let i = 1; i < split_path.length - 1; i++) {
+        parent_directory = parent_directory + '/' + split_path[i];
+      }
+      if (parent_directory == '/' || parent_directory == '') {
+        parent_directory = '//';
+      }
+      this.browse(parent_directory);
+    }
+
     /**
      * given a file(which includes its full path), browse to the path above it
      * 
@@ -196,6 +198,11 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
      */
     private browseUpByFile = (file:FileMetaData) => {
       this.setState({selected:-1});
+      // If it's a table, need to parse
+      if(file.type === "f") {
+        // callback
+      }
+
       // If the file is our parent directory, move up the hierarchy.
       if(file.name === "..")
       {
@@ -204,17 +211,28 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
       // If the file is a directory, move down the hierarchy.
       else if(file.type === "d")
       {
-        this.browse(this.pathJoin(this.state.path, file.name));
+        let current_path = this.state.pathInput;
+        let new_path = '';
+        if(current_path == '//') {
+          current_path = current_path.substring(1);
+          new_path = current_path + file.name;
+        }
+        else {
+          new_path = current_path + '/' + file.name;
+        }
+        let substr = new_path.substring(0, 2);
+        if(substr == '//') {
+          new_path = new_path.substring(1);
+        }
+        this.browse(new_path);
       }
     }
 
     keyPress = (event:any, pathInput:string) => {
         if (event.key == 'Enter'){
-          // How would I trigger the button that is in the render? I have this so far.
           this.browse(pathInput);
         }
     }
-
 
     /**
      * Given a row id and file info set the selected file and 
@@ -241,7 +259,7 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
 
       this.setState({selected:i},() => {
         // tell our create what we selected
-        this.props.onSelectFileCallBack(newPath, file.type, file);
+        this.props.onSelectFileCallBack((this.state.pathInput + '/' + file.name), file.type, file);
       })
     }
 
@@ -255,9 +273,6 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
      */
     private getFilesAsJsx = ():JSX.Element[] => {
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
-        if (!rawFile.mtime){
-          return null
-        }
         return (
           <tr
           className={this.state.selected==i?'selected':''} 
@@ -295,12 +310,12 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
     }
 
     public async componentDidMount() {
-      const path = localStorage.getItem("slycat-remote-browser-path-" 
-        + this.state.persistenceId 
-        + this.props.hostname);
-      if(path != null){
-        this.setState({path,pathInput:path});
-        await this.browse(this.pathDirname(path));
+      // const path = localStorage.getItem("slycat-remote-browser-path-" 
+      //   + this.state.persistenceId 
+      //   + this.props.hostname);
+      if(this.state.pathInput != null){
+        // this.setState({path,pathInput:path});
+        this.browse(this.state.pathInput);
       }
     }
 
@@ -327,9 +342,6 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
       }
       return (
         <div className="slycat-remote-browser">
-            <label className='font-weight-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
-            {this.props.hostname}:
-            </label>
             <div className="form-group row path mb-3">
               <div className="col-sm-12">
                 <div className="input-group" 
@@ -349,7 +361,7 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
                 <div className="btn-group" role="group" style={{float: 'right'}}>
                   <button className="btn btn-secondary" type="button" title="Navigate to parent directory"
                     onClick={() => {
-                      this.browse(this.pathDirname(this.state.path))}
+                      this.browseUpDirectory(this.state.pathInput)}
                     }
                   >
                     <i className="fa fa-level-up" aria-hidden="true"></i>
@@ -381,11 +393,6 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
-          <SlycatSelector
-            onSelectCallBack={this.props.onSelectParserCallBack}
-            label={'Filetype'}
-            options={options}
-          />
         </div>
     );
     }
