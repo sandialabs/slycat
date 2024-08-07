@@ -79,7 +79,6 @@ export default class ControlsDropdownColor extends React.Component<ControlsDropd
 
     return (
       <ControlsDropdown
-        key={this.props.key_id}
         id={this.props.id}
         label={this.props.label}
         title={this.props.title}

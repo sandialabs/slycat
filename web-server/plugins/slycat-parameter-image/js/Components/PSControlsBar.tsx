@@ -1,7 +1,7 @@
 import React from "react";
 import { Provider, connect } from "react-redux";
 import ControlsPlayback from "./ControlsPlayback";
-import ControlsDropdown from "./ControlsDropdown";
+import ControlsDropdown from "components/ControlsDropdown";
 import ControlsVideo from "./ControlsVideo";
 import ControlsThreeD from "./ControlsThreeD";
 import ControlsSelection from "./ControlsSelection";
@@ -115,7 +115,7 @@ class ControlsBar extends React.Component {
     }
   };
 
-  set_selected = (state_label, key, trigger, e, props) => {
+  set_selected = (key, state_label, trigger, e, props) => {
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);
   };
@@ -303,9 +303,8 @@ class ControlsBar extends React.Component {
             dispatch={dropdown.dispatch}
           />
         );
-      } else {
-        return false;
       }
+      return false;
     });
 
     // Video and playback controls
@@ -377,7 +376,7 @@ class ControlsBar extends React.Component {
                   trigger="xypair_selection_changed"
                   items={this.props.xy_pairs_items}
                   selected={this.props.xy_pair_selected}
-                  set_selected={(state_label, key, trigger, e) =>
+                  set_selected={(key, state_label, trigger, e) =>
                     this.props.element.trigger(trigger, key)
                   }
                   button_style={button_style}

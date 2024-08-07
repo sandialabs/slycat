@@ -310,6 +310,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
           clearVariableRange={this.props.clearVariableRange}
           inputLabel="Axis"
           ref={this.variableRangesRef}
+          axesVariablesScale={this.props.axes_variables_scale}
         />
         <ClearAllButton
           label="Clear All Scatterplot Variable Ranges"
