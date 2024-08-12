@@ -483,6 +483,8 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 
 {
 
+	console.log("download csv");
+
     // get variable name
     var sel_plot_ind = plots_selected[plot_id];
     var sel_plot_name = plot_name[sel_plot_ind];
@@ -522,11 +524,12 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
     }
 
     // text for selecting point identifier
-    dialog_msg += "<br /><br />Please select the meta-data column that will identify " +
+    dialog_msg += "<br /><br />Please select the meta-data column(s) that will identify " +
                   "the plots in the .csv file.";
 
     // construct options for point identifier pull down
     var table_headers = metadata_table.get_headers(false, true);
+	console.log(table_headers);
 
     // buttons for dialog
 	var buttons_save = [
@@ -548,6 +551,7 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 		message: dialog_msg,
 		buttons: buttons_save,
 		select: true,
+		multiple: true,
 		select_options: table_headers[0],
 		callback: function(button, value)
 		{

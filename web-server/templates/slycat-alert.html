@@ -23,6 +23,7 @@
           <!--ko if: select -->
           <select class="custom-select" 
             data-bind="
+              attr:{multiple:multiple},
               options:options,
               optionsText: 'name', 
               optionsValue: 'id', 

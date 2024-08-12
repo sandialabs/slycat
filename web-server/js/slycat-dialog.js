@@ -20,6 +20,7 @@ export function dialog(params)
   // added select drop down, returns value index
   // (S. Martin, 11/27/2019)
   component.select = ko.observable(params.select || false);
+  component.multiple = ko.observable(params.multiple || false);
 
   // set up options list with an index id
   var select_options = []
@@ -33,9 +34,9 @@ export function dialog(params)
       select_options.push(new select_option_data({id: i,
         name: params.select_options[i]}))
     }
-  }
+  }  
   component.options = ko.observableArray(select_options);
-
+  
   component.placeholder = ko.observable(params.placeholder || "");
   component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
   component.alert = ko.observable(params.alert || "");
