@@ -39,6 +39,7 @@ export function dialog(params)
   
   component.placeholder = ko.observable(params.placeholder || "");
   component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
+  component.values = ko.isObservable(params.values) ? params.values : ko.observable(params.values || "");
   component.alert = ko.observable(params.alert || "");
   component.buttons = params.buttons || [{className: "btn-primary", label:"OK"}];
   component.container = $($.parseHTML(template)).appendTo($("body"));
@@ -47,7 +48,11 @@ export function dialog(params)
     // console.debug(`This fires when the dialog is closed.`);
     component.container.remove();
     if(params.callback)
-      params.callback(component.result, component.value);
+      if (params.multiple) {
+        params.callback(component.result, component.values);
+      } else {
+        params.callback(component.result, component.value);
+      }
 
     // Check if there are other modals open, and add back the 'modal-open' class
     // to the body tag. This class is removed when a modal closes, but is needed

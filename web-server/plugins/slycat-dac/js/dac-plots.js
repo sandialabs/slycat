@@ -483,8 +483,6 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 
 {
 
-	console.log("download csv");
-
     // get variable name
     var sel_plot_ind = plots_selected[plot_id];
     var sel_plot_name = plot_name[sel_plot_ind];
@@ -529,7 +527,6 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 
     // construct options for point identifier pull down
     var table_headers = metadata_table.get_headers(false, true);
-	console.log(table_headers);
 
     // buttons for dialog
 	var buttons_save = [
@@ -556,8 +553,8 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 		callback: function(button, value)
 		{
 
-            // user selected header for labeling ouptput
-            var header_index = value();
+            // user selected header(s) for labeling ouptput
+            var header_inds = value();
 
 		    // download model is closed
 		    download_dialog_open = false;
@@ -565,11 +562,11 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 		    if (typeof button !== 'undefined') {
 
                 if(button.label == "Save All Plots")
-                    convert_to_csv([], plot_id, header_index,
+                    convert_to_csv([], plot_id, header_inds,
                         defaultFilename, use_data_order_all_plots);
 
                 else if(button.label == "Save Selected")
-                    convert_to_csv(curr_sel, plot_id, header_index,
+                    convert_to_csv(curr_sel, plot_id, header_inds,
                         defaultFilename, use_data_order);
             }
 		},
@@ -578,10 +575,10 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 }
 
 // generate csv table from selected plot data
-function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
+function convert_to_csv (curr_sel, plot_id, header_inds, defaultFilename,
                          use_data_order)
 {
-
+	
     // if selection is empty, use all plots
     if (curr_sel.length == 0) {
 
@@ -594,8 +591,9 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
 
     var num_sel = curr_sel.length;
 
-    // get header values and selection colors
-    var sel_col_commas = metadata_table.selection_values(header_index, curr_sel, use_data_order);
+    // get header names, values and selection colors
+    var table_headers = metadata_table.get_headers(false, true);
+    var sel_col_commas = metadata_table.selection_values(header_inds, curr_sel, use_data_order);
 
     // use new table order for data
     var curr_sel_table_order = sel_col_commas[2];
@@ -604,35 +602,27 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
     var extra_commas = sel_col_commas[3];
     var extra_newlines = sel_col_commas[4];
 
-    // table to return
-    var csv_output = "Time,";
-
-    // construct header row
+	// construct table, first row is variable name
+	// second row is selection,
     var sel_plot_ind = plots_selected[plot_id];
+	var var_data = [];
+	var sel_data = [];
     for (var i = 0; i < num_sel; i++) {
+		var_data.push(plot_name[sel_plot_ind]);
+		sel_data.push(sel_col_commas[1][i]);
+	}
+	var csv_output = construct_row("Variable", var_data);
+	csv_output += construct_row("Selection", sel_data);
 
-        // text is "ID Var (selection color)"
-
-        // if ID is present then add
-        if (sel_col_commas[0][i] != "") {
-            csv_output += sel_col_commas[0][i] + " ";
-        }
-
-        // add plot name
-        csv_output += plot_name[sel_plot_ind];
-
-        // add selection color, if available
-        if (sel_col_commas[1][i] != "") {
-            csv_output += " (" + sel_col_commas[1][i] + ")";
-        }
-
-        // separated by commas, ended by newline
-        if (i < num_sel-1) {
-            csv_output += ",";
-        } else {
-            csv_output += "\n";
-        }
-    }
+	// third and following rows are user selected
+	var num_user_sel = header_inds.length;
+	for (var j = 0; j < num_user_sel; j++) {
+		var user_data = []
+		for (var i = 0; i < num_sel; i++) {
+			user_data.push(sel_col_commas[0][i][j]);
+		}
+		csv_output += construct_row(table_headers[0][header_inds[j]], user_data);
+	}
 
     // call server to get data, no subsampling
     client.post_sensitive_model_command(
@@ -685,6 +675,27 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
 			("","","");
 	}
 
+}
+
+// helper function for convert_to_csv
+// constructs one row of table
+function construct_row (header, data)
+{
+	var row = header + ",";
+    for (var i = 0; i < data.length; i++) {
+
+		// add plot name
+		row += data[i];
+
+        // separated by commas, ended by newline
+        if (i < data.length-1) {
+            row += ",";
+        } else {
+            row += "\n";
+        }
+    }
+
+	return row
 }
 
 // update selections based on other input

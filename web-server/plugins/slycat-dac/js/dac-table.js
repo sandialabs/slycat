@@ -647,11 +647,11 @@ function row_sel_color (item)
 }
 
 // return table values for a selection
-module.selection_values = function (header_col, rows_to_output, use_data_order)
+module.selection_values = function (header_cols, rows_to_output, use_data_order)
 {
 
-    // return header value and selection color
-    var header_val = []
+    // return header values and selection color
+    var header_vals = []
     var sel_color = []
 
     // also return flags indicating if commas/newlines were found
@@ -673,7 +673,7 @@ module.selection_values = function (header_col, rows_to_output, use_data_order)
 		} else {
 		    item = grid_view.getDataItem(i);
 		}
-
+		
 		// get selection index
 		var sel_i = item[item.length-2];
 
@@ -683,21 +683,29 @@ module.selection_values = function (header_col, rows_to_output, use_data_order)
             // save selection in table order
             sel_table_order.push(sel_i);
 
-            // get header name
-            var header_name = String(item[header_col]);
+            // get header values
+			var header_val_j = []
+			for (var j = 0; j < header_cols.length; j++) {
 
-            // check for commas for later warning
-            if (header_name.indexOf(",") != -1) {
-                extra_commas = true;
-            }
+				// go through each header in the list
+				var header_name = String(item[header_cols[j]]);
 
-            // check for newlines for later warning
-            if (header_name.search(/\r?\n|\r/) != -1) {
-                extra_newlines = true;
-            }
+				// check for commas for later warning
+				if (header_name.indexOf(",") != -1) {
+					extra_commas = true;
+				}
 
-            // strip commas and add to header list
-            header_val.push(header_name.replace(/, ?/g, " ").replace(/\r?\n|\r/g, " ").trim());
+				// check for newlines for later warning
+				if (header_name.search(/\r?\n|\r/) != -1) {
+					extra_newlines = true;
+				}
+
+				// strip commas and add to header list
+				header_val_j.push(header_name.replace(/, ?/g, " ")
+					       .replace(/\r?\n|\r/g, " ").trim());
+
+			}
+			header_vals.push(header_val_j);
 
 			// get selection color
             sel_color.push(row_sel_color(item));
@@ -705,7 +713,8 @@ module.selection_values = function (header_col, rows_to_output, use_data_order)
 		}
     }
 
-    return [header_val, sel_color, sel_table_order, extra_commas, extra_newlines];
+    return [header_vals, sel_color, sel_table_order, 
+			extra_commas, extra_newlines];
 
 }
 
