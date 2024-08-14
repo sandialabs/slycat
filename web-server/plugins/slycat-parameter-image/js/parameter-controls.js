@@ -132,9 +132,7 @@ $.widget("parameter_image.controls", {
         aid={self.options.aid}
         model={self.options.model}
         model_name={self.options.model_name}
-        metadata={self.options.metadata}
         indices={self.options.indices}
-        rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
       />
     );
@@ -154,8 +152,8 @@ $.widget("parameter_image.controls", {
   },
 
   _setOption: function (key, value) {
-    var self = this;
-    //console.log("parameter_image.variableswitcher._setOption()", key, value);
-    this.options[key] = value;
+    // var self = this;
+    // console.log("parameter_image.variableswitcher._setOption()", key, value);
+    // this.options[key] = value;
   },
 });

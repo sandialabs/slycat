@@ -23,13 +23,84 @@ import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
 import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
+import {
+  RootState,
+  VariableRangesType,
+  ActiveFiltersType,
+  OpenMediaType,
+  VariableAliasesType,
+  TableMetadataType,
+} from "../store";
+import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 
-class ControlsBar extends React.Component {
-  constructor(props) {
+interface PSControlsBarDropdownsType {
+  id: string;
+  label: string;
+  title: string;
+  state_label: string;
+  trigger: string;
+  items: IDropdownItems[];
+  selected: number;
+}
+
+interface PSControlsBarAxesVariablesType {
+  key: number;
+  name: string;
+}
+
+interface PSControlsBarProps {
+  auto_scale: boolean;
+  video_sync: boolean;
+  variableRanges: VariableRangesType;
+  active_filters: ActiveFiltersType;
+  element: JQuery;
+  selected_simulations: number[];
+  open_media: OpenMediaType;
+  variable_aliases: VariableAliasesType;
+  dropdowns: PSControlsBarDropdownsType[];
+  xy_pairs_items: { key: string; name: string }[];
+  xy_pairs_indexes: number[];
+  show_histogram: boolean;
+  metadata: TableMetadataType;
+  xy_pair_selected: string;
+  model: any;
+  axes_variables: PSControlsBarAxesVariablesType[];
+  sync_scaling: boolean;
+  indices: Int32Array;
+  rating_variables: number[];
+  media_columns: number[];
+  media_index: number;
+  hidden_simulations: number[];
+  aid: string;
+  mid: string;
+  pid: string;
+  model_name: string;
+  video_sync_time: number;
+  colormap: string;
+  x_index: number;
+  y_index: number;
+  v_index: number;
+  toggleAutoScale: () => void;
+  toggleShowHistogram: () => void;
+  setVideoSyncTime: (value: number) => void;
+  toggleSyncScaling: () => void;
+  toggleSyncThreeDColorvar: () => void;
+  setColormap: (colormap: string) => void;
+}
+
+interface PSControlsBarState {
+  video_sync: boolean;
+}
+
+class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarState> {
+  autoScalePopoverSelector: string;
+  autoScaleId: string;
+  selection_id: string;
+  scatterplot_id: string;
+  constructor(props: PSControlsBarProps) {
     super(props);
     this.state = {
       video_sync: this.props.video_sync,
-      var_settings: this.props.var_settings,
     };
     this.scatterplot_id = "scatterplot-controls";
     this.selection_id = "selection-controls";
@@ -60,15 +131,20 @@ class ControlsBar extends React.Component {
       // Find any currently active axes limits
       let active_axes_limits = [];
 
-      for (const axis of ["x", "y", "v"]) {
-        const variableRanges = this.props.variableRanges[this.props[`${axis}_index`]];
-        if (variableRanges !== undefined) {
-          for (const direction of ["min", "max"]) {
-            if (variableRanges.hasOwnProperty(direction)) {
+      const variableRangesPerVariable = {
+        x: this.props.variableRanges[this.props.x_index],
+        y: this.props.variableRanges[this.props.y_index],
+        v: this.props.variableRanges[this.props.v_index],
+      };
+
+      for (const [key, value] of Object.entries(variableRangesPerVariable)) {
+        if (value !== undefined) {
+          for (const direction of ["min", "max"] as const) {
+            if (value.hasOwnProperty(direction)) {
               active_axes_limits.push({
-                axis: axis,
+                axis: key,
                 direction: direction,
-                value: variableRanges[direction],
+                value: value[direction],
               });
             }
           }
@@ -115,16 +191,16 @@ class ControlsBar extends React.Component {
     }
   };
 
-  set_selected = (key, state_label, trigger, e, props) => {
+  set_selected: SetSelectedFunction = (key, state_label, trigger, e, props) => {
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);
   };
 
-  set_auto_scale = (e) => {
+  set_auto_scale = () => {
     this.props.toggleAutoScale();
   };
 
-  set_video_sync = (e) => {
+  set_video_sync = () => {
     this.setState((prevState, props) => {
       const new_video_sync = !prevState.video_sync;
       this.props.element.trigger("video-sync", new_video_sync);
@@ -132,20 +208,20 @@ class ControlsBar extends React.Component {
     });
   };
 
-  set_video_sync_time = (value) => {
+  set_video_sync_time = (value: number) => {
     this.props.setVideoSyncTime(value);
     this.props.element.trigger("video-sync-time", value);
   };
 
-  trigger_show_all = (e) => {
+  trigger_show_all = () => {
     this.props.element.trigger("show-all");
   };
 
-  trigger_close_all = (e) => {
+  trigger_close_all = () => {
     this.props.element.trigger("close-all");
   };
 
-  trigger_hide_selection = (e) => {
+  trigger_hide_selection = () => {
     if (this.props.active_filters.length == 0) {
       this.props.element.trigger("hide-selection", this.props.selected_simulations);
     }
@@ -159,7 +235,7 @@ class ControlsBar extends React.Component {
     // }
   };
 
-  trigger_hide_unselected = (e) => {
+  trigger_hide_unselected = () => {
     if (this.props.active_filters.length == 0) {
       // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
       // https://api.jquery.com/trigger/
@@ -168,61 +244,61 @@ class ControlsBar extends React.Component {
     }
   };
 
-  trigger_show_unselected = (e) => {
+  trigger_show_unselected = () => {
     if (this.props.active_filters.length == 0) {
       this.props.element.trigger("show-unselected", [this.props.selected_simulations]);
     }
   };
 
-  trigger_show_selection = (e) => {
+  trigger_show_selection = () => {
     if (this.props.active_filters.length == 0) {
       this.props.element.trigger("show-selection", [this.props.selected_simulations]);
     }
   };
 
-  trigger_pin_selection = (e) => {
+  trigger_pin_selection = () => {
     // Passing true along with selection to pin-selection trigger to make it restore the size
     // and location of pins. We only do this when pinning from the controls menu, per
     // https://github.com/sandialabs/slycat/issues/1043#issuecomment-954137333
     this.props.element.trigger("pin-selection", [this.props.selected_simulations, true]);
   };
 
-  trigger_select_pinned = (e) => {
+  trigger_select_pinned = () => {
     this.props.element.trigger("select-pinned", [this.props.open_media]);
   };
 
-  trigger_jump_to_start = (e) => {
+  trigger_jump_to_start = () => {
     this.props.element.trigger("jump-to-start");
   };
 
-  trigger_frame_back = (e) => {
+  trigger_frame_back = () => {
     this.props.element.trigger("frame-back");
   };
 
-  trigger_play = (e) => {
+  trigger_play = () => {
     this.props.element.trigger("play");
   };
 
-  trigger_pause = (e) => {
+  trigger_pause = () => {
     this.props.element.trigger("pause");
   };
 
-  trigger_frame_forward = (e) => {
+  trigger_frame_forward = () => {
     this.props.element.trigger("frame-forward");
   };
 
-  trigger_jump_to_end = (e) => {
+  trigger_jump_to_end = () => {
     this.props.element.trigger("jump-to-end");
   };
 
-  get_variable_label(variable) {
+  get_variable_label(variable: number) {
     if (this.props.variable_aliases[variable] !== undefined) {
       return this.props.variable_aliases[variable];
     }
 
     return this.props.metadata["column-names"][variable];
   }
-
+  
   render() {
     // Define default button style
     const button_style = "btn-outline-dark";
@@ -232,8 +308,8 @@ class ControlsBar extends React.Component {
       dropdown.items = dropdown.items.map((item) => {
         // Don't try to update variable names for keys less than 0, because those are not
         // real variables. For example, the "None" first item in the Media Set dropdown.
-        if (item.key >= 0) {
-          item.name = this.get_variable_label(item.key);
+        if (item.key !== undefined && Number(item.key) >= 0) {
+          item.name = this.get_variable_label(Number(item.key));
         }
         return item;
       });
@@ -242,7 +318,10 @@ class ControlsBar extends React.Component {
 
     // If we have xy_pairs, move them to the bottom of the x and y dropdowns
     if (this.props.xy_pairs_items.length > 0) {
-      const move_xy_pairs = (items) => {
+      const move_xy_pairs = (items: IDropdownItems[] | undefined) => {
+        if (items === undefined) {
+          return;
+        }
         items.push({ type: "divider" });
         items.push({ type: "header", name: "XY Pair" });
         this.props.xy_pairs_indexes.forEach((index) => {
@@ -251,8 +330,8 @@ class ControlsBar extends React.Component {
         });
       };
 
-      let x_items = _.find(aliased_dropdowns, { id: "x-axis-dropdown" }).items;
-      let y_items = _.find(aliased_dropdowns, { id: "y-axis-dropdown" }).items;
+      let x_items = _.find(aliased_dropdowns, { id: "x-axis-dropdown" })?.items;
+      let y_items = _.find(aliased_dropdowns, { id: "y-axis-dropdown" })?.items;
       move_xy_pairs(x_items);
       move_xy_pairs(y_items);
     }
@@ -300,7 +379,6 @@ class ControlsBar extends React.Component {
             trigger={dropdown.trigger}
             selected={this.props[dropdown.state_label]}
             set_selected={this.set_selected}
-            dispatch={dropdown.dispatch}
           />
         );
       }
@@ -494,9 +572,9 @@ class ControlsBar extends React.Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  let xy_pairs_indexes = [];
-  let xy_pairs_items = [];
+const mapStateToProps = (state: RootState, ownProps) => {
+  let xy_pairs_indexes: number[] = [];
+  let xy_pairs_items: { key: string; name: string }[] = [];
   state.derived.xy_pairs.forEach((xy_pair) => {
     xy_pairs_indexes.push(xy_pair.x);
     xy_pairs_indexes.push(xy_pair.y);
@@ -515,6 +593,7 @@ const mapStateToProps = (state, ownProps) => {
     v_index: state.v_index,
     media_index: state.media_index,
     media_columns: state.derived.media_columns,
+    rating_variables: state.derived.rating_variables,
     open_media: state.open_media,
     variable_aliases: state.derived.variableAliases,
     active_filters: state.active_filters,
@@ -528,6 +607,7 @@ const mapStateToProps = (state, ownProps) => {
     colormap: state.colormap,
     show_histogram: state.scatterplot.show_histogram,
     auto_scale: state.scatterplot.auto_scale,
+    metadata: state.derived.table_metadata,
   };
 };
 
@@ -547,4 +627,4 @@ export default connect(
   // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
   // https://react-redux.js.org/api/connect#forwardref-boolean
   { forwardRef: true },
-)(ControlsBar);
+)(PSControlsBar);

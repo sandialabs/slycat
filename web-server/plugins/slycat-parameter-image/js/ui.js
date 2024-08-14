@@ -432,6 +432,7 @@ $(document).ready(function () {
             derived: {
               variableAliases: variable_aliases,
               media_columns: image_columns,
+              rating_variables: rating_columns,
               xy_pairs: xy_pairs,
               // Set "embed" to true if the "embed" query parameter is present
               embed: URI(window.location).query(true).embed !== undefined,

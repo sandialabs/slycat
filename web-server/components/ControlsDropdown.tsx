@@ -4,18 +4,18 @@
 
 import React from "react";
 
-interface IDropdownItems {
-  key: string;
-  name: string;
-  type?: string;
-  style: {};
+export interface IDropdownItems {
+  key?: number | string;
+  name?: string;
+  type?: "divider" | "header";
+  style?: {};
   set_selected?: SetSelectedFunction;
   selected?: boolean;
 }
 
-type SetSelectedFunction = (
+export type SetSelectedFunction = (
+  key: number | string,
   state_label: string,
-  key: string,
   trigger: string,
   e?: React.MouseEvent<HTMLButtonElement>,
   props?: Record<string, unknown>,
@@ -23,7 +23,7 @@ type SetSelectedFunction = (
 
 interface ControlsDropdownProps {
   items: IDropdownItems[];
-  selected: string;
+  selected: string | number;
   set_selected: SetSelectedFunction;
   state_label: string;
   trigger: string;
@@ -31,7 +31,7 @@ interface ControlsDropdownProps {
   id: string;
   title: string;
   label: string;
-  single: boolean;
+  single?: boolean;
 }
 
 /**
@@ -73,7 +73,7 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
             className={"dropdown-item" + (selected ? " active" : "")}
             onClick={(e) =>
               set_selected_function(
-                item.key,
+                item.key!,
                 this.props.state_label,
                 this.props.trigger,
                 e,
