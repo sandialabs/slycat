@@ -41,6 +41,7 @@ import {
   SET_USER_ROLE,
   SET_TABLE_STATISTICS,
   SET_TABLE_METADATA,
+  SET_VIDEO_SYNC,
   SET_VIDEO_SYNC_TIME,
   SET_SCATTERPLOT_MARGIN,
   SET_COLORMAP,
@@ -532,6 +533,11 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           table_metadata: _.cloneDeep(action.table_metadata),
         },
+      });
+
+    case SET_VIDEO_SYNC:
+      return Object.assign({}, state, {
+        video_sync: action.video_sync,
       });
 
     case SET_VIDEO_SYNC_TIME:

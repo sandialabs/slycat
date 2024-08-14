@@ -101,7 +101,7 @@ export type OpenMediaType = {
 // Currently we are not storing any details of the filters
 // We are just using an empty objects for the type to
 // determine how many active filters are there.
-// In the future we need to expand this when we convert 
+// In the future we need to expand this when we convert
 // the filter manager to React.
 export type ActiveFiltersType = {}[];
 
@@ -137,6 +137,7 @@ export type RootState = {
   x_index: number;
   y_index: number;
   v_index: number;
+  video_sync: boolean;
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
   [DATA_SLICE_NAME]: DataState;
@@ -177,6 +178,7 @@ export const initialState: RootState = {
   x_index: 0,
   y_index: 1,
   v_index: 1,
+  video_sync: false,
   video_sync_time: 0,
   media_index: -1,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },

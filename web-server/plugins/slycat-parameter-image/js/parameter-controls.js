@@ -15,125 +15,31 @@ $.widget("parameter_image.controls", {
     model_name: null,
     model: null,
     aid: null,
-    metadata: null,
-    table_statistics: null,
-    "x-variable": null,
-    "y-variable": null,
-    "image-variable": null,
-    "color-variable": null,
     x_variables: [],
     y_variables: [],
     axes_variables: [],
     image_variables: [],
     color_variables: [],
-    rating_variables: [],
-    category_variables: [],
-    selection: [],
     indices: [],
-    "video-sync": false,
-    "video-sync-time": 0,
   },
 
   _create: function () {
     var self = this;
 
-    const x_axis_dropdown_items = [];
-    for (let x_variable of this.options.x_variables) {
-      x_axis_dropdown_items.push({
-        key: x_variable,
-        name: self.options.metadata["column-names"][x_variable],
-      });
-    }
-
-    const y_axis_dropdown_items = [];
-    for (let y_variable of this.options.y_variables) {
-      y_axis_dropdown_items.push({
-        key: y_variable,
-        name: self.options.metadata["column-names"][y_variable],
-      });
-    }
-
-    const axes_items = [];
-    for (let axes_variable of this.options.axes_variables) {
-      axes_items.push({
-        key: axes_variable,
-        name: self.options.metadata["column-names"][axes_variable],
-      });
-    }
-
-    const color_variable_dropdown_items = [];
-    for (let color_variable of this.options.color_variables) {
-      color_variable_dropdown_items.push({
-        key: color_variable,
-        name: self.options.metadata["column-names"][color_variable],
-      });
-    }
-
-    const media_variable_dropdown_items = [];
-    media_variable_dropdown_items.push({ key: -1, name: "None" });
-    for (let media_variable of this.options.image_variables) {
-      media_variable_dropdown_items.push({
-        key: media_variable,
-        name: self.options.metadata["column-names"][media_variable],
-      });
-    }
-
-    const dropdowns = [
-      {
-        id: "x-axis-dropdown",
-        label: "X",
-        title: "Change X Axis Variable",
-        state_label: "x_index",
-        trigger: "x-selection-changed",
-        items: x_axis_dropdown_items,
-        selected: self.options["x-variable"],
-      },
-      {
-        id: "y-axis-dropdown",
-        label: "Y",
-        title: "Change Y Axis Variable",
-        state_label: "y_index",
-        trigger: "y-selection-changed",
-        items: y_axis_dropdown_items,
-        selected: self.options["y-variable"],
-      },
-      {
-        id: "color-dropdown",
-        label: "Point Color",
-        title: "Change Point Color",
-        state_label: "v_index",
-        trigger: "color-selection-changed",
-        items: color_variable_dropdown_items,
-        selected: self.options["color-variable"],
-      },
-      {
-        id: "image-dropdown",
-        label: "Media",
-        title: "Change Media Set Variable",
-        state_label: "media_index",
-        trigger: "images-selection-changed",
-        items: media_variable_dropdown_items,
-        selected: self.options["image-variable"],
-      },
-    ];
-
-    const controls_bar_ref = React.createRef();
-
     const controls_bar = (
       <PSControlsBar
-        ref={controls_bar_ref}
         store={window.store}
         element={self.element}
-        dropdowns={dropdowns}
-        axes_variables={axes_items}
-        selection={self.options.selection}
-        pid={self.options.pid}
+        axes_variables={self.options.axes_variables}
+        indices={self.options.indices}
         mid={self.options.mid}
         aid={self.options.aid}
         model={self.options.model}
         model_name={self.options.model_name}
-        indices={self.options.indices}
-        video_sync={self.options["video-sync"]}
+        x_variables={self.options.x_variables}
+        y_variables={self.options.y_variables}
+        image_variables={self.options.image_variables}
+        color_variables={self.options.color_variables}
       />
     );
     const react_controls_root = createRoot(document.getElementById("react-controls"));
@@ -151,9 +57,5 @@ $.widget("parameter_image.controls", {
     });
   },
 
-  _setOption: function (key, value) {
-    // var self = this;
-    // console.log("parameter_image.variableswitcher._setOption()", key, value);
-    // this.options[key] = value;
-  },
+  _setOption: function (key, value) {},
 });

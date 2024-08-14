@@ -49,22 +49,21 @@ interface PSControlsBarAxesVariablesType {
 }
 
 interface PSControlsBarProps {
+  store: any;
   auto_scale: boolean;
-  video_sync: boolean;
   variableRanges: VariableRangesType;
   active_filters: ActiveFiltersType;
   element: JQuery;
   selected_simulations: number[];
   open_media: OpenMediaType;
   variable_aliases: VariableAliasesType;
-  dropdowns: PSControlsBarDropdownsType[];
   xy_pairs_items: { key: string; name: string }[];
   xy_pairs_indexes: number[];
   show_histogram: boolean;
   metadata: TableMetadataType;
   xy_pair_selected: string;
   model: any;
-  axes_variables: PSControlsBarAxesVariablesType[];
+  axes_variables: number[];
   sync_scaling: boolean;
   indices: Int32Array;
   rating_variables: number[];
@@ -73,10 +72,14 @@ interface PSControlsBarProps {
   hidden_simulations: number[];
   aid: string;
   mid: string;
-  pid: string;
   model_name: string;
+  video_sync: boolean;
   video_sync_time: number;
   colormap: string;
+  x_variables: number[];
+  y_variables: number[];
+  color_variables: number[];
+  image_variables: number[];
   x_index: number;
   y_index: number;
   v_index: number;
@@ -298,13 +301,93 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
 
     return this.props.metadata["column-names"][variable];
   }
-  
+
   render() {
     // Define default button style
     const button_style = "btn-outline-dark";
 
+    const axes_items: PSControlsBarAxesVariablesType[] = [];
+    for (let axes_variable of this.props.axes_variables) {
+      axes_items.push({
+        key: axes_variable,
+        name: this.props.metadata["column-names"][axes_variable],
+      });
+    }
+
+    const x_axis_dropdown_items = [];
+    for (let x_variable of this.props.x_variables) {
+      x_axis_dropdown_items.push({
+        key: x_variable,
+        name: this.props.metadata["column-names"][x_variable],
+      });
+    }
+
+    const y_axis_dropdown_items = [];
+    for (let y_variable of this.props.y_variables) {
+      y_axis_dropdown_items.push({
+        key: y_variable,
+        name: this.props.metadata["column-names"][y_variable],
+      });
+    }
+
+    const color_variable_dropdown_items = [];
+    for (let color_variable of this.props.color_variables) {
+      color_variable_dropdown_items.push({
+        key: color_variable,
+        name: this.props.metadata["column-names"][color_variable],
+      });
+    }
+
+    const media_variable_dropdown_items = [];
+    media_variable_dropdown_items.push({ key: -1, name: "None" });
+    for (let media_variable of this.props.image_variables) {
+      media_variable_dropdown_items.push({
+        key: media_variable,
+        name: this.props.metadata["column-names"][media_variable],
+      });
+    }
+
+    const dropdowns_data: PSControlsBarDropdownsType[] = [
+      {
+        id: "x-axis-dropdown",
+        label: "X",
+        title: "Change X Axis Variable",
+        state_label: "x_index",
+        trigger: "x-selection-changed",
+        items: x_axis_dropdown_items,
+        selected: this.props.x_index,
+      },
+      {
+        id: "y-axis-dropdown",
+        label: "Y",
+        title: "Change Y Axis Variable",
+        state_label: "y_index",
+        trigger: "y-selection-changed",
+        items: y_axis_dropdown_items,
+        selected: this.props.y_index,
+      },
+      {
+        id: "color-dropdown",
+        label: "Point Color",
+        title: "Change Point Color",
+        state_label: "v_index",
+        trigger: "color-selection-changed",
+        items: color_variable_dropdown_items,
+        selected: this.props.v_index,
+      },
+      {
+        id: "image-dropdown",
+        label: "Media",
+        title: "Change Media Set Variable",
+        state_label: "media_index",
+        trigger: "images-selection-changed",
+        items: media_variable_dropdown_items,
+        selected: this.props.media_index,
+      },
+    ];
+
     // Update dropdowns with variable aliases when they exist
-    const aliased_dropdowns = _.cloneDeep(this.props.dropdowns).map((dropdown) => {
+    const aliased_dropdowns = _.cloneDeep(dropdowns_data).map((dropdown) => {
       dropdown.items = dropdown.items.map((item) => {
         // Don't try to update variable names for keys less than 0, because those are not
         // real variables. For example, the "None" first item in the Media Set dropdown.
@@ -440,7 +523,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
     }
 
     return (
-      <Provider store={window.store}>
+      <Provider store={this.props.store}>
         <React.Fragment>
           <React.StrictMode>
             <ControlsGroup id={this.scatterplot_id} class="btn-group ml-3">
@@ -464,7 +547,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
               <ControlsButtonVarOptions
                 model={this.props.model}
                 metadata={this.props.metadata}
-                axes_variables={this.props.axes_variables}
+                axes_variables={axes_items}
                 button_style={button_style}
                 element={this.props.element}
               />
@@ -510,7 +593,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
               <ControlsButtonUpdateTable
                 button_style={button_style}
                 mid={this.props.mid}
-                pid={this.props.pid}
+                pid={this.props.model.project}
                 aliases={this.props.variable_aliases}
               />
             </ControlsGroup>
@@ -603,6 +686,7 @@ const mapStateToProps = (state: RootState, ownProps) => {
     xy_pairs_indexes: xy_pairs_indexes,
     xy_pair_selected: xy_pair_selected,
     hidden_simulations: state.data.hidden_simulations,
+    video_sync: state.video_sync,
     video_sync_time: state.video_sync_time,
     colormap: state.colormap,
     show_histogram: state.scatterplot.show_histogram,
@@ -611,20 +695,11 @@ const mapStateToProps = (state: RootState, ownProps) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    toggleSyncScaling,
-    toggleSyncThreeDColorvar,
-    setVideoSyncTime,
-    setColormap,
-    toggleShowHistogram,
-    toggleAutoScale,
-  },
-  null,
-  // Before fully convering to React and Redux, we need a reference to this
-  // ControlsBar component so we can set its state from outside React. This option makes it so that
-  // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
-  // https://react-redux.js.org/api/connect#forwardref-boolean
-  { forwardRef: true },
-)(PSControlsBar);
+export default connect(mapStateToProps, {
+  toggleSyncScaling,
+  toggleSyncThreeDColorvar,
+  setVideoSyncTime,
+  setColormap,
+  toggleShowHistogram,
+  toggleAutoScale,
+})(PSControlsBar);

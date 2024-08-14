@@ -73,6 +73,7 @@ import {
   setUserRole,
   setTableStatistics,
   setTableMetadata,
+  setVideoSync,
   setVideoSyncTime,
 } from "./actions";
 
@@ -410,7 +411,8 @@ $(document).ready(function () {
           const legacyBookmarkState = {
             colormap: bookmark["colormap"],
             open_media: bookmarked_open_media,
-            video_sync_time: bookmark["video_sync_time"],
+            video_sync: bookmark["video-sync"],
+            video_sync_time: bookmark["video-sync-time"],
             x_index: x_index,
             y_index: y_index,
             v_index: v_index,
@@ -1096,30 +1098,19 @@ $(document).ready(function () {
       bookmark &&
       table_metadata &&
       image_columns !== null &&
-      rating_columns != null &&
-      category_columns != null &&
-      x_index != null &&
-      y_index != null &&
-      images_index !== null &&
-      selected_simulations != null &&
-      hidden_simulations != null &&
+      x_index !== null &&
+      y_index !== null &&
+      selected_simulations !== null &&
+      hidden_simulations !== null &&
       indices &&
-      (open_images !== null) & (video_sync !== null) &&
-      video_sync_time !== null &&
-      threeD_sync !== null &&
-      window.store !== undefined &&
-      table_statistics
+      window.store !== undefined
     ) {
       controls_ready = true;
       filter_manager.notify_controls_ready();
-      var numeric_variables = [];
       var axes_variables = [];
       var color_variables = [];
 
       for (var i = 0; i < table_metadata["column-count"]; i++) {
-        if (table_metadata["column-types"][i] != "string") {
-          numeric_variables.push(i);
-        }
         if (image_columns.indexOf(i) == -1 && table_metadata["column-count"] - 1 > i) {
           axes_variables.push(i);
         }
@@ -1128,37 +1119,17 @@ $(document).ready(function () {
         }
       }
 
-      var color_variable = table_metadata["column-count"] - 1;
-      if ("variable-selection" in bookmark) {
-        color_variable = [bookmark["variable-selection"]];
-      }
-
       $("#controls").controls({
         mid: model_id,
         model: model,
         model_name: window.model_name,
         aid: "data-table",
-        metadata: table_metadata,
-        table_statistics: table_statistics,
-        // clusters : clusters,
         x_variables: axes_variables,
         y_variables: axes_variables,
         axes_variables: axes_variables,
         image_variables: image_columns,
         color_variables: color_variables,
-        rating_variables: rating_columns,
-        category_variables: category_columns,
-        selection: selected_simulations,
-        // cluster_index : cluster_index,
-        "x-variable": x_index,
-        "y-variable": y_index,
-        "image-variable": images_index,
-        "color-variable": color_variable,
-        hidden_simulations: hidden_simulations,
         indices: indices,
-        "video-sync": video_sync,
-        "video-sync-time": video_sync_time,
-        threeD_sync: threeD_sync,
       });
 
       // Changing the xypair selection trigger change of x and y variables...
@@ -1171,20 +1142,6 @@ $(document).ready(function () {
         // Update x and y variable in controls
         $("#controls").controls("option", "x-variable", xy.x);
         $("#controls").controls("option", "y-variable", xy.y);
-      });
-      // Changing the x variable updates the controls ...
-      $("#table").bind("x-selection-changed", function (event, variable) {
-        $("#controls").controls("option", "x-variable", variable);
-      });
-
-      // Changing the y variable updates the controls ...
-      $("#table").bind("y-selection-changed", function (event, variable) {
-        $("#controls").controls("option", "y-variable", variable);
-      });
-
-      // Changing the image variable updates the controls ...
-      $("#table").bind("images-selection-changed", function (event, variable) {
-        $("#controls").controls("option", "image-variable", variable);
       });
 
       $("#controls").bind("update_axes_ranges", function () {
@@ -1253,14 +1210,6 @@ $(document).ready(function () {
           });
         }
       });
-
-      // Log changes to the cluster variable ...
-      // $("#controls").bind("cluster-selection-changed", function(event, variable)
-      // {
-      //   variable = parseInt(variable);
-      //   cluster_selection_changed(variable);
-      //   update_dendrogram(variable);
-      // });
 
       // Log changes to the x variable ...
       $("#controls").bind("x-selection-changed", function (event, variable) {
@@ -1727,7 +1676,9 @@ $(document).ready(function () {
     if (hidden_simulations.length > 0) {
       update_current_colorscale();
       $("#table").table("option", "colorscale", colorscale);
-      // TODO this will result in 2 updates to canvas, one to redraw points accourding to scale and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
+      // TODO this will result in 2 updates to canvas, one to redraw points accourding to scale
+      // and another to color them according to new colorscale. Need to combine this to a single
+      // update when converting to canvas.
       $("#scatterplot").scatterplot("option", { colorscale: colorscale, "auto-scale": auto_scale });
     } else {
       $("#scatterplot").scatterplot("option", "auto-scale", auto_scale);
@@ -1746,6 +1697,9 @@ $(document).ready(function () {
       url: api_root + "events/models/" + model_id + "/video-sync/" + video_sync,
     });
     bookmarker.updateState({ "video-sync": video_sync });
+
+    // Dispatch update to video_sync in Redux
+    window.store.dispatch(setVideoSync(video_sync_value));
   }
 
   function video_sync_time_changed(video_sync_time_value) {
