@@ -23,10 +23,12 @@
           <!--ko if: select -->
           <select class="custom-select" 
             data-bind="
-              options:options,
+              attr:{multiple:multiple},
+              options: options,
               optionsText: 'name', 
-              optionsValue: 'id', 
-              value:value"></select>
+              optionsValue: 'id',
+              value: value,
+              selectedOptions: values"></select>
           <!--/ko-->
           <div class="alert alert-danger" role="alert"
             data-bind="visible:alert, text:alert"

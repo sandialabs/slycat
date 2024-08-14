@@ -20,6 +20,7 @@ export function dialog(params)
   // added select drop down, returns value index
   // (S. Martin, 11/27/2019)
   component.select = ko.observable(params.select || false);
+  component.multiple = ko.observable(params.multiple || false);
 
   // set up options list with an index id
   var select_options = []
@@ -33,11 +34,12 @@ export function dialog(params)
       select_options.push(new select_option_data({id: i,
         name: params.select_options[i]}))
     }
-  }
+  }  
   component.options = ko.observableArray(select_options);
-
+  
   component.placeholder = ko.observable(params.placeholder || "");
   component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
+  component.values = ko.isObservable(params.values) ? params.values : ko.observable(params.values || "");
   component.alert = ko.observable(params.alert || "");
   component.buttons = params.buttons || [{className: "btn-primary", label:"OK"}];
   component.container = $($.parseHTML(template)).appendTo($("body"));
@@ -46,7 +48,11 @@ export function dialog(params)
     // console.debug(`This fires when the dialog is closed.`);
     component.container.remove();
     if(params.callback)
-      params.callback(component.result, component.value);
+      if (params.multiple) {
+        params.callback(component.result, component.values);
+      } else {
+        params.callback(component.result, component.value);
+      }
 
     // Check if there are other modals open, and add back the 'modal-open' class
     // to the body tag. This class is removed when a modal closes, but is needed

@@ -141,7 +141,7 @@ def read_tdms_files(metadata, run_chart_matches, log):
         shot_numbers = []
         module_ID = []
         module_SN = []
-        module_ID_SN = []
+        # module_ID_SN = []
         run_chart_headers = []
         tdms_types = []
         for tdms_file_ind in range(len(metadata[row]["tdms_files"])):
@@ -226,7 +226,7 @@ def read_tdms_files(metadata, run_chart_matches, log):
                     module_ID.append(module_ID_i)
                     module_SN_i = check_module_col(group_df, "Module SN", tdms_file_path, log)
                     module_SN.append(module_SN_i)
-                    module_ID_SN.append("/".join([str(module_ID_i), str(module_SN_i)]))
+                    # module_ID_SN.append("/".join([str(module_ID_i), str(module_SN_i)]))
 
         # add to metadata
         metadata[row]["root_properties"] = root_properties
@@ -235,7 +235,7 @@ def read_tdms_files(metadata, run_chart_matches, log):
         metadata[row]["shot_numbers"] = shot_numbers
         metadata[row]["module_ID"] = module_ID
         metadata[row]["module_SN"] = module_SN
-        metadata[row]["module_ID_SN"] = module_ID_SN
+        # metadata[row]["module_ID_SN"] = module_ID_SN
 
     # remove skipped rows
     for row in reversed(range(len(metadata))):
@@ -374,8 +374,8 @@ def read_metadata_table (metadata, arguments, log):
             metadata[row]["sn"], metadata[row]["source"]]
         
         # module IDs/SNs
-        meta_row += metadata[row]["module_ID"] + metadata[row]["module_SN"] + \
-                    metadata[row]["module_ID_SN"]
+        meta_row += metadata[row]["module_ID"] + metadata[row]["module_SN"] 
+                    # metadata[row]["module_ID_SN"]
 
         # data from tdms files
         root_props = metadata[row]["root_properties"]
