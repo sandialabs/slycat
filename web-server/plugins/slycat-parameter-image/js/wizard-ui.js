@@ -306,6 +306,7 @@ function constructor(params) {
     uploader.progress_status("Finishing...");
     // Don't need to get column headers if HDF5 file
     if(component.parser() == 'slycat-hdf5-parser') {
+      $(".local-browser-continue").toggleClass("disabled", false);
       uploader.progress(100);
       uploader.progress_status("Finished");
       component.get_error_messages();
@@ -817,6 +818,22 @@ function constructor(params) {
       target--;
       target--;
     }
+
+    if (component.tab() == 6) {
+      target--;
+      target--;
+      target--;
+      target--;
+      component.browser.progress(null);
+      component.browser.progress_status("");
+    }
+
+    if (component.parser() == 'slycat-hdf5-parser' && component.tab() == 5) {
+      target++;
+      target++;
+      target++;
+    }
+
     target--;
     component.tab(target);
   };

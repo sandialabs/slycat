@@ -113,7 +113,6 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
               path : pathInput,
               success : (results:any) =>
               {
-                console.log(results);
                 localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
                 this.setState({
                   browseError:false,

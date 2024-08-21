@@ -2759,10 +2759,17 @@ def post_smb_browse(hostname, path):
         return session.browse(path=path)
 
 def post_hdf5_table(path, pid, mid):
+    """
+        Takes a user selected path inside an HDF5 file, and stores the
+        table at that path as either inputs or outputs for the model. 
+
+        path {string} -- path to table inside of HDF5 file
+    """
     # Need to find the HDF5 stored on Slycat server, so we can query it for the path.
     path = path.replace('-', '/')
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
+    project = database.get("project", pid)
     did = model['project_data'][0]
     project_data = database.get("project_data", did)
     file_name = project_data['hdf5_name']
@@ -2778,19 +2785,21 @@ def post_hdf5_table(path, pid, mid):
         model['hdf5-inputs'] = path
     else:
         model['hdf5-outputs'] = path
+    slycat.web.server.authentication.require_project_writer(project)
     database.save(model)
 
-    return '...'
+    cherrypy.response.status = "200 Project updated."
 
 def post_combine_hdf5_tables(mid):
-    # 1. Get model from mid
-    # 2. Get input path and output path from model in couch
-    # 3. Get input and output tables using the paths
-    # 4. Combine input and output tables (follow method in hdf5 parser)
-    # 5. Create the model
+    """
+        Combines user selected input/output tables inside of an HDF5 file into one table.
+        Uses the hdf5-input and hdf5-output paths in the model to find the tables in the HDF5 file. 
+    """
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
+    project = model['project']
+    slycat.web.server.authentication.require_project_writer(project)
     input_path = '/' + model['hdf5-inputs']
     output_path = '/' + model['hdf5-outputs']
     did = model['project_data'][0]
@@ -2799,18 +2808,18 @@ def post_combine_hdf5_tables(mid):
     hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
     h5 = h5py.File(hdf5_path, 'r')
 
+    # Getting indices for input/output columns
     unformatted_input = list(h5[input_path])
-    input_column_headers = [i for i in range(0, len(unformatted_input[0]))]
+    input_column_headers_indices = [i for i in range(0, len(unformatted_input[0]))]
     unformatted_output = list(h5[output_path])
-    output_column_headers = [i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))]
+    output_column_headers_indices = [i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))]
 
-    slycat.web.server.put_model_parameter(database, model, 'input-columns', input_column_headers, True)
-    slycat.web.server.put_model_parameter(database, model, 'output-columns', output_column_headers, True)
+    slycat.web.server.put_model_parameter(database, model, 'input-columns', input_column_headers_indices, True)
+    slycat.web.server.put_model_parameter(database, model, 'output-columns', output_column_headers_indices, True)
 
     combined_dataset = []
-    separated_dataset = [] # This will get sent to create_project_data for saving the inputs and output separately
-    response_headers = []
-    variable_headers = []
+    output_headers = []
+    input_headers = []
     attributes = []
 
     column_headers_input = list(h5[input_path].dims[1][0])
@@ -2818,13 +2827,13 @@ def post_combine_hdf5_tables(mid):
 
     # Once we have column headers, this is how we can get/store them. 
     for i, column in enumerate(column_headers_input):
-        variable_headers.append(str(column.decode('utf-8')))
+        input_headers.append(str(column.decode('utf-8')))
         attributes.append({"name": str(column.decode('utf-8')), "type": str(type(unformatted_input[0][i])).split('numpy.')[1].split("'>")[0]})
     for j, column in enumerate(column_headers_output):
-        response_headers.append(str(column.decode('utf-8')))
+        output_headers.append(str(column.decode('utf-8')))
         attributes.append({"name": str(column.decode('utf-8')), "type": str(type(unformatted_output[0][j])).split('numpy.')[1].split("'>")[0]})
 
-    combined_headers = numpy.concatenate((response_headers, variable_headers), axis=0)
+    combined_headers = numpy.concatenate((input_headers, output_headers), axis=0)
     combined_headers = combined_headers.tolist()
     combined_data = numpy.concatenate((unformatted_input, unformatted_output), axis=1)
     combined_data = numpy.transpose(combined_data)
@@ -2836,16 +2845,21 @@ def post_combine_hdf5_tables(mid):
 
     dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(combined_dataset[0])}]
 
-    array_index = 0
+    array_index = 0    
     slycat.web.server.put_model_arrayset(database, model, 'data-table', input)
     slycat.web.server.put_model_array(database, model, 'data-table', 0, attributes, dimensions)
     slycat.web.server.put_model_arrayset_data(database, model, 'data-table', "%s/.../..." % array_index, combined_data)
 
-    return '...'
+    cherrypy.response.status = "200 Project updated."
 
 def post_browse_hdf5(path, pid, mid):
+    """
+        Given a path inside of an HDF5 file, builds out the current tree at that path.
+        Formats the tree structure to conform with remote/hdf5 browser requirements.
+    """
     def allkeys_single_level(obj, tree_structure):
         path = obj.name # This is current top level path
+        # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure['path'] = path
         tree_structure['name'] = []
         tree_structure['sizes'] = []
