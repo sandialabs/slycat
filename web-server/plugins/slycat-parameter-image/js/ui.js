@@ -677,10 +677,14 @@ $(document).ready(function () {
         if (table_metadata["column-types"][i] != "string") x_y_variables.push(i);
       }
 
-      x_index = x_y_variables[0];
-      y_index = x_y_variables[1 % x_y_variables.length];
-      if ("x-selection" in bookmark) x_index = Number(bookmark["x-selection"]);
-      if ("y-selection" in bookmark) y_index = Number(bookmark["y-selection"]);
+      // Set x and y variables accoding to what's in the bookmarked redux state, 
+      // fall back to bookmarked legacy state, then to a sensible default.
+      x_index = Number(bookmark.state?.x_index ?? bookmark["x-selection"] ?? x_y_variables[0]);
+      y_index = Number(
+        bookmark.state?.y_index ??
+          bookmark["y-selection"] ??
+          x_y_variables[1 % x_y_variables.length],
+      );
 
       // Wait until the redux store has been created
       createReduxStorePromise.then(() => {
@@ -946,21 +950,6 @@ $(document).ready(function () {
         $("#controls").controls("option", "selection", selection);
       });
 
-      // Changing the x variable updates the table ...
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        $("#table").table("option", "x-variable", variable);
-      });
-
-      // Changing the y variable updates the table ...
-      $("#controls").bind("y-selection-changed", function (event, variable) {
-        $("#table").table("option", "y-variable", variable);
-      });
-
-      // Changing the image variable updates the table ...
-      $("#controls").bind("images-selection-changed", function (event, variable) {
-        $("#table").table("option", "image-variable", variable);
-      });
-
       // Handle table variable selection ...
       $("#table").bind("variable-selection-changed", function (event, selection) {
         // Changing the table variable updates the controls ...
@@ -968,15 +957,6 @@ $(document).ready(function () {
 
         // Handle changes to the table variable selection ...
         handle_color_variable_change(selection[0]);
-      });
-
-      // Handle color variable selection ...
-      $("#controls").bind("color-selection-changed", function (event, variable) {
-        // Changing the color variable updates the table ...
-        $("#table").table("option", "variable-selection", [Number(variable)]);
-
-        // Handle changes to the color variable ...
-        handle_color_variable_change(variable);
       });
     }
   }
@@ -1058,23 +1038,14 @@ $(document).ready(function () {
       $("#table").bind("x-selection-changed", function (event, variable) {
         update_scatterplot_x(variable);
       });
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        update_scatterplot_x(variable);
-      });
 
       // Changing the y variable updates the scatterplot ...
       $("#table").bind("y-selection-changed", function (event, variable) {
         update_scatterplot_y(variable);
       });
-      $("#controls").bind("y-selection-changed", function (event, variable) {
-        update_scatterplot_y(variable);
-      });
 
       // Changing the images variable updates the scatterplot ...
       $("#table").bind("images-selection-changed", function (event, variable) {
-        handle_image_variable_change(variable);
-      });
-      $("#controls").bind("images-selection-changed", function (event, variable) {
         handle_image_variable_change(variable);
       });
 
@@ -1130,6 +1101,42 @@ $(document).ready(function () {
         image_variables: image_columns,
         color_variables: color_variables,
         indices: indices,
+      });
+
+      // Changing the x variable ...
+      $("#controls").bind("x-selection-changed", function (event, variable) {
+        // Update table
+        $("#table").table("option", "x-variable", variable);
+        // Update scatterplot
+        update_scatterplot_x(variable);
+        // Log changes to the x variable ...
+        x_selection_changed(variable);
+      });
+
+      // Changing the y variable ...
+      $("#controls").bind("y-selection-changed", function (event, variable) {
+        // Update table
+        $("#table").table("option", "y-variable", variable);
+        // Update scatterplot
+        update_scatterplot_y(variable);
+        // Log changes to the y variable ...
+        y_selection_changed(variable);
+      });
+
+      // Changing the image variable ...
+      $("#controls").bind("images-selection-changed", function (event, variable) {
+        // Update table
+        $("#table").table("option", "image-variable", variable);
+        // Update scatterplot
+        handle_image_variable_change(variable);
+      });
+
+      // Handle color variable selection ...
+      $("#controls").bind("color-selection-changed", function (event, variable) {
+        // Changing the color variable updates the table ...
+        $("#table").table("option", "variable-selection", [Number(variable)]);
+        // Handle changes to the color variable ...
+        handle_color_variable_change(variable);
       });
 
       // Changing the xypair selection trigger change of x and y variables...
@@ -1209,16 +1216,6 @@ $(document).ready(function () {
             },
           });
         }
-      });
-
-      // Log changes to the x variable ...
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        x_selection_changed(variable);
-      });
-
-      // Log changes to the y variable ...
-      $("#controls").bind("y-selection-changed", function (event, variable) {
-        y_selection_changed(variable);
       });
 
       // Changing the video sync option updates the scatterplot and logs it ...

@@ -18,6 +18,7 @@ import {
   toggleSyncThreeDColorvar,
   setVideoSyncTime,
   setColormap,
+  setXIndex,
 } from "../actions";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -41,6 +42,7 @@ interface PSControlsBarDropdownsType {
   trigger: string;
   items: IDropdownItems[];
   selected: number;
+  set_selected?: SetSelectedFunction;
 }
 
 interface PSControlsBarAxesVariablesType {
@@ -89,6 +91,7 @@ interface PSControlsBarProps {
   toggleSyncScaling: () => void;
   toggleSyncThreeDColorvar: () => void;
   setColormap: (colormap: string) => void;
+  setXIndex: (value: number) => void;
 }
 
 interface PSControlsBarState {
@@ -356,6 +359,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         trigger: "x-selection-changed",
         items: x_axis_dropdown_items,
         selected: this.props.x_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setXIndex(Number(key));
+          this.set_selected(key, state_label, trigger, e, props);
+        },
       },
       {
         id: "y-axis-dropdown",
@@ -461,7 +468,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
             state_label={dropdown.state_label}
             trigger={dropdown.trigger}
             selected={this.props[dropdown.state_label]}
-            set_selected={this.set_selected}
+            set_selected={dropdown.set_selected ?? this.set_selected}
           />
         );
       }
@@ -700,6 +707,7 @@ export default connect(mapStateToProps, {
   toggleSyncThreeDColorvar,
   setVideoSyncTime,
   setColormap,
+  setXIndex,
   toggleShowHistogram,
   toggleAutoScale,
 })(PSControlsBar);
