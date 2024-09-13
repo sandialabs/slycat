@@ -358,7 +358,6 @@ function constructor(params) {
   };
 
   component.upload_table = function () {
-
     // check that a file has been selected
     if (component.browser.selection().length == 0) {
       component.error_messages("You must selected a file before continuing.");
@@ -558,12 +557,11 @@ function constructor(params) {
       aids: [["data-table"], file_name],
       success : (results) =>
       {
-        component.finish();
         client.post_combine_hdf5_tables({
           mid: component.model._id(),
           success : (results) =>
           {
-            component.tab(5);
+            component.finish();
           }
         })
       },
