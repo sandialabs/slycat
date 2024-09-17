@@ -11,7 +11,6 @@ import ControlsButtonUpdateTable from "./ControlsButtonUpdateTable.jsx";
 import ControlsButtonDownloadDataTable from "components/ControlsButtonDownloadDataTable";
 import ControlsButtonVarOptions from "./ControlsButtonVarOptions";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
-import _ from "lodash";
 import $ from "jquery";
 import {
   toggleSyncScaling,
@@ -19,6 +18,9 @@ import {
   setVideoSyncTime,
   setColormap,
   setXIndex,
+  setYIndex,
+  setVIndex,
+  setMediaIndex,
 } from "../actions";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -92,6 +94,9 @@ interface PSControlsBarProps {
   toggleSyncThreeDColorvar: () => void;
   setColormap: (colormap: string) => void;
   setXIndex: (value: number) => void;
+  setYIndex: (value: number) => void;
+  setVIndex: (value: number) => void;
+  setMediaIndex: (value: number) => void;
 }
 
 interface PSControlsBarState {
@@ -372,6 +377,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         trigger: "y-selection-changed",
         items: y_axis_dropdown_items,
         selected: this.props.y_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setYIndex(Number(key));
+          this.set_selected(key, state_label, trigger, e, props);
+        },
       },
       {
         id: "color-dropdown",
@@ -381,6 +390,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         trigger: "color-selection-changed",
         items: color_variable_dropdown_items,
         selected: this.props.v_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setVIndex(Number(key));
+          this.set_selected(key, state_label, trigger, e, props);
+        },
       },
       {
         id: "image-dropdown",
@@ -390,6 +403,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         trigger: "images-selection-changed",
         items: media_variable_dropdown_items,
         selected: this.props.media_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setMediaIndex(Number(key));
+          this.set_selected(key, state_label, trigger, e, props);
+        },
       },
     ];
 
@@ -544,9 +561,30 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
                   trigger="xypair_selection_changed"
                   items={this.props.xy_pairs_items}
                   selected={this.props.xy_pair_selected}
-                  set_selected={(key, state_label, trigger, e) =>
-                    this.props.element.trigger(trigger, key)
-                  }
+                  set_selected={(key, state_label, trigger, e, props) => {
+                    // Check if key is a string, if so, parse it to get the x and y values
+                    if (typeof key === "string") {
+                      try {
+                        const parsed_key = JSON.parse(key);
+                        if (
+                          parsed_key &&
+                          typeof parsed_key === "object" &&
+                          "x" in parsed_key &&
+                          "y" in parsed_key
+                        ) {
+                          this.props.setXIndex(Number(parsed_key.x));
+                          this.props.setYIndex(Number(parsed_key.y));
+                          this.set_selected(key, state_label, trigger, e, props);
+                        } else {
+                          console.error("Invalid key format:", key);
+                        }
+                      } catch (error) {
+                        console.error("Error parsing key:", error);
+                      }
+                    } else {
+                      console.error("Key is not a string:", key);
+                    }
+                  }}
                   button_style={button_style}
                 />
               )}
@@ -708,6 +746,9 @@ export default connect(mapStateToProps, {
   setVideoSyncTime,
   setColormap,
   setXIndex,
+  setYIndex,
+  setVIndex,
+  setMediaIndex,
   toggleShowHistogram,
   toggleAutoScale,
 })(PSControlsBar);
