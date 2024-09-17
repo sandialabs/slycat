@@ -1146,9 +1146,6 @@ $(document).ready(function () {
         // Trigger x and y selection changes
         $("#controls").trigger("x-selection-changed", xy.x);
         $("#controls").trigger("y-selection-changed", xy.y);
-        // Update x and y variable in controls
-        $("#controls").controls("option", "x-variable", xy.x);
-        $("#controls").controls("option", "y-variable", xy.y);
       });
 
       $("#controls").bind("update_axes_ranges", function () {
