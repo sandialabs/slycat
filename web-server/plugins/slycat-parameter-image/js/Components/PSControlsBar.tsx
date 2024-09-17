@@ -35,6 +35,7 @@ import {
   TableMetadataType,
 } from "../store";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
+import _ from "lodash";
 
 interface PSControlsBarDropdownsType {
   id: string;
@@ -97,6 +98,7 @@ interface PSControlsBarProps {
   setYIndex: (value: number) => void;
   setVIndex: (value: number) => void;
   setMediaIndex: (value: number) => void;
+  [key: string]: any;
 }
 
 interface PSControlsBarState {
@@ -599,6 +601,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
             </ControlsGroup>
             <ControlsGroup id={this.selection_id} class="btn-group ml-3">
               <ControlsButtonToggle
+                title="Auto Scale"
                 icon={faExternalLinkAlt}
                 active={this.props.auto_scale}
                 set_active_state={this.set_auto_scale}
@@ -700,7 +703,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
   }
 }
 
-const mapStateToProps = (state: RootState, ownProps) => {
+const mapStateToProps = (state: RootState) => {
   let xy_pairs_indexes: number[] = [];
   let xy_pairs_items: { key: string; name: string }[] = [];
   state.derived.xy_pairs.forEach((xy_pair) => {
