@@ -125,11 +125,28 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
 
   componentDidMount() {
     this.setAutoScaleTooptip();
+    this.setDropdownMenusMaxHeight();
   }
 
   componentDidUpdate() {
     this.setAutoScaleTooptip();
   }
+
+  setDropdownMenusMaxHeight = () => {
+    $("#controls-pane").on("show.bs.dropdown", function (event) {
+      // Get all dropdown menus inside this element
+      let menus = $(".dropdown-menu", this);
+      // Get the container that holds the model's panes
+      let container = $(".ui-layout-container").first();
+      // Set the max height of each menu to 70px less than the container.
+      // This prevents the menus from sticking out beyond the page and allows
+      // them to be scrollable when they are too long.
+      const containerHeight = container.height();
+      if (containerHeight !== undefined) {
+        menus.css("max-height", `${containerHeight - 70}px`);
+      }
+    });
+  };
 
   setAutoScaleTooptip = () => {
     // console.log(`Initializing popover tooltips. Used for auto scale button.`);
