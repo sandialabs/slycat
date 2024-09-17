@@ -931,7 +931,7 @@ $(document).ready(function () {
         y_selection_changed(variable);
       });
 
-      // Changing the table row selection updates the scatterplot and controls ...
+      // Changing the table row selection updates the scatterplot...
       // Log changes to the table row selection ...
       $("#table").bind("row-selection-changed", function (event, selection) {
         // The table selection is an array buffer which can't be
@@ -941,20 +941,15 @@ $(document).ready(function () {
 
         selected_simulations_changed(temp);
         $("#scatterplot").scatterplot("option", "selection", temp);
-        $("#controls").controls("option", "selection", temp);
       });
 
-      // Changing the scatterplot selection updates the table row selection and controls ..
+      // Changing the scatterplot selection updates the table row selection ...
       $("#scatterplot").bind("selection-changed", function (event, selection) {
         $("#table").table("option", "row-selection", selection);
-        $("#controls").controls("option", "selection", selection);
       });
 
       // Handle table variable selection ...
       $("#table").bind("variable-selection-changed", function (event, selection) {
-        // Changing the table variable updates the controls ...
-        $("#controls").controls("option", "color-variable", selection[0]);
-
         // Handle changes to the table variable selection ...
         handle_color_variable_change(selection[0]);
       });
@@ -1353,8 +1348,6 @@ $(document).ready(function () {
         let to_select = _.union(pinned_simulations, selected_simulations);
 
         selected_simulations_changed(to_select);
-        $("#scatterplot").scatterplot("option", "selection", to_select);
-        $("#controls").controls("option", "selection", to_select);
         $("#table").table("option", "row-selection", to_select);
       });
 
@@ -1522,9 +1515,6 @@ $(document).ready(function () {
       if ($("#scatterplot").data("parameter_image-scatterplot"))
         $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
     }
-
-    if ($("#controls").data("parameter_image-controls"))
-      $("#controls").controls("option", "hidden_simulations", hidden_simulations);
   }
 
   function set_custom_color_variable_range() {
@@ -1629,7 +1619,6 @@ $(document).ready(function () {
     // But we do need to let the other non-React components know about the new selection.
     if (old_selection !== undefined) {
       $("#scatterplot").scatterplot("option", "selection", _.cloneDeep(selection));
-      $("#controls").controls("option", "selection", _.cloneDeep(selection));
       $("#table").table("option", "row-selection", _.cloneDeep(selection));
     } else {
       // Dispatch update to selected_simulations in Redux
