@@ -2798,7 +2798,8 @@ def post_combine_hdf5_tables(mid):
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
-    project = model['project']
+    pid = model['project']
+    project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
     input_path = '/' + model['hdf5-inputs']
     output_path = '/' + model['hdf5-outputs']
@@ -2845,10 +2846,11 @@ def post_combine_hdf5_tables(mid):
 
     dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(combined_dataset[0])}]
 
-    array_index = 0    
-    slycat.web.server.put_model_arrayset(database, model, 'data-table', input)
-    slycat.web.server.put_model_array(database, model, 'data-table', 0, attributes, dimensions)
-    slycat.web.server.put_model_arrayset_data(database, model, 'data-table', "%s/.../..." % array_index, combined_data)
+    array_index = 0
+    with slycat.web.server.database.couchdb.db_lock:
+        slycat.web.server.put_model_arrayset(database, model, 'data-table', input)
+        slycat.web.server.put_model_array(database, model, 'data-table', 0, attributes, dimensions)
+        slycat.web.server.put_model_arrayset_data(database, model, 'data-table', "%s/.../..." % array_index, combined_data)
 
     cherrypy.response.status = "200 Project updated."
 
