@@ -15,6 +15,7 @@ import $ from "jquery";
 import {
   toggleSyncScaling,
   toggleSyncThreeDColorvar,
+  setVideoSync,
   setVideoSyncTime,
   setColormap,
   setXIndex,
@@ -101,20 +102,13 @@ interface PSControlsBarProps {
   [key: string]: any;
 }
 
-interface PSControlsBarState {
-  video_sync: boolean;
-}
-
-class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarState> {
+class PSControlsBar extends React.Component<PSControlsBarProps> {
   autoScalePopoverSelector: string;
   autoScaleId: string;
   selection_id: string;
   scatterplot_id: string;
   constructor(props: PSControlsBarProps) {
     super(props);
-    this.state = {
-      video_sync: this.props.video_sync,
-    };
     this.scatterplot_id = "scatterplot-controls";
     this.selection_id = "selection-controls";
     this.autoScaleId = "auto-scale";
@@ -239,12 +233,8 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
     this.props.toggleAutoScale();
   };
 
-  set_video_sync = () => {
-    this.setState((prevState, props) => {
-      const new_video_sync = !prevState.video_sync;
-      this.props.element.trigger("video-sync", new_video_sync);
-      return { video_sync: new_video_sync };
-    });
+  toggle_video_sync = () => {
+    this.props.setVideoSync(!this.props.video_sync);
   };
 
   set_video_sync_time = (value: number) => {
@@ -543,12 +533,12 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
       }
     }
     // Disable playback controls when the current frame is not a video and sync videos is not toggled
-    const disabled_playback = !(this.state.video_sync || current_frame_video);
+    const disabled_playback = !(this.props.video_sync || current_frame_video);
     // Track if any video is playing when sync is on or if the current video is playing if sync is off
     // This is used to decide if the play or the pause button is visible in the playback controls
     const playing =
-      (this.state.video_sync && any_video_playing) ||
-      (!this.state.video_sync && current_frame_video_playing);
+      (this.props.video_sync && any_video_playing) ||
+      (!this.props.video_sync && current_frame_video_playing);
 
     // 3D controls
     let any_threeD_open = false;
@@ -621,7 +611,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
                 title="Auto Scale"
                 icon={faExternalLinkAlt}
                 active={this.props.auto_scale}
-                set_active_state={this.set_auto_scale}
+                toggle_active_state={this.set_auto_scale}
                 button_style={`${button_style} ${this.button_style_auto_scale}`}
                 id={this.autoScaleId}
               />
@@ -668,8 +658,8 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
                 class="input-group input-group-sm ml-3 playback-controls"
               >
                 <ControlsVideo
-                  video_sync={this.state.video_sync}
-                  set_video_sync={this.set_video_sync}
+                  video_sync={this.props.video_sync}
+                  toggle_video_sync={this.toggle_video_sync}
                   video_sync_time={this.props.video_sync_time}
                   set_video_sync_time={this.set_video_sync_time}
                   any_video_open={any_video_open}
@@ -763,6 +753,7 @@ const mapStateToProps = (state: RootState) => {
 export default connect(mapStateToProps, {
   toggleSyncScaling,
   toggleSyncThreeDColorvar,
+  setVideoSync,
   setVideoSyncTime,
   setColormap,
   setXIndex,

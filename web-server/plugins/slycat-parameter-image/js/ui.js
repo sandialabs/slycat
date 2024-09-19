@@ -73,7 +73,6 @@ import {
   setUserRole,
   setTableStatistics,
   setTableMetadata,
-  setVideoSync,
   setVideoSyncTime,
 } from "./actions";
 
@@ -593,6 +592,7 @@ $(document).ready(function () {
         { objectPath: "v_index", callback: v_index_changed },
         { objectPath: "media_index", callback: media_index_changed },
         { objectPath: "variableRanges", callback: variable_ranges_changed },
+        { objectPath: "video_sync", callback: video_sync_changed },
       ].forEach((subscription) => {
         window.store.subscribe(
           watch(
@@ -1144,11 +1144,6 @@ $(document).ready(function () {
         }
       });
 
-      // Changing the video sync option updates the scatterplot and logs it ...
-      $("#controls").bind("video-sync", function (event, video_sync) {
-        video_sync_option_changed(video_sync);
-      });
-
       // Changing the 3d sync option updates the scatterplot and logs it ...
       $("#controls").bind("threeD_sync", function (event, threeD_sync) {
         threeD_sync_option_changed(threeD_sync);
@@ -1629,6 +1624,16 @@ $(document).ready(function () {
     $("#scatterplot").scatterplot("option", "colorscale", colorscale);
   }
 
+  function video_sync_changed(video_sync_value) {
+    video_sync = video_sync_value;
+    $("#scatterplot").scatterplot("option", "video-sync", video_sync);
+    $.ajax({
+      type: "POST",
+      url: api_root + "events/models/" + model_id + "/video-sync/" + video_sync,
+    });
+    bookmarker.updateState({ "video-sync": video_sync });
+  }
+
   function auto_scale_option_changed(auto_scale_value, old_auto_scale_value, objectPath) {
     auto_scale = auto_scale_value;
     if (hidden_simulations.length > 0) {
@@ -1645,19 +1650,6 @@ $(document).ready(function () {
       type: "POST",
       url: api_root + "events/models/" + model_id + "/auto-scale/" + auto_scale,
     });
-  }
-
-  function video_sync_option_changed(video_sync_value) {
-    video_sync = video_sync_value;
-    $("#scatterplot").scatterplot("option", "video-sync", video_sync);
-    $.ajax({
-      type: "POST",
-      url: api_root + "events/models/" + model_id + "/video-sync/" + video_sync,
-    });
-    bookmarker.updateState({ "video-sync": video_sync });
-
-    // Dispatch update to video_sync in Redux
-    window.store.dispatch(setVideoSync(video_sync_value));
   }
 
   function video_sync_time_changed(video_sync_time_value) {
