@@ -42,7 +42,7 @@ interface PSControlsBarDropdownsType {
   label: string;
   title: string;
   state_label: string;
-  trigger: string;
+  trigger?: string;
   items: IDropdownItems[];
   selected: number;
   set_selected?: SetSelectedFunction;
@@ -222,8 +222,17 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
   };
 
   set_selected: SetSelectedFunction = (key, state_label, trigger, e, props) => {
-    // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
-    this.props.element.trigger(trigger, key);
+    // Check if both key and trigger are defined before triggering the event
+    if (key !== undefined && trigger !== undefined) {
+      // This is the legacy way of letting the rest of non-React components that the state changed. 
+      //Remove once we are converted to React.
+      this.props.element.trigger(trigger, key);
+    } else if (key !== undefined) {
+      // If key is defined but trigger is not, just log a warning
+      console.warn(`Trigger not provided for set_selected with key: ${key}`);
+    } else {
+      console.error(`Missing key for set_selected`);
+    }
   };
 
   set_auto_scale = () => {
@@ -380,12 +389,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         label: "X",
         title: "Change X Axis Variable",
         state_label: "x_index",
-        trigger: "x-selection-changed",
         items: x_axis_dropdown_items,
         selected: this.props.x_index,
         set_selected: (key, state_label, trigger, e, props) => {
           this.props.setXIndex(Number(key));
-          this.set_selected(key, state_label, trigger, e, props);
         },
       },
       {
@@ -393,12 +400,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         label: "Y",
         title: "Change Y Axis Variable",
         state_label: "y_index",
-        trigger: "y-selection-changed",
         items: y_axis_dropdown_items,
         selected: this.props.y_index,
         set_selected: (key, state_label, trigger, e, props) => {
           this.props.setYIndex(Number(key));
-          this.set_selected(key, state_label, trigger, e, props);
         },
       },
       {
@@ -406,12 +411,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         label: "Point Color",
         title: "Change Point Color",
         state_label: "v_index",
-        trigger: "color-selection-changed",
         items: color_variable_dropdown_items,
         selected: this.props.v_index,
         set_selected: (key, state_label, trigger, e, props) => {
           this.props.setVIndex(Number(key));
-          this.set_selected(key, state_label, trigger, e, props);
         },
       },
       {
@@ -419,12 +422,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
         label: "Media",
         title: "Change Media Set Variable",
         state_label: "media_index",
-        trigger: "images-selection-changed",
         items: media_variable_dropdown_items,
         selected: this.props.media_index,
         set_selected: (key, state_label, trigger, e, props) => {
           this.props.setMediaIndex(Number(key));
-          this.set_selected(key, state_label, trigger, e, props);
         },
       },
     ];
@@ -577,11 +578,11 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
                   label="XY Pair"
                   title="Change XY Pair Variables"
                   state_label="xypair_variables"
-                  trigger="xypair_selection_changed"
                   items={this.props.xy_pairs_items}
                   selected={this.props.xy_pair_selected}
                   set_selected={(key, state_label, trigger, e, props) => {
                     // Check if key is a string, if so, parse it to get the x and y values
+                    // and dispatch the values to the redux store
                     if (typeof key === "string") {
                       try {
                         const parsed_key = JSON.parse(key);
@@ -593,7 +594,6 @@ class PSControlsBar extends React.Component<PSControlsBarProps, PSControlsBarSta
                         ) {
                           this.props.setXIndex(Number(parsed_key.x));
                           this.props.setYIndex(Number(parsed_key.y));
-                          this.set_selected(key, state_label, trigger, e, props);
                         } else {
                           console.error("Invalid key format:", key);
                         }

@@ -588,6 +588,11 @@ $(document).ready(function () {
         { objectPath: "colormap", callback: selected_colormap_changed },
         { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
         { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
+        { objectPath: "x_index", callback: x_index_changed },
+        { objectPath: "y_index", callback: y_index_changed },
+        { objectPath: "v_index", callback: v_index_changed },
+        { objectPath: "media_index", callback: media_index_changed },
+        { objectPath: "variableRanges", callback: variable_ranges_changed },
       ].forEach((subscription) => {
         window.store.subscribe(
           watch(
@@ -677,7 +682,7 @@ $(document).ready(function () {
         if (table_metadata["column-types"][i] != "string") x_y_variables.push(i);
       }
 
-      // Set x and y variables accoding to what's in the bookmarked redux state, 
+      // Set x and y variables accoding to what's in the bookmarked redux state,
       // fall back to bookmarked legacy state, then to a sensible default.
       x_index = Number(bookmark.state?.x_index ?? bookmark["x-selection"] ?? x_y_variables[0]);
       y_index = Number(
@@ -921,16 +926,6 @@ $(document).ready(function () {
         variable_sort_changed(variable, order);
       });
 
-      // Log changes to the x variable ...
-      $("#table").bind("x-selection-changed", function (event, variable) {
-        x_selection_changed(variable);
-      });
-
-      // Log changes to the y variable ...
-      $("#table").bind("y-selection-changed", function (event, variable) {
-        y_selection_changed(variable);
-      });
-
       // Changing the table row selection updates the scatterplot...
       // Log changes to the table row selection ...
       $("#table").bind("row-selection-changed", function (event, selection) {
@@ -946,12 +941,6 @@ $(document).ready(function () {
       // Changing the scatterplot selection updates the table row selection ...
       $("#scatterplot").bind("selection-changed", function (event, selection) {
         $("#table").table("option", "row-selection", selection);
-      });
-
-      // Handle table variable selection ...
-      $("#table").bind("variable-selection-changed", function (event, selection) {
-        // Handle changes to the table variable selection ...
-        handle_color_variable_change(selection[0]);
       });
     }
   }
@@ -1096,61 +1085,6 @@ $(document).ready(function () {
         image_variables: image_columns,
         color_variables: color_variables,
         indices: indices,
-      });
-
-      // Changing the x variable ...
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        // Update table
-        $("#table").table("option", "x-variable", variable);
-        // Update scatterplot
-        update_scatterplot_x(variable);
-        // Log changes to the x variable ...
-        x_selection_changed(variable);
-      });
-
-      // Changing the y variable ...
-      $("#controls").bind("y-selection-changed", function (event, variable) {
-        // Update table
-        $("#table").table("option", "y-variable", variable);
-        // Update scatterplot
-        update_scatterplot_y(variable);
-        // Log changes to the y variable ...
-        y_selection_changed(variable);
-      });
-
-      // Changing the image variable ...
-      $("#controls").bind("images-selection-changed", function (event, variable) {
-        // Update table
-        $("#table").table("option", "image-variable", variable);
-        // Update scatterplot
-        handle_image_variable_change(variable);
-      });
-
-      // Handle color variable selection ...
-      $("#controls").bind("color-selection-changed", function (event, variable) {
-        // Changing the color variable updates the table ...
-        $("#table").table("option", "variable-selection", [Number(variable)]);
-        // Handle changes to the color variable ...
-        handle_color_variable_change(variable);
-      });
-
-      // Changing the xypair selection trigger change of x and y variables...
-      $("#controls").bind("xypair_selection_changed", function (event, xy_pair) {
-        // xy_pair is JSON.stringify'ed, so need to parse it first
-        const xy = JSON.parse(xy_pair);
-        // Trigger x and y selection changes
-        $("#controls").trigger("x-selection-changed", xy.x);
-        $("#controls").trigger("y-selection-changed", xy.y);
-      });
-
-      $("#controls").bind("update_axes_ranges", function () {
-        // console.log(`variable-ranges-changed`);
-        // Alert scatterplot that it might need to update its axes
-        $("#scatterplot").scatterplot("update_axes_ranges");
-        // Update the color scale
-        update_current_colorscale();
-        $("#table").table("option", "colorscale", colorscale);
-        $("#scatterplot").scatterplot("option", "colorscale", colorscale);
       });
 
       // Changing the value of a variable updates the database, table, and scatterplot ...
@@ -1626,19 +1560,32 @@ $(document).ready(function () {
     }
   }
 
-  function x_selection_changed(variable) {
+  function x_index_changed(variable) {
+    // Update legacy table and scatterplot components when x variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "x-variable", variable);
+    // Update scatterplot
+    update_scatterplot_x(variable);
+
+    // Log changes to the x variable ...
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/select/x/" + variable,
     });
     bookmarker.updateState({ "x-selection": variable });
     x_index = Number(variable);
-
-    // Dispatch update to x index in Redux
-    window.store.dispatch(setXIndex(x_index));
   }
 
-  function y_selection_changed(variable) {
+  function y_index_changed(variable) {
+    // Update legacy table and scatterplot components when y variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "y-variable", variable);
+    // Update scatterplot
+    update_scatterplot_y(variable);
+
+    // Log changes to the y variable ...
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/select/y/" + variable,
@@ -1646,12 +1593,40 @@ $(document).ready(function () {
     bookmarker.updateState({ "y-selection": variable });
     y_index = Number(variable);
 
-    // Dispatch update to y index in Redux
-    window.store.dispatch(setYIndex(y_index));
-    // Hide histogram if it's being displayed
+    // Hide histogram if it's being displayed.
+    // There is probably a better place to put this.
     if (window.store.getState().scatterplot.show_histogram) {
       window.store.dispatch(toggleShowHistogram());
     }
+  }
+
+  function v_index_changed(variable) {
+    // Update legacy table and scatterplot components when v variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "variable-selection", [Number(variable)]);
+    // Handle changes to the color variable ...
+    handle_color_variable_change(variable);
+  }
+
+  function media_index_changed(variable) {
+    // Update legacy table and scatterplot components when media variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "image-variable", variable);
+    // Update scatterplot
+    handle_image_variable_change(variable);
+  }
+
+  function variable_ranges_changed(variable_ranges) {
+    // Update legacy table and scatterplot components when variable ranges change in Redux.
+    // These need to be removed when we convert these components to React.
+    // Alert scatterplot that it might need to update its axes
+    $("#scatterplot").scatterplot("update_axes_ranges");
+    // Update the color scale
+    update_current_colorscale();
+    $("#table").table("option", "colorscale", colorscale);
+    $("#scatterplot").scatterplot("option", "colorscale", colorscale);
   }
 
   function auto_scale_option_changed(auto_scale_value, old_auto_scale_value, objectPath) {

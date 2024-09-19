@@ -16,7 +16,7 @@ export interface IDropdownItems {
 export type SetSelectedFunction = (
   key: number | string,
   state_label: string,
-  trigger: string,
+  trigger?: string,
   e?: React.MouseEvent<HTMLButtonElement>,
   props?: Record<string, unknown>,
 ) => void;
@@ -26,7 +26,7 @@ interface ControlsDropdownProps {
   selected: string | number;
   set_selected: SetSelectedFunction;
   state_label: string;
-  trigger: string;
+  trigger?: string;
   button_style: string;
   id: string;
   title: string;

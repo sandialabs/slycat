@@ -18,6 +18,7 @@ import $ from "jquery";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import _ from "lodash";
+import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
 
 $.widget("parameter_image.table", {
   options: {
@@ -277,7 +278,8 @@ $.widget("parameter_image.table", {
         }
         button.cssClass = "icon-image-on";
         button.tooltip = "Current image variable";
-        self.element.trigger("images-selection-changed", column.id);
+        // Dispatch update to media index in Redux
+        window.store.dispatch(setMediaIndex(column.id));
       } else if (command == "x-on") {
         for (var i in self.columns) {
           if (
@@ -294,7 +296,8 @@ $.widget("parameter_image.table", {
         self.options["x-variable"] = column.id;
         self.options.x_y_variables.x = column.id;
         grid.invalidate();
-        self.element.trigger("x-selection-changed", column.id);
+        // Dispatch update to x index in Redux
+        window.store.dispatch(setXIndex(column.id));
       } else if (command == "y-on") {
         for (var i in self.columns) {
           if (
@@ -311,7 +314,8 @@ $.widget("parameter_image.table", {
         self.options["y-variable"] = column.id;
         self.options.x_y_variables.y = column.id;
         grid.invalidate();
-        self.element.trigger("y-selection-changed", column.id);
+        // Dispatch update to y index in Redux
+        window.store.dispatch(setYIndex(column.id));
       }
     });
 
@@ -335,7 +339,8 @@ $.widget("parameter_image.table", {
         self.options.images.indexOf(args.column.field) == -1
       ) {
         self.options["variable-selection"] = [args.column.field];
-        self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+        // Dispatch update to v index in Redux
+        window.store.dispatch(setVIndex(args.column.field));
       }
     });
 

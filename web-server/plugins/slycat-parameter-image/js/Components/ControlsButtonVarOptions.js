@@ -104,9 +104,6 @@ class ControlsButtonVarOptions extends React.PureComponent {
     // Write variable aliases to database if user's role is not 'reader'
     let self = this;
 
-    // Alert other components that axes ranges might have updated
-    this.props.element.trigger("update_axes_ranges");
-
     // For users with role 'reader', just close the dialog and stop.
     if (this.props.userRole == "reader") {
       $("#" + self.modalId).modal("hide");
