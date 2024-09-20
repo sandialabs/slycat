@@ -181,6 +181,14 @@ $(document).ready(function () {
     max: undefined,
   };
 
+  let tableReadyPromise = new Promise((resolve) => {
+    window.resolveTableReady = resolve;
+  });
+
+  let scatterplotReadyPromise = new Promise((resolve) => {
+    window.resolveScatterplotReady = resolve;
+  });
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -582,27 +590,34 @@ $(document).ready(function () {
 
     // Wait until the redux store has been created
     createReduxStorePromise.then(() => {
-      // Subscribing to changes in various states
-      [
-        { objectPath: "colormap", callback: selected_colormap_changed },
-        { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
-        { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
-        { objectPath: "x_index", callback: x_index_changed },
-        { objectPath: "y_index", callback: y_index_changed },
-        { objectPath: "v_index", callback: v_index_changed },
-        { objectPath: "media_index", callback: media_index_changed },
-        { objectPath: "variableRanges", callback: variable_ranges_changed },
-        { objectPath: "video_sync", callback: video_sync_changed },
-      ].forEach((subscription) => {
-        window.store.subscribe(
-          watch(
-            window.store.getState,
-            subscription.objectPath,
-            _.isEqual,
-          )((newVal, oldVal, objectPath) => {
-            subscription.callback(newVal, oldVal, objectPath);
-          }),
-        );
+      // Wait for the table and scatterplot to be ready,
+      // otherwise jquery complains about some of the callbacks
+      // setting table and scatterplot options before they are ready.
+      // Once we get rid of the scatterplot and table jquery widgets,
+      // we can get rid of this.
+      Promise.all([tableReadyPromise, scatterplotReadyPromise]).then(() => {
+        // Subscribing to changes in various states
+        [
+          { objectPath: "colormap", callback: selected_colormap_changed },
+          { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
+          { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
+          { objectPath: "x_index", callback: x_index_changed },
+          { objectPath: "y_index", callback: y_index_changed },
+          { objectPath: "v_index", callback: v_index_changed },
+          { objectPath: "media_index", callback: media_index_changed },
+          { objectPath: "variableRanges", callback: variable_ranges_changed },
+          { objectPath: "video_sync", callback: video_sync_changed },
+        ].forEach((subscription) => {
+          window.store.subscribe(
+            watch(
+              window.store.getState,
+              subscription.objectPath,
+              _.isEqual,
+            )((newVal, oldVal, objectPath) => {
+              subscription.callback(newVal, oldVal, objectPath);
+            }),
+          );
+        });
       });
 
       // Set size of scatterplot pane in Redux
@@ -938,6 +953,9 @@ $(document).ready(function () {
         $("#scatterplot").scatterplot("option", "selection", temp);
       });
 
+      // Resolve the tableReadyPromise
+      window.resolveTableReady();
+
       // Changing the scatterplot selection updates the table row selection ...
       $("#scatterplot").bind("selection-changed", function (event, selection) {
         $("#table").table("option", "row-selection", selection);
@@ -1044,6 +1062,8 @@ $(document).ready(function () {
         $("#table").table("option", "jump_to_simulation", parseInt(index));
         video_sync_time_changed(video_sync_time);
       });
+
+      window.resolveScatterplotReady();
     }
   }
 
