@@ -82,7 +82,7 @@ const mapStateToProps = (state) => {
     // Sort Color By options.
     // List points data first, then cell data.
     // Within each, list the items alphabetically.
-    color_by_items = state.derived.three_d_colorby_options[state.currentFrame.uri];
+    color_by_items = _.cloneDeep(state.derived.three_d_colorby_options[state.currentFrame.uri]);
     // Compare using English locale
     const locale = "en";
     // Make it case and accent insensitive.
