@@ -19,7 +19,6 @@ class ControlsThreeD extends React.Component {
   };
 
   toggle_threeD_sync = (e) => {
-    this.props.element.trigger("threeD_sync", !window.store.getState().threeD_sync);
     this.props.toggleThreeDSync();
   };
 

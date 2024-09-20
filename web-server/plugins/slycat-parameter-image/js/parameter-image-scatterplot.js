@@ -16,6 +16,7 @@ import {
   setOpenMedia,
   setMediaSizePosition,
   updateClosedMedia,
+  setVideoSyncTime,
 } from "./actions";
 import $ from "jquery";
 import React, { StrictMode } from "react";
@@ -2338,7 +2339,8 @@ $.widget("parameter_image.scatterplot", {
         // Sync all videos to current video-sync-time
         self._schedule_update({ update_video_sync_time: true });
       }
-      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      // Dispatch update to video_sync_time in Redux
+      window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
       self._sync_open_media();
     }
 
@@ -3503,7 +3505,8 @@ $.widget("parameter_image.scatterplot", {
       // Update and bookmark
       self._schedule_update({ update_video_sync_time: true });
 
-      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      // Dispatch update to video_sync_time in Redux
+      window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
     } else {
       let video = self._getCurrentFrameVideo();
       if (video != null) {
@@ -3529,7 +3532,8 @@ $.widget("parameter_image.scatterplot", {
       // Update and bookmark
       self._schedule_update({ update_video_sync_time: true });
 
-      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      // Dispatch update to video_sync_time in Redux
+      window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
     } else {
       let video = self._getCurrentFrameVideo();
       if (video != null) {
@@ -3548,7 +3552,8 @@ $.widget("parameter_image.scatterplot", {
           firstVideo.currentTime - self.options.frameLength,
           0,
         );
-        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        // Dispatch update to video_sync_time in Redux
+        window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
       }
 
       // Pause all videos
@@ -3590,7 +3595,8 @@ $.widget("parameter_image.scatterplot", {
         );
         // Update and bookmark
         self._schedule_update({ update_video_sync_time: true });
-        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        // Dispatch update to video_sync_time in Redux
+        window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
       }
     } else {
       let video = self._getCurrentFrameVideo();
@@ -3627,7 +3633,8 @@ $.widget("parameter_image.scatterplot", {
       var firstVideo = videos.get(0);
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = firstVideo.currentTime;
-        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        // Dispatch update to video_sync_time in Redux
+        window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
       }
 
       videos.each(function (index, video) {
@@ -3645,7 +3652,8 @@ $.widget("parameter_image.scatterplot", {
         self.options["video-sync-time"] = video.currentTime;
         self.syncing_videos.push(videoUID);
         video.currentTime = self.options["video-sync-time"];
-        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        // Dispatch update to video_sync_time in Redux
+        window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
         self._sync_open_media();
       }
     }
@@ -3658,7 +3666,8 @@ $.widget("parameter_image.scatterplot", {
       video.pause();
       video.currentTime = time;
       self.options["video-sync-time"] = time;
-      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      // Dispatch update to video_sync_time in Redux
+      window.store.dispatch(setVideoSyncTime(self.options["video-sync-time"]));
       self._sync_open_media();
     }
   },

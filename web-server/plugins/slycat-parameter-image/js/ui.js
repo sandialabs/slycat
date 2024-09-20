@@ -607,6 +607,8 @@ $(document).ready(function () {
           { objectPath: "media_index", callback: media_index_changed },
           { objectPath: "variableRanges", callback: variable_ranges_changed },
           { objectPath: "video_sync", callback: video_sync_changed },
+          { objectPath: "threeD_sync", callback: threeD_sync_changed },
+          { objectPath: "video_sync_time", callback: video_sync_time_changed },
         ].forEach((subscription) => {
           window.store.subscribe(
             watch(
@@ -1051,11 +1053,6 @@ $(document).ready(function () {
         handle_image_variable_change(variable);
       });
 
-      // Changing the video sync time logs it ...
-      $("#scatterplot").bind("video-sync-time", function (event, video_sync_time) {
-        video_sync_time_changed(video_sync_time);
-      });
-
       // Jumping to simulation ...
       $("#scatterplot").bind("jump_to_simulation", function (event, index) {
         // Alerts the table
@@ -1162,17 +1159,6 @@ $(document).ready(function () {
             },
           });
         }
-      });
-
-      // Changing the 3d sync option updates the scatterplot and logs it ...
-      $("#controls").bind("threeD_sync", function (event, threeD_sync) {
-        threeD_sync_option_changed(threeD_sync);
-      });
-
-      // Changing the video sync time updates the scatterplot and logs it ...
-      $("#controls").bind("video-sync-time", function (event, video_sync_time) {
-        $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time);
-        video_sync_time_changed(video_sync_time);
       });
 
       // Clicking jump-to-start updates the scatterplot and logs it ...
@@ -1654,6 +1640,16 @@ $(document).ready(function () {
     bookmarker.updateState({ "video-sync": video_sync });
   }
 
+  function threeD_sync_changed(threeD_sync_value) {
+    threeD_sync = threeD_sync_value;
+    $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
+    setSyncCameras(threeD_sync);
+    $.ajax({
+      type: "POST",
+      url: api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync,
+    });
+  }
+
   function auto_scale_option_changed(auto_scale_value, old_auto_scale_value, objectPath) {
     auto_scale = auto_scale_value;
     if (hidden_simulations.length > 0) {
@@ -1673,25 +1669,14 @@ $(document).ready(function () {
   }
 
   function video_sync_time_changed(video_sync_time_value) {
+    $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time_value);
+
     video_sync_time = video_sync_time_value;
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/video-sync-time/" + video_sync_time,
     });
     bookmarker.updateState({ "video-sync-time": video_sync_time });
-
-    // Dispatch update to video_sync_time in Redux
-    window.store.dispatch(setVideoSyncTime(video_sync_time_value));
-  }
-
-  function threeD_sync_option_changed(threeD_sync_value) {
-    threeD_sync = threeD_sync_value;
-    $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
-    setSyncCameras(threeD_sync);
-    $.ajax({
-      type: "POST",
-      url: api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync,
-    });
   }
 
   function hidden_simulations_changed() {

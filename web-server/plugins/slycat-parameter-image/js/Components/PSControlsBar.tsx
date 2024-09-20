@@ -239,7 +239,6 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
 
   set_video_sync_time = (value: number) => {
     this.props.setVideoSyncTime(value);
-    this.props.element.trigger("video-sync-time", value);
   };
 
   trigger_show_all = () => {
