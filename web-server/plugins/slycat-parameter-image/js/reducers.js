@@ -124,7 +124,7 @@ export default function ps_reducer(state = initialState, action) {
 
     case CHANGE_CURRENT_FRAME:
       return Object.assign({}, state, {
-        currentFrame: action.currentFrame,
+        currentFrame: _.cloneDeep(action.currentFrame),
       });
 
     case CHANGE_THREED_COLORMAP:
@@ -148,7 +148,7 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           three_d_colorby_options: {
             ...state.derived.three_d_colorby_options,
-            [action.uri]: action.options,
+            [action.uri]: _.cloneDeep(action.options),
           },
         },
       });
