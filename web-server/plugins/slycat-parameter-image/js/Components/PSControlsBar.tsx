@@ -296,27 +296,27 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
   };
 
   trigger_jump_to_start = () => {
-    this.props.element.trigger("jump-to-start");
+    $("#scatterplot").scatterplot("jump_to_start");
   };
 
   trigger_frame_back = () => {
-    this.props.element.trigger("frame-back");
+    $("#scatterplot").scatterplot("frame_back");
   };
 
   trigger_play = () => {
-    this.props.element.trigger("play");
+    $("#scatterplot").scatterplot("play");
   };
 
   trigger_pause = () => {
-    this.props.element.trigger("pause");
+    $("#scatterplot").scatterplot("pause");
   };
 
   trigger_frame_forward = () => {
-    this.props.element.trigger("frame-forward");
+    $("#scatterplot").scatterplot("frame_forward");
   };
 
   trigger_jump_to_end = () => {
-    this.props.element.trigger("jump-to-end");
+    $("#scatterplot").scatterplot("jump_to_end");
   };
 
   get_variable_label(variable: number) {

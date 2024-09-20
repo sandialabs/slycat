@@ -1161,36 +1161,6 @@ $(document).ready(function () {
         }
       });
 
-      // Clicking jump-to-start updates the scatterplot and logs it ...
-      $("#controls").bind("jump-to-start", function (event) {
-        $("#scatterplot").scatterplot("jump_to_start");
-      });
-
-      // Clicking frame-forward updates the scatterplot and logs it ...
-      $("#controls").bind("frame-forward", function (event) {
-        $("#scatterplot").scatterplot("frame_forward");
-      });
-
-      // Clicking play updates the scatterplot and logs it ...
-      $("#controls").bind("play", function (event) {
-        $("#scatterplot").scatterplot("play");
-      });
-
-      // Clicking pause updates the scatterplot and logs it ...
-      $("#controls").bind("pause", function (event) {
-        $("#scatterplot").scatterplot("pause");
-      });
-
-      // Clicking frame-back updates the scatterplot and logs it ...
-      $("#controls").bind("frame-back", function (event) {
-        $("#scatterplot").scatterplot("frame_back");
-      });
-
-      // Clicking jump-to-end updates the scatterplot and logs it ...
-      $("#controls").bind("jump-to-end", function (event) {
-        $("#scatterplot").scatterplot("jump_to_end");
-      });
-
       // Log changes to hidden selection ...
       $("#controls").bind("hide-selection", function (event, selection) {
         for (var i = 0; i < selected_simulations.length; i++) {
