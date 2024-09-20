@@ -427,13 +427,15 @@ export default function ps_reducer(state = initialState, action) {
 
     case UPDATE_CLOSED_MEDIA:
       // Make sure we can find the uid in current state's open_media array
-      const open_media_matches = state.open_media.filter((element) => element.uid == action.uid);
+      const open_media_matches = _.cloneDeep(state.open_media).filter(
+        (element) => element.uid == action.uid,
+      );
       if (open_media_matches.length) {
         const open_media = open_media_matches[0];
         // If it's 3D media, add its camera params and color by variable
         if (open_media.threeD) {
-          open_media.three_d_camera = state.three_d_cameras[open_media.uid];
-          open_media.three_d_colorvar = state.three_d_colorvars[open_media.uid];
+          open_media.three_d_camera = _.cloneDeep(state.three_d_cameras[open_media.uid]);
+          open_media.three_d_colorvar = _.cloneDeep(state.three_d_colorvars[open_media.uid]);
         }
         // If we don't have an entry for this closed media, just add it.
         // Otherwise, replace it.
