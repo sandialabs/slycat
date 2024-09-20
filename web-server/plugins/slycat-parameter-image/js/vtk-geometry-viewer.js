@@ -486,7 +486,7 @@ export function load(container, buffer, uri, uid, type) {
 
   // Set the camera based on what's in the state
   let cameraState = window.store.getState().three_d_cameras
-    ? window.store.getState().three_d_cameras[uid]
+    ? _.cloneDeep(window.store.getState().three_d_cameras[uid])
     : false;
   if (cameraState) {
     // console.log('we have state for the camera: ' + cameraState);
