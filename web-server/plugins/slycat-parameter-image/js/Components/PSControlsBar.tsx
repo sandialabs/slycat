@@ -23,6 +23,11 @@ import {
   setVIndex,
   setMediaIndex,
 } from "../actions";
+import {
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
+  setSelectedSimulations,
+} from "../dataSlice";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
@@ -218,7 +223,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
   set_selected: SetSelectedFunction = (key, state_label, trigger, e, props) => {
     // Check if both key and trigger are defined before triggering the event
     if (key !== undefined && trigger !== undefined) {
-      // This is the legacy way of letting the rest of non-React components that the state changed. 
+      // This is the legacy way of letting the rest of non-React components that the state changed.
       //Remove once we are converted to React.
       this.props.element.trigger(trigger, key);
     } else if (key !== undefined) {
@@ -242,16 +247,22 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
   };
 
   trigger_show_all = () => {
-    this.props.element.trigger("show-all");
+    this.props.setHiddenSimulations([]);
+    this.props.setManuallyHiddenSimulations([]);
   };
 
   trigger_close_all = () => {
-    this.props.element.trigger("close-all");
+    $("#scatterplot").scatterplot("close_all_simulations");
   };
 
   trigger_hide_selection = () => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("hide-selection", this.props.selected_simulations);
+      const new_hidden_simulations = _.uniq([
+        ...this.props.selected_simulations,
+        ...this.props.hidden_simulations,
+      ]);
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
     // The to prevent the drop-down from closing when clicking on a disabled item
     // Unfortunately none of these work to stop the drop-down from closing. Looks like bootstrap's event is fired before this one.
@@ -265,34 +276,56 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
 
   trigger_hide_unselected = () => {
     if (this.props.active_filters.length == 0) {
-      // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
-      // https://api.jquery.com/trigger/
-      // Thus we need to wrap our selection array in another array to pass it.
-      this.props.element.trigger("hide-unselected", [this.props.selected_simulations]);
+      let unselected = _.difference(this.props.indices, this.props.selected_simulations);
+      const new_hidden_simulations = _.uniq([...unselected, ...this.props.hidden_simulations]);
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
   };
 
   trigger_show_unselected = () => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("show-unselected", [this.props.selected_simulations]);
+      let unselected = _.difference(this.props.indices, this.props.selected_simulations);
+      // Create a new array with any unselected simulations removed from hidden_simulations
+      let new_hidden_simulations = _.difference(this.props.hidden_simulations, unselected);
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
   };
 
   trigger_show_selection = () => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("show-selection", [this.props.selected_simulations]);
+      let new_hidden_simulations = _.difference(
+        this.props.hidden_simulations,
+        this.props.selected_simulations,
+      );
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
   };
 
   trigger_pin_selection = () => {
+    const selected_without_hidden = _.difference(
+      this.props.selected_simulations,
+      this.props.hidden_simulations,
+    );
     // Passing true along with selection to pin-selection trigger to make it restore the size
     // and location of pins. We only do this when pinning from the controls menu, per
     // https://github.com/sandialabs/slycat/issues/1043#issuecomment-954137333
-    this.props.element.trigger("pin-selection", [this.props.selected_simulations, true]);
+    // this.props.element.trigger("pin-selection", [this.props.selected_simulations, true]);
+    $("#scatterplot").scatterplot("pin", selected_without_hidden, true);
   };
 
   trigger_select_pinned = () => {
-    this.props.element.trigger("select-pinned", [this.props.open_media]);
+    const open_media_indexes = this.props.open_media.map((media) => media.index);
+    // Remove any hidden simulations from those that are open
+    const pinned_simulations_without_hidden = _.difference(
+      open_media_indexes,
+      this.props.hidden_simulations,
+    );
+    // Merge unhidden pinned simulations with currently selected simulations
+    const to_select = _.union(pinned_simulations_without_hidden, this.props.selected_simulations);
+    this.props.setSelectedSimulations(to_select);
   };
 
   trigger_jump_to_start = () => {
@@ -761,4 +794,7 @@ export default connect(mapStateToProps, {
   setMediaIndex,
   toggleShowHistogram,
   toggleAutoScale,
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
+  setSelectedSimulations,
 })(PSControlsBar);

@@ -428,6 +428,7 @@ $.widget("parameter_image.table", {
       self._color_variables(self.options["variable-selection"]);
     } else if (key == "hidden_simulations") {
       self.options[key] = value;
+      self.data.hidden_simulations = value;
       self.data.invalidate();
       self.grid.invalidate();
     } else if (key == "jump_to_simulation") {

@@ -59,7 +59,6 @@ import data_reducer, {
   selectManuallyHiddenSimulations,
   setSelectedSimulations,
   setHiddenSimulations,
-  setManuallyHiddenSimulations,
 } from "./dataSlice";
 import {
   setXValues,
@@ -73,7 +72,6 @@ import {
   setUserRole,
   setTableStatistics,
   setTableMetadata,
-  setVideoSyncTime,
 } from "./actions";
 
 import { setSyncCameras } from "./vtk-camera-synchronizer";
@@ -609,6 +607,11 @@ $(document).ready(function () {
           { objectPath: "video_sync", callback: video_sync_changed },
           { objectPath: "threeD_sync", callback: threeD_sync_changed },
           { objectPath: "video_sync_time", callback: video_sync_time_changed },
+          { objectPath: "data.hidden_simulations", callback: hidden_simulations_changed },
+          {
+            objectPath: "data.manually_hidden_simulations",
+            callback: manually_hidden_simulations_changed,
+          },
         ].forEach((subscription) => {
           window.store.subscribe(
             watch(
@@ -1160,115 +1163,6 @@ $(document).ready(function () {
           });
         }
       });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("hide-selection", function (event, selection) {
-        for (var i = 0; i < selected_simulations.length; i++) {
-          if ($.inArray(selected_simulations[i], hidden_simulations) == -1) {
-            hidden_simulations.push(selected_simulations[i]);
-          }
-        }
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("hide-unselected", function (event, selection) {
-        let unselected = _.difference(indices, selected_simulations);
-        let visible_unselected = _.difference(unselected, hidden_simulations);
-        hidden_simulations.push(...visible_unselected);
-
-        // This is the old way of doing this. Seems wrong because we shouldn't
-        // be unhiding selected simulations when users want to hide unselected.
-        // This section can be removed once the team agrees this not what we want.
-
-        // // Remove any selected_simulations from hidden_simulations
-        // for(var i=0; i<selected_simulations.length; i++){
-        //   var index = $.inArray(selected_simulations[i], hidden_simulations);
-        //   if(index != -1) {
-        //     hidden_simulations.splice(index, 1);
-        //   }
-        // }
-
-        // Add all non-selected_simulations to hidden_simulations
-        // for(var i=0; i<indices.length; i++){
-        //   if($.inArray(indices[i], selected_simulations) == -1) {
-        //     hidden_simulations.push(indices[i]);
-        //   }
-        // }
-
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("show-unselected", function (event, selection) {
-        // Remove any non-selected_simulations from hidden_simulations
-        let difference = _.difference(hidden_simulations, selected_simulations);
-        _.pullAll(hidden_simulations, difference);
-        // console.log("here's what we need to remove from hidden_simulations: " + difference);
-
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("show-selection", function (event, selection) {
-        for (var i = 0; i < selected_simulations.length; i++) {
-          var index = $.inArray(selected_simulations[i], hidden_simulations);
-          if (index != -1) {
-            hidden_simulations.splice(index, 1);
-          }
-        }
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("pin-selection", function (event, selection, restore_size_location) {
-        // console.debug(`$("#controls").bind("pin-selection")`);
-        // Removing any hidden simulations from those that will be pinned
-        var simulations_to_pin = [];
-        for (var i = 0; i < selected_simulations.length; i++) {
-          var index = $.inArray(selected_simulations[i], hidden_simulations);
-          if (index == -1) {
-            simulations_to_pin.push(selected_simulations[i]);
-          }
-        }
-        $("#scatterplot").scatterplot("pin", simulations_to_pin, restore_size_location);
-      });
-
-      // Log changes to selection ...
-      $("#controls").bind("select-pinned", function (event, open_images_to_select) {
-        let pinned_simulations = [];
-
-        for (const open_image of open_images_to_select) {
-          // Removing any hidden simulations from those that will be selected
-          if (!hidden_simulations.includes(open_image.index)) {
-            pinned_simulations.push(open_image.index);
-          }
-        }
-
-        // Merging unhidden pinned simulations with currently selected simulations
-        let to_select = _.union(pinned_simulations, selected_simulations);
-
-        selected_simulations_changed(to_select);
-        $("#table").table("option", "row-selection", to_select);
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("show-all", function (event, selection) {
-        while (hidden_simulations.length > 0) {
-          hidden_simulations.pop();
-        }
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("close-all", function (event, selection) {
-        $("#scatterplot").scatterplot("close_all_simulations");
-      });
     }
   }
 
@@ -1399,7 +1293,14 @@ $(document).ready(function () {
   }
 
   function update_widgets_when_hidden_simulations_change() {
-    hidden_simulations_changed();
+    // Logging every hidden simulation is too slow, so just log the count instead.
+    $.ajax({
+      type: "POST",
+      url: api_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length,
+    });
+    bookmarker.updateState({
+      "hidden-simulations": hidden_simulations,
+    });
 
     if (auto_scale) {
       update_current_colorscale();
@@ -1649,17 +1550,14 @@ $(document).ready(function () {
     bookmarker.updateState({ "video-sync-time": video_sync_time });
   }
 
-  function hidden_simulations_changed() {
-    // Update Redux state with new hidden_simulations
-    window.store.dispatch(setHiddenSimulations(hidden_simulations));
-    window.store.dispatch(setManuallyHiddenSimulations(manually_hidden_simulations));
-    // Logging every hidden simulation is too slow, so just log the count instead.
-    $.ajax({
-      type: "POST",
-      url: api_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length,
-    });
+  function hidden_simulations_changed(hidden_simulations_value) {
+    hidden_simulations = _.cloneDeep(hidden_simulations_value);
+    update_widgets_when_hidden_simulations_change();
+  }
+
+  function manually_hidden_simulations_changed(manually_hidden_simulations_value) {
+    manually_hidden_simulations = _.cloneDeep(manually_hidden_simulations_value);
     bookmarker.updateState({
-      "hidden-simulations": hidden_simulations,
       "manually-hidden-simulations": manually_hidden_simulations,
     });
   }
@@ -1871,6 +1769,7 @@ $(document).ready(function () {
 
           hidden_simulations.sort((a, b) => a - b);
 
+          window.store.dispatch(setHiddenSimulations(hidden_simulations));
           update_widgets_when_hidden_simulations_change();
         },
         error: function (request, status, reason_phrase) {
@@ -1896,6 +1795,7 @@ $(document).ready(function () {
         hidden_simulations.push(manually_hidden_simulations[i]);
       }
 
+      window.store.dispatch(setHiddenSimulations(hidden_simulations));
       update_widgets_when_hidden_simulations_change();
     }
   }
