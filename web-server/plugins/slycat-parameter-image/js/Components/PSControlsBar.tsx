@@ -51,7 +51,7 @@ interface PSControlsBarDropdownsType {
   trigger?: string;
   items: IDropdownItems[];
   selected: number;
-  set_selected?: SetSelectedFunction;
+  set_selected: SetSelectedFunction;
 }
 
 interface PSControlsBarAxesVariablesType {
@@ -64,7 +64,6 @@ interface PSControlsBarProps {
   auto_scale: boolean;
   variableRanges: VariableRangesType;
   active_filters: ActiveFiltersType;
-  element: JQuery;
   selected_simulations: number[];
   open_media: OpenMediaType;
   variable_aliases: VariableAliasesType;
@@ -105,6 +104,7 @@ interface PSControlsBarProps {
   setVIndex: (value: number) => void;
   setMediaIndex: (value: number) => void;
   [key: string]: any;
+  write_data: (selection: number[], variable: number, value: number | string) => void;
 }
 
 class PSControlsBar extends React.Component<PSControlsBarProps> {
@@ -220,20 +220,6 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
     }
   };
 
-  set_selected: SetSelectedFunction = (key, state_label, trigger, e, props) => {
-    // Check if both key and trigger are defined before triggering the event
-    if (key !== undefined && trigger !== undefined) {
-      // This is the legacy way of letting the rest of non-React components that the state changed.
-      //Remove once we are converted to React.
-      this.props.element.trigger(trigger, key);
-    } else if (key !== undefined) {
-      // If key is defined but trigger is not, just log a warning
-      console.warn(`Trigger not provided for set_selected with key: ${key}`);
-    } else {
-      console.error(`Missing key for set_selected`);
-    }
-  };
-
   set_auto_scale = () => {
     this.props.toggleAutoScale();
   };
@@ -312,7 +298,6 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
     // Passing true along with selection to pin-selection trigger to make it restore the size
     // and location of pins. We only do this when pinning from the controls menu, per
     // https://github.com/sandialabs/slycat/issues/1043#issuecomment-954137333
-    // this.props.element.trigger("pin-selection", [this.props.selected_simulations, true]);
     $("#scatterplot").scatterplot("pin", selected_without_hidden, true);
   };
 
@@ -527,7 +512,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
             state_label={dropdown.state_label}
             trigger={dropdown.trigger}
             selected={this.props[dropdown.state_label]}
-            set_selected={dropdown.set_selected ?? this.set_selected}
+            set_selected={dropdown.set_selected}
           />
         );
       }
@@ -635,7 +620,6 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 metadata={this.props.metadata}
                 axes_variables={axes_items}
                 button_style={button_style}
-                element={this.props.element}
               />
             </ControlsGroup>
             <ControlsGroup id={this.selection_id} class="btn-group ml-3">
@@ -662,10 +646,10 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 indices={this.props.indices}
                 rating_variables={this.props.rating_variables}
                 metadata={this.props.metadata}
-                element={this.props.element}
                 button_style={button_style}
                 media_columns={this.props.media_columns}
                 media_variable={this.props.media_index}
+                write_data={this.props.write_data}
               />
               <ControlsButtonDownloadDataTable
                 selection={this.props.selected_simulations}
@@ -716,7 +700,6 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 <ControlsThreeD
                   any_threeD_open={any_threeD_open}
                   button_style={button_style}
-                  element={this.props.element}
                 />
               </ControlsGroup>
             )}

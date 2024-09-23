@@ -21,7 +21,6 @@ import FilterManager from "./filter-manager";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 import "./parameter-image-scatterplot";
-import "./parameter-controls";
 import "./parameter-image-table";
 import $ from "jquery";
 import "jquery-ui";
@@ -102,6 +101,10 @@ import {
   selectScatterplotMarginBottom,
   selectAxesVariables,
 } from "./selectors";
+
+import React from "react";
+import { createRoot } from "react-dom/client";
+import PSControlsBar from "./Components/PSControlsBar";
 
 let table_metadata = null;
 
@@ -1094,81 +1097,83 @@ $(document).ready(function () {
         }
       }
 
-      $("#controls").controls({
-        mid: model_id,
-        model: model,
-        model_name: window.model_name,
-        aid: "data-table",
-        x_variables: axes_variables,
-        y_variables: axes_variables,
-        axes_variables: axes_variables,
-        image_variables: image_columns,
-        color_variables: color_variables,
-        indices: indices,
-      });
-
-      // Changing the value of a variable updates the database, table, and scatterplot ...
-      $("#controls").bind("set-value", function (event, props) {
-        writeData(props.selection, props.variable, props.value);
-        function writeData(selection, variable, value) {
-          var hyperslices = "";
-          var data = "[";
-          for (var i = 0; i < selection.length; i++) {
-            if (i > 0) {
-              hyperslices += "|";
-              data += ",";
-            }
-            hyperslices += selection[i];
-            data += "[" + value + "]";
-          }
-          data += "]";
-          var blob = new Blob([data], { type: "text/html" });
-          var formdata = new FormData();
-          formdata.append("data", blob);
-          formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslices);
-
-          $.ajax({
-            type: "PUT",
-            url: api_root + "models/" + model_id + "/arraysets/data-table/data",
-            data: formdata,
-            processData: false,
-            contentType: false,
-            success: function (results) {
-              // Let's pass the edited variable to the table so it knows which column's
-              // ranked_indices to invalidate
-              $("#table").table("update_data", variable);
-
-              if (variable == x_index) update_scatterplot_x(variable);
-              if (variable == y_index) update_scatterplot_y(variable);
-
-              // console.debug(`Loading table statistics after a variable has been edited.`);
-              load_table_statistics([variable], function (new_table_statistics) {
-                // Not sure why we wait for new table statistics before calling
-                // update_v since we don't do that for updating x and y.
-                // But it's been in the code for very long so I'm leaving it as is.
-                if (variable == v_index) {
-                  update_v(variable);
-                }
-                // Update filter manager with new table statistics
-                filter_manager.set_table_statistics(new_table_statistics);
-                // Let filter manager know that a variable has been changed so it can possibly
-                // update categorical unique values or numeric min/max
-                // filter_manager.load_unique_categories();
-                filter_manager.notify_variable_value_edited(variable);
-              });
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              console.log("writing array data error");
-            },
-          });
-        }
-      });
+      const controls_bar = (
+        <PSControlsBar
+          store={window.store}
+          axes_variables={axes_variables}
+          indices={indices}
+          mid={model_id}
+          aid={"data-table"}
+          model={model}
+          model_name={window.model_name}
+          x_variables={axes_variables}
+          y_variables={axes_variables}
+          image_variables={image_columns}
+          color_variables={color_variables}
+          write_data={writeData}
+        />
+      );
+      const react_controls_root = createRoot(document.getElementById("react-controls"));
+      react_controls_root.render(controls_bar);
     }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
+
+  function writeData(selection, variable, value) {
+    var hyperslices = "";
+    var data = "[";
+    for (var i = 0; i < selection.length; i++) {
+      if (i > 0) {
+        hyperslices += "|";
+        data += ",";
+      }
+      hyperslices += selection[i];
+      data += "[" + value + "]";
+    }
+    data += "]";
+    var blob = new Blob([data], { type: "text/html" });
+    var formdata = new FormData();
+    formdata.append("data", blob);
+    formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslices);
+
+    $.ajax({
+      type: "PUT",
+      url: api_root + "models/" + model_id + "/arraysets/data-table/data",
+      data: formdata,
+      processData: false,
+      contentType: false,
+      success: function (results) {
+        // Let's pass the edited variable to the table so it knows which column's
+        // ranked_indices to invalidate
+        $("#table").table("update_data", variable);
+
+        if (variable == x_index) update_scatterplot_x(variable);
+        if (variable == y_index) update_scatterplot_y(variable);
+
+        // console.debug(`Loading table statistics after a variable has been edited.`);
+        load_table_statistics([variable], function (new_table_statistics) {
+          // Not sure why we wait for new table statistics before calling
+          // update_v since we don't do that for updating x and y.
+          // But it's been in the code for very long so I'm leaving it as is.
+          if (variable == v_index) {
+            update_v(variable);
+          }
+          // Update filter manager with new table statistics
+          filter_manager.set_table_statistics(new_table_statistics);
+          // Let filter manager know that a variable has been changed so it can possibly
+          // update categorical unique values or numeric min/max
+          // filter_manager.load_unique_categories();
+          filter_manager.notify_variable_value_edited(variable);
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log("writing array data error");
+      },
+    });
+  }
 
   function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();

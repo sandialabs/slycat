@@ -30,11 +30,11 @@ class ControlsSelection extends React.PureComponent {
           const valueValid = !fails_length_check && !fails_numeric_check && !fails_log_check;
 
           if (valueValid) {
-            self.props.element.trigger("set-value", {
-              selection: self.props.selection,
-              variable: variableIndex,
-              value: numeric ? userValue : '"' + userValue + '"',
-            });
+            self.props.write_data(
+              self.props.selection,
+              variableIndex,
+              numeric ? userValue : '"' + userValue + '"',
+            );
           } else {
             let alertText;
             if (fails_length_check) {
