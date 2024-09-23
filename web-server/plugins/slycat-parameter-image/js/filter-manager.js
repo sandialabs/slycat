@@ -111,9 +111,9 @@ FilterManager.prototype.notify_variable_value_edited = function (variable) {
   let edited_filter = self.allFilters().find((filter) => filter.index() == variable);
   // console.log(`Found matching filter: %o`, edited_filter);
   // For categorical filters, update unique categories
-  if (edited_filter.type() == "category") {
+  if (edited_filter?.type() == "category") {
     self.load_unique_categories(edited_filter);
-  } else if (edited_filter.type() == "numeric") {
+  } else if (edited_filter?.type() == "numeric") {
     // console.debug(`Numeric variable was edited, so update numeric filters accordingly.`);
     self.update_numeric_filter(edited_filter);
   }
