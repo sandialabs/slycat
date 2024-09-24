@@ -34,7 +34,7 @@ import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
 
 import { Provider } from "react-redux";
-import thunkMiddleware from "redux-thunk";
+import { thunk } from "redux-thunk";
 import { createLogger } from "redux-logger";
 import { createStore, applyMiddleware } from "redux";
 import cca_reducer from "./reducers";
@@ -509,7 +509,7 @@ $(document).ready(function () {
     // Adding middlewares to redux store
     const middlewares = [];
     // Lets us dispatch() functions
-    middlewares.push(thunkMiddleware);
+    middlewares.push(thunk);
     // Neat middleware that logs actions.
     // Logger must be the last middleware in chain,
     // otherwise it will log thunk and promise,
