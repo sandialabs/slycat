@@ -7,12 +7,19 @@ import d3 from "d3";
 import * as d3v7 from "d3v7";
 import * as chunker from "js/chunker";
 import * as table_helpers from "js/slycat-table-helpers";
-import "slickgrid/slick.interactions.js";
-import "slickgrid/slick.core";
-import "slickgrid/slick.grid";
-import "slickgrid/plugins/slick.rowselectionmodel";
-import "slickgrid/plugins/slick.headerbuttons";
-import "slickgrid/plugins/slick.autotooltips";
+
+import {
+  SlickRowSelectionModel,
+  SlickAutoTooltips,
+  SlickGrid,
+  SlickEvent,
+  SlickHeaderButtons,
+  Column,
+  GridOption,
+} from "slickgrid";
+import Sortable from "sortablejs";
+window.Sortable = Sortable;
+
 import he from "he";
 import $ from "jquery";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -117,7 +124,7 @@ $.widget("parameter_image.table", {
     }
 
     function make_column(column_index, header_class, cell_class, formatter) {
-      var column = {
+      var column: Column = {
         id: column_index,
         field: column_index,
         name: get_column_header_title(column_index),
@@ -190,7 +197,7 @@ $.widget("parameter_image.table", {
       return column;
     }
 
-    self.columns = [];
+    self.columns = [] as Column[];
 
     self.columns.push(
       make_column(
@@ -229,12 +236,14 @@ $.widget("parameter_image.table", {
 
     self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {
+    let options: GridOption = {
       explicitInitialization: true,
       enableColumnReorder: false,
       editable: true,
       editCommandHandler: self._editCommandHandler,
-    });
+    };
+
+    self.grid = new SlickGrid(self.element.get(0), self.data, self.columns, options);
 
     self.data.onDataLoaded.subscribe(function (e, args) {
       for (var i = args.from; i <= args.to; i++) {
@@ -243,7 +252,7 @@ $.widget("parameter_image.table", {
       self.grid.render();
     });
 
-    var header_buttons = new Slick.Plugins.HeaderButtons();
+    var header_buttons = new SlickHeaderButtons({});
     header_buttons.onCommand.subscribe(function (e, args) {
       var column = args.column;
       var button = args.button;
@@ -320,9 +329,9 @@ $.widget("parameter_image.table", {
     });
 
     self.grid.registerPlugin(header_buttons);
-    self.grid.registerPlugin(new Slick.AutoTooltips({ enableForHeaderCells: true }));
+    self.grid.registerPlugin(new SlickAutoTooltips({ enableForHeaderCells: true }));
 
-    self.grid.setSelectionModel(new Slick.RowSelectionModel());
+    self.grid.setSelectionModel(new SlickRowSelectionModel());
     self.grid.onSelectedRowsChanged.subscribe(function (e, selection) {
       // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
       if (self.trigger_row_selection) {
@@ -546,7 +555,7 @@ $.widget("parameter_image.table", {
     self.pages_in_progress = {};
     self.page_size = 50;
 
-    self.onDataLoaded = new Slick.Event();
+    self.onDataLoaded = new SlickEvent();
 
     self.getLength = function () {
       return self.metadata["row-count"];

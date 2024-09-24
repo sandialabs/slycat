@@ -1,14 +1,14 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import jquery_ui_css from "jquery-ui/themes/base/all.css";
+import "jquery-ui/themes/base/all.css";
 
-import slick_grid_css from "slickgrid/slick.grid.css";
-import slick_default_theme_css from "slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
-import slycat_additions_css from "css/slycat-additions.css";
-import stickies_css from "../css/stickies.css";
-import ui_css from "../css/ui.css";
+import "slickgrid/dist/styles/sass/slick.grid.scss";
+import "slickgrid/dist/styles/sass/slick-default-theme.scss";
+import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
+import "css/slick-slycat-theme.css";
+import "css/slycat-additions.css";
+import "../css/stickies.css";
+import "../css/ui.css";
 
 import api_root from "js/slycat-api-root";
 import _ from "lodash";

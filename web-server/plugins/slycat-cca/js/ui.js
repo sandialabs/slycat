@@ -4,9 +4,14 @@
    the U.S. Government  retains certain rights in this software. */
 
 import $ from "jquery";
-import jquery_ui_css from "jquery-ui/themes/base/all.css";
-import slycat_additions_css from "css/slycat-additions.css";
-import ui_css from "../css/ui.css";
+import "jquery-ui/themes/base/all.css";
+import "css/slycat-additions.css";
+import "../css/ui.css";
+
+import "slickgrid/dist/styles/sass/slick.grid.scss";
+import "slickgrid/dist/styles/sass/slick-default-theme.scss";
+import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
+import "css/slick-slycat-theme.css";
 
 import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
