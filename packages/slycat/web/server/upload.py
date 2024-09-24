@@ -245,6 +245,10 @@ class Session(object):
       # adding this check for backwards compatibility 
       # new way self._aids[0] is the file name being added to the model and hdf5
       # self._aids[1] is the name of the file being pushed to the project_data data object
+        if len(self._aids) > 1:
+          if '.h5' in self._aids[1] or '.hdf5' in self._aids[1]:
+            slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
+                                                                files, self._aids, **self._kwargs)
         if isinstance(self._aids[0], list):
           slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
                                                                           files, self._aids[0], **self._kwargs)
