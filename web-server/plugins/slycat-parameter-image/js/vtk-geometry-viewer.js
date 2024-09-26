@@ -152,7 +152,7 @@ export function load(container, buffer, uri, uid, type) {
           value: `CellData:${a.getName()}`,
           type: "Cell",
           components: a.getNumberOfComponents(),
-        }))
+        })),
     );
     // Dispatch update to available color by options to redux store
     window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
@@ -174,10 +174,10 @@ export function load(container, buffer, uri, uid, type) {
             const componentRange = array.getRange(componentIndex);
             // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
             window.store.dispatch(
-              adjustThreeDVariableDataRange(`${element.value}:${componentIndex}`, componentRange)
+              adjustThreeDVariableDataRange(`${element.value}:${componentIndex}`, componentRange),
             );
             window.store.dispatch(
-              setThreeDColorByRange(uri, `${element.value}:${componentIndex}`, componentRange)
+              setThreeDColorByRange(uri, `${element.value}:${componentIndex}`, componentRange),
             );
           });
         }
@@ -213,7 +213,7 @@ export function load(container, buffer, uri, uid, type) {
           location,
           colorByArrayName,
           componentString ? `[${Number(componentString) + 1}]` : "",
-          uri
+          uri,
         );
         console.debug(`From this VTP file:                      %o`, vtpDataRange);
         const newDataRange = getDataRange(colorBy);
@@ -277,23 +277,23 @@ export function load(container, buffer, uri, uid, type) {
     // each time the following parts of the Redux state change.
     // Subscribing to changes in three_d_colorvars.
     window.store.subscribe(
-      watch(window.store.getState, "three_d_colorvars", _.isEqual)(updateColorByIfChanged)
+      watch(window.store.getState, "three_d_colorvars", _.isEqual)(updateColorByIfChanged),
     );
     // Subscribing to changes in three_d_variable_data_ranges.
     window.store.subscribe(
       watch(
         window.store.getState,
         "three_d_variable_data_ranges",
-        _.isEqual
-      )(updateColorByIfChanged)
+        _.isEqual,
+      )(updateColorByIfChanged),
     );
     // Subscribing to changes in three_d_variable_user_ranges.
     window.store.subscribe(
       watch(
         window.store.getState,
         "three_d_variable_user_ranges",
-        _.isEqual
-      )(updateColorByIfChanged)
+        _.isEqual,
+      )(updateColorByIfChanged),
     );
   }
 
@@ -338,7 +338,7 @@ export function load(container, buffer, uri, uid, type) {
       setSize();
       interactor.render();
     },
-    false
+    false,
   );
 
   // ----------------------------------------------------------------------------
@@ -465,7 +465,7 @@ export function load(container, buffer, uri, uid, type) {
     manipulator.setControl(element.control != undefined ? element.control : false);
     manipulator.setAlt(element.alt != undefined ? element.alt : false);
     manipulator.setScrollEnabled(
-      element.scrollEnabled != undefined ? element.scrollEnabled : false
+      element.scrollEnabled != undefined ? element.scrollEnabled : false,
     );
     interactorStyle.addMouseManipulator(manipulator);
   });
@@ -486,7 +486,7 @@ export function load(container, buffer, uri, uid, type) {
 
   // Set the camera based on what's in the state
   let cameraState = window.store.getState().three_d_cameras
-    ? window.store.getState().three_d_cameras[uid]
+    ? _.cloneDeep(window.store.getState().three_d_cameras[uid])
     : false;
   if (cameraState) {
     // console.log('we have state for the camera: ' + cameraState);

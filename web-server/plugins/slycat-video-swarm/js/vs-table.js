@@ -14,22 +14,25 @@ Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
-import jquery_ui_css from "jquery-ui/themes/base/all.css";
+import "jquery-ui/themes/base/all.css";
 import "../css/vs-ui.css";
-import slick_grid_css from "slickgrid/slick.grid.css";
-import slick_default_theme_css from "slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
+import "slickgrid/dist/styles/sass/slick.grid.scss";
+import "slickgrid/dist/styles/sass/slick-default-theme.scss";
+import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
+import "css/slick-slycat-theme.css";
 
 import api_root from "js/slycat-api-root";
 import d3 from "d3";
 import _ from "lodash";
-import "slickgrid/slick.interactions.js";
-import "slickgrid/slick.core";
-import "slickgrid/slick.grid";
-import "slickgrid/plugins/slick.rowselectionmodel";
-import "slickgrid/plugins/slick.headerbuttons";
-import "slickgrid/plugins/slick.autotooltips";
+import {
+  SlickRowSelectionModel,
+  SlickAutoTooltips,
+  SlickGrid,
+  SlickEvent,
+  SlickHeaderButtons,
+} from "slickgrid";
+import Sortable from "sortablejs";
+window.Sortable = Sortable;
 
 import * as chunker from "js/chunker";
 import * as table_helpers from "js/slycat-table-helpers";
@@ -124,7 +127,7 @@ $.widget("vs.table",
 
     self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+    self.grid = new SlickGrid(self.element.get(0), self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
 
     self.data.onDataLoaded.subscribe(function (e, args) {
       for (var i = args.from; i <= args.to; i++) {
@@ -133,7 +136,7 @@ $.widget("vs.table",
       self.grid.render();
     });
 
-    var header_buttons = new Slick.Plugins.HeaderButtons();
+    var header_buttons = new SlickHeaderButtons();
     header_buttons.onCommand.subscribe(function(e, args)
     {
       var column = args.column;
@@ -166,9 +169,9 @@ $.widget("vs.table",
     });
 
     self.grid.registerPlugin(header_buttons);
-    self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+    self.grid.registerPlugin(new SlickAutoTooltips({enableForHeaderCells:true}));
 
-    self.grid.setSelectionModel(new Slick.RowSelectionModel());
+    self.grid.setSelectionModel(new SlickRowSelectionModel());
     self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
     {
       // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
@@ -303,7 +306,7 @@ $.widget("vs.table",
     self.pages_in_progress = {};
     self.page_size = 50;
 
-    self.onDataLoaded = new Slick.Event();
+    self.onDataLoaded = new SlickEvent();
 
     self.getLength = function()
     {

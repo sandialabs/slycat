@@ -11,26 +11,109 @@ import ControlsButtonUpdateTable from "./ControlsButtonUpdateTable.jsx";
 import ControlsButtonDownloadDataTable from "components/ControlsButtonDownloadDataTable";
 import ControlsButtonVarOptions from "./ControlsButtonVarOptions";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
-import _ from "lodash";
 import $ from "jquery";
 import {
   toggleSyncScaling,
   toggleSyncThreeDColorvar,
+  setVideoSync,
   setVideoSyncTime,
   setColormap,
+  setXIndex,
+  setYIndex,
+  setVIndex,
+  setMediaIndex,
 } from "../actions";
+import {
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
+  setSelectedSimulations,
+} from "../dataSlice";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
 import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
+import {
+  RootState,
+  VariableRangesType,
+  ActiveFiltersType,
+  OpenMediaType,
+  VariableAliasesType,
+  TableMetadataType,
+} from "../store";
+import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
+import _ from "lodash";
 
-class ControlsBar extends React.Component {
-  constructor(props) {
+interface PSControlsBarDropdownsType {
+  id: string;
+  label: string;
+  title: string;
+  state_label: string;
+  trigger?: string;
+  items: IDropdownItems[];
+  selected: number;
+  set_selected: SetSelectedFunction;
+}
+
+interface PSControlsBarAxesVariablesType {
+  key: number;
+  name: string;
+}
+
+interface PSControlsBarProps {
+  store: any;
+  auto_scale: boolean;
+  variableRanges: VariableRangesType;
+  active_filters: ActiveFiltersType;
+  selected_simulations: number[];
+  open_media: OpenMediaType;
+  variable_aliases: VariableAliasesType;
+  xy_pairs_items: { key: string; name: string }[];
+  xy_pairs_indexes: number[];
+  show_histogram: boolean;
+  metadata: TableMetadataType;
+  xy_pair_selected: string;
+  model: any;
+  axes_variables: number[];
+  sync_scaling: boolean;
+  indices: Int32Array;
+  rating_variables: number[];
+  media_columns: number[];
+  media_index: number;
+  hidden_simulations: number[];
+  aid: string;
+  mid: string;
+  model_name: string;
+  video_sync: boolean;
+  video_sync_time: number;
+  colormap: string;
+  x_variables: number[];
+  y_variables: number[];
+  color_variables: number[];
+  image_variables: number[];
+  x_index: number;
+  y_index: number;
+  v_index: number;
+  toggleAutoScale: () => void;
+  toggleShowHistogram: () => void;
+  setVideoSyncTime: (value: number) => void;
+  toggleSyncScaling: () => void;
+  toggleSyncThreeDColorvar: () => void;
+  setColormap: (colormap: string) => void;
+  setXIndex: (value: number) => void;
+  setYIndex: (value: number) => void;
+  setVIndex: (value: number) => void;
+  setMediaIndex: (value: number) => void;
+  [key: string]: any;
+  write_data: (selection: number[], variable: number, value: number | string) => void;
+}
+
+class PSControlsBar extends React.Component<PSControlsBarProps> {
+  autoScalePopoverSelector: string;
+  autoScaleId: string;
+  selection_id: string;
+  scatterplot_id: string;
+  constructor(props: PSControlsBarProps) {
     super(props);
-    this.state = {
-      video_sync: this.props.video_sync,
-      var_settings: this.props.var_settings,
-    };
     this.scatterplot_id = "scatterplot-controls";
     this.selection_id = "selection-controls";
     this.autoScaleId = "auto-scale";
@@ -41,11 +124,28 @@ class ControlsBar extends React.Component {
 
   componentDidMount() {
     this.setAutoScaleTooptip();
+    this.setDropdownMenusMaxHeight();
   }
 
   componentDidUpdate() {
     this.setAutoScaleTooptip();
   }
+
+  setDropdownMenusMaxHeight = () => {
+    $("#controls-pane").on("show.bs.dropdown", function (event) {
+      // Get all dropdown menus inside this element
+      let menus = $(".dropdown-menu", this);
+      // Get the container that holds the model's panes
+      let container = $(".ui-layout-container").first();
+      // Set the max height of each menu to 70px less than the container.
+      // This prevents the menus from sticking out beyond the page and allows
+      // them to be scrollable when they are too long.
+      const containerHeight = container.height();
+      if (containerHeight !== undefined) {
+        menus.css("max-height", `${containerHeight - 70}px`);
+      }
+    });
+  };
 
   setAutoScaleTooptip = () => {
     // console.log(`Initializing popover tooltips. Used for auto scale button.`);
@@ -60,15 +160,20 @@ class ControlsBar extends React.Component {
       // Find any currently active axes limits
       let active_axes_limits = [];
 
-      for (const axis of ["x", "y", "v"]) {
-        const variableRanges = this.props.variableRanges[this.props[`${axis}_index`]];
-        if (variableRanges !== undefined) {
-          for (const direction of ["min", "max"]) {
-            if (variableRanges.hasOwnProperty(direction)) {
+      const variableRangesPerVariable = {
+        x: this.props.variableRanges[this.props.x_index],
+        y: this.props.variableRanges[this.props.y_index],
+        v: this.props.variableRanges[this.props.v_index],
+      };
+
+      for (const [key, value] of Object.entries(variableRangesPerVariable)) {
+        if (value !== undefined) {
+          for (const direction of ["min", "max"] as const) {
+            if (value.hasOwnProperty(direction)) {
               active_axes_limits.push({
-                axis: axis,
+                axis: key,
                 direction: direction,
-                value: variableRanges[direction],
+                value: value[direction],
               });
             }
           }
@@ -115,39 +220,35 @@ class ControlsBar extends React.Component {
     }
   };
 
-  set_selected = (key, state_label, trigger, e, props) => {
-    // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
-    this.props.element.trigger(trigger, key);
-  };
-
-  set_auto_scale = (e) => {
+  set_auto_scale = () => {
     this.props.toggleAutoScale();
   };
 
-  set_video_sync = (e) => {
-    this.setState((prevState, props) => {
-      const new_video_sync = !prevState.video_sync;
-      this.props.element.trigger("video-sync", new_video_sync);
-      return { video_sync: new_video_sync };
-    });
+  toggle_video_sync = () => {
+    this.props.setVideoSync(!this.props.video_sync);
   };
 
-  set_video_sync_time = (value) => {
+  set_video_sync_time = (value: number) => {
     this.props.setVideoSyncTime(value);
-    this.props.element.trigger("video-sync-time", value);
   };
 
-  trigger_show_all = (e) => {
-    this.props.element.trigger("show-all");
+  trigger_show_all = () => {
+    this.props.setHiddenSimulations([]);
+    this.props.setManuallyHiddenSimulations([]);
   };
 
-  trigger_close_all = (e) => {
-    this.props.element.trigger("close-all");
+  trigger_close_all = () => {
+    $("#scatterplot").scatterplot("close_all_simulations");
   };
 
-  trigger_hide_selection = (e) => {
+  trigger_hide_selection = () => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("hide-selection", this.props.selected_simulations);
+      const new_hidden_simulations = _.uniq([
+        ...this.props.selected_simulations,
+        ...this.props.hidden_simulations,
+      ]);
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
     // The to prevent the drop-down from closing when clicking on a disabled item
     // Unfortunately none of these work to stop the drop-down from closing. Looks like bootstrap's event is fired before this one.
@@ -159,63 +260,84 @@ class ControlsBar extends React.Component {
     // }
   };
 
-  trigger_hide_unselected = (e) => {
+  trigger_hide_unselected = () => {
     if (this.props.active_filters.length == 0) {
-      // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
-      // https://api.jquery.com/trigger/
-      // Thus we need to wrap our selection array in another array to pass it.
-      this.props.element.trigger("hide-unselected", [this.props.selected_simulations]);
+      let unselected = _.difference(this.props.indices, this.props.selected_simulations);
+      const new_hidden_simulations = _.uniq([...unselected, ...this.props.hidden_simulations]);
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
   };
 
-  trigger_show_unselected = (e) => {
+  trigger_show_unselected = () => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("show-unselected", [this.props.selected_simulations]);
+      let unselected = _.difference(this.props.indices, this.props.selected_simulations);
+      // Create a new array with any unselected simulations removed from hidden_simulations
+      let new_hidden_simulations = _.difference(this.props.hidden_simulations, unselected);
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
   };
 
-  trigger_show_selection = (e) => {
+  trigger_show_selection = () => {
     if (this.props.active_filters.length == 0) {
-      this.props.element.trigger("show-selection", [this.props.selected_simulations]);
+      let new_hidden_simulations = _.difference(
+        this.props.hidden_simulations,
+        this.props.selected_simulations,
+      );
+      this.props.setHiddenSimulations(new_hidden_simulations);
+      this.props.setManuallyHiddenSimulations(new_hidden_simulations);
     }
   };
 
-  trigger_pin_selection = (e) => {
+  trigger_pin_selection = () => {
+    const selected_without_hidden = _.difference(
+      this.props.selected_simulations,
+      this.props.hidden_simulations,
+    );
     // Passing true along with selection to pin-selection trigger to make it restore the size
     // and location of pins. We only do this when pinning from the controls menu, per
     // https://github.com/sandialabs/slycat/issues/1043#issuecomment-954137333
-    this.props.element.trigger("pin-selection", [this.props.selected_simulations, true]);
+    $("#scatterplot").scatterplot("pin", selected_without_hidden, true);
   };
 
-  trigger_select_pinned = (e) => {
-    this.props.element.trigger("select-pinned", [this.props.open_media]);
+  trigger_select_pinned = () => {
+    const open_media_indexes = this.props.open_media.map((media) => media.index);
+    // Remove any hidden simulations from those that are open
+    const pinned_simulations_without_hidden = _.difference(
+      open_media_indexes,
+      this.props.hidden_simulations,
+    );
+    // Merge unhidden pinned simulations with currently selected simulations
+    const to_select = _.union(pinned_simulations_without_hidden, this.props.selected_simulations);
+    this.props.setSelectedSimulations(to_select);
   };
 
-  trigger_jump_to_start = (e) => {
-    this.props.element.trigger("jump-to-start");
+  trigger_jump_to_start = () => {
+    $("#scatterplot").scatterplot("jump_to_start");
   };
 
-  trigger_frame_back = (e) => {
-    this.props.element.trigger("frame-back");
+  trigger_frame_back = () => {
+    $("#scatterplot").scatterplot("frame_back");
   };
 
-  trigger_play = (e) => {
-    this.props.element.trigger("play");
+  trigger_play = () => {
+    $("#scatterplot").scatterplot("play");
   };
 
-  trigger_pause = (e) => {
-    this.props.element.trigger("pause");
+  trigger_pause = () => {
+    $("#scatterplot").scatterplot("pause");
   };
 
-  trigger_frame_forward = (e) => {
-    this.props.element.trigger("frame-forward");
+  trigger_frame_forward = () => {
+    $("#scatterplot").scatterplot("frame_forward");
   };
 
-  trigger_jump_to_end = (e) => {
-    this.props.element.trigger("jump-to-end");
+  trigger_jump_to_end = () => {
+    $("#scatterplot").scatterplot("jump_to_end");
   };
 
-  get_variable_label(variable) {
+  get_variable_label(variable: number) {
     if (this.props.variable_aliases[variable] !== undefined) {
       return this.props.variable_aliases[variable];
     }
@@ -227,13 +349,101 @@ class ControlsBar extends React.Component {
     // Define default button style
     const button_style = "btn-outline-dark";
 
+    const axes_items: PSControlsBarAxesVariablesType[] = [];
+    for (let axes_variable of this.props.axes_variables) {
+      axes_items.push({
+        key: axes_variable,
+        name: this.props.metadata["column-names"][axes_variable],
+      });
+    }
+
+    const x_axis_dropdown_items = [];
+    for (let x_variable of this.props.x_variables) {
+      x_axis_dropdown_items.push({
+        key: x_variable,
+        name: this.props.metadata["column-names"][x_variable],
+      });
+    }
+
+    const y_axis_dropdown_items = [];
+    for (let y_variable of this.props.y_variables) {
+      y_axis_dropdown_items.push({
+        key: y_variable,
+        name: this.props.metadata["column-names"][y_variable],
+      });
+    }
+
+    const color_variable_dropdown_items = [];
+    for (let color_variable of this.props.color_variables) {
+      color_variable_dropdown_items.push({
+        key: color_variable,
+        name: this.props.metadata["column-names"][color_variable],
+      });
+    }
+
+    const media_variable_dropdown_items = [];
+    media_variable_dropdown_items.push({ key: -1, name: "None" });
+    for (let media_variable of this.props.image_variables) {
+      media_variable_dropdown_items.push({
+        key: media_variable,
+        name: this.props.metadata["column-names"][media_variable],
+      });
+    }
+
+    const dropdowns_data: PSControlsBarDropdownsType[] = [
+      {
+        id: "x-axis-dropdown",
+        label: "X",
+        title: "Change X Axis Variable",
+        state_label: "x_index",
+        items: x_axis_dropdown_items,
+        selected: this.props.x_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setXIndex(Number(key));
+        },
+      },
+      {
+        id: "y-axis-dropdown",
+        label: "Y",
+        title: "Change Y Axis Variable",
+        state_label: "y_index",
+        items: y_axis_dropdown_items,
+        selected: this.props.y_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setYIndex(Number(key));
+        },
+      },
+      {
+        id: "color-dropdown",
+        label: "Point Color",
+        title: "Change Point Color",
+        state_label: "v_index",
+        items: color_variable_dropdown_items,
+        selected: this.props.v_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setVIndex(Number(key));
+        },
+      },
+      {
+        id: "image-dropdown",
+        label: "Media",
+        title: "Change Media Set Variable",
+        state_label: "media_index",
+        items: media_variable_dropdown_items,
+        selected: this.props.media_index,
+        set_selected: (key, state_label, trigger, e, props) => {
+          this.props.setMediaIndex(Number(key));
+        },
+      },
+    ];
+
     // Update dropdowns with variable aliases when they exist
-    const aliased_dropdowns = _.cloneDeep(this.props.dropdowns).map((dropdown) => {
+    const aliased_dropdowns = _.cloneDeep(dropdowns_data).map((dropdown) => {
       dropdown.items = dropdown.items.map((item) => {
         // Don't try to update variable names for keys less than 0, because those are not
         // real variables. For example, the "None" first item in the Media Set dropdown.
-        if (item.key >= 0) {
-          item.name = this.get_variable_label(item.key);
+        if (item.key !== undefined && Number(item.key) >= 0) {
+          item.name = this.get_variable_label(Number(item.key));
         }
         return item;
       });
@@ -242,7 +452,10 @@ class ControlsBar extends React.Component {
 
     // If we have xy_pairs, move them to the bottom of the x and y dropdowns
     if (this.props.xy_pairs_items.length > 0) {
-      const move_xy_pairs = (items) => {
+      const move_xy_pairs = (items: IDropdownItems[] | undefined) => {
+        if (items === undefined) {
+          return;
+        }
         items.push({ type: "divider" });
         items.push({ type: "header", name: "XY Pair" });
         this.props.xy_pairs_indexes.forEach((index) => {
@@ -251,8 +464,8 @@ class ControlsBar extends React.Component {
         });
       };
 
-      let x_items = _.find(aliased_dropdowns, { id: "x-axis-dropdown" }).items;
-      let y_items = _.find(aliased_dropdowns, { id: "y-axis-dropdown" }).items;
+      let x_items = _.find(aliased_dropdowns, { id: "x-axis-dropdown" })?.items;
+      let y_items = _.find(aliased_dropdowns, { id: "y-axis-dropdown" })?.items;
       move_xy_pairs(x_items);
       move_xy_pairs(y_items);
     }
@@ -299,8 +512,7 @@ class ControlsBar extends React.Component {
             state_label={dropdown.state_label}
             trigger={dropdown.trigger}
             selected={this.props[dropdown.state_label]}
-            set_selected={this.set_selected}
-            dispatch={dropdown.dispatch}
+            set_selected={dropdown.set_selected}
           />
         );
       }
@@ -338,12 +550,12 @@ class ControlsBar extends React.Component {
       }
     }
     // Disable playback controls when the current frame is not a video and sync videos is not toggled
-    const disabled_playback = !(this.state.video_sync || current_frame_video);
+    const disabled_playback = !(this.props.video_sync || current_frame_video);
     // Track if any video is playing when sync is on or if the current video is playing if sync is off
     // This is used to decide if the play or the pause button is visible in the playback controls
     const playing =
-      (this.state.video_sync && any_video_playing) ||
-      (!this.state.video_sync && current_frame_video_playing);
+      (this.props.video_sync && any_video_playing) ||
+      (!this.props.video_sync && current_frame_video_playing);
 
     // 3D controls
     let any_threeD_open = false;
@@ -362,7 +574,7 @@ class ControlsBar extends React.Component {
     }
 
     return (
-      <Provider store={window.store}>
+      <Provider store={this.props.store}>
         <React.Fragment>
           <React.StrictMode>
             <ControlsGroup id={this.scatterplot_id} class="btn-group ml-3">
@@ -373,12 +585,32 @@ class ControlsBar extends React.Component {
                   label="XY Pair"
                   title="Change XY Pair Variables"
                   state_label="xypair_variables"
-                  trigger="xypair_selection_changed"
                   items={this.props.xy_pairs_items}
                   selected={this.props.xy_pair_selected}
-                  set_selected={(key, state_label, trigger, e) =>
-                    this.props.element.trigger(trigger, key)
-                  }
+                  set_selected={(key, state_label, trigger, e, props) => {
+                    // Check if key is a string, if so, parse it to get the x and y values
+                    // and dispatch the values to the redux store
+                    if (typeof key === "string") {
+                      try {
+                        const parsed_key = JSON.parse(key);
+                        if (
+                          parsed_key &&
+                          typeof parsed_key === "object" &&
+                          "x" in parsed_key &&
+                          "y" in parsed_key
+                        ) {
+                          this.props.setXIndex(Number(parsed_key.x));
+                          this.props.setYIndex(Number(parsed_key.y));
+                        } else {
+                          console.error("Invalid key format:", key);
+                        }
+                      } catch (error) {
+                        console.error("Error parsing key:", error);
+                      }
+                    } else {
+                      console.error("Key is not a string:", key);
+                    }
+                  }}
                   button_style={button_style}
                 />
               )}
@@ -386,16 +618,16 @@ class ControlsBar extends React.Component {
               <ControlsButtonVarOptions
                 model={this.props.model}
                 metadata={this.props.metadata}
-                axes_variables={this.props.axes_variables}
+                axes_variables={axes_items}
                 button_style={button_style}
-                element={this.props.element}
               />
             </ControlsGroup>
             <ControlsGroup id={this.selection_id} class="btn-group ml-3">
               <ControlsButtonToggle
+                title="Auto Scale"
                 icon={faExternalLinkAlt}
                 active={this.props.auto_scale}
-                set_active_state={this.set_auto_scale}
+                toggle_active_state={this.set_auto_scale}
                 button_style={`${button_style} ${this.button_style_auto_scale}`}
                 id={this.autoScaleId}
               />
@@ -414,10 +646,10 @@ class ControlsBar extends React.Component {
                 indices={this.props.indices}
                 rating_variables={this.props.rating_variables}
                 metadata={this.props.metadata}
-                element={this.props.element}
                 button_style={button_style}
                 media_columns={this.props.media_columns}
                 media_variable={this.props.media_index}
+                write_data={this.props.write_data}
               />
               <ControlsButtonDownloadDataTable
                 selection={this.props.selected_simulations}
@@ -432,7 +664,7 @@ class ControlsBar extends React.Component {
               <ControlsButtonUpdateTable
                 button_style={button_style}
                 mid={this.props.mid}
-                pid={this.props.pid}
+                pid={this.props.model.project}
                 aliases={this.props.variable_aliases}
               />
             </ControlsGroup>
@@ -442,8 +674,8 @@ class ControlsBar extends React.Component {
                 class="input-group input-group-sm ml-3 playback-controls"
               >
                 <ControlsVideo
-                  video_sync={this.state.video_sync}
-                  set_video_sync={this.set_video_sync}
+                  video_sync={this.props.video_sync}
+                  toggle_video_sync={this.toggle_video_sync}
                   video_sync_time={this.props.video_sync_time}
                   set_video_sync_time={this.set_video_sync_time}
                   any_video_open={any_video_open}
@@ -468,7 +700,6 @@ class ControlsBar extends React.Component {
                 <ControlsThreeD
                   any_threeD_open={any_threeD_open}
                   button_style={button_style}
-                  element={this.props.element}
                 />
               </ControlsGroup>
             )}
@@ -494,9 +725,9 @@ class ControlsBar extends React.Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  let xy_pairs_indexes = [];
-  let xy_pairs_items = [];
+const mapStateToProps = (state: RootState) => {
+  let xy_pairs_indexes: number[] = [];
+  let xy_pairs_items: { key: string; name: string }[] = [];
   state.derived.xy_pairs.forEach((xy_pair) => {
     xy_pairs_indexes.push(xy_pair.x);
     xy_pairs_indexes.push(xy_pair.y);
@@ -515,6 +746,7 @@ const mapStateToProps = (state, ownProps) => {
     v_index: state.v_index,
     media_index: state.media_index,
     media_columns: state.derived.media_columns,
+    rating_variables: state.derived.rating_variables,
     open_media: state.open_media,
     variable_aliases: state.derived.variableAliases,
     active_filters: state.active_filters,
@@ -524,27 +756,28 @@ const mapStateToProps = (state, ownProps) => {
     xy_pairs_indexes: xy_pairs_indexes,
     xy_pair_selected: xy_pair_selected,
     hidden_simulations: state.data.hidden_simulations,
+    video_sync: state.video_sync,
     video_sync_time: state.video_sync_time,
     colormap: state.colormap,
     show_histogram: state.scatterplot.show_histogram,
     auto_scale: state.scatterplot.auto_scale,
+    metadata: state.derived.table_metadata,
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    toggleSyncScaling,
-    toggleSyncThreeDColorvar,
-    setVideoSyncTime,
-    setColormap,
-    toggleShowHistogram,
-    toggleAutoScale,
-  },
-  null,
-  // Before fully convering to React and Redux, we need a reference to this
-  // ControlsBar component so we can set its state from outside React. This option makes it so that
-  // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
-  // https://react-redux.js.org/api/connect#forwardref-boolean
-  { forwardRef: true },
-)(ControlsBar);
+export default connect(mapStateToProps, {
+  toggleSyncScaling,
+  toggleSyncThreeDColorvar,
+  setVideoSync,
+  setVideoSyncTime,
+  setColormap,
+  setXIndex,
+  setYIndex,
+  setVIndex,
+  setMediaIndex,
+  toggleShowHistogram,
+  toggleAutoScale,
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
+  setSelectedSimulations,
+})(PSControlsBar);

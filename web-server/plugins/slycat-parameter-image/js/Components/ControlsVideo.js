@@ -42,7 +42,7 @@ class ControlsVideo extends React.Component {
             title={this.props.video_sync ? "Unsync videos" : "Sync videos"}
             icon={faVideo}
             active={this.props.video_sync}
-            set_active_state={this.props.set_video_sync}
+            toggle_active_state={this.props.toggle_video_sync}
             button_style={this.props.button_style}
           />
         </div>

@@ -41,6 +41,7 @@ import {
   SET_USER_ROLE,
   SET_TABLE_STATISTICS,
   SET_TABLE_METADATA,
+  SET_VIDEO_SYNC,
   SET_VIDEO_SYNC_TIME,
   SET_SCATTERPLOT_MARGIN,
   SET_COLORMAP,
@@ -123,7 +124,7 @@ export default function ps_reducer(state = initialState, action) {
 
     case CHANGE_CURRENT_FRAME:
       return Object.assign({}, state, {
-        currentFrame: action.currentFrame,
+        currentFrame: _.cloneDeep(action.currentFrame),
       });
 
     case CHANGE_THREED_COLORMAP:
@@ -147,7 +148,7 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           three_d_colorby_options: {
             ...state.derived.three_d_colorby_options,
-            [action.uri]: action.options,
+            [action.uri]: _.cloneDeep(action.options),
           },
         },
       });
@@ -426,13 +427,15 @@ export default function ps_reducer(state = initialState, action) {
 
     case UPDATE_CLOSED_MEDIA:
       // Make sure we can find the uid in current state's open_media array
-      const open_media_matches = state.open_media.filter((element) => element.uid == action.uid);
+      const open_media_matches = _.cloneDeep(state.open_media).filter(
+        (element) => element.uid == action.uid,
+      );
       if (open_media_matches.length) {
         const open_media = open_media_matches[0];
         // If it's 3D media, add its camera params and color by variable
         if (open_media.threeD) {
-          open_media.three_d_camera = state.three_d_cameras[open_media.uid];
-          open_media.three_d_colorvar = state.three_d_colorvars[open_media.uid];
+          open_media.three_d_camera = _.cloneDeep(state.three_d_cameras[open_media.uid]);
+          open_media.three_d_colorvar = _.cloneDeep(state.three_d_colorvars[open_media.uid]);
         }
         // If we don't have an entry for this closed media, just add it.
         // Otherwise, replace it.
@@ -532,6 +535,11 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           table_metadata: _.cloneDeep(action.table_metadata),
         },
+      });
+
+    case SET_VIDEO_SYNC:
+      return Object.assign({}, state, {
+        video_sync: action.video_sync,
       });
 
     case SET_VIDEO_SYNC_TIME:

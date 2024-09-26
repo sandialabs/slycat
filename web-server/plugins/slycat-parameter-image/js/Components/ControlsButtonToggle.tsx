@@ -8,7 +8,7 @@ interface ControlsButtonToggleProps {
   id: string;
   title: string;
   icon: IconProp;
-  set_active_state(event: React.MouseEvent<HTMLButtonElement>): void;
+  toggle_active_state(event: React.MouseEvent<HTMLButtonElement>): void;
 }
 
 /**
@@ -32,7 +32,7 @@ export default class ControlsButtonToggle extends React.PureComponent<ControlsBu
         id={this.props.id}
         title={this.props.title}
         aria-pressed={this.props.active}
-        onClick={this.props.set_active_state}
+        onClick={this.props.toggle_active_state}
       >
         <FontAwesomeIcon icon={this.props.icon} />
       </button>

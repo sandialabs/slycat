@@ -4,11 +4,11 @@
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 
-import slick_grid_css from "slickgrid/slick.grid.css";
-import slick_default_theme_css from "slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
-import ui_css from "../css/ui.css";
+import "slickgrid/dist/styles/sass/slick.grid.scss";
+import "slickgrid/dist/styles/sass/slick-default-theme.scss";
+import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
+import "css/slick-slycat-theme.css";
+import "../css/ui.css";
 
 import LoadingPage from "../plugin-components/LoadingPage.tsx";
 
@@ -41,7 +41,7 @@ export default function initialize_timeseries_model(
   subscribe,
   model,
   clusters,
-  table_metadata
+  table_metadata,
 ) {
   ko.applyBindings({}, document.querySelector(".slycat-content"));
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -342,7 +342,7 @@ export default function initialize_timeseries_model(
       },
       error: function (request, status, reason_phrase) {
         window.alert(
-          "Error getting color coding values from table-chunker worker: " + reason_phrase
+          "Error getting color coding values from table-chunker worker: " + reason_phrase,
         );
       },
     });
@@ -454,7 +454,7 @@ export default function initialize_timeseries_model(
 
       $("#legend-pane").css(
         "background",
-        slycat_color_maps.get_background(get_state().controls.colormap).toString()
+        slycat_color_maps.get_background(get_state().controls.colormap).toString(),
       );
 
       $("#legend").legend({
@@ -492,7 +492,7 @@ export default function initialize_timeseries_model(
           .toString(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        "fill": slycat_color_maps.get_background(get_state().controls.colormap),
+        fill: slycat_color_maps.get_background(get_state().controls.colormap),
         "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
       });
 
@@ -575,7 +575,7 @@ export default function initialize_timeseries_model(
         $("#dendrogram-viewer").dendrogram(
           "option",
           "dendrogram_sort_order",
-          variable == null && order == null ? true : false
+          variable == null && order == null ? true : false,
         );
       });
 
@@ -585,7 +585,7 @@ export default function initialize_timeseries_model(
         $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
       });
 
-      // Call setup_widgets when table is finished initializing because 
+      // Call setup_widgets when table is finished initializing because
       // dendrogram waits for table to be ready so it can send it the selected node
       // and table can render the appropriate rows.
       setup_widgets();
@@ -664,7 +664,7 @@ export default function initialize_timeseries_model(
           $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
           // Update the table row selection ...
           $("#table").table("option", "row-selection", waveform_indexes);
-        }
+        },
       );
 
       // Changing the sort order to dendrogram order updates the table ...
@@ -689,14 +689,14 @@ export default function initialize_timeseries_model(
   subscribe(
     watch_controls_colormap((newVal, oldVal, objectPath) => {
       selected_colormap_changed(newVal);
-    })
+    }),
   );
 
   function selected_colormap_changed(newColormap) {
     // First we change background colors, gradients, and other things that don't require recalculating the colorscale
     $("#legend-pane").css(
       "background",
-      slycat_color_maps.get_background(get_state().controls.colormap).toString()
+      slycat_color_maps.get_background(get_state().controls.colormap).toString(),
     );
     $("#legend").legend("option", {
       gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
@@ -714,7 +714,7 @@ export default function initialize_timeseries_model(
         .toString(),
     });
     $("#waveform-viewer rect.selectionMask").css({
-      "fill": slycat_color_maps.get_background(get_state().controls.colormap),
+      fill: slycat_color_maps.get_background(get_state().controls.colormap),
       "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
     });
 
@@ -749,7 +749,7 @@ export default function initialize_timeseries_model(
 
   function selected_node_changed(parameters) {
     selected_waveform_indexes[parseInt(cluster_index, 10)] = getWaveformIndexes(
-      parameters.selection
+      parameters.selection,
     );
     selected_nodes[cluster_index] = getNodeIndexes(parameters.selection);
 
@@ -760,7 +760,7 @@ export default function initialize_timeseries_model(
       $("#controls").controls(
         "option",
         "selection",
-        selected_waveform_indexes[parseInt(cluster_index, 10)]
+        selected_waveform_indexes[parseInt(cluster_index, 10)],
       );
       $("#controls").controls("option", "highlight", selected_simulations);
 
@@ -768,7 +768,7 @@ export default function initialize_timeseries_model(
       $("#waveform-viewer").waveformplot(
         "option",
         "selection",
-        selected_waveform_indexes[parseInt(cluster_index, 10)]
+        selected_waveform_indexes[parseInt(cluster_index, 10)],
       );
       $("#waveform-viewer").waveformplot("option", "highlight", selected_simulations);
 
@@ -841,7 +841,7 @@ export default function initialize_timeseries_model(
       colorscale = slycat_color_maps.get_color_scale(
         get_state().controls.colormap,
         selected_column_min[cluster_index],
-        selected_column_max[cluster_index]
+        selected_column_max[cluster_index],
       );
       callback(colorscale);
     } else {
@@ -858,7 +858,7 @@ export default function initialize_timeseries_model(
           uniqueValues = result.unique[0].values[0];
           colorscale = slycat_color_maps.get_color_scale_ordinal(
             get_state().controls.colormap,
-            uniqueValues
+            uniqueValues,
           );
           callback(colorscale);
         },

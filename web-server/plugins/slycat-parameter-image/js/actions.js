@@ -40,6 +40,7 @@ export const TOGGLE_SYNC_THREE_D_COLORVAR = "TOGGLE_SYNC_THREE_D_COLORVAR";
 export const SET_USER_ROLE = "SET_USER_ROLE";
 export const SET_TABLE_STATISTICS = "SET_TABLE_STATISTICS";
 export const SET_TABLE_METADATA = "SET_TABLE_METADATA";
+export const SET_VIDEO_SYNC = "SET_VIDEO_SYNC";
 export const SET_VIDEO_SYNC_TIME = "SET_VIDEO_SYNC_TIME";
 export const SET_SCATTERPLOT_MARGIN = "SET_SCATTERPLOT_MARGIN";
 export const SET_COLORMAP = "SET_COLORMAP";
@@ -311,6 +312,10 @@ export function setTableStatistics(table_statistics) {
 
 export function setTableMetadata(table_metadata) {
   return { type: SET_TABLE_METADATA, table_metadata };
+}
+
+export function setVideoSync(video_sync) {
+  return { type: SET_VIDEO_SYNC, video_sync };
 }
 
 export function setVideoSyncTime(video_sync_time) {

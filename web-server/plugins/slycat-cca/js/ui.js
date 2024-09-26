@@ -4,9 +4,14 @@
    the U.S. Government  retains certain rights in this software. */
 
 import $ from "jquery";
-import jquery_ui_css from "jquery-ui/themes/base/all.css";
-import slycat_additions_css from "css/slycat-additions.css";
-import ui_css from "../css/ui.css";
+import "jquery-ui/themes/base/all.css";
+import "css/slycat-additions.css";
+import "../css/ui.css";
+
+import "slickgrid/dist/styles/sass/slick.grid.scss";
+import "slickgrid/dist/styles/sass/slick-default-theme.scss";
+import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
+import "css/slick-slycat-theme.css";
 
 import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
@@ -34,7 +39,7 @@ import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
 
 import { Provider } from "react-redux";
-import thunkMiddleware from "redux-thunk";
+import { thunk } from "redux-thunk";
 import { createLogger } from "redux-logger";
 import { createStore, applyMiddleware } from "redux";
 import cca_reducer from "./reducers";
@@ -509,7 +514,7 @@ $(document).ready(function () {
     // Adding middlewares to redux store
     const middlewares = [];
     // Lets us dispatch() functions
-    middlewares.push(thunkMiddleware);
+    middlewares.push(thunk);
     // Neat middleware that logs actions.
     // Logger must be the last middleware in chain,
     // otherwise it will log thunk and promise,

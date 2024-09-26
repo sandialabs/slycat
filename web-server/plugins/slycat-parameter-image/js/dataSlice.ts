@@ -45,7 +45,7 @@ export const selectSelectedSimulations = (state: RootState) =>
 export const selectHiddenSimulations = (state: RootState) => state[SLICE_NAME].hidden_simulations;
 
 export const selectManuallyHiddenSimulations = (state: RootState) =>
-state[SLICE_NAME].manually_hidden_simulations;
+  state[SLICE_NAME].manually_hidden_simulations;
 
 export const selectSelectedSimulationsWithoutHidden = createSelector(
   selectSelectedSimulations,

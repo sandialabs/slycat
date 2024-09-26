@@ -28,13 +28,13 @@ export type AxesVariablesType = {
 };
 
 export type VariableRangesType = {
-  [key: number]: {
+  [key: string]: {
     min: number;
     max: number;
   };
 };
 
-type VariableAliasesType = {
+export type VariableAliasesType = {
   [key: string]: string;
 };
 
@@ -49,7 +49,7 @@ export type ValuesType =
   | Array<Date | undefined>
   | Float64Array;
 
-type XYPairsType = {
+export type XYPairsType = {
   x: number;
   y: number;
   label: string;
@@ -64,6 +64,7 @@ export type DerivedStateType = {
   variableAliases: VariableAliasesType;
   mediaValues: string[];
   media_columns: number[];
+  rating_variables: number[];
   xy_pairs: XYPairsType;
   // ToDo: Add more specific types for these
   three_d_colorby_range: {};
@@ -78,6 +79,31 @@ export type TableMetadataType = {
   "column-names": string[];
   "column-types": ColumnTypesType[];
 };
+
+export type OpenMediaType = {
+  index: number;
+  media_index: number;
+  uri: string;
+  uid: string;
+  x: number;
+  y: number;
+  relx: number;
+  rely: number;
+  width: number;
+  height: number;
+  current_frame: boolean;
+  ratio: string;
+  video?: boolean;
+  playing?: boolean;
+  threeD?: boolean;
+}[];
+
+// Currently we are not storing any details of the filters
+// We are just using an empty objects for the type to
+// determine how many active filters are there.
+// In the future we need to expand this when we convert
+// the filter manager to React.
+export type ActiveFiltersType = {}[];
 
 export type RootState = {
   fontSize: number;
@@ -102,19 +128,21 @@ export type RootState = {
   three_d_colorvars: Record<string, string>;
   three_d_variable_data_ranges: Record<string, [number, number]>;
   three_d_variable_user_ranges: Record<string, [number, number]>;
-  open_media: any[];
+  open_media: OpenMediaType;
   closed_media: any[];
   currentFrame: Record<string, any>;
-  active_filters: any[];
+  active_filters: ActiveFiltersType;
   sync_scaling: boolean;
   sync_threeD_colorvar: boolean;
   x_index: number;
   y_index: number;
   v_index: number;
+  video_sync: boolean;
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
   [DATA_SLICE_NAME]: DataState;
   derived: DerivedStateType;
+  media_index: number;
 };
 
 export const initialState: RootState = {
@@ -145,15 +173,14 @@ export const initialState: RootState = {
   closed_media: [],
   currentFrame: {},
   active_filters: [],
-  hidden_simulations: [],
-  manually_hidden_simulations: [],
   sync_scaling: true,
   sync_threeD_colorvar: true,
-  selected_simulations: [],
   x_index: 0,
   y_index: 1,
   v_index: 1,
+  video_sync: false,
   video_sync_time: 0,
+  media_index: -1,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
   derived: {
@@ -165,6 +192,7 @@ export const initialState: RootState = {
     three_d_colorby_range: {},
     three_d_colorby_legends: {},
     media_columns: [],
+    rating_variables: [],
     xy_pairs: [],
     table_metadata: {
       "row-count": 0,

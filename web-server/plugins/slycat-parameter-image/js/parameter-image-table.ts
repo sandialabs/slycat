@@ -7,17 +7,25 @@ import d3 from "d3";
 import * as d3v7 from "d3v7";
 import * as chunker from "js/chunker";
 import * as table_helpers from "js/slycat-table-helpers";
-import "slickgrid/slick.interactions.js";
-import "slickgrid/slick.core";
-import "slickgrid/slick.grid";
-import "slickgrid/plugins/slick.rowselectionmodel";
-import "slickgrid/plugins/slick.headerbuttons";
-import "slickgrid/plugins/slick.autotooltips";
+
+import {
+  SlickRowSelectionModel,
+  SlickAutoTooltips,
+  SlickGrid,
+  SlickEvent,
+  SlickHeaderButtons,
+  Column,
+  GridOption,
+} from "slickgrid";
+import Sortable from "sortablejs";
+window.Sortable = Sortable;
+
 import he from "he";
 import $ from "jquery";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import _ from "lodash";
+import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
 
 $.widget("parameter_image.table", {
   options: {
@@ -116,7 +124,7 @@ $.widget("parameter_image.table", {
     }
 
     function make_column(column_index, header_class, cell_class, formatter) {
-      var column = {
+      var column: Column = {
         id: column_index,
         field: column_index,
         name: get_column_header_title(column_index),
@@ -189,7 +197,7 @@ $.widget("parameter_image.table", {
       return column;
     }
 
-    self.columns = [];
+    self.columns = [] as Column[];
 
     self.columns.push(
       make_column(
@@ -228,12 +236,14 @@ $.widget("parameter_image.table", {
 
     self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {
+    let options: GridOption = {
       explicitInitialization: true,
       enableColumnReorder: false,
       editable: true,
       editCommandHandler: self._editCommandHandler,
-    });
+    };
+
+    self.grid = new SlickGrid(self.element.get(0), self.data, self.columns, options);
 
     self.data.onDataLoaded.subscribe(function (e, args) {
       for (var i = args.from; i <= args.to; i++) {
@@ -242,7 +252,7 @@ $.widget("parameter_image.table", {
       self.grid.render();
     });
 
-    var header_buttons = new Slick.Plugins.HeaderButtons();
+    var header_buttons = new SlickHeaderButtons({});
     header_buttons.onCommand.subscribe(function (e, args) {
       var column = args.column;
       var button = args.button;
@@ -277,7 +287,8 @@ $.widget("parameter_image.table", {
         }
         button.cssClass = "icon-image-on";
         button.tooltip = "Current image variable";
-        self.element.trigger("images-selection-changed", column.id);
+        // Dispatch update to media index in Redux
+        window.store.dispatch(setMediaIndex(column.id));
       } else if (command == "x-on") {
         for (var i in self.columns) {
           if (
@@ -294,7 +305,8 @@ $.widget("parameter_image.table", {
         self.options["x-variable"] = column.id;
         self.options.x_y_variables.x = column.id;
         grid.invalidate();
-        self.element.trigger("x-selection-changed", column.id);
+        // Dispatch update to x index in Redux
+        window.store.dispatch(setXIndex(column.id));
       } else if (command == "y-on") {
         for (var i in self.columns) {
           if (
@@ -311,14 +323,15 @@ $.widget("parameter_image.table", {
         self.options["y-variable"] = column.id;
         self.options.x_y_variables.y = column.id;
         grid.invalidate();
-        self.element.trigger("y-selection-changed", column.id);
+        // Dispatch update to y index in Redux
+        window.store.dispatch(setYIndex(column.id));
       }
     });
 
     self.grid.registerPlugin(header_buttons);
-    self.grid.registerPlugin(new Slick.AutoTooltips({ enableForHeaderCells: true }));
+    self.grid.registerPlugin(new SlickAutoTooltips({ enableForHeaderCells: true }));
 
-    self.grid.setSelectionModel(new Slick.RowSelectionModel());
+    self.grid.setSelectionModel(new SlickRowSelectionModel());
     self.grid.onSelectedRowsChanged.subscribe(function (e, selection) {
       // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
       if (self.trigger_row_selection) {
@@ -335,7 +348,8 @@ $.widget("parameter_image.table", {
         self.options.images.indexOf(args.column.field) == -1
       ) {
         self.options["variable-selection"] = [args.column.field];
-        self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+        // Dispatch update to v index in Redux
+        window.store.dispatch(setVIndex(args.column.field));
       }
     });
 
@@ -423,6 +437,7 @@ $.widget("parameter_image.table", {
       self._color_variables(self.options["variable-selection"]);
     } else if (key == "hidden_simulations") {
       self.options[key] = value;
+      self.data.hidden_simulations = value;
       self.data.invalidate();
       self.grid.invalidate();
     } else if (key == "jump_to_simulation") {
@@ -540,7 +555,7 @@ $.widget("parameter_image.table", {
     self.pages_in_progress = {};
     self.page_size = 50;
 
-    self.onDataLoaded = new Slick.Event();
+    self.onDataLoaded = new SlickEvent();
 
     self.getLength = function () {
       return self.metadata["row-count"];

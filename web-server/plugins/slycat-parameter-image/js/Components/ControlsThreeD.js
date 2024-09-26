@@ -18,8 +18,7 @@ class ControlsThreeD extends React.Component {
     this.props.updateThreeDColorBy(this.props.currentFrame.uid, key);
   };
 
-  set_threeD_sync = (e) => {
-    this.props.element.trigger("threeD_sync", !window.store.getState().threeD_sync);
+  toggle_threeD_sync = (e) => {
     this.props.toggleThreeDSync();
   };
 
@@ -34,7 +33,7 @@ class ControlsThreeD extends React.Component {
           title={this.props.threeD_sync ? "Unsync 3D Viewers" : "Sync 3D Viewers"}
           icon={faCubes}
           active={this.props.threeD_sync}
-          set_active_state={this.set_threeD_sync}
+          toggle_active_state={this.toggle_threeD_sync}
           button_style={this.props.button_style}
         />
         <ControlsDropdownColor
@@ -82,7 +81,7 @@ const mapStateToProps = (state) => {
     // Sort Color By options.
     // List points data first, then cell data.
     // Within each, list the items alphabetically.
-    color_by_items = state.derived.three_d_colorby_options[state.currentFrame.uri];
+    color_by_items = _.cloneDeep(state.derived.three_d_colorby_options[state.currentFrame.uri]);
     // Compare using English locale
     const locale = "en";
     // Make it case and accent insensitive.

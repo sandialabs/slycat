@@ -1,14 +1,14 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import jquery_ui_css from "jquery-ui/themes/base/all.css";
+import "jquery-ui/themes/base/all.css";
 
-import slick_grid_css from "slickgrid/slick.grid.css";
-import slick_default_theme_css from "slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
-import slycat_additions_css from "css/slycat-additions.css";
-import stickies_css from "../css/stickies.css";
-import ui_css from "../css/ui.css";
+import "slickgrid/dist/styles/sass/slick.grid.scss";
+import "slickgrid/dist/styles/sass/slick-default-theme.scss";
+import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
+import "css/slick-slycat-theme.css";
+import "css/slycat-additions.css";
+import "../css/stickies.css";
+import "../css/ui.css";
 
 import api_root from "js/slycat-api-root";
 import _ from "lodash";
@@ -21,7 +21,6 @@ import FilterManager from "./filter-manager";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 import "./parameter-image-scatterplot";
-import "./parameter-controls";
 import "./parameter-image-table";
 import $ from "jquery";
 import "jquery-ui";
@@ -59,7 +58,6 @@ import data_reducer, {
   selectManuallyHiddenSimulations,
   setSelectedSimulations,
   setHiddenSimulations,
-  setManuallyHiddenSimulations,
 } from "./dataSlice";
 import {
   setXValues,
@@ -73,7 +71,6 @@ import {
   setUserRole,
   setTableStatistics,
   setTableMetadata,
-  setVideoSyncTime,
 } from "./actions";
 
 import { setSyncCameras } from "./vtk-camera-synchronizer";
@@ -104,6 +101,10 @@ import {
   selectScatterplotMarginBottom,
   selectAxesVariables,
 } from "./selectors";
+
+import React from "react";
+import { createRoot } from "react-dom/client";
+import PSControlsBar from "./Components/PSControlsBar";
 
 let table_metadata = null;
 
@@ -180,6 +181,14 @@ $(document).ready(function () {
     min: undefined,
     max: undefined,
   };
+
+  let tableReadyPromise = new Promise((resolve) => {
+    window.resolveTableReady = resolve;
+  });
+
+  let scatterplotReadyPromise = new Promise((resolve) => {
+    window.resolveScatterplotReady = resolve;
+  });
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -410,7 +419,8 @@ $(document).ready(function () {
           const legacyBookmarkState = {
             colormap: bookmark["colormap"],
             open_media: bookmarked_open_media,
-            video_sync_time: bookmark["video_sync_time"],
+            video_sync: bookmark["video-sync"],
+            video_sync_time: bookmark["video-sync-time"],
             x_index: x_index,
             y_index: y_index,
             v_index: v_index,
@@ -432,6 +442,7 @@ $(document).ready(function () {
             derived: {
               variableAliases: variable_aliases,
               media_columns: image_columns,
+              rating_variables: rating_columns,
               xy_pairs: xy_pairs,
               // Set "embed" to true if the "embed" query parameter is present
               embed: URI(window.location).query(true).embed !== undefined,
@@ -580,21 +591,41 @@ $(document).ready(function () {
 
     // Wait until the redux store has been created
     createReduxStorePromise.then(() => {
-      // Subscribing to changes in various states
-      [
-        { objectPath: "colormap", callback: selected_colormap_changed },
-        { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
-        { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
-      ].forEach((subscription) => {
-        window.store.subscribe(
-          watch(
-            window.store.getState,
-            subscription.objectPath,
-            _.isEqual,
-          )((newVal, oldVal, objectPath) => {
-            subscription.callback(newVal, oldVal, objectPath);
-          }),
-        );
+      // Wait for the table and scatterplot to be ready,
+      // otherwise jquery complains about some of the callbacks
+      // setting table and scatterplot options before they are ready.
+      // Once we get rid of the scatterplot and table jquery widgets,
+      // we can get rid of this.
+      Promise.all([tableReadyPromise, scatterplotReadyPromise]).then(() => {
+        // Subscribing to changes in various states
+        [
+          { objectPath: "colormap", callback: selected_colormap_changed },
+          { objectPath: "scatterplot.auto_scale", callback: auto_scale_option_changed },
+          { objectPath: "data.selected_simulations", callback: selected_simulations_changed },
+          { objectPath: "x_index", callback: x_index_changed },
+          { objectPath: "y_index", callback: y_index_changed },
+          { objectPath: "v_index", callback: v_index_changed },
+          { objectPath: "media_index", callback: media_index_changed },
+          { objectPath: "variableRanges", callback: variable_ranges_changed },
+          { objectPath: "video_sync", callback: video_sync_changed },
+          { objectPath: "threeD_sync", callback: threeD_sync_changed },
+          { objectPath: "video_sync_time", callback: video_sync_time_changed },
+          { objectPath: "data.hidden_simulations", callback: hidden_simulations_changed },
+          {
+            objectPath: "data.manually_hidden_simulations",
+            callback: manually_hidden_simulations_changed,
+          },
+        ].forEach((subscription) => {
+          window.store.subscribe(
+            watch(
+              window.store.getState,
+              subscription.objectPath,
+              _.isEqual,
+            )((newVal, oldVal, objectPath) => {
+              subscription.callback(newVal, oldVal, objectPath);
+            }),
+          );
+        });
       });
 
       // Set size of scatterplot pane in Redux
@@ -674,10 +705,14 @@ $(document).ready(function () {
         if (table_metadata["column-types"][i] != "string") x_y_variables.push(i);
       }
 
-      x_index = x_y_variables[0];
-      y_index = x_y_variables[1 % x_y_variables.length];
-      if ("x-selection" in bookmark) x_index = Number(bookmark["x-selection"]);
-      if ("y-selection" in bookmark) y_index = Number(bookmark["y-selection"]);
+      // Set x and y variables accoding to what's in the bookmarked redux state,
+      // fall back to bookmarked legacy state, then to a sensible default.
+      x_index = Number(bookmark.state?.x_index ?? bookmark["x-selection"] ?? x_y_variables[0]);
+      y_index = Number(
+        bookmark.state?.y_index ??
+          bookmark["y-selection"] ??
+          x_y_variables[1 % x_y_variables.length],
+      );
 
       // Wait until the redux store has been created
       createReduxStorePromise.then(() => {
@@ -914,17 +949,7 @@ $(document).ready(function () {
         variable_sort_changed(variable, order);
       });
 
-      // Log changes to the x variable ...
-      $("#table").bind("x-selection-changed", function (event, variable) {
-        x_selection_changed(variable);
-      });
-
-      // Log changes to the y variable ...
-      $("#table").bind("y-selection-changed", function (event, variable) {
-        y_selection_changed(variable);
-      });
-
-      // Changing the table row selection updates the scatterplot and controls ...
+      // Changing the table row selection updates the scatterplot...
       // Log changes to the table row selection ...
       $("#table").bind("row-selection-changed", function (event, selection) {
         // The table selection is an array buffer which can't be
@@ -934,46 +959,14 @@ $(document).ready(function () {
 
         selected_simulations_changed(temp);
         $("#scatterplot").scatterplot("option", "selection", temp);
-        $("#controls").controls("option", "selection", temp);
       });
 
-      // Changing the scatterplot selection updates the table row selection and controls ..
+      // Resolve the tableReadyPromise
+      window.resolveTableReady();
+
+      // Changing the scatterplot selection updates the table row selection ...
       $("#scatterplot").bind("selection-changed", function (event, selection) {
         $("#table").table("option", "row-selection", selection);
-        $("#controls").controls("option", "selection", selection);
-      });
-
-      // Changing the x variable updates the table ...
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        $("#table").table("option", "x-variable", variable);
-      });
-
-      // Changing the y variable updates the table ...
-      $("#controls").bind("y-selection-changed", function (event, variable) {
-        $("#table").table("option", "y-variable", variable);
-      });
-
-      // Changing the image variable updates the table ...
-      $("#controls").bind("images-selection-changed", function (event, variable) {
-        $("#table").table("option", "image-variable", variable);
-      });
-
-      // Handle table variable selection ...
-      $("#table").bind("variable-selection-changed", function (event, selection) {
-        // Changing the table variable updates the controls ...
-        $("#controls").controls("option", "color-variable", selection[0]);
-
-        // Handle changes to the table variable selection ...
-        handle_color_variable_change(selection[0]);
-      });
-
-      // Handle color variable selection ...
-      $("#controls").bind("color-selection-changed", function (event, variable) {
-        // Changing the color variable updates the table ...
-        $("#table").table("option", "variable-selection", [Number(variable)]);
-
-        // Handle changes to the color variable ...
-        handle_color_variable_change(variable);
       });
     }
   }
@@ -1055,29 +1048,15 @@ $(document).ready(function () {
       $("#table").bind("x-selection-changed", function (event, variable) {
         update_scatterplot_x(variable);
       });
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        update_scatterplot_x(variable);
-      });
 
       // Changing the y variable updates the scatterplot ...
       $("#table").bind("y-selection-changed", function (event, variable) {
-        update_scatterplot_y(variable);
-      });
-      $("#controls").bind("y-selection-changed", function (event, variable) {
         update_scatterplot_y(variable);
       });
 
       // Changing the images variable updates the scatterplot ...
       $("#table").bind("images-selection-changed", function (event, variable) {
         handle_image_variable_change(variable);
-      });
-      $("#controls").bind("images-selection-changed", function (event, variable) {
-        handle_image_variable_change(variable);
-      });
-
-      // Changing the video sync time logs it ...
-      $("#scatterplot").bind("video-sync-time", function (event, video_sync_time) {
-        video_sync_time_changed(video_sync_time);
       });
 
       // Jumping to simulation ...
@@ -1086,6 +1065,8 @@ $(document).ready(function () {
         $("#table").table("option", "jump_to_simulation", parseInt(index));
         video_sync_time_changed(video_sync_time);
       });
+
+      window.resolveScatterplotReady();
     }
   }
 
@@ -1095,30 +1076,19 @@ $(document).ready(function () {
       bookmark &&
       table_metadata &&
       image_columns !== null &&
-      rating_columns != null &&
-      category_columns != null &&
-      x_index != null &&
-      y_index != null &&
-      images_index !== null &&
-      selected_simulations != null &&
-      hidden_simulations != null &&
+      x_index !== null &&
+      y_index !== null &&
+      selected_simulations !== null &&
+      hidden_simulations !== null &&
       indices &&
-      (open_images !== null) & (video_sync !== null) &&
-      video_sync_time !== null &&
-      threeD_sync !== null &&
-      window.store !== undefined &&
-      table_statistics
+      window.store !== undefined
     ) {
       controls_ready = true;
       filter_manager.notify_controls_ready();
-      var numeric_variables = [];
       var axes_variables = [];
       var color_variables = [];
 
       for (var i = 0; i < table_metadata["column-count"]; i++) {
-        if (table_metadata["column-types"][i] != "string") {
-          numeric_variables.push(i);
-        }
         if (image_columns.indexOf(i) == -1 && table_metadata["column-count"] - 1 > i) {
           axes_variables.push(i);
         }
@@ -1127,312 +1097,83 @@ $(document).ready(function () {
         }
       }
 
-      var color_variable = table_metadata["column-count"] - 1;
-      if ("variable-selection" in bookmark) {
-        color_variable = [bookmark["variable-selection"]];
-      }
-
-      $("#controls").controls({
-        mid: model_id,
-        model: model,
-        model_name: window.model_name,
-        aid: "data-table",
-        metadata: table_metadata,
-        table_statistics: table_statistics,
-        // clusters : clusters,
-        x_variables: axes_variables,
-        y_variables: axes_variables,
-        axes_variables: axes_variables,
-        image_variables: image_columns,
-        color_variables: color_variables,
-        rating_variables: rating_columns,
-        category_variables: category_columns,
-        selection: selected_simulations,
-        // cluster_index : cluster_index,
-        "x-variable": x_index,
-        "y-variable": y_index,
-        "image-variable": images_index,
-        "color-variable": color_variable,
-        hidden_simulations: hidden_simulations,
-        indices: indices,
-        "video-sync": video_sync,
-        "video-sync-time": video_sync_time,
-        threeD_sync: threeD_sync,
-      });
-
-      // Changing the xypair selection trigger change of x and y variables...
-      $("#controls").bind("xypair_selection_changed", function (event, xy_pair) {
-        // xy_pair is JSON.stringify'ed, so need to parse it first
-        const xy = JSON.parse(xy_pair);
-        // Trigger x and y selection changes
-        $("#controls").trigger("x-selection-changed", xy.x);
-        $("#controls").trigger("y-selection-changed", xy.y);
-        // Update x and y variable in controls
-        $("#controls").controls("option", "x-variable", xy.x);
-        $("#controls").controls("option", "y-variable", xy.y);
-      });
-      // Changing the x variable updates the controls ...
-      $("#table").bind("x-selection-changed", function (event, variable) {
-        $("#controls").controls("option", "x-variable", variable);
-      });
-
-      // Changing the y variable updates the controls ...
-      $("#table").bind("y-selection-changed", function (event, variable) {
-        $("#controls").controls("option", "y-variable", variable);
-      });
-
-      // Changing the image variable updates the controls ...
-      $("#table").bind("images-selection-changed", function (event, variable) {
-        $("#controls").controls("option", "image-variable", variable);
-      });
-
-      $("#controls").bind("update_axes_ranges", function () {
-        // console.log(`variable-ranges-changed`);
-        // Alert scatterplot that it might need to update its axes
-        $("#scatterplot").scatterplot("update_axes_ranges");
-        // Update the color scale
-        update_current_colorscale();
-        $("#table").table("option", "colorscale", colorscale);
-        $("#scatterplot").scatterplot("option", "colorscale", colorscale);
-      });
-
-      // Changing the value of a variable updates the database, table, and scatterplot ...
-      $("#controls").bind("set-value", function (event, props) {
-        writeData(props.selection, props.variable, props.value);
-        function writeData(selection, variable, value) {
-          var hyperslices = "";
-          var data = "[";
-          for (var i = 0; i < selection.length; i++) {
-            if (i > 0) {
-              hyperslices += "|";
-              data += ",";
-            }
-            hyperslices += selection[i];
-            data += "[" + value + "]";
-          }
-          data += "]";
-          var blob = new Blob([data], { type: "text/html" });
-          var formdata = new FormData();
-          formdata.append("data", blob);
-          formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslices);
-
-          $.ajax({
-            type: "PUT",
-            url: api_root + "models/" + model_id + "/arraysets/data-table/data",
-            data: formdata,
-            processData: false,
-            contentType: false,
-            success: function (results) {
-              // Let's pass the edited variable to the table so it knows which column's
-              // ranked_indices to invalidate
-              $("#table").table("update_data", variable);
-
-              if (variable == x_index) update_scatterplot_x(variable);
-              if (variable == y_index) update_scatterplot_y(variable);
-
-              // console.debug(`Loading table statistics after a variable has been edited.`);
-              load_table_statistics([variable], function (new_table_statistics) {
-                // Not sure why we wait for new table statistics before calling
-                // update_v since we don't do that for updating x and y.
-                // But it's been in the code for very long so I'm leaving it as is.
-                if (variable == v_index) {
-                  update_v(variable);
-                }
-                // Update filter manager with new table statistics
-                filter_manager.set_table_statistics(new_table_statistics);
-                // Let filter manager know that a variable has been changed so it can possibly
-                // update categorical unique values or numeric min/max
-                // filter_manager.load_unique_categories();
-                filter_manager.notify_variable_value_edited(variable);
-              });
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-              console.log("writing array data error");
-            },
-          });
-        }
-      });
-
-      // Log changes to the cluster variable ...
-      // $("#controls").bind("cluster-selection-changed", function(event, variable)
-      // {
-      //   variable = parseInt(variable);
-      //   cluster_selection_changed(variable);
-      //   update_dendrogram(variable);
-      // });
-
-      // Log changes to the x variable ...
-      $("#controls").bind("x-selection-changed", function (event, variable) {
-        x_selection_changed(variable);
-      });
-
-      // Log changes to the y variable ...
-      $("#controls").bind("y-selection-changed", function (event, variable) {
-        y_selection_changed(variable);
-      });
-
-      // Changing the video sync option updates the scatterplot and logs it ...
-      $("#controls").bind("video-sync", function (event, video_sync) {
-        video_sync_option_changed(video_sync);
-      });
-
-      // Changing the 3d sync option updates the scatterplot and logs it ...
-      $("#controls").bind("threeD_sync", function (event, threeD_sync) {
-        threeD_sync_option_changed(threeD_sync);
-      });
-
-      // Changing the video sync time updates the scatterplot and logs it ...
-      $("#controls").bind("video-sync-time", function (event, video_sync_time) {
-        $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time);
-        video_sync_time_changed(video_sync_time);
-      });
-
-      // Clicking jump-to-start updates the scatterplot and logs it ...
-      $("#controls").bind("jump-to-start", function (event) {
-        $("#scatterplot").scatterplot("jump_to_start");
-      });
-
-      // Clicking frame-forward updates the scatterplot and logs it ...
-      $("#controls").bind("frame-forward", function (event) {
-        $("#scatterplot").scatterplot("frame_forward");
-      });
-
-      // Clicking play updates the scatterplot and logs it ...
-      $("#controls").bind("play", function (event) {
-        $("#scatterplot").scatterplot("play");
-      });
-
-      // Clicking pause updates the scatterplot and logs it ...
-      $("#controls").bind("pause", function (event) {
-        $("#scatterplot").scatterplot("pause");
-      });
-
-      // Clicking frame-back updates the scatterplot and logs it ...
-      $("#controls").bind("frame-back", function (event) {
-        $("#scatterplot").scatterplot("frame_back");
-      });
-
-      // Clicking jump-to-end updates the scatterplot and logs it ...
-      $("#controls").bind("jump-to-end", function (event) {
-        $("#scatterplot").scatterplot("jump_to_end");
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("hide-selection", function (event, selection) {
-        for (var i = 0; i < selected_simulations.length; i++) {
-          if ($.inArray(selected_simulations[i], hidden_simulations) == -1) {
-            hidden_simulations.push(selected_simulations[i]);
-          }
-        }
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("hide-unselected", function (event, selection) {
-        let unselected = _.difference(indices, selected_simulations);
-        let visible_unselected = _.difference(unselected, hidden_simulations);
-        hidden_simulations.push(...visible_unselected);
-
-        // This is the old way of doing this. Seems wrong because we shouldn't
-        // be unhiding selected simulations when users want to hide unselected.
-        // This section can be removed once the team agrees this not what we want.
-
-        // // Remove any selected_simulations from hidden_simulations
-        // for(var i=0; i<selected_simulations.length; i++){
-        //   var index = $.inArray(selected_simulations[i], hidden_simulations);
-        //   if(index != -1) {
-        //     hidden_simulations.splice(index, 1);
-        //   }
-        // }
-
-        // Add all non-selected_simulations to hidden_simulations
-        // for(var i=0; i<indices.length; i++){
-        //   if($.inArray(indices[i], selected_simulations) == -1) {
-        //     hidden_simulations.push(indices[i]);
-        //   }
-        // }
-
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("show-unselected", function (event, selection) {
-        // Remove any non-selected_simulations from hidden_simulations
-        let difference = _.difference(hidden_simulations, selected_simulations);
-        _.pullAll(hidden_simulations, difference);
-        // console.log("here's what we need to remove from hidden_simulations: " + difference);
-
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("show-selection", function (event, selection) {
-        for (var i = 0; i < selected_simulations.length; i++) {
-          var index = $.inArray(selected_simulations[i], hidden_simulations);
-          if (index != -1) {
-            hidden_simulations.splice(index, 1);
-          }
-        }
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("pin-selection", function (event, selection, restore_size_location) {
-        // console.debug(`$("#controls").bind("pin-selection")`);
-        // Removing any hidden simulations from those that will be pinned
-        var simulations_to_pin = [];
-        for (var i = 0; i < selected_simulations.length; i++) {
-          var index = $.inArray(selected_simulations[i], hidden_simulations);
-          if (index == -1) {
-            simulations_to_pin.push(selected_simulations[i]);
-          }
-        }
-        $("#scatterplot").scatterplot("pin", simulations_to_pin, restore_size_location);
-      });
-
-      // Log changes to selection ...
-      $("#controls").bind("select-pinned", function (event, open_images_to_select) {
-        let pinned_simulations = [];
-
-        for (const open_image of open_images_to_select) {
-          // Removing any hidden simulations from those that will be selected
-          if (!hidden_simulations.includes(open_image.index)) {
-            pinned_simulations.push(open_image.index);
-          }
-        }
-
-        // Merging unhidden pinned simulations with currently selected simulations
-        let to_select = _.union(pinned_simulations, selected_simulations);
-
-        selected_simulations_changed(to_select);
-        $("#scatterplot").scatterplot("option", "selection", to_select);
-        $("#controls").controls("option", "selection", to_select);
-        $("#table").table("option", "row-selection", to_select);
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("show-all", function (event, selection) {
-        while (hidden_simulations.length > 0) {
-          hidden_simulations.pop();
-        }
-        manually_hidden_simulations = hidden_simulations.slice();
-        update_widgets_when_hidden_simulations_change();
-      });
-
-      // Log changes to hidden selection ...
-      $("#controls").bind("close-all", function (event, selection) {
-        $("#scatterplot").scatterplot("close_all_simulations");
-      });
+      const controls_bar = (
+        <PSControlsBar
+          store={window.store}
+          axes_variables={axes_variables}
+          indices={indices}
+          mid={model_id}
+          aid={"data-table"}
+          model={model}
+          model_name={window.model_name}
+          x_variables={axes_variables}
+          y_variables={axes_variables}
+          image_variables={image_columns}
+          color_variables={color_variables}
+          write_data={writeData}
+        />
+      );
+      const react_controls_root = createRoot(document.getElementById("react-controls"));
+      react_controls_root.render(controls_bar);
     }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
+
+  function writeData(selection, variable, value) {
+    var hyperslices = "";
+    var data = "[";
+    for (var i = 0; i < selection.length; i++) {
+      if (i > 0) {
+        hyperslices += "|";
+        data += ",";
+      }
+      hyperslices += selection[i];
+      data += "[" + value + "]";
+    }
+    data += "]";
+    var blob = new Blob([data], { type: "text/html" });
+    var formdata = new FormData();
+    formdata.append("data", blob);
+    formdata.append("hyperchunks", 0 + "/" + variable + "/" + hyperslices);
+
+    $.ajax({
+      type: "PUT",
+      url: api_root + "models/" + model_id + "/arraysets/data-table/data",
+      data: formdata,
+      processData: false,
+      contentType: false,
+      success: function (results) {
+        // Let's pass the edited variable to the table so it knows which column's
+        // ranked_indices to invalidate
+        $("#table").table("update_data", variable);
+
+        if (variable == x_index) update_scatterplot_x(variable);
+        if (variable == y_index) update_scatterplot_y(variable);
+
+        // console.debug(`Loading table statistics after a variable has been edited.`);
+        load_table_statistics([variable], function (new_table_statistics) {
+          // Not sure why we wait for new table statistics before calling
+          // update_v since we don't do that for updating x and y.
+          // But it's been in the code for very long so I'm leaving it as is.
+          if (variable == v_index) {
+            update_v(variable);
+          }
+          // Update filter manager with new table statistics
+          filter_manager.set_table_statistics(new_table_statistics);
+          // Let filter manager know that a variable has been changed so it can possibly
+          // update categorical unique values or numeric min/max
+          // filter_manager.load_unique_categories();
+          filter_manager.notify_variable_value_edited(variable);
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log("writing array data error");
+      },
+    });
+  }
 
   function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();
@@ -1557,7 +1298,14 @@ $(document).ready(function () {
   }
 
   function update_widgets_when_hidden_simulations_change() {
-    hidden_simulations_changed();
+    // Logging every hidden simulation is too slow, so just log the count instead.
+    $.ajax({
+      type: "POST",
+      url: api_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length,
+    });
+    bookmarker.updateState({
+      "hidden-simulations": hidden_simulations,
+    });
 
     if (auto_scale) {
       update_current_colorscale();
@@ -1578,9 +1326,6 @@ $(document).ready(function () {
       if ($("#scatterplot").data("parameter_image-scatterplot"))
         $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
     }
-
-    if ($("#controls").data("parameter_image-controls"))
-      $("#controls").controls("option", "hidden_simulations", hidden_simulations);
   }
 
   function set_custom_color_variable_range() {
@@ -1685,7 +1430,6 @@ $(document).ready(function () {
     // But we do need to let the other non-React components know about the new selection.
     if (old_selection !== undefined) {
       $("#scatterplot").scatterplot("option", "selection", _.cloneDeep(selection));
-      $("#controls").controls("option", "selection", _.cloneDeep(selection));
       $("#table").table("option", "row-selection", _.cloneDeep(selection));
     } else {
       // Dispatch update to selected_simulations in Redux
@@ -1693,19 +1437,32 @@ $(document).ready(function () {
     }
   }
 
-  function x_selection_changed(variable) {
+  function x_index_changed(variable) {
+    // Update legacy table and scatterplot components when x variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "x-variable", variable);
+    // Update scatterplot
+    update_scatterplot_x(variable);
+
+    // Log changes to the x variable ...
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/select/x/" + variable,
     });
     bookmarker.updateState({ "x-selection": variable });
     x_index = Number(variable);
-
-    // Dispatch update to x index in Redux
-    window.store.dispatch(setXIndex(x_index));
   }
 
-  function y_selection_changed(variable) {
+  function y_index_changed(variable) {
+    // Update legacy table and scatterplot components when y variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "y-variable", variable);
+    // Update scatterplot
+    update_scatterplot_y(variable);
+
+    // Log changes to the y variable ...
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/select/y/" + variable,
@@ -1713,12 +1470,60 @@ $(document).ready(function () {
     bookmarker.updateState({ "y-selection": variable });
     y_index = Number(variable);
 
-    // Dispatch update to y index in Redux
-    window.store.dispatch(setYIndex(y_index));
-    // Hide histogram if it's being displayed
+    // Hide histogram if it's being displayed.
+    // There is probably a better place to put this.
     if (window.store.getState().scatterplot.show_histogram) {
       window.store.dispatch(toggleShowHistogram());
     }
+  }
+
+  function v_index_changed(variable) {
+    // Update legacy table and scatterplot components when v variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "variable-selection", [Number(variable)]);
+    // Handle changes to the color variable ...
+    handle_color_variable_change(variable);
+  }
+
+  function media_index_changed(variable) {
+    // Update legacy table and scatterplot components when media variable changes in Redux.
+    // These need to be removed when we convert these components to React.
+    // Update table
+    $("#table").table("option", "image-variable", variable);
+    // Update scatterplot
+    handle_image_variable_change(variable);
+  }
+
+  function variable_ranges_changed(variable_ranges) {
+    // Update legacy table and scatterplot components when variable ranges change in Redux.
+    // These need to be removed when we convert these components to React.
+    // Alert scatterplot that it might need to update its axes
+    $("#scatterplot").scatterplot("update_axes_ranges");
+    // Update the color scale
+    update_current_colorscale();
+    $("#table").table("option", "colorscale", colorscale);
+    $("#scatterplot").scatterplot("option", "colorscale", colorscale);
+  }
+
+  function video_sync_changed(video_sync_value) {
+    video_sync = video_sync_value;
+    $("#scatterplot").scatterplot("option", "video-sync", video_sync);
+    $.ajax({
+      type: "POST",
+      url: api_root + "events/models/" + model_id + "/video-sync/" + video_sync,
+    });
+    bookmarker.updateState({ "video-sync": video_sync });
+  }
+
+  function threeD_sync_changed(threeD_sync_value) {
+    threeD_sync = threeD_sync_value;
+    $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
+    setSyncCameras(threeD_sync);
+    $.ajax({
+      type: "POST",
+      url: api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync,
+    });
   }
 
   function auto_scale_option_changed(auto_scale_value, old_auto_scale_value, objectPath) {
@@ -1726,7 +1531,9 @@ $(document).ready(function () {
     if (hidden_simulations.length > 0) {
       update_current_colorscale();
       $("#table").table("option", "colorscale", colorscale);
-      // TODO this will result in 2 updates to canvas, one to redraw points accourding to scale and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
+      // TODO this will result in 2 updates to canvas, one to redraw points accourding to scale
+      // and another to color them according to new colorscale. Need to combine this to a single
+      // update when converting to canvas.
       $("#scatterplot").scatterplot("option", { colorscale: colorscale, "auto-scale": auto_scale });
     } else {
       $("#scatterplot").scatterplot("option", "auto-scale", auto_scale);
@@ -1737,49 +1544,25 @@ $(document).ready(function () {
     });
   }
 
-  function video_sync_option_changed(video_sync_value) {
-    video_sync = video_sync_value;
-    $("#scatterplot").scatterplot("option", "video-sync", video_sync);
-    $.ajax({
-      type: "POST",
-      url: api_root + "events/models/" + model_id + "/video-sync/" + video_sync,
-    });
-    bookmarker.updateState({ "video-sync": video_sync });
-  }
-
   function video_sync_time_changed(video_sync_time_value) {
+    $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time_value);
+
     video_sync_time = video_sync_time_value;
     $.ajax({
       type: "POST",
       url: api_root + "events/models/" + model_id + "/video-sync-time/" + video_sync_time,
     });
     bookmarker.updateState({ "video-sync-time": video_sync_time });
-
-    // Dispatch update to video_sync_time in Redux
-    window.store.dispatch(setVideoSyncTime(video_sync_time_value));
   }
 
-  function threeD_sync_option_changed(threeD_sync_value) {
-    threeD_sync = threeD_sync_value;
-    $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
-    setSyncCameras(threeD_sync);
-    $.ajax({
-      type: "POST",
-      url: api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync,
-    });
+  function hidden_simulations_changed(hidden_simulations_value) {
+    hidden_simulations = _.cloneDeep(hidden_simulations_value);
+    update_widgets_when_hidden_simulations_change();
   }
 
-  function hidden_simulations_changed() {
-    // Update Redux state with new hidden_simulations
-    window.store.dispatch(setHiddenSimulations(hidden_simulations));
-    window.store.dispatch(setManuallyHiddenSimulations(manually_hidden_simulations));
-    // Logging every hidden simulation is too slow, so just log the count instead.
-    $.ajax({
-      type: "POST",
-      url: api_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length,
-    });
+  function manually_hidden_simulations_changed(manually_hidden_simulations_value) {
+    manually_hidden_simulations = _.cloneDeep(manually_hidden_simulations_value);
     bookmarker.updateState({
-      "hidden-simulations": hidden_simulations,
       "manually-hidden-simulations": manually_hidden_simulations,
     });
   }
@@ -1991,6 +1774,7 @@ $(document).ready(function () {
 
           hidden_simulations.sort((a, b) => a - b);
 
+          window.store.dispatch(setHiddenSimulations(hidden_simulations));
           update_widgets_when_hidden_simulations_change();
         },
         error: function (request, status, reason_phrase) {
@@ -2016,6 +1800,7 @@ $(document).ready(function () {
         hidden_simulations.push(manually_hidden_simulations[i]);
       }
 
+      window.store.dispatch(setHiddenSimulations(hidden_simulations));
       update_widgets_when_hidden_simulations_change();
     }
   }
