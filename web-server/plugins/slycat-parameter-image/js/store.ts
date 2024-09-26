@@ -16,6 +16,11 @@ import {
   ScatterplotState,
 } from "./scatterplotSlice";
 import {
+  SLICE_NAME as TABLE_SLICE_NAME,
+  initialState as tableInitialState,
+  TableState,
+} from "./tableSlice";
+import {
   SLICE_NAME as DATA_SLICE_NAME,
   initialState as dataInitialState,
   DataState,
@@ -140,6 +145,7 @@ export type RootState = {
   video_sync: boolean;
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
+  [TABLE_SLICE_NAME]: TableState;
   [DATA_SLICE_NAME]: DataState;
   derived: DerivedStateType;
   media_index: number;
@@ -182,6 +188,7 @@ export const initialState: RootState = {
   video_sync_time: 0,
   media_index: -1,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
+  [TABLE_SLICE_NAME]: { ...tableInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
   derived: {
     variableAliases: {},

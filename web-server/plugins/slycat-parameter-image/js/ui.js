@@ -41,6 +41,8 @@ import scatterplot_reducer, {
   SLICE_NAME as SCATTERPLOT_SLICE_NAME,
   setScatterplotPaneWidth,
   setScatterplotPaneHeight,
+  selectScatterplotPaneWidth,
+  selectScatterplotPaneHeight,
   toggleShowHistogram,
   selectAutoScale,
   selectUnselectedPointSize,
@@ -51,6 +53,11 @@ import scatterplot_reducer, {
   selectFontFamily,
   selectOpenMedia,
 } from "./scatterplotSlice";
+import table_reducer, {
+  SLICE_NAME as TABLE_SLICE_NAME,
+  setTablePaneWidth,
+  setTablePaneHeight,
+} from "./tableSlice";
 import data_reducer, {
   SLICE_NAME as DATA_SLICE_NAME,
   selectSelectedSimulations,
@@ -102,9 +109,11 @@ import {
   selectAxesVariables,
 } from "./selectors";
 
-import React from "react";
+import React, { StrictMode } from "react";
+import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";
 import PSControlsBar from "./Components/PSControlsBar";
+import PSTable from "./Components/PSTable";
 
 let table_metadata = null;
 
@@ -199,7 +208,7 @@ $(document).ready(function () {
       size: 39,
       resizable: false,
     },
-    center: {},
+    center: { resizeWhileDragging: false },
     west: {
       // Sliders
       initClosed: true,
@@ -211,18 +220,16 @@ $(document).ready(function () {
     south: {
       size: $("#parameter-image-plus-layout").height() / 4,
       resizeWhileDragging: false,
+    },
+    east: {
+      size: $("#parameter-image-plus-layout").width() / 2,
+      resizeWhileDragging: false,
       onresize_end: function () {
         $("#table").css("height", $("#table-pane").height());
         if ($("#table").data("parameter_image-table")) {
           $("#table").table("resize_canvas");
         }
       },
-    },
-  });
-
-  const model_pane_layout = $("#model-pane").layout({
-    center: {
-      resizeWhileDragging: false,
     },
   });
 
@@ -461,11 +468,12 @@ $(document).ready(function () {
             derivedState,
           );
 
-          // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
+          // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer, table_reducer, and other new reducers.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
-          // createSlice scatterplot_reducer and other new reducers.
+          // createSlice scatterplot_reducer, table_reducer, and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
+            [TABLE_SLICE_NAME]: table_reducer,
             [DATA_SLICE_NAME]: data_reducer,
           });
 
@@ -629,11 +637,15 @@ $(document).ready(function () {
       });
 
       // Set size of scatterplot pane in Redux
-      window.store.dispatch(setScatterplotPaneWidth(model_pane_layout.state.center.innerWidth));
-      window.store.dispatch(setScatterplotPaneHeight(model_pane_layout.state.center.innerHeight));
+      window.store.dispatch(setScatterplotPaneWidth(layout.state.center.innerWidth));
+      window.store.dispatch(setScatterplotPaneHeight(layout.state.center.innerHeight));
+
+      // Set size of table pane in Redux
+      window.store.dispatch(setTablePaneWidth(layout.state.south.innerWidth));
+      window.store.dispatch(setTablePaneHeight(layout.state.south.innerHeight));
 
       // Update scatterplot and Redux each time the scatterplot pane is resized
-      model_pane_layout.center.options.onresize_end = (
+      layout.center.options.onresize_end = (
         pane_name,
         pane_element,
         pane_state,
@@ -651,6 +663,14 @@ $(document).ready(function () {
         }
         window.store.dispatch(setScatterplotPaneWidth(width));
         window.store.dispatch(setScatterplotPaneHeight(height));
+      };
+
+      // Update table pane in Redux each time the table pane is resized
+      layout.south.options.onresize_end = (pane_name, pane_element, pane_state, pane_options) => {
+        const width = pane_state.innerWidth;
+        const height = pane_state.innerHeight;
+        window.store.dispatch(setTablePaneWidth(width));
+        window.store.dispatch(setTablePaneHeight(height));
       };
     });
   }
@@ -898,8 +918,6 @@ $(document).ready(function () {
       output_columns != null &&
       other_columns != null &&
       image_columns != null &&
-      rating_columns != null &&
-      category_columns != null &&
       window.store !== undefined
     ) {
       table_ready = true;
@@ -915,8 +933,6 @@ $(document).ready(function () {
         outputs: output_columns,
         others: other_columns,
         images: image_columns,
-        ratings: rating_columns,
-        categories: category_columns,
         "image-variable": images_index,
         "x-variable": x_index,
         "y-variable": y_index,
@@ -968,6 +984,30 @@ $(document).ready(function () {
       $("#scatterplot").bind("selection-changed", function (event, selection) {
         $("#table").table("option", "row-selection", selection);
       });
+
+      const react_controls_root = createRoot(document.getElementById("ps-table"));
+      react_controls_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <PSTable
+              api_root={api_root}
+              mid={model_id}
+              aid={"data-table"}
+              metadata={table_metadata}
+              inputs={input_columns}
+              outputs={output_columns}
+              others={other_columns}
+              images={image_columns}
+              image_variable={images_index}
+              x_variable={x_index}
+              y_variable={y_index}
+              row_selection={selected_simulations}
+              hidden_simulations={hidden_simulations}
+              colorscale={colorscale}
+            />
+          </Provider>
+        </StrictMode>,
+      );
     }
   }
 
@@ -1016,8 +1056,8 @@ $(document).ready(function () {
         y_index: y_index,
         v_index: v_index,
         images: images,
-        width: $("#scatterplot-pane").width(),
-        height: $("#scatterplot-pane").height(),
+        width: selectScatterplotPaneWidth(window.store.getState()),
+        height: selectScatterplotPaneHeight(window.store.getState()),
         colorscale: colorscale,
         selection: selected_simulations,
         open_images: open_images,

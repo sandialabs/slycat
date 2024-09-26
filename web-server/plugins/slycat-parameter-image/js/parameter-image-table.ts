@@ -37,8 +37,6 @@ $.widget("parameter_image.table", {
     outputs: [],
     others: [],
     images: [],
-    ratings: [],
-    categories: [],
     "row-selection": [],
     "variable-selection": [],
     "sort-variable": null,
