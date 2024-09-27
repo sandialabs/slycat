@@ -39,7 +39,7 @@ import {
   setSelectedSimulations,
   selectSelectedSimulations,
   selectSelectedSimulationsWithoutHidden,
-} from "../dataSlice";
+} from "../features/data/dataSlice";
 import * as d3 from "d3v7";
 import _ from "lodash";
 

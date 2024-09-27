@@ -24,7 +24,7 @@ import {
   SLICE_NAME as DATA_SLICE_NAME,
   initialState as dataInitialState,
   DataState,
-} from "./dataSlice";
+} from "./features/data/dataSlice";
 
 export type AxisType = "Linear" | "Log" | "Date & Time";
 

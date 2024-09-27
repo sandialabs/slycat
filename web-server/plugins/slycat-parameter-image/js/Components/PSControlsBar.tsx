@@ -27,7 +27,7 @@ import {
   setHiddenSimulations,
   setManuallyHiddenSimulations,
   setSelectedSimulations,
-} from "../dataSlice";
+} from "../features/data/dataSlice";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";

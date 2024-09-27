@@ -65,7 +65,7 @@ import data_reducer, {
   selectManuallyHiddenSimulations,
   setSelectedSimulations,
   setHiddenSimulations,
-} from "./dataSlice";
+} from "./features/data/dataSlice";
 import {
   setXValues,
   setYValues,

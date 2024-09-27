@@ -6,7 +6,7 @@ import {
   selectScatterplotPaneHeight,
   selectShowHistogram,
 } from "./scatterplotSlice";
-import { selectHiddenSimulations } from "./dataSlice";
+import { selectHiddenSimulations } from "./features/data/dataSlice";
 import {
   RootState,
   VariableRangesType,
