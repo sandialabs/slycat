@@ -52,12 +52,12 @@ import scatterplot_reducer, {
   selectFontSize,
   selectFontFamily,
   selectOpenMedia,
-} from "./scatterplotSlice";
+} from "./features/scatterplot/scatterplotSlice";
 import table_reducer, {
   SLICE_NAME as TABLE_SLICE_NAME,
   setTablePaneWidth,
   setTablePaneHeight,
-} from "./tableSlice";
+} from "./features/table/tableSlice";
 import data_reducer, {
   SLICE_NAME as DATA_SLICE_NAME,
   selectSelectedSimulations,

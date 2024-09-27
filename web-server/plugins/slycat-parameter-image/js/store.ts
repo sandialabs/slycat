@@ -14,12 +14,12 @@ import {
   SLICE_NAME as SCATTERPLOT_SLICE_NAME,
   initialState as scatterplotInitialState,
   ScatterplotState,
-} from "./scatterplotSlice";
+} from "./features/scatterplot/scatterplotSlice";
 import {
   SLICE_NAME as TABLE_SLICE_NAME,
   initialState as tableInitialState,
   TableState,
-} from "./tableSlice";
+} from "./features/table/tableSlice";
 import {
   SLICE_NAME as DATA_SLICE_NAME,
   initialState as dataInitialState,

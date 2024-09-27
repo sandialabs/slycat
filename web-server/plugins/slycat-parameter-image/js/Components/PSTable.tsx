@@ -2,7 +2,7 @@ import React from "react";
 import SlycatSlickgrid from "components/SlycatSlickgrid";
 import { GridOption, Column } from "slickgrid";
 import { useSelector } from "react-redux";
-import { selectTablePaneHeight, selectTablePaneWidth } from "../tableSlice";
+import { selectTablePaneHeight, selectTablePaneWidth } from "../features/table/tableSlice";
 
 type PSTableProps = {};
 

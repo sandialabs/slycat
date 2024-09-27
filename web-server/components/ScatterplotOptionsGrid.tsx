@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   toggleShowGrid,
   selectShowGrid,
-} from "plugins/slycat-parameter-image/js/scatterplotSlice";
+} from "plugins/slycat-parameter-image/js/features/scatterplot/scatterplotSlice";
 
 const ScatterplotOptionsGrid: React.FC = () => {
   const dispatch = useDispatch();

@@ -31,7 +31,7 @@ import {
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
-import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
+import { toggleShowHistogram, toggleAutoScale } from "../features/scatterplot/scatterplotSlice";
 import {
   RootState,
   VariableRangesType,

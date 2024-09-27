@@ -5,7 +5,7 @@ import {
   selectScatterplotPaneWidth,
   selectScatterplotPaneHeight,
   selectShowHistogram,
-} from "./scatterplotSlice";
+} from "./features/scatterplot/scatterplotSlice";
 import { selectHiddenSimulations } from "./features/data/dataSlice";
 import {
   RootState,

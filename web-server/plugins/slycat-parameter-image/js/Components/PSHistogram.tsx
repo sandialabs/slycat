@@ -34,7 +34,7 @@ import {
   selectFontFamily,
   selectShowGrid,
   selectAutoScale,
-} from "../scatterplotSlice";
+} from "../features/scatterplot/scatterplotSlice";
 import {
   setSelectedSimulations,
   selectSelectedSimulations,

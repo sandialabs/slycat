@@ -9,7 +9,7 @@ import {
   selectXTicks,
   selectYTicks,
 } from "../selectors";
-import { selectShowGrid } from "../scatterplotSlice";
+import { selectShowGrid } from "../features/scatterplot/scatterplotSlice";
 
 type PSScatterplotGridProps = {};
 
