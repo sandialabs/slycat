@@ -10,7 +10,7 @@ import { selectHiddenSimulations } from "./features/data/dataSlice";
 import { RootState, VariableRangesType, AxesVariablesType } from "./store";
 import { ColumnTypesType, ValuesType, TableStatisticsType } from "./features/derived/derivedSlice";
 import { parseDate } from "js/slycat-dates";
-import { selectVariableAliases } from "./features/derived/derivedSlice";
+import { selectVariableAliases, selectXValues, selectYValues } from "./features/derived/derivedSlice";
 // Constants
 const X_AXIS_TICK_LABEL_HEIGHT = 40;
 const X_AXIS_MIN_WIDTH = 100;
@@ -26,8 +26,6 @@ export const selectScatterplotMarginLeft = (state: RootState) => state.scatterpl
 export const selectScatterplotMarginRight = (state: RootState) => state.scatterplot_margin.right;
 export const selectScatterplotMarginTop = (state: RootState) => state.scatterplot_margin.top;
 export const selectScatterplotMarginBottom = (state: RootState) => state.scatterplot_margin.bottom;
-export const selectXValues = (state: RootState) => state.derived.xValues;
-export const selectYValues = (state: RootState) => state.derived.yValues;
 const selectVariableRanges = (state: RootState) => state.variableRanges;
 export const selectColormap = (state: RootState) => state.colormap;
 export const selectXIndex = (state: RootState) => state.x_index;

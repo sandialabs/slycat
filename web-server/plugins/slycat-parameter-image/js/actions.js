@@ -20,10 +20,6 @@ export const ADJUST_THREE_D_VARIABLE_DATA_RANGE = "ADJUST_THREE_D_VARIABLE_DATA_
 export const SET_THREE_D_VARIABLE_USER_RANGE = "SET_THREE_D_VARIABLE_USER_RANGE";
 export const CLEAR_THREE_D_VARIABLE_USER_RANGE = "CLEAR_THREE_D_VARIABLE_USER_RANGE";
 export const CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES = "CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES";
-export const SET_X_VALUES = "SET_X_VALUES";
-export const SET_Y_VALUES = "SET_Y_VALUES";
-export const SET_V_VALUES = "SET_V_VALUES";
-export const SET_MEDIA_VALUES = "SET_MEDIA_VALUES";
 export const SET_X_INDEX = "SET_X_INDEX";
 export const SET_Y_INDEX = "SET_Y_INDEX";
 export const SET_V_INDEX = "SET_V_INDEX";
@@ -211,22 +207,6 @@ export function clearAllThreeDVariableUserRanges() {
   return {
     type: CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES,
   };
-}
-
-export function setXValues(values) {
-  return { type: SET_X_VALUES, values };
-}
-
-export function setYValues(values) {
-  return { type: SET_Y_VALUES, values };
-}
-
-export function setVValues(values) {
-  return { type: SET_V_VALUES, values };
-}
-
-export function setMediaValues(values) {
-  return { type: SET_MEDIA_VALUES, values };
 }
 
 export function setXIndex(index) {

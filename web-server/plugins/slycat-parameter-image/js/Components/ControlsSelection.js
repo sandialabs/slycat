@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import React from "react";
 import _ from "lodash";
 import "../../css/controls-selection.css";
+import { selectXValues, selectYValues } from "../features/derived/derivedSlice";
 
 class ControlsSelection extends React.PureComponent {
   set_value = (variable, variableIndex, value, alert) => {
@@ -362,8 +363,8 @@ const mapStateToProps = (state, ownProps) => {
     variableRanges: state.variableRanges,
     open_media: state.open_media,
     media_index: state.media_index,
-    xValues: state.derived.xValues,
-    yValues: state.derived.yValues,
+    xValues: selectXValues(state),
+    yValues: selectYValues(state),
     axes_variables_scale: state.axesVariables,
   };
 };

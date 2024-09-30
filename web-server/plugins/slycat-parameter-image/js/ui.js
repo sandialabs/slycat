@@ -68,12 +68,12 @@ import data_reducer, {
 } from "./features/data/dataSlice";
 import derived_reducer, {
   SLICE_NAME as DERIVED_SLICE_NAME,
+  xValuesSet,
+  yValuesSet,
+  vValuesSet,
+  mediaValuesSet,
 } from "./features/derived/derivedSlice";
 import {
-  setXValues,
-  setYValues,
-  setVValues,
-  setMediaValues,
   setXIndex,
   setYIndex,
   setVIndex,
@@ -488,15 +488,19 @@ $(document).ready(function () {
                 serializableCheck: {
                   // Ignore these action types
                   ignoredActions: [
-                    "SET_X_VALUES",
-                    "SET_Y_VALUES",
-                    "SET_V_VALUES",
+                    `${DERIVED_SLICE_NAME}/xValuesSet`,
+                    `${DERIVED_SLICE_NAME}/yValuesSet`,
+                    `${DERIVED_SLICE_NAME}/vValuesSet`,
                     "UPDATE_THREE_D_CAMERAS",
                   ],
                   // Ignore these field paths in all actions
                   // ignoredActionPaths: ["meta.arg", "payload.timestamp"],
                   // Ignore these paths in the state
-                  ignoredPaths: ["derived.xValues", "derived.yValues", "derived.vValues"],
+                  ignoredPaths: [
+                    `${DERIVED_SLICE_NAME}.xValues`,
+                    `${DERIVED_SLICE_NAME}.yValues`,
+                    `${DERIVED_SLICE_NAME}.vValues`,
+                  ],
                 },
               }).concat(throttleMiddleware),
             devTools: process.env.NODE_ENV !== "production",
@@ -778,7 +782,7 @@ $(document).ready(function () {
           // Wait until the redux store has been created
           createReduxStorePromise.then(() => {
             // Dispatch update to x values in Redux
-            window.store.dispatch(setXValues(x));
+            window.store.dispatch(xValuesSet(x));
             setup_scatterplot();
             setup_table();
           });
@@ -800,7 +804,7 @@ $(document).ready(function () {
           // Wait until the redux store has been created
           createReduxStorePromise.then(() => {
             // Dispatch update to y values in Redux
-            window.store.dispatch(setYValues(y));
+            window.store.dispatch(yValuesSet(y));
             setup_scatterplot();
             setup_table();
           });
@@ -827,8 +831,8 @@ $(document).ready(function () {
         // Wait until the redux store has been created
         createReduxStorePromise.then(() => {
           // Dispatch update to v values in Redux
-          window.store.dispatch(setVValues(v));
-          // console.log(`window.store.dispatch(setVValues(v));`);
+          window.store.dispatch(vValuesSet(v));
+          // console.log(`window.store.dispatch(vValuesSet(v));`);
           update_current_colorscale();
           setup_scatterplot();
           setup_table();
@@ -848,7 +852,7 @@ $(document).ready(function () {
             // Wait until the redux store has been created
             createReduxStorePromise.then(() => {
               // Dispatch update to v values in Redux
-              window.store.dispatch(setVValues(v));
+              window.store.dispatch(vValuesSet(v));
               update_current_colorscale();
               setup_scatterplot();
               setup_table();
@@ -892,7 +896,7 @@ $(document).ready(function () {
             // Wait until the redux store has been created
             createReduxStorePromise.then(() => {
               // Dispatch update to media values in Redux
-              window.store.dispatch(setMediaValues(images));
+              window.store.dispatch(mediaValuesSet(images));
               setup_scatterplot();
               //setup_table();
             });
@@ -1286,7 +1290,7 @@ $(document).ready(function () {
           // Passing new images to scatterplot
           $("#scatterplot").scatterplot("option", "images", images);
           // Dispatch update to media values in Redux
-          window.store.dispatch(setMediaValues(images));
+          window.store.dispatch(mediaValuesSet(images));
         },
         error: artifact_missing,
       });
@@ -1294,7 +1298,7 @@ $(document).ready(function () {
       // Passing new images to scatterplot
       $("#scatterplot").scatterplot("option", "images", images);
       // Dispatch update to media values in Redux
-      window.store.dispatch(setMediaValues(images));
+      window.store.dispatch(mediaValuesSet(images));
     }
 
     // Log changes to and bookmark the images variable ...
@@ -1322,7 +1326,7 @@ $(document).ready(function () {
           v = v[0];
         }
         // Dispatch update to v values in Redux
-        window.store.dispatch(setVValues(v));
+        window.store.dispatch(vValuesSet(v));
         update_widgets_after_color_variable_change();
       },
       error: artifact_missing,
@@ -1621,7 +1625,7 @@ $(document).ready(function () {
       success: function (result) {
         const x = table_metadata["column-types"][variable] == "string" ? result[0] : result;
         // Dispatch update to x values in Redux
-        window.store.dispatch(setXValues(x));
+        window.store.dispatch(xValuesSet(x));
         $("#scatterplot").scatterplot("option", {
           x_index: variable,
           x_string: table_metadata["column-types"][variable] == "string",
@@ -1643,7 +1647,7 @@ $(document).ready(function () {
       success: function (result) {
         const y = table_metadata["column-types"][variable] == "string" ? result[0] : result;
         // Dispatch update to y values in Redux
-        window.store.dispatch(setYValues(y));
+        window.store.dispatch(yValuesSet(y));
         $("#scatterplot").scatterplot("option", {
           y_index: variable,
           y_string: table_metadata["column-types"][variable] == "string",

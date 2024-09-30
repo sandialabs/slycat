@@ -85,6 +85,18 @@ export const derivedSlice = createSlice({
     variableAliasesAllRemoved: (state) => {
       state.variableAliases = {};
     },
+    xValuesSet: (state, action: PayloadAction<ValuesType>) => {
+      state.xValues = action.payload;
+    },
+    yValuesSet: (state, action: PayloadAction<ValuesType>) => {
+      state.yValues = action.payload;
+    },
+    vValuesSet: (state, action: PayloadAction<ValuesType>) => {
+      state.vValues = action.payload;
+    },
+    mediaValuesSet: (state, action: PayloadAction<string[]>) => {
+      state.mediaValues = action.payload;
+    },
   },
 });
 
@@ -93,9 +105,16 @@ export const {
   variableAliasChanged,
   variableAliasRemoved,
   variableAliasesAllRemoved,
+  xValuesSet,
+  yValuesSet,
+  vValuesSet,
+  mediaValuesSet,
 } = derivedSlice.actions;
 
 // Selectors
 export const selectVariableAliases = (state: RootState) => state[SLICE_NAME].variableAliases;
-
+export const selectXValues = (state: RootState) => state[SLICE_NAME].xValues;
+export const selectYValues = (state: RootState) => state[SLICE_NAME].yValues;
+export const selectVValues = (state: RootState) => state[SLICE_NAME].vValues;
+export const selectMediaValues = (state: RootState) => state[SLICE_NAME].mediaValues;
 export default derivedSlice.reducer;

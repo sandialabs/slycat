@@ -21,10 +21,6 @@ import {
   SET_THREE_D_VARIABLE_USER_RANGE,
   CLEAR_THREE_D_VARIABLE_USER_RANGE,
   CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES,
-  SET_X_VALUES,
-  SET_Y_VALUES,
-  SET_V_VALUES,
-  SET_MEDIA_VALUES,
   SET_X_INDEX,
   SET_Y_INDEX,
   SET_V_INDEX,
@@ -333,38 +329,6 @@ export default function ps_reducer(state = initialState, action) {
     case CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES:
       return Object.assign({}, state, {
         three_d_variable_user_ranges: {},
-      });
-
-    case SET_X_VALUES:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          xValues: action.values.slice(0),
-        },
-      });
-
-    case SET_Y_VALUES:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          yValues: action.values.slice(0),
-        },
-      });
-
-    case SET_V_VALUES:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          vValues: action.values.slice(0),
-        },
-      });
-
-    case SET_MEDIA_VALUES:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          mediaValues: action.values.slice(0),
-        },
       });
 
     case SET_X_INDEX:
