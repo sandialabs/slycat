@@ -130,7 +130,7 @@ FilterManager.prototype.notify_store_ready = function () {
     watch(
       () => selectVariableAliases(window.store.getState()),
       undefined,
-      _.isEqual
+      _.isEqual,
     )(this.update_variable_aliases),
   );
 
