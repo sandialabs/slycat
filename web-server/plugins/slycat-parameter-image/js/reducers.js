@@ -2,9 +2,6 @@ import {
   CHANGE_FONT_SIZE,
   CHANGE_FONT_FAMILY,
   CHANGE_AXES_VARIABLE_SCALE,
-  CHANGE_VARIABLE_ALIAS_LABEL,
-  REMOVE_VARIABLE_ALIAS_LABEL,
-  REMOVE_ALL_VARIABLE_ALIAS_LABELS,
   CHANGE_CURRENT_FRAME,
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
@@ -90,36 +87,6 @@ export default function ps_reducer(state = initialState, action) {
         axesVariables: Object.assign({}, state.axesVariables, {
           [action.axesVariable]: action.axesScale,
         }),
-      });
-
-    case CHANGE_VARIABLE_ALIAS_LABEL:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          variableAliases: {
-            ...state.derived.variableAliases,
-            [action.aliasVariable]: action.aliasLabel,
-          },
-        },
-      });
-
-    case REMOVE_VARIABLE_ALIAS_LABEL:
-      let variableAliasesClone = Object.assign({}, state.derived.variableAliases);
-      delete variableAliasesClone[action.aliasVariable];
-
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          variableAliases: variableAliasesClone,
-        },
-      });
-
-    case REMOVE_ALL_VARIABLE_ALIAS_LABELS:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          variableAliases: {},
-        },
       });
 
     case CHANGE_CURRENT_FRAME:

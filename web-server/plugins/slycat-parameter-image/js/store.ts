@@ -25,6 +25,11 @@ import {
   initialState as dataInitialState,
   DataState,
 } from "./features/data/dataSlice";
+import {
+  SLICE_NAME as DERIVED_SLICE_NAME,
+  initialState as derivedInitialState,
+  DerivedState,
+} from "./features/derived/derivedSlice";
 
 export type AxisType = "Linear" | "Log" | "Date & Time";
 
@@ -37,52 +42,6 @@ export type VariableRangesType = {
     min: number;
     max: number;
   };
-};
-
-export type VariableAliasesType = {
-  [key: string]: string;
-};
-
-export type TableStatisticsType = {
-  min: number | string;
-  max: number | string;
-}[];
-
-export type ValuesType =
-  | Array<string>
-  | Array<number | undefined>
-  | Array<Date | undefined>
-  | Float64Array;
-
-export type XYPairsType = {
-  x: number;
-  y: number;
-  label: string;
-}[];
-
-export type DerivedStateType = {
-  xValues: ValuesType;
-  yValues: ValuesType;
-  vValues: ValuesType;
-  table_metadata: TableMetadataType;
-  table_statistics: TableStatisticsType;
-  variableAliases: VariableAliasesType;
-  mediaValues: string[];
-  media_columns: number[];
-  rating_variables: number[];
-  xy_pairs: XYPairsType;
-  // ToDo: Add more specific types for these
-  three_d_colorby_range: {};
-  three_d_colorby_legends: {};
-};
-
-export type ColumnTypesType = "string" | "float64" | "int64";
-
-export type TableMetadataType = {
-  "row-count": number;
-  "column-count": number;
-  "column-names": string[];
-  "column-types": ColumnTypesType[];
 };
 
 export type OpenMediaType = {
@@ -147,7 +106,8 @@ export type RootState = {
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
   [TABLE_SLICE_NAME]: TableState;
   [DATA_SLICE_NAME]: DataState;
-  derived: DerivedStateType;
+  [DERIVED_SLICE_NAME]: DerivedState;
+  derived: DerivedState;
   media_index: number;
 };
 
@@ -190,6 +150,7 @@ export const initialState: RootState = {
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
   [TABLE_SLICE_NAME]: { ...tableInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
+  [DERIVED_SLICE_NAME]: { ...derivedInitialState },
   derived: {
     variableAliases: {},
     xValues: [],

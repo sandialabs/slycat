@@ -26,6 +26,7 @@ import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import _ from "lodash";
 import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
+import { selectVariableAliases } from "./features/derived/derivedSlice";
 
 $.widget("parameter_image.table", {
   options: {
@@ -97,9 +98,11 @@ $.widget("parameter_image.table", {
     }
 
     function get_column_name(variable) {
+      // console.log("get_column_name", variable);
       let name;
-      if (window.store.getState().derived.variableAliases[variable] !== undefined) {
-        name = window.store.getState().derived.variableAliases[variable];
+      const variableAliases = selectVariableAliases(window.store.getState());
+      if (variableAliases[variable] !== undefined) {
+        name = variableAliases[variable];
       } else {
         name = self.options.metadata["column-names"][variable];
       }
@@ -376,9 +379,13 @@ $.widget("parameter_image.table", {
       // console.log(`Call to update_variable_aliases in parameter-image-table.js took ${t1 - t0} milliseconds.`);
     };
 
-    // Subscribing to changes in derived.variableAliases
+    // Subscribing to changes in variableAliases
     window.store.subscribe(
-      watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases),
+      watch(
+        () => selectVariableAliases(window.store.getState()),
+        undefined,
+        _.isEqual,
+      )(update_variable_aliases),
     );
   },
 

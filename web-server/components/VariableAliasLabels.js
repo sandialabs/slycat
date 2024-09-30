@@ -1,5 +1,5 @@
 import React from "react";
-import css from "css/slycat-variable-alias-labels.scss";
+import "css/slycat-variable-alias-labels.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -32,6 +32,7 @@ export default class VariableAliasLabels extends React.PureComponent {
                   alias={this.props.variableAliases[index] ? this.props.variableAliases[index] : ""}
                   userInput={userInput}
                   onChange={this.props.onChange}
+                  onRemove={this.props.onRemove}
                 />
               );
             })}
@@ -47,7 +48,7 @@ class VariableAliasLabelsRow extends React.PureComponent {
     let index = event.currentTarget.name;
     let input = document.querySelector(`.slycat-variable-alias-labels input[name='${index}'`);
     input.value = "";
-    this.props.onChange(event);
+    this.props.onRemove({ aliasVariable: index, aliasLabel: "" });
   };
 
   render() {
@@ -66,7 +67,12 @@ class VariableAliasLabelsRow extends React.PureComponent {
               maxLength="256"
               name={this.props.index}
               value={this.props.alias}
-              onChange={this.props.onChange}
+              onChange={(event) => {
+                this.props.onChange({
+                  aliasVariable: this.props.index,
+                  aliasLabel: event.target.value,
+                });
+              }}
             />
             <div className="input-group-append">
               <button

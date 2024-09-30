@@ -3,8 +3,6 @@ import {
   changeFontSize,
   changeFontFamily,
   changeAxesVariableScale,
-  changeVariableAliasLabels,
-  clearAllVariableAliasLabels,
   setVariableRange,
   clearVariableRange,
   clearAllVariableRanges,
@@ -12,6 +10,12 @@ import {
   clearThreeDVariableUserRange,
   clearAllThreeDVariableUserRanges,
 } from "../actions";
+import {
+  variableAliasChanged,
+  variableAliasRemoved,
+  variableAliasesAllRemoved,
+  selectVariableAliases,
+} from "../features/derived/derivedSlice";
 import React, { useState } from "react";
 import ControlsButton from "components/ControlsButton";
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
@@ -205,7 +209,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
       title: "Clear All Variable Alias Labels",
       message: "This will erase all labels that have been entered.",
       ok: function () {
-        self.props.clearAllVariableAliasLabels();
+        self.props.variableAliasesAllRemoved();
       },
       cancel: function () {
         // Do nothing if cancel. The confirmation dialog will just close.
@@ -577,7 +581,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       <VariableAliasLabels
                         variableAliases={this.props.variable_aliases}
                         metadata={this.props.metadata}
-                        onChange={this.props.changeVariableAliasLabels}
+                        onChange={this.props.variableAliasChanged}
+                        onRemove={this.props.variableAliasRemoved}
                       />
                     </div>
                   )}
@@ -623,7 +628,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const variable_aliases = state.derived.variableAliases;
+  const variable_aliases = selectVariableAliases(state);
 
   const getVariableAlias = (index) => {
     if (variable_aliases[index] !== undefined) {
@@ -681,8 +686,9 @@ export default connect(mapStateToProps, {
   changeFontSize,
   changeFontFamily,
   changeAxesVariableScale,
-  changeVariableAliasLabels,
-  clearAllVariableAliasLabels,
+  variableAliasChanged,
+  variableAliasRemoved,
+  variableAliasesAllRemoved,
   setVariableRange,
   clearVariableRange,
   clearAllVariableRanges,

@@ -28,6 +28,7 @@ import {
   setManuallyHiddenSimulations,
   setSelectedSimulations,
 } from "../features/data/dataSlice";
+import { selectVariableAliases } from "../features/derived/derivedSlice";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
@@ -37,9 +38,8 @@ import {
   VariableRangesType,
   ActiveFiltersType,
   OpenMediaType,
-  VariableAliasesType,
-  TableMetadataType,
 } from "../store";
+import { TableMetadataType, VariableAliasesType } from "../features/derived/derivedSlice";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 import _ from "lodash";
 
@@ -66,7 +66,7 @@ interface PSControlsBarProps {
   active_filters: ActiveFiltersType;
   selected_simulations: number[];
   open_media: OpenMediaType;
-  variable_aliases: VariableAliasesType;
+  variable_aliases: ReturnType<typeof selectVariableAliases>;
   xy_pairs_items: { key: string; name: string }[];
   xy_pairs_indexes: number[];
   show_histogram: boolean;
@@ -697,10 +697,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
             )}
             {any_threeD_open && (
               <ControlsGroup id="threeD-controls" class="btn-group ml-3">
-                <ControlsThreeD
-                  any_threeD_open={any_threeD_open}
-                  button_style={button_style}
-                />
+                <ControlsThreeD any_threeD_open={any_threeD_open} button_style={button_style} />
               </ControlsGroup>
             )}
             <ControlsGroup id="color-switcher" class="btn-group ml-3">
@@ -748,7 +745,7 @@ const mapStateToProps = (state: RootState) => {
     media_columns: state.derived.media_columns,
     rating_variables: state.derived.rating_variables,
     open_media: state.open_media,
-    variable_aliases: state.derived.variableAliases,
+    variable_aliases: selectVariableAliases(state),
     active_filters: state.active_filters,
     sync_scaling: state.sync_scaling,
     selected_simulations: state.data.selected_simulations,

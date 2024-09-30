@@ -37,6 +37,7 @@ import {
   selectYColumnName,
   selectVColumnName,
 } from "./selectors";
+import { selectVariableAliases } from "./features/derived/derivedSlice";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
@@ -680,13 +681,19 @@ $.widget("parameter_image.scatterplot", {
       { objectPath: "unselected_border_size", callback: update_point_border_size },
       { objectPath: "selected_point_size", callback: update_point_border_size },
       { objectPath: "selected_border_size", callback: update_point_border_size },
-      { objectPath: "derived.variableAliases", callback: update_scatterplot_labels },
+      {
+        stateFunction: () => selectVariableAliases(window.store.getState()),
+        callback: update_scatterplot_labels,
+      },
       { objectPath: "open_media", callback: update_media_sizes },
       { objectPath: "scatterplot_margin", callback: update_scatterplot_margin },
     ].forEach((subscription) => {
+      const stateFunction = subscription.stateFunction
+        ? subscription.stateFunction
+        : window.store.getState;
       window.store.subscribe(
         watch(
-          window.store.getState,
+          stateFunction,
           subscription.objectPath,
           _.isEqual,
         )((newVal, oldVal, objectPath) => {

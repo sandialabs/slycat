@@ -1,9 +1,6 @@
 export const CHANGE_FONT_SIZE = "CHANGE_FONT_SIZE";
 export const CHANGE_FONT_FAMILY = "CHANGE_FONT_FAMILY";
 export const CHANGE_AXES_VARIABLE_SCALE = "CHANGE_AXES_VARIABLE_SCALE";
-export const CHANGE_VARIABLE_ALIAS_LABEL = "CHANGE_VARIABLE_ALIAS_LABEL";
-export const REMOVE_VARIABLE_ALIAS_LABEL = "REMOVE_VARIABLE_ALIAS_LABEL";
-export const REMOVE_ALL_VARIABLE_ALIAS_LABELS = "REMOVE_ALL_VARIABLE_ALIAS_LABELS";
 export const CHANGE_CURRENT_FRAME = "CHANGE_CURRENT_FRAME";
 export const CHANGE_THREED_COLORMAP = "CHANGE_THREED_COLORMAP";
 export const UPDATE_THREE_D_COLORBY = "UPDATE_THREE_D_COLORBY";
@@ -76,25 +73,6 @@ export function changeAxesVariableScale(event) {
     axesVariable: event.currentTarget.name,
     axesScale: event.currentTarget.value,
   };
-}
-
-export function changeVariableAliasLabels(event) {
-  let label = event.currentTarget.value;
-  if (label == "") {
-    return {
-      type: REMOVE_VARIABLE_ALIAS_LABEL,
-      aliasVariable: event.currentTarget.name,
-    };
-  }
-  return {
-    type: CHANGE_VARIABLE_ALIAS_LABEL,
-    aliasVariable: event.currentTarget.name,
-    aliasLabel: label,
-  };
-}
-
-export function clearAllVariableAliasLabels() {
-  return { type: REMOVE_ALL_VARIABLE_ALIAS_LABELS };
 }
 
 export function changeCurrentFrame(currentFrame) {

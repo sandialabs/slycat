@@ -66,6 +66,9 @@ import data_reducer, {
   setSelectedSimulations,
   setHiddenSimulations,
 } from "./features/data/dataSlice";
+import derived_reducer, {
+  SLICE_NAME as DERIVED_SLICE_NAME,
+} from "./features/derived/derivedSlice";
 import {
   setXValues,
   setYValues,
@@ -475,6 +478,7 @@ $(document).ready(function () {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
             [TABLE_SLICE_NAME]: table_reducer,
             [DATA_SLICE_NAME]: data_reducer,
+            [DERIVED_SLICE_NAME]: derived_reducer,
           });
 
           window.store = configureStore({

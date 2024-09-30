@@ -8,6 +8,7 @@ import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import { setActiveFilters } from "./actions";
+import { selectVariableAliases } from "./features/derived/derivedSlice";
 import watch from "redux-watch";
 
 function FilterManager(
@@ -18,7 +19,7 @@ function FilterManager(
   output_columns,
   image_columns,
   rating_columns,
-  category_columns
+  category_columns,
 ) {
   var self = this;
 
@@ -44,8 +45,9 @@ function FilterManager(
   // if it exists. Otherwise just returns the variable's column name from metadata.
   self.get_variable_label = function (variable) {
     let label;
-    if (window.store.getState().derived.variableAliases[variable] !== undefined) {
-      label = window.store.getState().derived.variableAliases[variable];
+    const variableAliases = selectVariableAliases(window.store.getState());
+    if (variableAliases[variable] !== undefined) {
+      label = variableAliases[variable];
     } else {
       label = self.table_metadata["column-names"][variable];
     }
@@ -123,9 +125,13 @@ FilterManager.prototype.notify_store_ready = function () {
   // console.debug(`FilterManager notify_store_ready`);
   this.store_ready = true;
 
-  // Subscribing to changes in derived.variableAliases
+  // Subscribing to changes in variableAliases
   window.store.subscribe(
-    watch(window.store.getState, "derived.variableAliases", _.isEqual)(this.update_variable_aliases)
+    watch(
+      () => selectVariableAliases(window.store.getState()),
+      undefined,
+      _.isEqual
+    )(this.update_variable_aliases),
   );
 
   this.build_sliders();
@@ -245,7 +251,7 @@ FilterManager.prototype.build_sliders = function () {
       self.output_columns,
       self.rating_columns,
       self.category_columns,
-      self.other_columns
+      self.other_columns,
     );
     var numeric_variables = [];
     for (var i = 0; i < self.table_metadata["column-count"]; i++) {
@@ -442,9 +448,10 @@ FilterManager.prototype.build_sliders = function () {
       vm.availableFilters = ko.observableArray(
         vm.allFilters.slice(0).sort(function (one, two) {
           return one.order() < two.order() ? -1 : 1;
-        })
+        }),
       );
-      vm.hideFilters = window.store.getState().derived.embed && window.store.getState().derived.hideFilters;
+      vm.hideFilters =
+        window.store.getState().derived.embed && window.store.getState().derived.hideFilters;
 
       if (vm.activeFilters().length > 0 && !vm.hideFilters) {
         self.layout.open("west");
