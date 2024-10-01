@@ -8,7 +8,11 @@ import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import { setActiveFilters } from "./actions";
-import { selectVariableAliases } from "./features/derived/derivedSlice";
+import {
+  selectVariableAliases,
+  selectEmbed,
+  selectHideFilters,
+} from "./features/derived/derivedSlice";
 import watch from "redux-watch";
 
 function FilterManager(
@@ -451,7 +455,7 @@ FilterManager.prototype.build_sliders = function () {
         }),
       );
       vm.hideFilters =
-        window.store.getState().derived.embed && window.store.getState().derived.hideFilters;
+        selectEmbed(window.store.getState()) && selectHideFilters(window.store.getState());
 
       if (vm.activeFilters().length > 0 && !vm.hideFilters) {
         self.layout.open("west");

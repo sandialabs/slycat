@@ -107,7 +107,6 @@ export type RootState = {
   [TABLE_SLICE_NAME]: TableState;
   [DATA_SLICE_NAME]: DataState;
   [DERIVED_SLICE_NAME]: DerivedState;
-  derived: DerivedState;
   media_index: number;
 };
 
@@ -151,23 +150,4 @@ export const initialState: RootState = {
   [TABLE_SLICE_NAME]: { ...tableInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
   [DERIVED_SLICE_NAME]: { ...derivedInitialState },
-  derived: {
-    variableAliases: {},
-    xValues: [],
-    yValues: [],
-    vValues: [],
-    mediaValues: [],
-    three_d_colorby_range: {},
-    three_d_colorby_legends: {},
-    media_columns: [],
-    rating_variables: [],
-    xy_pairs: [],
-    table_metadata: {
-      "row-count": 0,
-      "column-count": 0,
-      "column-names": [],
-      "column-types": [],
-    },
-    table_statistics: [],
-  },
 };

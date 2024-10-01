@@ -15,8 +15,10 @@ import {
   variableAliasRemoved,
   variableAliasesAllRemoved,
   selectVariableAliases,
+  selectTableStatistics,
+  selectUserRole,
 } from "../features/derived/derivedSlice";
-import React, { useState } from "react";
+import React from "react";
 import ControlsButton from "components/ControlsButton";
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import VariableAliasLabels from "components/VariableAliasLabels";
@@ -645,8 +647,8 @@ const mapStateToProps = (state, ownProps) => {
           key: index,
           index: indexCounter++,
           name: getVariableAlias(index),
-          min: state.derived.table_statistics?.[index]?.min,
-          max: state.derived.table_statistics?.[index]?.max,
+          min: selectTableStatistics(state)?.[index]?.min,
+          max: selectTableStatistics(state)?.[index]?.max,
         },
       ];
     }
@@ -677,8 +679,8 @@ const mapStateToProps = (state, ownProps) => {
     numericScatterplotVariables: numericScatterplotVariables,
     threeDVariables: threeDVariables,
     three_d_variable_user_ranges: state.three_d_variable_user_ranges,
-    userRole: state.derived.userRole,
-    table_statistics: state.derived.table_statistics,
+    userRole: selectUserRole(state),
+    table_statistics: selectTableStatistics(state),
   };
 };
 

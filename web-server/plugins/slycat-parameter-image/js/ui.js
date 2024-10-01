@@ -72,16 +72,16 @@ import derived_reducer, {
   yValuesSet,
   vValuesSet,
   mediaValuesSet,
+  userRoleSet,
+  tableStatisticsSet,
+  tableMetadataSet,
+  selectEmbed,
+  selectHideControls,
+  selectHideTable,
+  selectHideScatterplot,
+  selectHideFilters,
 } from "./features/derived/derivedSlice";
-import {
-  setXIndex,
-  setYIndex,
-  setVIndex,
-  setMediaIndex,
-  setUserRole,
-  setTableStatistics,
-  setTableMetadata,
-} from "./actions";
+import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
 
 import { setSyncCameras } from "./vtk-camera-synchronizer";
 
@@ -448,18 +448,19 @@ $(document).ready(function () {
             },
           };
 
+          const URIQuery = URI(window.location).query(true);
           const derivedState = {
-            derived: {
-              variableAliases: variable_aliases,
+            [DERIVED_SLICE_NAME]: {
               media_columns: image_columns,
               rating_variables: rating_columns,
+              variableAliases: variable_aliases,
               xy_pairs: xy_pairs,
               // Set "embed" to true if the "embed" query parameter is present
-              embed: URI(window.location).query(true).embed !== undefined,
-              hideControls: URI(window.location).query(true).hideControls !== undefined,
-              hideTable: URI(window.location).query(true).hideTable !== undefined,
-              hideScatterplot: URI(window.location).query(true).hideScatterplot !== undefined,
-              hideFilters: URI(window.location).query(true).hideFilters !== undefined,
+              embed: URIQuery.embed !== undefined,
+              hideControls: URIQuery.hideControls !== undefined,
+              hideTable: URIQuery.hideTable !== undefined,
+              hideScatterplot: URIQuery.hideScatterplot !== undefined,
+              hideFilters: URIQuery.hideFilters !== undefined,
             },
           };
 
@@ -518,7 +519,7 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined },
+                { ...window.store.getState(), [DERIVED_SLICE_NAME]: undefined },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
@@ -551,32 +552,32 @@ $(document).ready(function () {
           // Get the role from slycat-navbar component
           const relation = navbar.relation();
           // Save it to redux state
-          window.store.dispatch(setUserRole(relation));
+          window.store.dispatch(userRoleSet(relation));
 
           // Add the "slycatEmbedded" class to the body if state has embed set to true
-          if (window.store.getState().derived.embed) {
+          if (selectEmbed(window.store.getState())) {
             document.body.classList.add("slycatEmbedded");
             // Add the "hideControls" class to the body if state has hideControls set to true
-            if (window.store.getState().derived.hideControls) {
+            if (selectHideControls(window.store.getState())) {
               document.body.classList.add("hideControls");
               layout.hide("north");
             }
             // Add the "hideTable" class to the body if state has hideTable set to true
-            if (window.store.getState().derived.hideTable) {
+            if (selectHideTable(window.store.getState())) {
               document.body.classList.add("hideTable");
               layout.hide("south");
             }
             // Add the "hideScatterplot" class to the body if state has hideScatterplot set to true.
             // We don't currently support hiding the scatterplot in embedded mode, but we can add the class
             // to the body in case we want to support it in the future.
-            if (window.store.getState().derived.hideScatterplot) {
+            if (selectHideScatterplot(window.store.getState())) {
               document.body.classList.add("hideScatterplot");
               // Neither of these work to hide the scatterplot pane because it's the center pane.
               // layout.hide("center");
               // layout.close("center");
             }
             // Add the "hideFilters" class to the body if state has hideFilters set to true
-            if (window.store.getState().derived.hideFilters) {
+            if (selectHideFilters(window.store.getState())) {
               document.body.classList.add("hideFilters");
               layout.hide("west");
             }
@@ -602,7 +603,7 @@ $(document).ready(function () {
     Promise.all([getTableMetadataPromise, createReduxStorePromise]).then(() => {
       // Dispatch update to table_metadata in Redux
       // console.debug(`getTableMetadataPromise`);
-      window.store.dispatch(setTableMetadata(table_metadata));
+      window.store.dispatch(tableMetadataSet(table_metadata));
     });
 
     // Wait until the redux store has been created
@@ -1678,7 +1679,7 @@ $(document).ready(function () {
         // Wait until the redux store has been created
         createReduxStorePromise.then(() => {
           // Update table_statistics in Redux
-          window.store.dispatch(setTableStatistics(table_statistics));
+          window.store.dispatch(tableStatisticsSet(table_statistics));
         });
         callback(table_statistics);
       },

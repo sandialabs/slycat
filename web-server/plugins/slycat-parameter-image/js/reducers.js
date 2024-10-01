@@ -5,9 +5,6 @@ import {
   CHANGE_CURRENT_FRAME,
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
-  UPDATE_THREE_D_COLORBY_OPTIONS,
-  SET_THREE_D_COLORBY_RANGE,
-  SET_THREE_D_COLORBY_LEGEND,
   UPDATE_THREE_D_CAMERAS,
   TOGGLE_THREE_D_SYNC,
   SET_UNSELECTED_POINT_SIZE,
@@ -31,9 +28,6 @@ import {
   SET_ACTIVE_FILTERS,
   TOGGLE_SYNC_SCALING,
   TOGGLE_SYNC_THREE_D_COLORVAR,
-  SET_USER_ROLE,
-  SET_TABLE_STATISTICS,
-  SET_TABLE_METADATA,
   SET_VIDEO_SYNC,
   SET_VIDEO_SYNC_TIME,
   SET_SCATTERPLOT_MARGIN,
@@ -53,7 +47,6 @@ import {
 } from "components/ScatterplotOptions";
 
 import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
-import { AnimationActionLoopStyles } from "three";
 import _ from "lodash";
 
 const initialState = {
@@ -101,50 +94,6 @@ export default function ps_reducer(state = initialState, action) {
           ...state.three_d_colorvars,
           // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
           [action.uid]: action.colorBy,
-        },
-      });
-
-    case UPDATE_THREE_D_COLORBY_OPTIONS:
-      // console.log('UPDATE_THREE_D_COLORBY_OPTIONS');
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          three_d_colorby_options: {
-            ...state.derived.three_d_colorby_options,
-            [action.uri]: _.cloneDeep(action.options),
-          },
-        },
-      });
-
-    case SET_THREE_D_COLORBY_RANGE:
-      // console.log('SET_THREE_D_COLORBY_RANGE');
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          three_d_colorby_range: {
-            ...state.derived.three_d_colorby_range,
-            [action.uri]: {
-              ...state.derived.three_d_colorby_range[action.uri],
-              // action.range is an array, so we clone it to prevent the code that passed it from updating it
-              [action.colorBy]: action.range.slice(0),
-            },
-          },
-        },
-      });
-
-    case SET_THREE_D_COLORBY_LEGEND:
-      // console.log('SET_THREE_D_COLORBY_LEGEND');
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          three_d_colorby_legends: {
-            ...state.derived.three_d_colorby_legends,
-            [action.uid]: {
-              ...state.derived.three_d_colorby_legends[action.uid],
-              width: action.width,
-              height: action.height,
-            },
-          },
         },
       });
 
@@ -442,30 +391,6 @@ export default function ps_reducer(state = initialState, action) {
     case TOGGLE_SYNC_THREE_D_COLORVAR:
       return Object.assign({}, state, {
         sync_threeD_colorvar: !state.sync_threeD_colorvar,
-      });
-
-    case SET_USER_ROLE:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          userRole: action.role,
-        },
-      });
-
-    case SET_TABLE_STATISTICS:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          table_statistics: action.table_statistics.slice(0),
-        },
-      });
-
-    case SET_TABLE_METADATA:
-      return Object.assign({}, state, {
-        derived: {
-          ...state.derived,
-          table_metadata: _.cloneDeep(action.table_metadata),
-        },
       });
 
     case SET_VIDEO_SYNC:

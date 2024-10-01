@@ -40,7 +40,11 @@ export default class ScatterplotLegend extends React.PureComponent {
   setThreeDColorByLegend = () => {
     const bbox = this.legend_group_ref.current.getBBox();
     // console.log(`createAxis for ${this.props.uid} has width ${bbox.width} and height ${bbox.height}`);
-    this.props.setThreeDColorByLegend(this.props.uid, bbox.width, bbox.height);
+    this.props.setThreeDColorByLegend({
+      uid: this.props.uid,
+      width: bbox.width,
+      height: bbox.height,
+    });
   };
 
   render() {

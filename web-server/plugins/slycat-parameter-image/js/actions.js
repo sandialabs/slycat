@@ -4,9 +4,6 @@ export const CHANGE_AXES_VARIABLE_SCALE = "CHANGE_AXES_VARIABLE_SCALE";
 export const CHANGE_CURRENT_FRAME = "CHANGE_CURRENT_FRAME";
 export const CHANGE_THREED_COLORMAP = "CHANGE_THREED_COLORMAP";
 export const UPDATE_THREE_D_COLORBY = "UPDATE_THREE_D_COLORBY";
-export const UPDATE_THREE_D_COLORBY_OPTIONS = "UPDATE_THREE_D_COLORBY_OPTIONS";
-export const SET_THREE_D_COLORBY_RANGE = "SET_THREE_D_COLORBY_RANGE";
-export const SET_THREE_D_COLORBY_LEGEND = "SET_THREE_D_COLORBY_LEGEND";
 export const UPDATE_THREE_D_CAMERAS = "UPDATE_THREE_D_CAMERAS";
 export const TOGGLE_THREE_D_SYNC = "TOGGLE_THREE_D_SYNC";
 export const SET_UNSELECTED_POINT_SIZE = "SET_UNSELECTED_POINT_SIZE";
@@ -30,9 +27,6 @@ export const SET_MEDIA_SIZE_POSITION = "SET_MEDIA_SIZE_POSITION";
 export const SET_ACTIVE_FILTERS = "SET_ACTIVE_FILTERS";
 export const TOGGLE_SYNC_SCALING = "TOGGLE_SYNC_SCALING";
 export const TOGGLE_SYNC_THREE_D_COLORVAR = "TOGGLE_SYNC_THREE_D_COLORVAR";
-export const SET_USER_ROLE = "SET_USER_ROLE";
-export const SET_TABLE_STATISTICS = "SET_TABLE_STATISTICS";
-export const SET_TABLE_METADATA = "SET_TABLE_METADATA";
 export const SET_VIDEO_SYNC = "SET_VIDEO_SYNC";
 export const SET_VIDEO_SYNC_TIME = "SET_VIDEO_SYNC_TIME";
 export const SET_SCATTERPLOT_MARGIN = "SET_SCATTERPLOT_MARGIN";
@@ -90,32 +84,6 @@ export function updateThreeDColorBy(uid, colorBy) {
     type: UPDATE_THREE_D_COLORBY,
     uid,
     colorBy,
-  };
-}
-
-export function updateThreeDColorByOptions(uri, options) {
-  return {
-    type: UPDATE_THREE_D_COLORBY_OPTIONS,
-    uri,
-    options,
-  };
-}
-
-export function setThreeDColorByRange(uri, colorBy, range) {
-  return {
-    type: SET_THREE_D_COLORBY_RANGE,
-    uri,
-    colorBy,
-    range,
-  };
-}
-
-export function setThreeDColorByLegend(uid, width, height) {
-  return {
-    type: SET_THREE_D_COLORBY_LEGEND,
-    uid,
-    width,
-    height,
   };
 }
 
@@ -258,18 +226,6 @@ export function toggleSyncThreeDColorvar() {
   return {
     type: TOGGLE_SYNC_THREE_D_COLORVAR,
   };
-}
-
-export function setUserRole(role) {
-  return { type: SET_USER_ROLE, role };
-}
-
-export function setTableStatistics(table_statistics) {
-  return { type: SET_TABLE_STATISTICS, table_statistics };
-}
-
-export function setTableMetadata(table_metadata) {
-  return { type: SET_TABLE_METADATA, table_metadata };
 }
 
 export function setVideoSync(video_sync) {

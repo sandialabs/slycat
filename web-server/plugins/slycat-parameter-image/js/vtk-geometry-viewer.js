@@ -25,11 +25,8 @@ import { ColorMode, ScalarMode } from "vtk.js/Sources/Rendering/Core/Mapper/Cons
 
 import { addCamera } from "./vtk-camera-synchronizer";
 
-import {
-  updateThreeDColorByOptions,
-  setThreeDColorByRange,
-  adjustThreeDVariableDataRange,
-} from "./actions";
+import { adjustThreeDVariableDataRange } from "./actions";
+import { threeDColorByRangeSet, threeDColorByOptionsSet } from "./features/derived/derivedSlice";
 import _ from "lodash";
 import watch from "redux-watch";
 
@@ -155,7 +152,7 @@ export function load(container, buffer, uri, uid, type) {
         })),
     );
     // Dispatch update to available color by options to redux store
-    window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
+    window.store.dispatch(threeDColorByOptionsSet({ uri: uri, options: colorByOptions }));
 
     // Loop through all color by variables and get their data ranges
     colorByOptions.forEach((element, index) => {
@@ -167,7 +164,9 @@ export function load(container, buffer, uri, uid, type) {
         // Dispatch update to color variable ranges to redux store.
         // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
         window.store.dispatch(adjustThreeDVariableDataRange(element.value, dataRange));
-        window.store.dispatch(setThreeDColorByRange(uri, element.value, dataRange));
+        window.store.dispatch(
+          threeDColorByRangeSet({ uri: uri, colorBy: element.value, range: dataRange }),
+        );
         // If there are any components, look up their ranges and dispatch updates to redux store.
         if (element.components > 1) {
           [...Array(element.components)].forEach((component, componentIndex) => {
@@ -177,7 +176,11 @@ export function load(container, buffer, uri, uid, type) {
               adjustThreeDVariableDataRange(`${element.value}:${componentIndex}`, componentRange),
             );
             window.store.dispatch(
-              setThreeDColorByRange(uri, `${element.value}:${componentIndex}`, componentRange),
+              threeDColorByRangeSet({
+                uri: uri,
+                colorBy: `${element.value}:${componentIndex}`,
+                range: componentRange,
+              }),
             );
           });
         }

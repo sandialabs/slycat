@@ -1,13 +1,13 @@
 import React from "react";
 import { connect } from "react-redux";
 import { changeThreeDColormap, updateThreeDColorBy, toggleThreeDSync } from "../actions";
-import ControlsGroup from "components/ControlsGroup";
 import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsDropdown from "components/ControlsDropdown";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import d3 from "d3";
+import { selectThreeDColorByOptions } from "../features/derived/derivedSlice";
 
 class ControlsThreeD extends React.Component {
   constructor(props) {
@@ -73,15 +73,16 @@ const mapStateToProps = (state) => {
   // Only create color by items if we have color by options
   // and we have a frame currently selected
   // and we have color by options for that frame
+  const threeDColorByOptions = selectThreeDColorByOptions(state);
   if (
-    state.derived.three_d_colorby_options &&
+    threeDColorByOptions &&
     state.currentFrame.uri &&
-    state.derived.three_d_colorby_options[state.currentFrame.uri]
+    threeDColorByOptions[state.currentFrame.uri]
   ) {
     // Sort Color By options.
     // List points data first, then cell data.
     // Within each, list the items alphabetically.
-    color_by_items = _.cloneDeep(state.derived.three_d_colorby_options[state.currentFrame.uri]);
+    color_by_items = _.cloneDeep(threeDColorByOptions[state.currentFrame.uri]);
     // Compare using English locale
     const locale = "en";
     // Make it case and accent insensitive.
@@ -143,7 +144,7 @@ const mapStateToProps = (state) => {
     threeDBackground: d3.rgb(
       state.threeD_background_color[0],
       state.threeD_background_color[1],
-      state.threeD_background_color[2]
+      state.threeD_background_color[2],
     ),
     threeD_sync: state.threeD_sync,
   };

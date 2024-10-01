@@ -8,9 +8,18 @@ import {
 } from "./features/scatterplot/scatterplotSlice";
 import { selectHiddenSimulations } from "./features/data/dataSlice";
 import { RootState, VariableRangesType, AxesVariablesType } from "./store";
-import { ColumnTypesType, ValuesType, TableStatisticsType } from "./features/derived/derivedSlice";
+import {
+  ColumnTypesType,
+  ValuesType,
+  TableStatisticsType,
+  selectVariableAliases,
+  selectXValues,
+  selectYValues,
+  selectTableStatistics,
+  selectColumnTypes,
+  selectColumnNames,
+} from "./features/derived/derivedSlice";
 import { parseDate } from "js/slycat-dates";
-import { selectVariableAliases, selectXValues, selectYValues } from "./features/derived/derivedSlice";
 // Constants
 const X_AXIS_TICK_LABEL_HEIGHT = 40;
 const X_AXIS_MIN_WIDTH = 100;
@@ -32,9 +41,6 @@ export const selectXIndex = (state: RootState) => state.x_index;
 export const selectYIndex = (state: RootState) => state.y_index;
 export const selectVIndex = (state: RootState) => state.v_index;
 export const selectAxesVariables = (state: RootState) => state.axesVariables;
-const selectColumnTypes = (state: RootState) => state.derived.table_metadata["column-types"];
-const selectColumnNames = (state: RootState) => state.derived.table_metadata["column-names"];
-const selectTableStatistics = (state: RootState) => state.derived.table_statistics;
 
 export const selectXColumnType = createSelector(
   selectXIndex,

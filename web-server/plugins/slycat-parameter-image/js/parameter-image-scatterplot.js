@@ -23,7 +23,6 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
-import PlotGrid from "./Components/PlotGrid";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -37,7 +36,7 @@ import {
   selectYColumnName,
   selectVColumnName,
 } from "./selectors";
-import { selectVariableAliases } from "./features/derived/derivedSlice";
+import { selectVariableAliases, selectMediaColumns } from "./features/derived/derivedSlice";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
@@ -1521,7 +1520,7 @@ $.widget("parameter_image.scatterplot", {
       // Get all media columns for all pins that don't have them
       if (missing_media_row_indexes.length) {
         // console.debug(`Found pins with missing media indexes, so about to fix that up.`)
-        let media_columns = window.store.getState().derived.media_columns;
+        let media_columns = selectMediaColumns(window.store.getState());
         let media_columns_hql = media_columns.join("|");
         let rows_hql = missing_media_row_indexes.join("|");
 

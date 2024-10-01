@@ -28,18 +28,19 @@ import {
   setManuallyHiddenSimulations,
   setSelectedSimulations,
 } from "../features/data/dataSlice";
-import { selectVariableAliases } from "../features/derived/derivedSlice";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
 import { toggleShowHistogram, toggleAutoScale } from "../features/scatterplot/scatterplotSlice";
+import { RootState, VariableRangesType, ActiveFiltersType, OpenMediaType } from "../store";
 import {
-  RootState,
-  VariableRangesType,
-  ActiveFiltersType,
-  OpenMediaType,
-} from "../store";
-import { TableMetadataType, VariableAliasesType } from "../features/derived/derivedSlice";
+  TableMetadataType,
+  selectMediaColumns,
+  selectVariableAliases,
+  selectRatingVariables,
+  selectXYPairs,
+  selectTableMetadata,
+} from "../features/derived/derivedSlice";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 import _ from "lodash";
 
@@ -725,7 +726,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
 const mapStateToProps = (state: RootState) => {
   let xy_pairs_indexes: number[] = [];
   let xy_pairs_items: { key: string; name: string }[] = [];
-  state.derived.xy_pairs.forEach((xy_pair) => {
+  selectXYPairs(state).forEach((xy_pair) => {
     xy_pairs_indexes.push(xy_pair.x);
     xy_pairs_indexes.push(xy_pair.y);
     xy_pairs_items.push({
@@ -742,8 +743,8 @@ const mapStateToProps = (state: RootState) => {
     y_index: state.y_index,
     v_index: state.v_index,
     media_index: state.media_index,
-    media_columns: state.derived.media_columns,
-    rating_variables: state.derived.rating_variables,
+    media_columns: selectMediaColumns(state),
+    rating_variables: selectRatingVariables(state),
     open_media: state.open_media,
     variable_aliases: selectVariableAliases(state),
     active_filters: state.active_filters,
@@ -758,7 +759,7 @@ const mapStateToProps = (state: RootState) => {
     colormap: state.colormap,
     show_histogram: state.scatterplot.show_histogram,
     auto_scale: state.scatterplot.auto_scale,
-    metadata: state.derived.table_metadata,
+    metadata: selectTableMetadata(state),
   };
 };
 
