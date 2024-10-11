@@ -97,7 +97,7 @@ function constructor(params) {
       file_key: component.selected_file(),
       parser: component.parser(),
       mid: component.model._id(),
-      aids: "data-table",
+      aids: [["data-table"], component.current_aids()],
 
       success: function (response) {
         var data = JSON.stringify(response);
@@ -351,8 +351,8 @@ function constructor(params) {
   };
 
   component.existing_table = function () {
-    var fileName = component.selected_file;
-    component.current_aids = fileName();
+    var fileName = component.selected_file();
+    component.current_aids(fileName);
     component.get_server_files();
   };
 
