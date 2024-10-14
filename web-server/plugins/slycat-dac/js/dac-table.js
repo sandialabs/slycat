@@ -13,6 +13,7 @@ import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import "../css/slick-dac-theme.css";
 
 import selections from "./dac-manage-selections.js";
+import request from "./dac-request-data.js";
 import d3 from "d3";
 import client from "js/slycat-web-client";
 import URI from "urijs";
@@ -445,33 +446,263 @@ var download_button_callback = function ()
     var defaultFilename = model_name + " Metadata_Table.csv";
     defaultFilename = defaultFilename.replace(/ /g,"_");
 
-	// check if anything is selected
-	if ((filtered_sel.length == 0) && !module.filters_active()) {
+	// check if dialog is already open
+	if (!download_dialog_open) {
 
-		// nothing selected: download entire table
-		write_data_table(vis_sel, defaultFilename);
+		download_dialog_open = true;
 
-	 } else {
+		// something selected, see what user wants to export
+		openCSVSaveChoiceDialog(filtered_sel, vis_sel, defaultFilename);
+	}
 
-        // check if dialog is already open
-        if (!download_dialog_open) {
-
-            download_dialog_open = true;
-
-            // something selected, see what user wants to export
-            openCSVSaveChoiceDialog(filtered_sel, vis_sel, defaultFilename);
-        }
-	 }
- }
+}
 
 // write data table (modified from parameter space model code)
-function write_data_table (rows_to_output, defaultFilename)
+function write_data_table (rows_to_output, defaultFilename, include_data)
 {
-	// convert data table to csv for writing
-	var csvData = convert_to_csv (rows_to_output);
 
-    module.download_data_table (csvData, defaultFilename);
+	// if we don't include data, proceed to download table
+	if (!include_data) {
 
+		// convert data table to csv for writing
+		var csvData = convert_to_csv (rows_to_output);
+		module.download_data_table (csvData, defaultFilename);
+
+	// otherwise, download data and proceed
+	} else {
+
+		// load all time series data (subselect later)
+		$.when(
+			request.get_table("dac-variables-meta", mid),
+			).then(
+				function (var_meta) {
+
+					// get time/variables/type information
+					var var_meta_headers = convert_var_meta(var_meta["data"]);
+
+					// check for errors in time/var units
+					if (var_meta_headers[0] == false) {
+						dialog.ajax_error ("Can't export data -- inconsistent time units.")("","","");
+						return;
+					}
+					if (var_meta_headers[3] == false) {
+						dialog.ajax_error ("Can't export data -- inconsistent variable units.")("","","");
+						return;
+					}
+
+					// convert headers/variables by looking for []
+					var headers = module.get_headers(true, true);
+					var converted_headers = convert_headers(headers[0]);
+
+					// look for extra commas/newlines and warn user
+					var extra_commas_found = headers[1];
+					var extra_newlines_found = headers[2];
+
+					// check that header/variable terms are consistent
+					var header_types = check_types(converted_headers);
+
+					// check that header/variable terms are the same
+					var all_types = false;
+					if (header_types == false || var_meta_headers[3] == false) {
+						dialog.ajax_error ("Can't export data -- could not interpret types in headers.")("","","");
+						return;
+					} else {
+						if (compare_types(header_types, var_meta_headers[2]) == false) {
+							dialog.ajax_error ("Can't export data -- could not interpret types in headers.")("","","");
+							return;
+						} else {
+							all_types = header_types;
+						}
+					}
+
+					// retrieve time step data
+					var num_vars = var_meta["data"][0].length;
+					var all_data = Array.from(Array(num_vars).keys());
+					var no_zoom = Array(num_vars).fill(["-Inf", "Inf"]);
+					client.post_sensitive_model_command(
+					{
+						mid: mid,
+						type: "DAC",
+						command: "subsample_time_var",
+						parameters: {plot_list: all_data, 
+									database_ids: all_data,
+									plot_selection: rows_to_output,
+									num_subsamples: "Inf",
+									zoom_x: no_zoom,
+									zoom_y: no_zoom},
+						success: function (result)
+						{
+							// convert to variable
+							result = JSON.parse(result);
+							
+							// keep time points and data
+							var time_points = result["time_points"];
+							var var_data = result["var_data"];
+
+							// create csv table
+							var csvData = convert_to_long_csv(converted_headers, 
+								var_meta_headers, all_types, time_points, var_data,
+								extra_commas_found, extra_newlines_found, rows_to_output);
+
+							// download csv table
+							module.download_data_table (csvData, defaultFilename);
+
+						},
+						error: function ()
+						{
+							dialog.ajax_error ('Server error: could not load time series data.')("","","");
+						}
+					});
+				},
+				function () {
+					dialog.ajax_error ("Server error: could not load time series data.")("","","");
+				}
+			);
+	}
+}
+
+// helper function to convert variable meta data to output header rows
+function convert_var_meta (var_meta)
+{
+	// split out meta information
+	var headers = var_meta[0];
+	var time = var_meta[1];
+	var units = var_meta[2];
+
+	// first check if time header is constant
+	var time_header = time[0];
+	for (var i = 0; i < time.length; i++) {
+		if (time[0] != time[i]) {
+			time_header = false;
+		}
+	}
+
+	// next parse header into constants/types
+	var var_headers = convert_headers(headers);
+
+	// check type consistency
+	var var_types = check_types(var_headers);
+
+	// check unit consistency
+	var var_units = [];
+	for (var i = 0; i < var_headers[1].length; i++) {
+		var var_unit = []
+		for (var j = 0; j < var_headers[0].length; j++) {
+			if (var_headers[1][i] == var_headers[0][j][0]) {
+				var_unit.push(units[j]);
+			}
+		}
+		for (var j = 0; j < var_units.length; j++) {
+			if (var_unit[0] != var_unit[j]) {
+				var_unit = false;
+				break;
+			}
+		}
+		if (var_unit != false) {
+			var_units.push(var_unit[0]);
+		} else {
+			var_units = false;
+			break;
+		}
+	}
+
+	return [time_header, var_headers, var_types, var_units]
+}
+
+// helper function for converting [] in headers to groups
+function convert_headers (headers)
+{
+
+	// go through each header and look for []
+	var parsed_headers = [];
+	var converted_headers = [];
+	var converted_terms = [];
+	for (var i = 0; i < headers.length; i++) {
+
+		// parse header
+		var parsed_header = parse_header (headers[i]);
+
+		// keep original header, just parsed
+		parsed_headers.push(parsed_header);
+
+		// collect headers in dictionary
+		var conv_ind = converted_headers.indexOf(parsed_header[0]);
+		if (conv_ind >= 0) {
+			if (parsed_header[1] != '') {
+				converted_terms[conv_ind].push(parsed_header[1]);
+			} else {
+				// keep repeated columns (with no type)
+				converted_headers.push(parsed_header[0]);
+				converted_terms.push([]);
+			}
+		} else {
+			converted_headers.push(parsed_header[0]);
+			converted_terms.push([]);
+			if (parsed_header[1] != '') {
+				converted_terms[converted_terms.length - 1].push(parsed_header[1]);
+			}
+		}
+	}
+
+	return [parsed_headers, converted_headers, converted_terms]
+}
+
+// helper function to separate out term in []
+function parse_header (header)
+{
+
+	// parse header
+	var matches = header.match(/\[(.*?)\]/);
+	var in_brackets = '';
+	if (matches) {
+		in_brackets = matches[1];
+	}
+	var without_brackets = header.replace(/\s*\[.*?\]\s*/g, '');
+
+	return [without_brackets, in_brackets]
+}
+
+// helper function to check that terms in [] are consistent
+function check_types (header_dict)
+{
+
+	var bracket_terms = [];
+	for (var i = 0; i < header_dict[1].length; i ++) {
+		if (header_dict[2][i].length > 0) {
+
+			// header terms
+			if (bracket_terms.length == 0) {
+				bracket_terms = header_dict[2][i];
+			} else {
+				if (!compare_types(bracket_terms, header_dict[2][i])) {
+					bracket_terms = false;
+					break;
+				}
+			}
+
+		}
+	}
+
+	return bracket_terms
+}
+
+// helper function to compare term arrays
+function compare_types (a, b)
+{
+	var terms_equal = true;
+
+	if (a.length != b.length) {
+		terms_equal = False;
+	} else {
+		for (var i = 0; i < a.length; i++) {
+			if (a[i] != b[i]) {
+				terms_equal = False;
+				break;
+			}
+		}
+	}
+
+	return terms_equal;
 }
 
 // download data table to browser
@@ -570,6 +801,151 @@ function convert_to_csv (rows_to_output)
 	if (extra_commas_found || extra_newlines_found) {
 		 dialog.ajax_error("Commas and/or newlines were detected in the table data " +
 		    "text and will be removed in the .csv output file.")
+			("","","");
+	}
+
+	return csv_output;
+}
+
+// this version of the csv table includes plot data
+function convert_to_long_csv (headers, var_names, types, time_points, var_data,
+	extra_commas_found, extra_newlines_found, rows_to_output)
+{
+
+	// output as csv to string
+	var csv_output = "";
+
+	// construct header row
+	csv_output += var_names[0];
+	for (var i = 0; i < var_names[1][1].length; i++) {
+		csv_output += "," + var_names[1][1][i] + " (" + var_names[3][i] + ")";
+	}
+	csv_output += ",Type";
+	for (var i = 0; i < headers[1].length; i++) {
+		csv_output += "," + headers[1][i];
+	}
+	csv_output += ',User Selection\n'
+
+	// fill in table by rows (i)
+    var num_vis_rows = grid_view.getDataLength();
+	for (var i = 0; i < num_vis_rows; i++) {
+
+		// get slick grid table data
+		var item = grid_view.getDataItem(i);
+
+		// get selection index
+		var sel_i = item[item.length-2];
+
+		// check if data is in the selection
+		if (rows_to_output.indexOf(sel_i) != -1) {
+
+			// subfill table by type (j)
+			for (var j = 0; j < types.length; j++) {
+
+				// filter header by type
+				var header_inds = [];
+				var header_names = [];
+				for (var k = 0; k < headers[0].length; k++) {
+					if ((headers[0][k][1] == '') ||
+						(headers[0][k][1] == types[j])) {
+						header_inds.push(k);
+						header_names.push(headers[0][k][0]);
+					}
+				}
+
+				// check that old headers and new headers are the same
+				// (none of these errors should ever occur)
+				if (header_names.length != headers[1].length) {
+					console.log("Error: header mismatch during filter step.")
+				} else {
+					for (var k = 0; k < header_names.length; k++) {
+						if (header_names[k] != headers[1][k]) {
+							console.log("Error: header " + header_names[k] + 
+								        " mismatch during filter step.");
+						}
+					}
+				}
+
+				// construct end of row (constant by type)
+				var csv_row_end = "";
+				for (var k = 0; k < (num_cols + num_editable_cols); k ++) {
+					if (header_inds.indexOf(k) != -1) {
+
+						var table_entry = String(item[k]);
+
+						// check for commas for later warning
+						if (table_entry.indexOf(",") != -1) {
+							extra_commas_found = true;
+						}
+	
+						// check for newlines for later warning
+						if (table_entry.search(/\r?\n|\r/) != -1) {
+							extra_newlines_found = true;
+						}
+
+						csv_row_end += "," + table_entry.replace(/, ?/g," ")
+										 		  		.replace(/\r?\n|\r/g," ").trim();
+					}
+				}
+
+				// add row selection color to last column
+				csv_row_end += "," + row_sel_color(item);
+
+				// var data column to output
+				var data_col = rows_to_output.indexOf(sel_i);
+
+				// filter variables by type (matrices to use)
+				var var_inds = [];
+				for (var k = 0; k < var_names[1][0].length; k++) {
+					if ((var_names[1][0][k][1] == '') ||
+						(var_names[1][0][k][1] == types[j])) {
+						var_inds.push(k);
+					}
+				}
+
+				// check that time steps are identical for variable set
+				var set_time_points = time_points[var_inds[0]];
+				for (var k = 0; k < var_inds.length; k++) {
+					if (time_points[var_inds[k]].length != set_time_points.length) {
+						dialog.ajax_error ("Can't export data -- time step mismatch in types.")("","","");
+						return "";
+					} else {
+						for (var l = 0; l < set_time_points.length; l++) {
+							if (time_points[var_inds[k]][l] != set_time_points[l]) {
+								dialog.ajax_error ("Can't export data -- time step mismatch in types.")("","","");
+								return "";
+							}
+						}
+					}
+				}
+
+				// add rows by time to table (k)
+				for (var k = 0; k < set_time_points.length; k++) {
+
+					var csv_row_start = "";
+
+					// add time point
+					csv_row_start += set_time_points[k];
+
+					// add variables
+					for (var l = 0; l < var_inds.length; l++) {
+						csv_row_start += "," + var_data[var_inds[l]][data_col][k];
+					}
+
+					// add type
+					csv_row_start += "," + types[j];
+
+					// add end row data
+					csv_output += csv_row_start + csv_row_end + "\n";
+				}
+			}
+		}
+	}
+
+	// produce warning if extra commas/newlines were detected
+	if (extra_commas_found || extra_newlines_found) {
+		dialog.ajax_error("Commas and/or newlines were detected in the table data " +
+			"text and will be removed in the .csv output file.")
 			("","","");
 	}
 
@@ -729,7 +1105,7 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 	var filters_applied = module.filters_active();
 
 	// message to user
-	var txt = "There are " + sel.length + " selected row(s) visible.  What would you like to do?";
+	var txt = "There are " + sel.length + " selected row(s).  What would you like to do?";
 
 	// if filters have been applied, add cautionary note
 	if (filters_applied) {
@@ -753,20 +1129,27 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 	{
 		title: "Export Table Data",
 		message: txt,
+		checkbox: true,
+		checkbox_msg: " Export data with table.  Note: this may result in a very large table.",
 		buttons: buttons_save,
-		callback: function(button)
+		callback: function(button, value)
 		{
 	        // download dialog is complete
 	        download_dialog_open = false;
 
+			// get value of check box
+			var checkbox = false;
+			if (value() == true) {
+				checkbox = true;
+			}
+
 		    if (typeof button !== 'undefined') {
 
                 if(button.label == "Save All Visible")
-                    write_data_table(all_sel, defaultFilename);
+                    write_data_table(all_sel, defaultFilename, checkbox);
 
                 else if(button.label == "Save Selected Visible")
-                    write_data_table(sel,
-                        defaultFilename);
+                    write_data_table(sel, defaultFilename, checkbox);
             }
 		},
 	});

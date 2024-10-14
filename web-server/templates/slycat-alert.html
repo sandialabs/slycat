@@ -30,6 +30,13 @@
               value: value,
               selectedOptions: values"></select>
           <!--/ko-->
+          <!--ko if: checkbox -->
+          <input type="checkbox"
+            data-bind="
+              checked: value
+            ">
+          <label data-bind="text: checkbox_msg"></label><br>
+          <!--/ko-->
           <div class="alert alert-danger" role="alert"
             data-bind="visible:alert, text:alert"
           ></div>
