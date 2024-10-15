@@ -357,10 +357,11 @@ def read_metadata_table (metadata, arguments, log):
     meta_column_names = ['Part', 'Lot', 'Batch', 'Serial Number', 'Source']
     for tdms_type in metadata[0]["tdms_types"]:
         meta_column_names += ['Module ID [' + tdms_type + ']']
-    for tdms_type in metadata[0]["tdms_types"]:
         meta_column_names += ['Module SN [' + tdms_type + ']']
-    for tdms_type in metadata[0]["tdms_types"]:
-        meta_column_names += ['Module ID/SN [' + tdms_type + ']']
+
+    # for tdms_type in metadata[0]["tdms_types"]:
+    #     meta_column_names += ['Module ID/SN [' + tdms_type + ']']
+
     meta_column_names += const_cols
     for tdms_type in metadata[0]["tdms_types"]:
         meta_column_names += [header + " [" + tdms_type + "]" for header in var_cols]
@@ -374,8 +375,11 @@ def read_metadata_table (metadata, arguments, log):
             metadata[row]["sn"], metadata[row]["source"]]
         
         # module IDs/SNs
-        meta_row += metadata[row]["module_ID"] + metadata[row]["module_SN"] 
-                    # metadata[row]["module_ID_SN"]
+        meta_mod_interleaved = []
+        for i in range(len(metadata[row]["module_ID"])):
+            meta_mod_interleaved.append(metadata[row]["module_ID"][i])
+            meta_mod_interleaved.append(metadata[row]["module_SN"][i])
+        meta_row += meta_mod_interleaved
 
         # data from tdms files
         root_props = metadata[row]["root_properties"]
