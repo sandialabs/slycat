@@ -359,9 +359,6 @@ def read_metadata_table (metadata, arguments, log):
         meta_column_names += ['Module ID [' + tdms_type + ']']
         meta_column_names += ['Module SN [' + tdms_type + ']']
 
-    # for tdms_type in metadata[0]["tdms_types"]:
-    #     meta_column_names += ['Module ID/SN [' + tdms_type + ']']
-
     meta_column_names += const_cols
     for tdms_type in metadata[0]["tdms_types"]:
         meta_column_names += [header + " [" + tdms_type + "]" for header in var_cols]
