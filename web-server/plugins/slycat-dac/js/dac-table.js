@@ -502,7 +502,7 @@ function write_data_table(rows_to_output, defaultFilename, include_data) {
 
         // check that header/variable terms are the same
         var all_types = false;
-        if (header_types == false || var_meta_headers[3] == false) {
+        if (header_types === false || var_meta_headers[3] == false) {
           dialog.ajax_error("Can't export data -- could not interpret types in headers.")(
             "",
             "",
@@ -575,6 +575,7 @@ function write_data_table(rows_to_output, defaultFilename, include_data) {
 
 // helper function to convert variable meta data to output header rows
 function convert_var_meta(var_meta) {
+
   // split out meta information
   var headers = var_meta[0];
   var time = var_meta[1];
@@ -603,7 +604,7 @@ function convert_var_meta(var_meta) {
         var_unit.push(units[j]);
       }
     }
-    for (var j = 0; j < var_units.length; j++) {
+    for (var j = 0; j < var_unit.length; j++) {
       if (var_unit[0] != var_unit[j]) {
         var_unit = false;
         break;
@@ -670,6 +671,7 @@ function parse_header(header) {
 
 // helper function to check that terms in [] are consistent
 function check_types(header_dict) {
+
   var bracket_terms = [];
   for (var i = 0; i < header_dict[1].length; i++) {
     if (header_dict[2][i].length > 0) {
@@ -683,6 +685,11 @@ function check_types(header_dict) {
         }
       }
     }
+  }
+
+  // no terms found, label "N/A"
+  if (bracket_terms.length == 0) {
+    bracket_terms = ["N/A"];
   }
 
   return bracket_terms;
