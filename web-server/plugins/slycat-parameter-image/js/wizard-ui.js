@@ -21,8 +21,18 @@ import { createRoot } from "react-dom/client";
 import SmbRemoteFileBrowser from "components/SmbRemoteFileBrowser.tsx";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import HDF5Browser from "components/HDF5Browser.tsx";
+import ParameterSpaceWizard from "components/parameter-space-wizard/ParameterSpaceWizard.tsx";
 
 function constructor(params) {
+
+  // Render React
+  // ************************************************************************************
+  const react_wizard_root = createRoot(document.querySelector(".react-wizard"));
+  react_wizard_root.render(
+    <ParameterSpaceWizard project={params.projects()[0]} markings={markings.preselected()} />
+  );
+  // ************************************************************************************
+
   var component = {};
   component.tab = ko.observable(0);
   component.project = params.projects()[0];
