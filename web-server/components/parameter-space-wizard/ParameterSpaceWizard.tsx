@@ -90,7 +90,6 @@ export default class ParameterSpaceWizard extends React.Component<
       project: props.project,
       model: { _id: '' },
       modalId: "slycat-wizard",
-      jid: '',
       visibleTab: '0',
       selectedOption: 'xyce',
       fileLocation: '',
@@ -101,28 +100,10 @@ export default class ParameterSpaceWizard extends React.Component<
       password: '',
       hdf5Directory: '',
       selectedTablePath: '',
-      selectedXycePath: '',
       inputDirectory: '',
       parserType: '',
       columnNames: [],
-      timeseriesColumn: '',
-      binCount: 500,
-      resamplingAlg: 'uniform-paa',
-      clusterLinkageMeasure: 'average',
-      clusterMetric: 'euclidean',
-      accountId: '',
-      partition: '',
-      numNodes: 1,
-      cores: 2,
-      jobHours: 0,
-      jobMin: 30,
-      workDir: '',
-      userConfig: { 'slurm': {}, 'timeseries-wizard': {} },
-      idCol: '%eval_id',
-      delimiter: ',',
-      timeseriesName: '',
       modelDescription: '',
-      TimeSeriesLocalStorage: localStorage.getItem("slycat-timeseries-wizard") as any,
       validForms: true,
       marking: [],
       selectedMarking: [],
@@ -170,29 +151,7 @@ export default class ParameterSpaceWizard extends React.Component<
           : null}
         {this.state.visibleTab === "2"?
           <div>
-            <TimeseriesParametersTab 
-              fileType={this.state.selectedOption}
-              delimiter={this.state.delimiter}
-              columnNames={this.state.columnNames}
-              delimiterCallback={(delim: string) => {
-                this.setState({ delimiter: delim });
-              }}
-              columnCallback={(type: string) => {
-                this.setState({ timeseriesColumn: type });
-              }}
-              bincountCallback={(count: number) => {
-                this.setState({ binCount: count });
-              }}
-              resamplingCallback={(alg: string) => {
-                this.setState({ resamplingAlg: alg });
-              }}
-              linkageCallback={(clusterLinkage: string) => {
-                this.setState({ clusterLinkageMeasure: clusterLinkage });
-              }}
-              metricCallback={(metric: string) => {
-                this.setState({ clusterMetric: metric });
-              }}
-            />
+            
           </div>
           : null}
         {this.state.visibleTab === "3" ?
@@ -219,36 +178,7 @@ export default class ParameterSpaceWizard extends React.Component<
           : null}
         {this.state.visibleTab === "5" ?
           <div>
-            <HPCParametersTab 
-              accountId={this.state.accountId}
-              partition={this.state.partition}
-              numNodes={this.state.numNodes}
-              cores={this.state.cores}
-              jobHours={this.state.jobHours}
-              jobMin={this.state.jobMin}
-              workDir={this.state.workDir}
-              accountIdCallback={(id: string) => {
-                this.setState({ accountId: id });
-                }}
-              partitionCallback={(part: string) => {
-                this.setState({ partition: part });
-                }}
-              nodesCallback={(num: number) => {
-                this.setState({ numNodes: num });
-                }}
-              coresCallback={(numCores: number) => {
-                this.setState({ cores: numCores });
-                }}
-              hoursCallback={(hours: number) => {
-                this.setState({ jobHours: hours });
-                }}
-              minutesCallback={(mins: number) => {
-                this.setState({ jobMin: mins });
-                }}
-              workDirCallback={(dir: string) => {
-                this.setState({ workDir: dir });
-                }}
-            />
+            
           </div>
           : null}
         {this.state.visibleTab === "6" ?
