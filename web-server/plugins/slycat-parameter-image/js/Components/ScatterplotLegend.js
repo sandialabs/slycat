@@ -1,5 +1,5 @@
 import React from "react";
-import d3 from "d3";
+import * as d3 from "d3v7";
 import _ from "lodash";
 
 export default class ScatterplotLegend extends React.PureComponent {
@@ -28,12 +28,8 @@ export default class ScatterplotLegend extends React.PureComponent {
 
   createAxis = () => {
     let domain = _.sortBy(this.props.domain).reverse();
-    let scale = d3.scale.linear().domain(domain).range([0, this.props.height]);
-    let legend_axis = d3.svg
-      .axis()
-      .scale(scale)
-      .orient("right")
-      .ticks(this.props.height / 50);
+    let scale = d3.scaleLinear().domain(domain).range([0, this.props.height]);
+    let legend_axis = d3.axisRight(scale).ticks(this.props.height / 50);
     d3.select(this.legend_axis_ref.current).call(legend_axis);
   };
 

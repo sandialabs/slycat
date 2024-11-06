@@ -5,6 +5,7 @@
 
 import api_root from "js/slycat-api-root";
 import d3 from "d3";
+import * as d3v7 from "d3v7";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
@@ -69,7 +70,7 @@ $.widget("parameter_image.scatterplot", {
     v_index: null,
     images: [],
     selection: [],
-    colorscale: d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    colorscale: d3v7.scaleLinear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     open_images: [],
     gradient: null,
     hidden_simulations: [],
@@ -854,7 +855,7 @@ $.widget("parameter_image.scatterplot", {
       if (reverse === true) {
         domain.reverse();
       }
-      return d3.time.scale().domain(domain).range(range);
+      return d3v7.scaleTime().domain(domain).range(range);
     }
     // For numeric variables
     else if (!variableIsString) {
@@ -868,17 +869,17 @@ $.widget("parameter_image.scatterplot", {
       }
       // Log scale if 'Log' variable types
       if (type == "Log") {
-        return d3.scale.log().domain(domain).range(range);
+        return d3v7.scaleLog().domain(domain).range(range);
       }
       // Linear scale otherwise
-      return d3.scale.linear().domain(domain).range(range);
+      return d3v7.scaleLinear().domain(domain).range(range);
     }
     // For string variables, make an ordinal scale
     var uniqueValues = d3.set(values).values().sort();
     if (reverse === true) {
       uniqueValues.reverse();
     }
-    return d3.scale.ordinal().domain(uniqueValues).rangePoints(range);
+    return d3v7.scalePoint().domain(uniqueValues).range(range);
   },
 
   _getDefaultXPosition: function (imageIndex, imageWidth) {
