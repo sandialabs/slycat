@@ -249,13 +249,13 @@ class Session(object):
           if '.h5' in self._aids[1] or '.hdf5' in self._aids[1]:
             slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
                                                                 files, self._aids, **self._kwargs)
-        if isinstance(self._aids[0], list):
-          slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
-                                                                          files, self._aids[0], **self._kwargs)
+          elif isinstance(self._aids[0], list):
+            slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
+                                                                            files, self._aids[0], **self._kwargs)
         else:
           slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
-                                                                          files, self._aids, **self._kwargs)
-        if model["model-type"] == "parameter-image" and self.useProjectData == True:
+                                                                            files, self._aids, **self._kwargs)
+        if model["model-type"] == "parameter-image" and self.useProjectData == True and '.h5' not in self._aids[1] and '.hdf5' not in self._aids[1]:
           # Use project data
           slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
       except Exception as e:

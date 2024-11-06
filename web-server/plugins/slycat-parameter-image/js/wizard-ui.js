@@ -97,7 +97,7 @@ function constructor(params) {
       file_key: component.selected_file(),
       parser: component.parser(),
       mid: component.model._id(),
-      aids: "data-table",
+      aids: [["data-table"], component.current_aids()],
 
       success: function (response) {
         var data = JSON.stringify(response);
@@ -225,8 +225,7 @@ function constructor(params) {
   component.cancel = function () {
     component.smb_wizard_login_root.unmount();
     if (component.model._id()) {
-      client
-        .get_project_data_in_model_fetch({
+      client.get_project_data_in_model_fetch({
           mid: component.model._id(),
         })
         .then((did) => {
@@ -352,8 +351,8 @@ function constructor(params) {
   };
 
   component.existing_table = function () {
-    var fileName = component.selected_file;
-    component.current_aids = fileName();
+    var fileName = component.selected_file();
+    component.current_aids(fileName);
     component.get_server_files();
   };
 
@@ -561,6 +560,26 @@ function constructor(params) {
           mid: component.model._id(),
           success : (results) =>
           {
+            if (component.model._id() && component.useProjectData() == false) {
+              client.get_project_data_in_model_fetch({
+                  mid: component.model._id(),
+                })
+                .then((did) => {
+                  // if the data id isn't empty
+                  // delete model first
+                  client.delete_model_fetch({ mid: component.model._id() }).then(() => {
+                    // Get list of model ids project data is used in
+                    if (did.length >= 1) {
+                      client.get_project_data_parameter_fetch({ did: did, param: "mid" }).then((models) => {
+                        // if there are no more models using that project data, delete it
+                        if (models && models.length === 0) {
+                          client.delete_project_data_fetch({ did: did });
+                        }
+                      });
+                    }
+                  });
+                });
+            }
             component.finish();
           }
         })
