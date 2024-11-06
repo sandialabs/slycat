@@ -1256,9 +1256,28 @@ $.widget("parameter_image.scatterplot", {
       );
 
       self.x_axis_offset = self.options.height - self.options.margin_bottom - 40;
+
+      // Make a duplicate copy of the scale for use in the axis
+      let x_scale_axis = self.x_scale.copy();
+      // For string variables, we need to set the ticks to leave every 40th value
+      console.debug(`self.options.x_string is ${self.options.x_string}`);
+
+      if (self.options.x_string && x_scale_axis.step() < 50) {
+        // Output the step size
+        console.debug(`x_scale_axis.step() is ${x_scale_axis.step()}`);
+        // Adjust the domain to leave out values that are too close together.
+
+        // Calculate how many ticks to skip based on current step size
+        const skipFactor = Math.ceil(50 / x_scale_axis.step());
+        console.debug(`Adjusted x axis domain with skip factor ${skipFactor}`);
+
+        // Filter the domain starting from the first value and keeping every nth value after
+        x_scale_axis.domain(x_scale_axis.domain().filter((d, i) => i % skipFactor === 0));
+      }
+      
       self.x_axis = d3.svg
         .axis()
-        .scale(self.x_scale)
+        .scale(x_scale_axis)
         .orient("bottom")
         // Set number of ticks based on width of axis.
         .ticks(self.x_range_canvas[1] / 85);
