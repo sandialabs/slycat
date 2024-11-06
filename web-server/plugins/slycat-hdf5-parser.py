@@ -78,7 +78,6 @@ def parse_file(file, model, database):
         
 def parse(database, model, input, files, aids, **kwargs):
     # Read HDF5 file
-    slycat.web.server.handlers.create_project_data(model['_id'], aids, files)
     start = time.time()
 
     # parsed = [parse_file(file, model, database) for file in files]
@@ -89,10 +88,17 @@ def parse(database, model, input, files, aids, **kwargs):
     #     slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, combined_data)
 
     end = time.time()
-    model = database.get("model", model['_id'])
-    slycat.web.server.put_model_parameter(database, model, "error-messages", "")
-    model["db_creation_time"] = (end - start)
-    database.save(model)
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", model["_id"])
+    with slycat.web.server.database.couchdb.db_lock:
+        model["db_creation_time"] = (end - start)
+        database.save(model)
+        # If the user selected to not save project data, this will only be temporary during the wizard to parse the HDF5 file
+        slycat.web.server.handlers.create_project_data(model['_id'], aids, files)
+        slycat.web.server.put_model_parameter(database, model, "error-messages", "")
+        # model["db_creation_time"] = (end - start)
+        # model = database.get("model", model['_id'])
+        # database_curr.save(model) 
 
 def register_slycat_plugin(context):
     context.register_parser("slycat-hdf5-parser", "HDF5", ["table"], parse)
