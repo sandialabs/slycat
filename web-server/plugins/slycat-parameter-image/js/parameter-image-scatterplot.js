@@ -896,7 +896,7 @@ $.widget("parameter_image.scatterplot", {
 
   _adjustScaleDomain: function (scale, spacing, adjust, align, reverse) {
     // Make a duplicate copy of the scale
-    let adjusted_scale = scale.copy().reverse(reverse);
+    let adjusted_scale = scale.copy();
 
     // Adjust the domain to leave out values that are too close together.
     if (adjust && adjusted_scale.step() < spacing) {
@@ -911,7 +911,17 @@ $.widget("parameter_image.scatterplot", {
 
       adjusted_scale
         // Filter the domain starting from the first value and keeping every nth value after
-        .domain(adjusted_scale.domain().filter((d, i) => i % skipFactor === 0))
+        .domain(
+          // Reverse filtering for some axes, like the legend axis,
+          // otherwise it's inconsistent with the y axis.
+          reverse
+            ? adjusted_scale
+                .domain()
+                .reverse()
+                .filter((d, i) => i % skipFactor === 0)
+                .reverse()
+            : adjusted_scale.domain().filter((d, i) => i % skipFactor === 0),
+        )
         // Adjust the axis padding to fit the original scale
         .padding(paddingRatio)
         // Align the axis to fit the original scale
@@ -1736,8 +1746,8 @@ $.widget("parameter_image.scatterplot", {
         self.legend_scale,
         selectVerticalSpacing(window.store.getState()),
         self.options.v_string && selectHideLabels(window.store.getState()),
-        undefined,
-        true
+        1,
+        true,
       );
 
       self.legend_axis = d3.svg
