@@ -41,6 +41,11 @@ import {
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
+import {
+  selectHideLabels,
+  selectHorizontalSpacing,
+  selectVerticalSpacing,
+} from "./scatterplotSlice";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -684,6 +689,19 @@ $.widget("parameter_image.scatterplot", {
       { objectPath: "derived.variableAliases", callback: update_scatterplot_labels },
       { objectPath: "open_media", callback: update_media_sizes },
       { objectPath: "scatterplot_margin", callback: update_scatterplot_margin },
+      {
+        objectPath: "scatterplot.horizontal_spacing",
+        callback: () => self._schedule_update({ update_x: true }),
+      },
+      {
+        objectPath: "scatterplot.vertical_spacing",
+        callback: () => self._schedule_update({ update_y: true, update_legend_axis: true }),
+      },
+      {
+        objectPath: "scatterplot.hide_labels",
+        callback: () =>
+          self._schedule_update({ update_x: true, update_y: true, update_legend_axis: true }),
+      },
     ].forEach((subscription) => {
       window.store.subscribe(
         watch(
@@ -874,6 +892,33 @@ $.widget("parameter_image.scatterplot", {
       uniqueValues.reverse();
     }
     return d3v7.scalePoint().domain(uniqueValues).range(range);
+  },
+
+  _adjustScaleDomain: function (scale, spacing, adjust, align, reverse) {
+    // Make a duplicate copy of the scale
+    let adjusted_scale = scale.copy().reverse(reverse);
+
+    // Adjust the domain to leave out values that are too close together.
+    if (adjust && adjusted_scale.step() < spacing) {
+      // Calculate how many ticks to skip based on current step size
+      const skipFactor = Math.ceil(spacing / adjusted_scale.step());
+
+      // Calculate padding ratio based on removed values
+      const originalDomain = adjusted_scale.domain();
+      const lastKeptIndex = Math.floor((originalDomain.length - 1) / skipFactor) * skipFactor;
+      const removedFromEnd = originalDomain.length - 1 - lastKeptIndex;
+      const paddingRatio = removedFromEnd / skipFactor / 2;
+
+      adjusted_scale
+        // Filter the domain starting from the first value and keeping every nth value after
+        .domain(adjusted_scale.domain().filter((d, i) => i % skipFactor === 0))
+        // Adjust the axis padding to fit the original scale
+        .padding(paddingRatio)
+        // Align the axis to fit the original scale
+        .align(align ?? 0);
+    }
+
+    return adjusted_scale;
   },
 
   _getDefaultXPosition: function (imageIndex, imageWidth) {
@@ -1257,24 +1302,13 @@ $.widget("parameter_image.scatterplot", {
 
       self.x_axis_offset = self.options.height - self.options.margin_bottom - 40;
 
-      // Make a duplicate copy of the scale for use in the axis
-      let x_scale_axis = self.x_scale.copy();
-      // For string variables, we need to set the ticks to leave every 40th value
-      console.debug(`self.options.x_string is ${self.options.x_string}`);
+      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
+      let x_scale_axis = self._adjustScaleDomain(
+        self.x_scale,
+        selectHorizontalSpacing(window.store.getState()),
+        self.options.x_string && selectHideLabels(window.store.getState()),
+      );
 
-      if (self.options.x_string && x_scale_axis.step() < 50) {
-        // Output the step size
-        console.debug(`x_scale_axis.step() is ${x_scale_axis.step()}`);
-        // Adjust the domain to leave out values that are too close together.
-
-        // Calculate how many ticks to skip based on current step size
-        const skipFactor = Math.ceil(50 / x_scale_axis.step());
-        console.debug(`Adjusted x axis domain with skip factor ${skipFactor}`);
-
-        // Filter the domain starting from the first value and keeping every nth value after
-        x_scale_axis.domain(x_scale_axis.domain().filter((d, i) => i % skipFactor === 0));
-      }
-      
       self.x_axis = d3.svg
         .axis()
         .scale(x_scale_axis)
@@ -1327,9 +1361,17 @@ $.widget("parameter_image.scatterplot", {
         "y",
       );
 
+      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
+      let y_scale_axis = self._adjustScaleDomain(
+        self.y_scale,
+        selectVerticalSpacing(window.store.getState()),
+        self.options.y_string && selectHideLabels(window.store.getState()),
+        1,
+      );
+
       self.y_axis = d3.svg
         .axis()
-        .scale(self.y_scale)
+        .scale(y_scale_axis)
         .orient("left")
         // Set number of ticks based on height of axis.
         .ticks(self.y_range_canvas[0] / 50);
@@ -1689,9 +1731,18 @@ $.widget("parameter_image.scatterplot", {
         "v",
       );
 
+      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
+      let legend_scale_axis = self._adjustScaleDomain(
+        self.legend_scale,
+        selectVerticalSpacing(window.store.getState()),
+        self.options.v_string && selectHideLabels(window.store.getState()),
+        undefined,
+        true
+      );
+
       self.legend_axis = d3.svg
         .axis()
-        .scale(self.legend_scale)
+        .scale(legend_scale_axis)
         .orient("right")
         .ticks(range[1] / 50);
       // Forces ticks at min and max axis values, but sometimes they collide

@@ -6,10 +6,10 @@ export const SLICE_NAME = "scatterplot";
 
 export const DEFAULT_HORIZONTAL_SPACING = 50;
 export const MIN_HORIZONTAL_SPACING = 0;
-export const MAX_HORIZONTAL_SPACING = 100;
+export const MAX_HORIZONTAL_SPACING = 300;
 export const HORIZONTAL_SPACING_STEP = 1;
 
-export const DEFAULT_VERTICAL_SPACING = 10;
+export const DEFAULT_VERTICAL_SPACING = 15;
 export const MIN_VERTICAL_SPACING = 0;
 export const MAX_VERTICAL_SPACING = 100;
 export const VERTICAL_SPACING_STEP = 1;
