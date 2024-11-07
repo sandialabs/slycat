@@ -4,12 +4,25 @@ import { RootState } from "./store";
 
 export const SLICE_NAME = "scatterplot";
 
+export const DEFAULT_HORIZONTAL_SPACING = 50;
+export const MIN_HORIZONTAL_SPACING = 0;
+export const MAX_HORIZONTAL_SPACING = 100;
+export const HORIZONTAL_SPACING_STEP = 1;
+
+export const DEFAULT_VERTICAL_SPACING = 10;
+export const MIN_VERTICAL_SPACING = 0;
+export const MAX_VERTICAL_SPACING = 100;
+export const VERTICAL_SPACING_STEP = 1;
+
 export interface ScatterplotState {
   scatterplot_pane_width: number;
   scatterplot_pane_height: number;
   show_grid: boolean;
   show_histogram: boolean;
   auto_scale: boolean;
+  hide_labels: boolean;
+  horizontal_spacing: number;
+  vertical_spacing: number;
 }
 
 export const initialState: ScatterplotState = {
@@ -18,6 +31,9 @@ export const initialState: ScatterplotState = {
   show_grid: false,
   show_histogram: false,
   auto_scale: true,
+  hide_labels: false,
+  horizontal_spacing: DEFAULT_HORIZONTAL_SPACING,
+  vertical_spacing: DEFAULT_VERTICAL_SPACING,
 };
 
 export const scatterplotSlice = createSlice({
@@ -43,6 +59,21 @@ export const scatterplotSlice = createSlice({
     toggleAutoScale: (state) => {
       state.auto_scale = !state.auto_scale;
     },
+    toggleHideLabels: (state) => {
+      state.hide_labels = !state.hide_labels;
+    },
+    setHorizontalSpacing: (state, action: PayloadAction<number>) => {
+      state.horizontal_spacing = Math.min(
+        Math.max(action.payload, MIN_HORIZONTAL_SPACING),
+        MAX_HORIZONTAL_SPACING,
+      );
+    },
+    setVerticalSpacing: (state, action: PayloadAction<number>) => {
+      state.vertical_spacing = Math.min(
+        Math.max(action.payload, MIN_VERTICAL_SPACING),
+        MAX_VERTICAL_SPACING,
+      );
+    },
   },
 });
 
@@ -53,6 +84,9 @@ export const {
   toggleShowGrid,
   toggleShowHistogram,
   toggleAutoScale,
+  toggleHideLabels,
+  setHorizontalSpacing,
+  setVerticalSpacing,
 } = scatterplotSlice.actions;
 
 // Selectors
@@ -62,6 +96,9 @@ export const selectScatterplotPaneHeight = (state: RootState) =>
   state[SLICE_NAME].scatterplot_pane_height;
 export const selectShowGrid = (state: RootState) => state[SLICE_NAME].show_grid;
 export const selectShowHistogram = (state: RootState) => state[SLICE_NAME].show_histogram;
+export const selectHideLabels = (state: RootState) => state[SLICE_NAME].hide_labels;
+export const selectHorizontalSpacing = (state: RootState) => state[SLICE_NAME].horizontal_spacing;
+export const selectVerticalSpacing = (state: RootState) => state[SLICE_NAME].vertical_spacing;
 export const selectUnselectedPointSize = (state: RootState) => state.unselected_point_size;
 export const selectUnselectedBorderSize = (state: RootState) => state.unselected_border_size;
 export const selectSelectedPointSize = (state: RootState) => state.selected_point_size;
