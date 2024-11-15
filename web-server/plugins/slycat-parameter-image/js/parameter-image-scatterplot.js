@@ -37,6 +37,9 @@ import {
   selectXColumnName,
   selectYColumnName,
   selectVColumnName,
+  selectXScaleAxis,
+  selectYScaleAxis,
+  selectLegendScaleAxis,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
@@ -894,43 +897,6 @@ $.widget("parameter_image.scatterplot", {
     return d3v7.scalePoint().domain(uniqueValues).range(range);
   },
 
-  _adjustScaleDomain: function (scale, spacing, adjust, align, reverse) {
-    // Make a duplicate copy of the scale
-    let adjusted_scale = scale.copy();
-
-    // Adjust the domain to leave out values that are too close together.
-    if (adjust && adjusted_scale.step() < spacing) {
-      // Calculate how many ticks to skip based on current step size
-      const skipFactor = Math.ceil(spacing / adjusted_scale.step());
-
-      // Calculate padding ratio based on removed values
-      const originalDomain = adjusted_scale.domain();
-      const lastKeptIndex = Math.floor((originalDomain.length - 1) / skipFactor) * skipFactor;
-      const removedFromEnd = originalDomain.length - 1 - lastKeptIndex;
-      const paddingRatio = removedFromEnd / skipFactor / 2;
-
-      adjusted_scale
-        // Filter the domain starting from the first value and keeping every nth value after
-        .domain(
-          // Reverse filtering for some axes, like the legend axis,
-          // otherwise it's inconsistent with the y axis.
-          reverse
-            ? adjusted_scale
-                .domain()
-                .reverse()
-                .filter((d, i) => i % skipFactor === 0)
-                .reverse()
-            : adjusted_scale.domain().filter((d, i) => i % skipFactor === 0),
-        )
-        // Adjust the axis padding to fit the original scale
-        .padding(paddingRatio)
-        // Align the axis to fit the original scale
-        .align(align ?? 0);
-    }
-
-    return adjusted_scale;
-  },
-
   _getDefaultXPosition: function (imageIndex, imageWidth) {
     // We force the image to the left or right side of the screen, based on the target point position.
     var self = this;
@@ -1313,11 +1279,7 @@ $.widget("parameter_image.scatterplot", {
       self.x_axis_offset = self.options.height - self.options.margin_bottom - 40;
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
-      let x_scale_axis = self._adjustScaleDomain(
-        self.x_scale,
-        selectHorizontalSpacing(window.store.getState()),
-        self.options.x_string && selectHideLabels(window.store.getState()),
-      );
+      const x_scale_axis = selectXScaleAxis(window.store.getState());
 
       self.x_axis = d3.svg
         .axis()
@@ -1372,12 +1334,7 @@ $.widget("parameter_image.scatterplot", {
       );
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
-      let y_scale_axis = self._adjustScaleDomain(
-        self.y_scale,
-        selectVerticalSpacing(window.store.getState()),
-        self.options.y_string && selectHideLabels(window.store.getState()),
-        1,
-      );
+      const y_scale_axis = selectYScaleAxis(window.store.getState());
 
       self.y_axis = d3.svg
         .axis()
@@ -1742,13 +1699,7 @@ $.widget("parameter_image.scatterplot", {
       );
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
-      let legend_scale_axis = self._adjustScaleDomain(
-        self.legend_scale,
-        selectVerticalSpacing(window.store.getState()),
-        self.options.v_string && selectHideLabels(window.store.getState()),
-        1,
-        true,
-      );
+      const legend_scale_axis = selectLegendScaleAxis(window.store.getState());
 
       self.legend_axis = d3.svg
         .axis()

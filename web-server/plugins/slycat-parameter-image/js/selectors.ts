@@ -5,6 +5,9 @@ import {
   selectScatterplotPaneWidth,
   selectScatterplotPaneHeight,
   selectShowHistogram,
+  selectHideLabels,
+  selectHorizontalSpacing,
+  selectVerticalSpacing,
 } from "./scatterplotSlice";
 import { selectHiddenSimulations } from "./dataSlice";
 import {
@@ -34,6 +37,7 @@ export const selectScatterplotMarginTop = (state: RootState) => state.scatterplo
 export const selectScatterplotMarginBottom = (state: RootState) => state.scatterplot_margin.bottom;
 export const selectXValues = (state: RootState) => state.derived.xValues;
 export const selectYValues = (state: RootState) => state.derived.yValues;
+export const selectVValues = (state: RootState) => state.derived.vValues;
 const selectVariableRanges = (state: RootState) => state.variableRanges;
 export const selectColormap = (state: RootState) => state.colormap;
 export const selectXIndex = (state: RootState) => state.x_index;
@@ -331,6 +335,25 @@ const selectYExtent = createSelector(
   },
 );
 
+export const selectVExtent = createSelector(
+  selectVValues,
+  selectVariableRanges,
+  selectVIndex,
+  selectColumnTypes,
+  selectVScaleType,
+  selectTableStatistics,
+  (
+    vValues,
+    variableRanges: VariableRangesType,
+    vIndex: number,
+    columnTypes,
+    vScaleType: string,
+    tableStatistics: TableStatisticsType,
+  ): ExtentType => {
+    return getExtent(vValues, variableRanges, vIndex, columnTypes, vScaleType, tableStatistics);
+  },
+);
+
 // Helper function to calculate adjusted margins
 const calculateAdjustedMargins = (
   margin1: number,
@@ -386,6 +409,25 @@ export const selectYScaleRange = createSelector(
       Y_AXIS_MIN_HEIGHT,
     );
     return [height - margin_bottom - X_AXIS_TICK_LABEL_HEIGHT, 0 + margin_top];
+  },
+);
+
+// Returns the start and end of the scatterplot legend axis area relative
+// to the entire height of the scatterplot pane by adjusting for top and bottom margins
+// and dividing the remaining space by half.
+export const selectLegendScaleRange = createSelector(
+  selectScatterplotMarginTop,
+  selectScatterplotMarginBottom,
+  selectScatterplotPaneHeight,
+  (margin_top: number, margin_bottom: number, height: number): ScaleRangeType => {
+    [margin_top, margin_bottom, height] = calculateAdjustedMargins(
+      margin_top,
+      margin_bottom,
+      height,
+      Y_AXIS_MIN_HEIGHT,
+    );
+    const legend_height = (height - margin_top - margin_bottom) / 2;
+    return [0, legend_height];
   },
 );
 
@@ -466,6 +508,21 @@ export const selectXScale = createSelector(
   },
 );
 
+export const selectXScaleAxis = createSelector(
+  selectXScale,
+  selectHorizontalSpacing,
+  selectHideLabels,
+  selectXColumnType,
+  (
+    xScale: SlycatScaleType,
+    horizontalSpacing: number,
+    hideLabels: boolean,
+    xColumnType: string | undefined,
+  ): SlycatScaleType => {
+    return adjustScaleDomain(xScale, horizontalSpacing, xColumnType === "string" && hideLabels);
+  },
+);
+
 export const selectYScale = createSelector(
   selectYScaleType,
   selectYExtent,
@@ -482,6 +539,45 @@ export const selectYScale = createSelector(
     selectShowHistogram,
   ): SlycatScaleType => {
     return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues, selectShowHistogram);
+  },
+);
+
+export const selectYScaleAxis = createSelector(
+  selectYScale,
+  selectVerticalSpacing,
+  selectHideLabels,
+  selectYColumnType,
+  (yScale: SlycatScaleType, verticalSpacing: number, hideLabels: boolean, yColumnType: string) => {
+    return adjustScaleDomain(yScale, verticalSpacing, yColumnType === "string" && hideLabels, 1);
+  },
+);
+
+export const selectVScale = createSelector(
+  selectVScaleType,
+  selectVExtent,
+  selectLegendScaleRange,
+  selectVColumnType,
+  selectVValues,
+  selectShowHistogram,
+  (
+    vScaleType: string,
+    vExtent: ExtentType,
+    vScaleRange: ScaleRangeType,
+    vColumnType: string,
+    vValues,
+    showHistogram,
+  ): SlycatScaleType => {
+    return getScale(vScaleType, vExtent, vScaleRange, vColumnType, vValues, showHistogram);
+  },
+);
+
+export const selectLegendScaleAxis = createSelector(
+  selectVScale,
+  selectVerticalSpacing,
+  selectHideLabels,
+  selectVColumnType,
+  (legendScale: SlycatScaleType, verticalSpacing: number, hideLabels: boolean, vColumnType: string) => {
+    return adjustScaleDomain(legendScale, verticalSpacing, vColumnType === "string" && hideLabels, 1, true);
   },
 );
 
@@ -514,6 +610,44 @@ const getScale = (
         })
       : extent;
   return scale.range(scaleRange).domain(domain);
+};
+
+const adjustScaleDomain = (
+  scale: SlycatScaleType,
+  spacing: number,
+  adjust: boolean,
+  align?: number,
+  reverse?: boolean,
+): SlycatScaleType => {
+  // Make a duplicate copy of the scale
+  let adjusted_scale = scale.copy();
+  // Adjust the domain to leave out values that are too close together.
+  if (adjust && "step" in adjusted_scale && adjusted_scale.step() < spacing) {
+    // Calculate how many ticks to skip based on current step size
+    const skipFactor = Math.ceil(spacing / adjusted_scale.step());
+    // Calculate padding ratio based on removed values
+    const originalDomain = adjusted_scale.domain();
+    const lastKeptIndex = Math.floor((originalDomain.length - 1) / skipFactor) * skipFactor;
+    const removedFromEnd = originalDomain.length - 1 - lastKeptIndex;
+    const paddingRatio = removedFromEnd / skipFactor / 2;
+    adjusted_scale
+      // Filter the domain starting from the first value and keeping every nth value after
+      .domain(
+        // Reverse filtering for some axes, like the legend axis,
+        // otherwise it's inconsistent with the y axis.
+        reverse
+          ? adjusted_scale
+              .domain()
+              .filter((d, i) => i % skipFactor === 0)
+              .reverse()
+          : adjusted_scale.domain().filter((d, i) => i % skipFactor === 0),
+      )
+      // Adjust the axis padding to fit the original scale
+      .padding(paddingRatio)
+      // Align the axis to fit the original scale
+      .align(align ?? 0);
+  }
+  return adjusted_scale;
 };
 
 // Vertical and horizontal offsets of the x-axis label.
