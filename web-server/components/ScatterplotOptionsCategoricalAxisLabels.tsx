@@ -18,6 +18,10 @@ import {
 } from "plugins/slycat-parameter-image/js/scatterplotSlice";
 import { SlycatNumberInput } from "./ScatterplotOptions";
 
+export const CATEGORICAL_AXIS_LABELS_WARNING = "Hide Some Categorical Axis Labels To Increase Readability";
+export const CATEGORICAL_AXIS_LABELS_POPOVER_TITLE = "Warning";
+export const CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT = "Some axis labels are hidden to increase readability.";
+
 const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
   const dispatch = useDispatch();
   const select_hide_labels = useSelector(selectHideLabels);
@@ -51,7 +55,7 @@ const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
             onChange={handleHideLabelsChange}
           />
           <label className="form-check-label" htmlFor="hideLabels">
-            Hide Some Categorical Axis Labels To Prevent Crowding
+            {CATEGORICAL_AXIS_LABELS_WARNING}
           </label>
         </div>
       </div>
