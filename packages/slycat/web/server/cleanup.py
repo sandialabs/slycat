@@ -84,46 +84,57 @@ _cache_cleanup_worker.thread.daemon = True
 
 
 def _bookmark_cleanup_worker():
+    """
+    This thread daemon is designed to compiled a list of bookmarks excluding any linked by references
+    and then test each bookmarks `last access time` against a cutoff time. If the cutoff time is less
+    than the last access time the bookmark will be deleted from the system
+    """
+    # on a thread so we need to import this
     import cherrypy
 
     cherrypy.log.error("Started server cache cleanup worker.")
     while True:
-        time.sleep(datetime.timedelta(seconds=20).total_seconds())
-        cutoff = (
-            datetime.datetime.now(datetime.timezone.utc)
-            - datetime.timedelta(seconds=24)
-            # - cherrypy.request.app.config["slycat"]["session-timeout"]
-        ).isoformat()
-        database = slycat.web.server.database.couchdb.connect()
-        references = [
-            reference["bid"]
-            for reference in database.scan("slycat/references")
-            if "bid" in reference
-        ]
-        bookmarks_with_no_references = [
-            bookmark
-            for bookmark in database.scan("slycat/project-bookmarks")
-            if bookmark["_id"] not in references
-        ]
-        for bookmark in bookmarks_with_no_references:
-            if "last_accessed" in bookmark:
-                if bookmark["last_accessed"] < cutoff:
-                    # database.delete(bookmark)
-                    cherrypy.log.error(
-                        "[BOOKMARK-CLEANUP] running server bookmark-cleanup thread < cutoff %s"
-                        % (str(bookmark["last_accessed"]))
-                    )
-                    cherrypy.log.error("")
+        # set the run frequency
+        time.sleep(datetime.timedelta(days=1).total_seconds())
+        if "bookmark-expiration" in cherrypy.request.app.config["slycat-web-server"]:
+            cutoff = (
+                datetime.datetime.now(datetime.timezone.utc)
+                - cherrypy.request.app.config["slycat-web-server"][
+                    "bookmark-expiration"
+                ]
+            ).isoformat()
+        else:
+            cutoff = (
+                datetime.datetime.now(datetime.timezone.utc)
+                - datetime.timedelta(weeks=56)
+            ).isoformat()
+        # lets make this a locked operation
+        with slycat.web.server.database.couchdb.db_lock:
+            database = slycat.web.server.database.couchdb.connect()
+            references = [
+                reference["bid"]
+                for reference in database.scan("slycat/references")
+                if "bid" in reference
+            ]
+            bookmarks_with_no_references = [
+                bookmark
+                for bookmark in database.scan("slycat/project-bookmarks")
+                if bookmark["_id"] not in references
+            ]
+            count = 0
+            for bookmark in bookmarks_with_no_references:
+                if "last_accessed" in bookmark:
+                    if bookmark["last_accessed"] < cutoff:
+                        database.delete(bookmark)
+                        count = count + 1
+                # no last_accessed means its way too old so lets delete it
                 else:
-                    cherrypy.log.error(
-                        "[BOOKMARK-CLEANUP] running server bookmark-cleanup thread > cutoff %s"
-                        % (str(bookmark["last_accessed"]))
-                    )
-            else:
-                pass
-                # database.delete(bookmark)
+                    database.delete(bookmark)
+                    count = count + 1
+            if count > 0:
                 cherrypy.log.error(
-                    "[BOOKMARK-CLEANUP] running server bookmark-cleanup thread delete"
+                    "[BOOKMARK-CLEANUP] bookmark-cleanup thread deleted %s bookmarks"
+                    % str(count)
                 )
 
 
