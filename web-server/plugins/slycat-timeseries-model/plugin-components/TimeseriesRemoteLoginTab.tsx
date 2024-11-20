@@ -3,14 +3,14 @@ import * as React from 'react';
 import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
 
-interface RemoteLoginTabProps {
+interface TimeseriesRemoteLoginTabProps {
     checked: string
     onChange: Function
     loadingData: any
     callBack: Function
 }
 
-function RemoteLoginTab(props: RemoteLoginTabProps) {
+function TimeseriesRemoteLoginTab(props: TimeseriesRemoteLoginTabProps) {
     return (
         <div>
             <form className='ml-3'>
@@ -42,4 +42,4 @@ function RemoteLoginTab(props: RemoteLoginTabProps) {
     );
 }
 
-export default RemoteLoginTab
+export default TimeseriesRemoteLoginTab

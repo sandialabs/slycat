@@ -3,7 +3,7 @@ import ModalContent from "components/ModalContent.tsx";
 import client from "js/slycat-web-client";
 import LocateDataTab from 'plugins/slycat-parameter-image/js/Components/LocateDataTab';
 import UploadTableTab from 'plugins/slycat-parameter-image/js/Components/UploadTableTab';
-import RemoteLoginTab from 'plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab.tsx';
+import ParameterSpaceRemoteLoginTab from 'plugins/slycat-parameter-image/js/Components/ParameterSpaceRemoteLoginTab';
 import HPCParametersTab from 'plugins/slycat-timeseries-model/plugin-components/HPCParametersTab.tsx';
 import ModelNamingTab from 'plugins/slycat-timeseries-model/plugin-components/ModelNamingTab.tsx';
 import TimeseriesParametersTab from 'plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab.tsx';
@@ -158,20 +158,24 @@ export default class ParameterSpaceWizard extends React.Component<
         {/* NEED TO ADD REMOTE LOGIN TAB HERE */}
         {this.state.visibleTab === "2"?
           <div>
-            <RemoteFileBrowser
-              selectedOption={this.state.selectedOption}
-              onSelectFileCallBack={this.onSelectHDF5Directory}
-              onReauthCallBack={this.onReauth}
-              onSelectParserCallBack={this.onSelectParser}
-              hostname={this.state.hostname}
+            <ParameterSpaceRemoteLoginTab
+              loadingData={this.state.loadingData}
+              callBack={(newHostname: string, newUsername: string, newPassword: string, sessionExists: boolean) => {
+                this.setState({
+                  hostname: newHostname,
+                  sessionExists: sessionExists,
+                  username: newUsername,
+                  password: newPassword
+                });
+              }}
             />
           </div>
           : null}
-        {this.state.visibleTab === "3" ?
+        {this.state.visibleTab === "3"?
           <div>
-            <RemoteFileBrowserNoSelector
+            <RemoteFileBrowser
               selectedOption={this.state.selectedOption}
-              onSelectFileCallBack={this.onSelectTimeseriesFile}
+              onSelectFileCallBack={this.onSelectHDF5Directory}
               onReauthCallBack={this.onReauth}
               onSelectParserCallBack={this.onSelectParser}
               hostname={this.state.hostname}

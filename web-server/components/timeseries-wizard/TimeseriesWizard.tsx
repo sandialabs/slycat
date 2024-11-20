@@ -1,7 +1,7 @@
 import * as React from "react";
 import ModalContent from "components/ModalContent.tsx";
 import client from "js/slycat-web-client";
-import RemoteLoginTab from 'plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab.tsx';
+import TimeseriesRemoteLoginTab from 'plugins/slycat-timeseries-model/plugin-components/TimeseriesRemoteLoginTab.tsx';
 import HPCParametersTab from 'plugins/slycat-timeseries-model/plugin-components/HPCParametersTab.tsx';
 import ModelNamingTab from 'plugins/slycat-timeseries-model/plugin-components/ModelNamingTab.tsx';
 import TimeseriesParametersTab from 'plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab.tsx';
@@ -146,7 +146,7 @@ export default class TimeseriesWizard extends React.Component<
         </ul>
         {this.state.visibleTab === "0" ?
           <div>
-            <RemoteLoginTab 
+            <TimeseriesRemoteLoginTab 
               onChange={(value: string) => {
                 this.setState({ selectedOption: value });
               }}
