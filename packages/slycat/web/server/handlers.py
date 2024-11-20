@@ -1011,8 +1011,10 @@ def post_project_bookmarks(pid):
                 "_id": bid,
                 "project": pid,
                 "type": "bookmark",
-                "created": datetime.datetime.utcnow().isoformat(),
-                "last_accessed": datetime.datetime.utcnow().isoformat(),
+                "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "last_accessed": datetime.datetime.now(
+                    datetime.timezone.utc
+                ).isoformat(),
             }
             database.save(doc)
             database.put_attachment(

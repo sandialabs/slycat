@@ -25,7 +25,7 @@ def _array_cleanup_worker():
                     if file.value == 0:
                         slycat.web.server.hdf5.delete(file.key)
                         database.delete(database[file.key])
-                cherrypy.log.error("Array cleanup worker finished.")
+                # cherrypy.log.error("Array cleanup worker finished.")
                 break
             except Exception as e:
                 cherrypy.log.error("Array cleanup worker waiting for couchdb.")
@@ -83,11 +83,62 @@ _cache_cleanup_worker.thread = threading.Thread(
 _cache_cleanup_worker.thread.daemon = True
 
 
+def _bookmark_cleanup_worker():
+    import cherrypy
+
+    cherrypy.log.error("Started server cache cleanup worker.")
+    while True:
+        time.sleep(datetime.timedelta(seconds=20).total_seconds())
+        cutoff = (
+            datetime.datetime.now(datetime.timezone.utc)
+            - datetime.timedelta(seconds=24)
+            # - cherrypy.request.app.config["slycat"]["session-timeout"]
+        ).isoformat()
+        database = slycat.web.server.database.couchdb.connect()
+        references = [
+            reference["bid"]
+            for reference in database.scan("slycat/references")
+            if "bid" in reference
+        ]
+        bookmarks_with_no_references = [
+            bookmark
+            for bookmark in database.scan("slycat/project-bookmarks")
+            if bookmark["_id"] not in references
+        ]
+        for bookmark in bookmarks_with_no_references:
+            if "last_accessed" in bookmark:
+                if bookmark["last_accessed"] < cutoff:
+                    # database.delete(bookmark)
+                    cherrypy.log.error(
+                        "[BOOKMARK-CLEANUP] running server bookmark-cleanup thread < cutoff %s"
+                        % (str(bookmark["last_accessed"]))
+                    )
+                    cherrypy.log.error("")
+                else:
+                    cherrypy.log.error(
+                        "[BOOKMARK-CLEANUP] running server bookmark-cleanup thread > cutoff %s"
+                        % (str(bookmark["last_accessed"]))
+                    )
+            else:
+                pass
+                # database.delete(bookmark)
+                cherrypy.log.error(
+                    "[BOOKMARK-CLEANUP] running server bookmark-cleanup thread delete"
+                )
+
+
+_bookmark_cleanup_worker.thread = threading.Thread(
+    name="bookmark-cleanup", target=_bookmark_cleanup_worker
+)
+_bookmark_cleanup_worker.thread.daemon = True
+
+
 def start():
     """Called to start all of the cleanup worker threads."""
     _array_cleanup_worker.thread.start()
     _login_session_cleanup_worker.thread.start()
     _cache_cleanup_worker.thread.start()
+    _bookmark_cleanup_worker.thread.start()
 
 
 def arrays():
