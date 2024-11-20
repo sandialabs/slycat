@@ -111,6 +111,7 @@ def _bookmark_cleanup_worker():
         # lets make this a locked operation
         with slycat.web.server.database.couchdb.db_lock:
             database = slycat.web.server.database.couchdb.connect()
+            # build a list of bookmark ids that should not be deleted
             references = [
                 reference["bid"]
                 for reference in database.scan("slycat/references")
@@ -127,7 +128,7 @@ def _bookmark_cleanup_worker():
                     if bookmark["last_accessed"] < cutoff:
                         database.delete(bookmark)
                         count = count + 1
-                # no last_accessed means its way too old so lets delete it
+                # no last_accessed field means its way too old so lets delete it
                 else:
                     database.delete(bookmark)
                     count = count + 1
