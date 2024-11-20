@@ -20,6 +20,7 @@ import SlycatSelector from 'components/SlycatSelector.tsx';
 import server_root from "js/slycat-server-root";
 import { cloneDeep } from "lodash";
 import markings from "js/slycat-selectable-markings";
+import SelectColumnsTab from "plugins/slycat-parameter-image/js/Components/SelectColumnsTab";
 
 /**
  * not used
@@ -67,12 +68,14 @@ export interface ParameterSpaceWizardState {
   userConfig: { 'slurm': {}, 'timeseries-wizard': {} },
   idCol: string;
   delimiter: string;
-  timeseriesName: string;
+  parameterSpaceName: string;
   modelDescription: string;
   TimeSeriesLocalStorage: any;
   validForms: boolean;
   marking: { text: string, value: string}[];
   selectedMarking: {text: string, value: string}[];
+  checkedInOutNeither: string;
+  columnSelection: [];
 }
 
 /**
@@ -107,6 +110,9 @@ export default class ParameterSpaceWizard extends React.Component<
       validForms: true,
       marking: [],
       selectedMarking: [],
+      parameterSpaceName: '',
+      checkedInOutNeither: '',
+      columnSelection: []
     };
     initialState = cloneDeep(this.state);
     this.getMarkings();
@@ -149,9 +155,16 @@ export default class ParameterSpaceWizard extends React.Component<
             />
           </div>
           : null}
+        {/* NEED TO ADD REMOTE LOGIN TAB HERE */}
         {this.state.visibleTab === "2"?
           <div>
-            
+            <RemoteFileBrowser
+              selectedOption={this.state.selectedOption}
+              onSelectFileCallBack={this.onSelectHDF5Directory}
+              onReauthCallBack={this.onReauth}
+              onSelectParserCallBack={this.onSelectParser}
+              hostname={this.state.hostname}
+            />
           </div>
           : null}
         {this.state.visibleTab === "3" ?
@@ -167,26 +180,21 @@ export default class ParameterSpaceWizard extends React.Component<
           : null}
         {this.state.visibleTab === "4" ?
           <div>
-            <RemoteFileBrowser
-              selectedOption={this.state.selectedOption}
-              onSelectFileCallBack={this.onSelectHDF5Directory}
-              onReauthCallBack={this.onReauth}
-              onSelectParserCallBack={this.onSelectParser}
-              hostname={this.state.hostname}
+            <SelectColumnsTab
+              attributes={['test1', 'test2', 'test3']}
+              classification={['Input', 'Output', 'Neither', 'Categorical', 'Editable']}
+              selectedColumns={this.state.columnSelection}
+              checked={this.state.checkedInOutNeither}
+              onChange={this.onSelectInputOutput}
             />
           </div>
           : null}
         {this.state.visibleTab === "5" ?
           <div>
-            
-          </div>
-          : null}
-        {this.state.visibleTab === "6" ?
-          <div>
             <ModelNamingTab 
               marking={this.state.marking}
               nameCallback={(name: string) => {
-                this.setState({ timeseriesName: name });
+                this.setState({ parameterSpaceName: name });
                 }}
               descriptionCallback={(description: string) => {
                 this.setState({ modelDescription: description });
@@ -210,7 +218,8 @@ export default class ParameterSpaceWizard extends React.Component<
       </button>
       );
     }
-    const isDisabled = this.state.visibleTab === '1' && this.state.selectedTablePath === ''
+    // const isDisabled = this.state.visibleTab === '1' && this.state.selectedTablePath === ''
+    const isDisabled = false;
     const continueClassNames = isDisabled ?
       'btn btn-primary disabled' : 'btn btn-primary';
 
@@ -242,7 +251,6 @@ export default class ParameterSpaceWizard extends React.Component<
   }
 
   continue = () => {
-    console.log('in continue.');
     if (this.validateFields()) {
       // Locate Data tab branches
       if (this.state.visibleTab === '0' && this.state.fileLocation == 'local') {
@@ -381,6 +389,10 @@ export default class ParameterSpaceWizard extends React.Component<
     this.setState({ useProjectData: useProjectData });
   }
 
+  onSelectInputOutput = (checked: string, category: string) => {
+    this.setState({ checkedInOutNeither: category });
+  }
+
   handleColumnNames = (names: []) => {
     const columnNames = [];
     for (let i = 0; i < names.length; i++) {
@@ -400,8 +412,8 @@ export default class ParameterSpaceWizard extends React.Component<
   create_model = () => {
     client.post_project_models_fetch({
       pid: this.state.project._id(),
-      type: 'parameter-space',
-      name: this.state.timeseriesName,
+      type: 'parameter-image',
+      name: this.state.parameterSpaceName,
       description: '',
       marking: this.state.marking[0]['value'],
     }).then((result) => {
@@ -421,7 +433,7 @@ export default class ParameterSpaceWizard extends React.Component<
     // Creating new model
     client.put_model_fetch({
       mid: this.state.model["id"],
-      name: this.state.timeseriesName,
+      name: this.state.parameterSpaceName,
       description: this.state.modelDescription,
       marking: this.state.selectedMarking,
     }).then((result) => {
