@@ -51,7 +51,7 @@ import {
   selectHideLabels,
   selectHorizontalSpacing,
   selectVerticalSpacing,
-} from "./scatterplotSlice";
+} from "./features/scatterplot/scatterplotSlice";
 import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,

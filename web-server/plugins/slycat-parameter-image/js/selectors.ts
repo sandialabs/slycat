@@ -18,6 +18,7 @@ import {
   selectVariableAliases,
   selectXValues,
   selectYValues,
+  selectVValues,
   selectTableStatistics,
   selectColumnTypes,
   selectColumnNames,

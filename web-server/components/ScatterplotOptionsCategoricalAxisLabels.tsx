@@ -15,7 +15,7 @@ import {
   MIN_VERTICAL_SPACING,
   MAX_VERTICAL_SPACING,
   VERTICAL_SPACING_STEP,
-} from "plugins/slycat-parameter-image/js/scatterplotSlice";
+} from "plugins/slycat-parameter-image/js/features/scatterplot/scatterplotSlice";
 import { SlycatNumberInput } from "./ScatterplotOptions";
 
 export const CATEGORICAL_AXIS_LABELS_WARNING = "Hide Some Categorical Axis Labels To Increase Readability";
