@@ -135,8 +135,11 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
     :return: not used
     """
     kwargs = {}
-    aids = []
-    aids.append(aid)
+    if not isinstance(aid, list):
+        aids = []
+        aids.append(aid)
+    else:
+        aids = aid
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
                                                                   aids, **kwargs)

@@ -443,6 +443,8 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         cherrypy.log.error(str(e))
 
     model = database.get("model", mid)
+    if isinstance(aids, str):
+        aids = aids.split(',')
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
