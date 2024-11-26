@@ -4,8 +4,8 @@ import slycat_color_maps from "js/slycat-color-maps";
 import PlotGrid from "./PlotGrid";
 import {
   selectColormap,
-  selectXScale,
-  selectYScale,
+  selectXScaleAxis,
+  selectYScaleAxis,
   selectXTicks,
   selectYTicks,
 } from "../selectors";
@@ -15,8 +15,8 @@ type PSScatterplotGridProps = {};
 
 const PSScatterplotGrid: React.FC<PSScatterplotGridProps> = (props) => {
   const colormap = useSelector(selectColormap);
-  const x_scale = useSelector(selectXScale);
-  const y_scale = useSelector(selectYScale);
+  const x_scale_axis = useSelector(selectXScaleAxis);
+  const y_scale_axis = useSelector(selectYScaleAxis);
   const x_ticks = useSelector(selectXTicks);
   const y_ticks = useSelector(selectYTicks);
   const show_grid = useSelector(selectShowGrid);
@@ -29,8 +29,8 @@ const PSScatterplotGrid: React.FC<PSScatterplotGridProps> = (props) => {
 
   return (
     <PlotGrid
-      x_scale={x_scale}
-      y_scale={y_scale}
+      x_scale={x_scale_axis}
+      y_scale={y_scale_axis}
       x_ticks={x_ticks}
       y_ticks={y_ticks}
       colormap={colormap}
