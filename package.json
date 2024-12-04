@@ -58,7 +58,7 @@
     "three-stl-loader": "1.0.6",
     "three-trackballcontrols": "0.9.0",
     "urijs": "1.19.11",
-    "uuid": "^10",
+    "uuid": "^11",
     "vtk.js": "^32",
     "wslink": "^2",
     "zipinfo.js": "1.0.0"
