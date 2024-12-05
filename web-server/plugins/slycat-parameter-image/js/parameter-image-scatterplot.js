@@ -1411,7 +1411,8 @@ $.widget("parameter_image.scatterplot", {
       // Check if the axis labels are hidden and if so, add a popover icon.
       const hideLabels = selectHideLabels(window.store.getState());
       const horizontalSpacing = selectHorizontalSpacing(window.store.getState());
-      const xScaleStep = selectXScale(window.store.getState()).step();
+      const xScale = selectXScale(window.store.getState());
+      const xScaleStep = xScale.step ? xScale.step() : undefined;
 
       if (hideLabels && horizontalSpacing > xScaleStep) {
         // Get the bounding box of the text to position the icon
@@ -1467,7 +1468,8 @@ $.widget("parameter_image.scatterplot", {
       // Check if the axis labels are hidden and if so, add a popover icon.
       const hideLabels = selectHideLabels(window.store.getState());
       const verticalSpacing = selectVerticalSpacing(window.store.getState());
-      const yScaleStep = selectYScale(window.store.getState()).step();
+      const yScale = selectYScale(window.store.getState());
+      const yScaleStep = yScale.step ? yScale.step() : undefined;
 
       if (hideLabels && verticalSpacing > yScaleStep) {
         // Get the bounding box of the text to position the icon
@@ -1832,7 +1834,8 @@ $.widget("parameter_image.scatterplot", {
       // Check if the axis labels are hidden and if so, add a popover icon.
       const hideLabels = selectHideLabels(window.store.getState());
       const verticalSpacing = selectVerticalSpacing(window.store.getState());
-      const legendScaleStep = selectVScale(window.store.getState()).step();
+      const legendScale = selectVScale(window.store.getState());
+      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
 
       if (hideLabels && verticalSpacing > legendScaleStep) {
         // Get the bounding box of the text to position the icon
