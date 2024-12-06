@@ -86,7 +86,7 @@ _cache_cleanup_worker.thread.daemon = True
 def _bookmark_cleanup_worker():
     """
     This thread daemon is designed to compiled a list of bookmarks excluding any linked by references
-    and then test each bookmarks `last access time` against a cutoff time. If the cutoff time is less
+    and then test each bookmark's `last access time` against a cutoff time. If the cutoff time is greater
     than the last access time the bookmark will be deleted from the system
     """
     # on a thread so we need to import this
