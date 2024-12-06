@@ -5,6 +5,7 @@
 
 import api_root from "js/slycat-api-root";
 import d3 from "d3";
+import * as d3v7 from "d3v7";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
@@ -23,7 +24,6 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
-import PlotGrid from "./Components/PlotGrid";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -36,10 +36,25 @@ import {
   selectXColumnName,
   selectYColumnName,
   selectVColumnName,
+  selectXScale,
+  selectYScale,
+  selectVScale,
+  selectXScaleAxis,
+  selectYScaleAxis,
+  selectLegendScaleAxis,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
+import {
+  selectHideLabels,
+  selectHorizontalSpacing,
+  selectVerticalSpacing,
+} from "./scatterplotSlice";
+import {
+  CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
+  CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
+} from "components/ScatterplotOptionsCategoricalAxisLabels";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -69,7 +84,7 @@ $.widget("parameter_image.scatterplot", {
     v_index: null,
     images: [],
     selection: [],
-    colorscale: d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    colorscale: d3v7.scaleLinear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     open_images: [],
     gradient: null,
     hidden_simulations: [],
@@ -486,6 +501,7 @@ $.widget("parameter_image.scatterplot", {
       self.legend_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
       self._schedule_update({ update_y_label: true });
       self._schedule_update({ update_x_label: true });
+      self._schedule_update({ update_v_label: true });
     };
 
     const update_axes_font_family = () => {
@@ -496,6 +512,7 @@ $.widget("parameter_image.scatterplot", {
       self.legend_layer.selectAll("text").style("font-family", self.options.axes_font_family);
       self._schedule_update({ update_y_label: true });
       self._schedule_update({ update_x_label: true });
+      self._schedule_update({ update_v_label: true });
     };
 
     const update_axes_variables_scale = () => {
@@ -683,6 +700,32 @@ $.widget("parameter_image.scatterplot", {
       { objectPath: "derived.variableAliases", callback: update_scatterplot_labels },
       { objectPath: "open_media", callback: update_media_sizes },
       { objectPath: "scatterplot_margin", callback: update_scatterplot_margin },
+      {
+        objectPath: "scatterplot.horizontal_spacing",
+        callback: () => self._schedule_update({ update_x: true, update_x_label: true }),
+      },
+      {
+        objectPath: "scatterplot.vertical_spacing",
+        callback: () =>
+          self._schedule_update({
+            update_y: true,
+            update_legend_axis: true,
+            update_y_label: true,
+            update_v_label: true,
+          }),
+      },
+      {
+        objectPath: "scatterplot.hide_labels",
+        callback: () =>
+          self._schedule_update({
+            update_x: true,
+            update_y: true,
+            update_legend_axis: true,
+            update_x_label: true,
+            update_y_label: true,
+            update_v_label: true,
+          }),
+      },
     ].forEach((subscription) => {
       window.store.subscribe(
         watch(
@@ -848,7 +891,7 @@ $.widget("parameter_image.scatterplot", {
       if (reverse === true) {
         domain.reverse();
       }
-      return d3.time.scale().domain(domain).range(range);
+      return d3v7.scaleTime().domain(domain).range(range);
     }
     // For numeric variables
     else if (!variableIsString) {
@@ -862,17 +905,17 @@ $.widget("parameter_image.scatterplot", {
       }
       // Log scale if 'Log' variable types
       if (type == "Log") {
-        return d3.scale.log().domain(domain).range(range);
+        return d3v7.scaleLog().domain(domain).range(range);
       }
       // Linear scale otherwise
-      return d3.scale.linear().domain(domain).range(range);
+      return d3v7.scaleLinear().domain(domain).range(range);
     }
     // For string variables, make an ordinal scale
     var uniqueValues = d3.set(values).values().sort();
     if (reverse === true) {
       uniqueValues.reverse();
     }
-    return d3.scale.ordinal().domain(uniqueValues).rangePoints(range);
+    return d3v7.scalePoint().domain(uniqueValues).range(range);
   },
 
   _getDefaultXPosition: function (imageIndex, imageWidth) {
@@ -1255,9 +1298,13 @@ $.widget("parameter_image.scatterplot", {
       );
 
       self.x_axis_offset = self.options.height - self.options.margin_bottom - 40;
+
+      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
+      const x_scale_axis = selectXScaleAxis(window.store.getState());
+
       self.x_axis = d3.svg
         .axis()
-        .scale(self.x_scale)
+        .scale(x_scale_axis)
         .orient("bottom")
         // Set number of ticks based on width of axis.
         .ticks(self.x_range_canvas[1] / 85);
@@ -1307,9 +1354,12 @@ $.widget("parameter_image.scatterplot", {
         "y",
       );
 
+      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
+      const y_scale_axis = selectYScaleAxis(window.store.getState());
+
       self.y_axis = d3.svg
         .axis()
-        .scale(self.y_scale)
+        .scale(y_scale_axis)
         .orient("left")
         // Set number of ticks based on height of axis.
         .ticks(self.y_range_canvas[0] / 50);
@@ -1337,6 +1387,7 @@ $.widget("parameter_image.scatterplot", {
     }
 
     if (self.updates.update_x_label) {
+      // console.log("updating x label.");
       // This is the vertical offset of the x-axis label.
       let y = 5;
 
@@ -1346,7 +1397,7 @@ $.widget("parameter_image.scatterplot", {
       let x = self.options.margin_left + x_axis_width + 40;
 
       self.x_axis_layer.selectAll(".label").remove();
-      self.x_axis_layer
+      const label = self.x_axis_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -1356,6 +1407,40 @@ $.widget("parameter_image.scatterplot", {
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
         .text(self.options.x_label);
+
+      // Check if the axis labels are hidden and if so, add a popover icon.
+      const hideLabels = selectHideLabels(window.store.getState());
+      const horizontalSpacing = selectHorizontalSpacing(window.store.getState());
+      const xScale = selectXScale(window.store.getState());
+      const xScaleStep = xScale.step ? xScale.step() : undefined;
+
+      if (hideLabels && horizontalSpacing > xScaleStep) {
+        // Get the bounding box of the text to position the icon
+        const bbox = label.node().getBBox();
+        const fontSize = self.options.axes_font_size;
+
+        self.x_axis_layer
+          .append("text")
+          .attr("class", "label warning-icon")
+          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
+          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-toggle", "popover")
+          .attr("data-trigger", "hover")
+          .attr("data-placement", "auto")
+          .attr("transform", `translate(${bbox.x + bbox.width + fontSize / 2}, ${y})`) // Position after text with small gap
+          .style("font-size", fontSize + "px")
+          .style("font-family", "FontAwesome")
+          .text("\uf06a");
+
+        label
+          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
+          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-toggle", "popover")
+          .attr("data-trigger", "hover")
+          .attr("data-placement", "auto");
+
+        $('.scatterplot-svg [data-toggle="popover"]').popover();
+      }
     }
 
     if (self.updates.update_y_label) {
@@ -1368,7 +1453,7 @@ $.widget("parameter_image.scatterplot", {
       var x = -(y_axis_width + 25);
       var y = self.options.margin_top + scatterplot_height / 2;
 
-      self.y_axis_layer
+      const label = self.y_axis_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -1379,6 +1464,44 @@ $.widget("parameter_image.scatterplot", {
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
         .text(self.options.y_label);
+
+      // Check if the axis labels are hidden and if so, add a popover icon.
+      const hideLabels = selectHideLabels(window.store.getState());
+      const verticalSpacing = selectVerticalSpacing(window.store.getState());
+      const yScale = selectYScale(window.store.getState());
+      const yScaleStep = yScale.step ? yScale.step() : undefined;
+
+      if (hideLabels && verticalSpacing > yScaleStep) {
+        // Get the bounding box of the text to position the icon
+        const bbox = label.node().getBBox();
+        const fontSize = self.options.axes_font_size;
+        const yOffset = bbox.y - bbox.height - fontSize / 2;
+
+        self.y_axis_layer
+          .append("text")
+          .attr("class", "label warning-icon")
+          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
+          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-toggle", "popover")
+          .attr("data-trigger", "hover")
+          .attr("data-placement", "auto")
+          .attr("x", x)
+          .attr("y", yOffset)
+          .attr("transform", `rotate(-90,${x},${yOffset})`)
+          .style("text-anchor", "middle")
+          .style("font-size", fontSize + "px")
+          .style("font-family", "FontAwesome")
+          .text("\uf06a");
+
+        label
+          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
+          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-toggle", "popover")
+          .attr("data-trigger", "hover")
+          .attr("data-placement", "auto");
+
+        $('.scatterplot-svg [data-toggle="popover"]').popover();
+      }
     }
 
     if (self.updates.render_data) {
@@ -1669,9 +1792,12 @@ $.widget("parameter_image.scatterplot", {
         "v",
       );
 
+      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
+      const legend_scale_axis = selectLegendScaleAxis(window.store.getState());
+
       self.legend_axis = d3.svg
         .axis()
-        .scale(self.legend_scale)
+        .scale(legend_scale_axis)
         .orient("right")
         .ticks(range[1] / 50);
       // Forces ticks at min and max axis values, but sometimes they collide
@@ -1695,7 +1821,7 @@ $.widget("parameter_image.scatterplot", {
       var x = -15;
       var y = rectHeight / 2;
 
-      self.legend_layer
+      const label = self.legend_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -1704,6 +1830,44 @@ $.widget("parameter_image.scatterplot", {
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label);
+
+      // Check if the axis labels are hidden and if so, add a popover icon.
+      const hideLabels = selectHideLabels(window.store.getState());
+      const verticalSpacing = selectVerticalSpacing(window.store.getState());
+      const legendScale = selectVScale(window.store.getState());
+      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
+
+      if (hideLabels && verticalSpacing > legendScaleStep) {
+        // Get the bounding box of the text to position the icon
+        const bbox = label.node().getBBox();
+        const fontSize = self.options.axes_font_size;
+        const yOffset = bbox.y - bbox.height - fontSize / 2;
+
+        self.legend_layer
+          .append("text")
+          .attr("class", "label warning-icon")
+          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
+          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-toggle", "popover")
+          .attr("data-trigger", "hover")
+          .attr("data-placement", "auto")
+          .attr("x", x)
+          .attr("y", yOffset)
+          .attr("transform", `rotate(-90,${x},${yOffset})`)
+          .style("text-anchor", "middle")
+          .style("font-size", fontSize + "px")
+          .style("font-family", "FontAwesome")
+          .text("\uf06a");
+
+        label
+          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
+          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-toggle", "popover")
+          .attr("data-trigger", "hover")
+          .attr("data-placement", "auto");
+
+        $('.scatterplot-svg [data-toggle="popover"]').popover();
+      }
     }
 
     if (self.updates.update_video_sync_time) {

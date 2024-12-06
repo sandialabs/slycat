@@ -8,7 +8,7 @@
 # S. Martin
 # 5/20/2018
 
-import cherrypy
+# import cherrypy
 import csv
 import numpy
 
@@ -22,7 +22,7 @@ def parse_mat_file(file):
     :returns: attributes, dimensions, data
     """
 
-    cherrypy.log.error("Started VS generic matrix parser.")
+    # cherrypy.log.error("Started VS generic matrix parser.")
 
     # parse file using comma delimiter
     rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,

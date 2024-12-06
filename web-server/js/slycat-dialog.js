@@ -22,6 +22,10 @@ export function dialog(params)
   component.select = ko.observable(params.select || false);
   component.multiple = ko.observable(params.multiple || false);
 
+  // add check box option
+  component.checkbox = ko.observable(params.checkbox || false);
+  component.checkbox_msg = ko.observable(params.checkbox_msg || false);
+
   // set up options list with an index id
   var select_options = []
   if (typeof params.select_options !== 'undefined') {
