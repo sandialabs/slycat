@@ -15,24 +15,53 @@ import sys
 import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input-dir", default="/usr/src/slycat/slycat/docker/compose/slycat-compose/DB", help="Directory containing data dumped with slycat-dump.py.")
-parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
-parser.add_argument("--couchdb-host", default="couchdb", help="CouchDB host.  Default: %(default)s")
-parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
-parser.add_argument("--port", default="5984", help="CouchDB port.  Default: %(default)s")
-parser.add_argument("--admin", default="admin", help="CouchDB admin user.  Default: %(default)s")
-parser.add_argument("--password", default="password", help="CouchDB admin password.  Default: %(default)s")
+parser.add_argument(
+    "--input-dir",
+    default="/usr/src/slycat/slycat/docker/compose/slycat-compose/DB",
+    help="Directory containing data dumped with slycat-dump.py.",
+)
+parser.add_argument(
+    "--couchdb-database",
+    default="slycat",
+    help="CouchDB database.  Default: %(default)s",
+)
+parser.add_argument(
+    "--couchdb-host", default="couchdb", help="CouchDB host.  Default: %(default)s"
+)
+parser.add_argument(
+    "--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s"
+)
+parser.add_argument(
+    "--port", default="5984", help="CouchDB port.  Default: %(default)s"
+)
+parser.add_argument(
+    "--admin", default="admin", help="CouchDB admin user.  Default: %(default)s"
+)
+parser.add_argument(
+    "--password",
+    default="password",
+    help="CouchDB admin password.  Default: %(default)s",
+)
 
-parser.add_argument("--data-store", default="/var/lib/slycat/data-store",
-                    help="Path to the hdf5 data storage directory.  Default: %(default)s")
+parser.add_argument(
+    "--data-store",
+    default="/var/lib/slycat/data-store",
+    help="Path to the hdf5 data storage directory.  Default: %(default)s",
+)
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
-parser.add_argument("--marking", default=[], nargs="+",
-                    help="Use --marking='<source>:<target>' to map <source> markings to <target> markings.  You may specify multiple maps, separated by whitespace.")
+parser.add_argument(
+    "--marking",
+    default=[],
+    nargs="+",
+    help="Use --marking='<source>:<target>' to map <source> markings to <target> markings.  You may specify multiple maps, separated by whitespace.",
+)
 arguments = parser.parse_args()
 
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler())
-logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
+logging.getLogger().handlers[0].setFormatter(
+    logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0]))
+)
 
 # Sanity check input arguments ...
 markings = [marking.split(":") for marking in arguments.marking]
@@ -41,20 +70,20 @@ markings = dict([(source, target) for source, target in markings])
 # assuming CouchDB initialization from local process to local server
 creds = ""
 if arguments.admin != "":
-  creds = arguments.admin + ":" + arguments.password + "@"
+    creds = arguments.admin + ":" + arguments.password + "@"
 
 serverURL = "http://" + creds + arguments.couchdb_host + ":" + arguments.port + "/"
 logging.error("couch serverURL:%s" % serverURL)
 while True:
-  try:
-    couchdb_server = couchdb.Server(serverURL)
-    version = couchdb_server.version()
-    couchdb = couchdb_server[arguments.couchdb_database]
-    break
-  except Exception as e:
-    logging.error("Waiting for couchdb for data load.")
-    logging.error(e.msg)
-    time.sleep(2)
+    try:
+        couchdb_server = couchdb.Server(serverURL)
+        version = couchdb_server.version()
+        couchdb = couchdb_server[arguments.couchdb_database]
+        break
+    except Exception as e:
+        logging.error("Waiting for couchdb for data load.")
+        logging.error(e.msg)
+        time.sleep(2)
 
 
 # --host couchdb --admin admin --password password
@@ -122,5 +151,8 @@ try:
             del couchdb[reference["_id"]]
         couchdb.save(reference)
     logging.info("Loading references Done")
+
 except Exception:
-    logging.error("Not loading data resource conflict encountered data is probably already loaded")
+    logging.error(
+        "Not loading data resource conflict encountered data is probably already loaded"
+    )

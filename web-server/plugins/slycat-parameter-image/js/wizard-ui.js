@@ -711,48 +711,77 @@ function constructor(params) {
       if (component.attributes()[i].image()) image_columns.push(i);
     }
 
-    client.put_model_parameter({
-      mid: component.model._id(),
-      aid: "input-columns",
-      value: input_columns,
-      input: true,
-      success: function () {
+    if (component.parser() == 'slycat-hdf5-parser') {
         client.put_model_parameter({
           mid: component.model._id(),
-          aid: "output-columns",
-          value: output_columns,
+          aid: "rating-columns",
+          value: rating_columns,
           input: true,
           success: function () {
             client.put_model_parameter({
               mid: component.model._id(),
-              aid: "rating-columns",
-              value: rating_columns,
+              aid: "category-columns",
+              value: category_columns,
               input: true,
               success: function () {
                 client.put_model_parameter({
                   mid: component.model._id(),
-                  aid: "category-columns",
-                  value: category_columns,
+                  aid: "image-columns",
+                  value: image_columns,
                   input: true,
                   success: function () {
-                    client.put_model_parameter({
-                      mid: component.model._id(),
-                      aid: "image-columns",
-                      value: image_columns,
-                      input: true,
-                      success: function () {
-                        component.tab(5);
-                      },
-                    });
+                    component.tab(5);
                   },
                 });
               },
             });
           },
         });
-      },
-    });
-  };
+      }
+    else {
+      client.put_model_parameter({
+        mid: component.model._id(),
+        aid: "input-columns",
+        value: input_columns,
+        input: true,
+        success: function () {
+          client.put_model_parameter({
+            mid: component.model._id(),
+            aid: "output-columns",
+            value: output_columns,
+            input: true,
+            success: function () {
+              client.put_model_parameter({
+                mid: component.model._id(),
+                aid: "rating-columns",
+                value: rating_columns,
+                input: true,
+                success: function () {
+                  client.put_model_parameter({
+                    mid: component.model._id(),
+                    aid: "category-columns",
+                    value: category_columns,
+                    input: true,
+                    success: function () {
+                      client.put_model_parameter({
+                        mid: component.model._id(),
+                        aid: "image-columns",
+                        value: image_columns,
+                        input: true,
+                        success: function () {
+                          component.tab(5);
+                        },
+                      });
+                    },
+                  });
+                },
+              });
+            },
+          });
+        },
+      });
+    }
+  }
 
   component.name_model = function (formElement) {
     // Validating
@@ -771,6 +800,36 @@ function constructor(params) {
           client.post_model_finish({
             mid: component.model._id(),
             success: function () {
+              if(component.useProjectData() == false) {
+                client
+                .get_project_data_in_model_fetch({
+                  mid: component.model._id(),
+                })
+                .then((did) => {
+                  // if the data id isn't empty
+                  if (did[0] !== "") {
+                    // Remove project data id from model
+                    client
+                      .delete_project_data_in_model_fetch({ did: did, mid: component.model._id() })
+                      .then(() => {
+                        // Remove model id from project data
+                        client
+                          .delete_model_in_project_data_fetch({ mid: component.model._id(), did: did })
+                          .then(() => {
+                            // Get the list of models using that project data
+                            client
+                              .get_project_data_parameter_fetch({ did: did, param: "mid" })
+                              .then((models) => {
+                                // if there are no more models using that project data, delete it
+                                if (models && models.length === 0) {
+                                  client.delete_project_data_fetch({ did: did });
+                                }
+                              });
+                          });
+                      });
+                  }
+                });
+              }
               component.go_to_model();
             },
           });
