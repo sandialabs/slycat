@@ -41,6 +41,7 @@ import {
   selectXYPairs,
   selectTableMetadata,
 } from "../features/derived/derivedSlice";
+import { selectXIndex, selectYIndex, selectVIndex, selectMediaIndex } from "../selectors";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 import _ from "lodash";
 
@@ -739,10 +740,10 @@ const mapStateToProps = (state: RootState) => {
 
   return {
     variableRanges: state.variableRanges,
-    x_index: state.x_index,
-    y_index: state.y_index,
-    v_index: state.v_index,
-    media_index: state.media_index,
+    x_index: selectXIndex(state),
+    y_index: selectYIndex(state),
+    v_index: selectVIndex(state),
+    media_index: selectMediaIndex(state),
     media_columns: selectMediaColumns(state),
     rating_variables: selectRatingVariables(state),
     open_media: state.open_media,

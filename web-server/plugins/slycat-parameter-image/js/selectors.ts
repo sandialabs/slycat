@@ -44,6 +44,7 @@ export const selectColormap = (state: RootState) => state.colormap;
 export const selectXIndex = (state: RootState) => state.x_index;
 export const selectYIndex = (state: RootState) => state.y_index;
 export const selectVIndex = (state: RootState) => state.v_index;
+export const selectMediaIndex = (state: RootState) => state.media_index;
 export const selectAxesVariables = (state: RootState) => state.axesVariables;
 
 export const selectXColumnType = createSelector(

@@ -446,6 +446,10 @@ $(document).ready(function () {
                 bookmark.state?.["manually_hidden_simulations"] ??
                 bookmark["manually-hidden-simulations"],
             },
+            [TABLE_SLICE_NAME]: {
+              sort_variable: bookmark["sort-variable"],
+              sort_order: bookmark["sort-order"],
+            },
           };
 
           const URIQuery = URI(window.location).query(true);
