@@ -155,7 +155,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
     {
       var new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
       if(new_path == "")
-        new_path = "/";
+        new_path = "//";
       return new_path;
     }
 
@@ -206,7 +206,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
       // If the file is our parent directory, move up the hierarchy.
       if(file.name === "..")
       {
-        this.browse(this.pathDirname(this.state.path));
+        this.browse(this.pathDirname(this.state.pathInput));
       }
       // If the file is a directory, move down the hierarchy.
       else if(file.type === "d")
