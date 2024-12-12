@@ -95,7 +95,6 @@ def _bookmark_cleanup_worker():
     cherrypy.log.error("Started server bookmark cleanup worker.")
     while True:
         # set the run frequency
-        time.sleep(datetime.timedelta(days=1).total_seconds())
         if "bookmark-expiration" in cherrypy.request.app.config["slycat-web-server"]:
             cutoff = (
                 datetime.datetime.now(datetime.timezone.utc)
@@ -137,6 +136,7 @@ def _bookmark_cleanup_worker():
                     "[BOOKMARK-CLEANUP] bookmark-cleanup thread deleted %s bookmarks"
                     % str(count)
                 )
+        time.sleep(datetime.timedelta(days=1).total_seconds())
 
 
 _bookmark_cleanup_worker.thread = threading.Thread(
