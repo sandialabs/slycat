@@ -14,7 +14,7 @@ import sys
 
 
 def _array_cleanup_worker():
-    cherrypy.log.error("Started array cleanup worker.")
+    cherrypy.log.error("Cleanup: Started array cleanup worker.")
     while True:
         arrays.queue.get()
         while True:
@@ -39,7 +39,7 @@ _array_cleanup_worker.thread.daemon = True
 
 
 def _login_session_cleanup_worker():
-    cherrypy.log.error("Started login session cleanup worker.")
+    cherrypy.log.error("Cleanup: Started login session cleanup worker.")
     while True:
         try:
             database = slycat.web.server.database.couchdb.connect()
@@ -70,7 +70,7 @@ def _cache_cleanup_worker():
     import cherrypy
     from slycat.web.server import cache_it
 
-    cherrypy.log.error("Started server cache cleanup worker.")
+    cherrypy.log.error("Cleanup: Started server cache cleanup worker.")
     while True:
         time.sleep(datetime.timedelta(minutes=15).total_seconds())
         # cherrypy.log.error("[CACHE] running server cache-cleanup thread")
@@ -92,7 +92,7 @@ def _bookmark_cleanup_worker():
     # on a thread so we need to import this
     import cherrypy
 
-    cherrypy.log.error("Started server bookmark cleanup worker.")
+    cherrypy.log.error("Cleanup: Started server bookmark cleanup worker.")
     while True:
         # set the run frequency
         if "bookmark-expiration" in cherrypy.request.app.config["slycat-web-server"]:
