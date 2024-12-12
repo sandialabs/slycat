@@ -8,31 +8,34 @@ import logging
 import datetime
 import cherrypy
 import slycat.mime_type
+
 session_cache = {}
 session_cache_lock = threading.Lock()
+
 
 class Smb(object):
     """
     usage:
     smb = Smb('user', 'password', 'server', 'share_name')
     """
-    def __init__(self, username, password, server, share, domain='', port=445):
+
+    def __init__(self, username, password, server, share, domain="", port=445):
         # setup data
         now = datetime.datetime.utcnow()
-        self.domain    = str(domain)
-        self.username  = str(username)
-        self.password  = str(password)
-        self.client    = socket.gethostname()
-        self.server    = str(server)
+        self.domain = str(domain)
+        self.username = str(username)
+        self.password = str(password)
+        self.client = socket.gethostname()
+        self.server = str(server)
         self.server_ip = socket.gethostbyname(server)
-        self.share     = str(share)
-        self.port      = port
-        self.conn      = None
+        self.share = str(share)
+        self.port = port
+        self.conn = None
         self.connected = False
         # SMB.SMBConnection logs too much
         self._created = now
         self._accessed = now
-        smb_logger = logging.getLogger('SMB.SMBConnection')
+        smb_logger = logging.getLogger("SMB.SMBConnection")
         smb_logger.setLevel(logging.INFO)
         self._lock = threading.Lock()
 
@@ -54,58 +57,66 @@ class Smb(object):
 
     def connect(self):
         try:
-            self.conn = SMBConnection(self.username, self.password,
-                                      self.client, self.server,
-                                      is_direct_tcp=True)
+            self.conn = SMBConnection(
+                self.username,
+                self.password,
+                self.client,
+                self.server,
+                is_direct_tcp=True,
+            )
             self.connected = self.conn.connect(self.server_ip, self.port)
             connected = True
-            cherrypy.log.error('Connected to %s smb server' % self.server)
+            cherrypy.log.error("Connected to %s smb server" % self.server)
             return self.connected
         except Exception as e:
-            cherrypy.log.error('Connect failed. Reason: %s', e)
+            cherrypy.log.error("Connect failed. Reason: %s", e)
             return False
 
     def list_shares(self):
         try:
             return self.conn.listShares()
         except Exception as e:
-            raise cherrypy.HTTPError("401 Remote smb connection failed reseting: %s" % str(e))
-    
-    def list_path(self, share=None, path='/'):
+            raise cherrypy.HTTPError(
+                "401 Remote smb connection failed reseting: %s" % str(e)
+            )
+
+    def list_path(self, share=None, path="/"):
         if share is None:
-            share=self.share
+            share = self.share
         try:
-            for sub_share in sorted(self.conn.listPath(share,path), key=lambda item: item.filename):
+            for sub_share in sorted(
+                self.conn.listPath(share, path), key=lambda item: item.filename
+            ):
                 cherrypy.log.error("    File=", sub_share.filename)
                 cherrypy.log.error("    Fileinfo= %s" % hex(sub_share.file_attributes))
                 cherrypy.log.error("    File isdir= %s" % sub_share.isDirectory)
         except Exception as e:
             cherrypy.log.error(str(e))
-            cherrypy.log.error('### can not list shares')
+            cherrypy.log.error("### can not list shares")
 
-    def list_Attributes(self, share=None, path='/'):
+    def list_Attributes(self, share=None, path="/"):
         if share is None:
-            share=self.share
+            share = self.share
         try:
-            return self.conn.getAttributes(share,path)
+            return self.conn.getAttributes(share, path)
         except Exception as e:
             cherrypy.log.error(str(e))
-            cherrypy.log.error('### can not list shares')
+            cherrypy.log.error("### can not list shares")
             return None
 
-    # Gets the file as a byte object. 
-    def get_file(self, share=None, path='/'):
+    # Gets the file as a byte object.
+    def get_file(self, share=None, path="/"):
         if share is None:
-            share=self.share
+            share = self.share
         file_obj = tempfile.NamedTemporaryFile()
         file_attributes, filesize = self.conn.retrieveFile(share, path, file_obj)
         file_obj.seek(0)
         return file_obj.read()
 
     # Handle the 'browse' command.
-    def browse(self, share=None, path='/'):
+    def browse(self, share=None, path="/"):
         if share is None:
-            share=self.share
+            share = self.share
         if path is None:
             raise Exception("Missing path.")
 
@@ -118,7 +129,9 @@ class Smb(object):
             "mime-types": [],
         }
 
-        for sub_share in sorted(self.conn.listPath(share,path), key=lambda item: item.filename):
+        for sub_share in sorted(
+            self.conn.listPath(share, path), key=lambda item: item.filename
+        ):
             # cherrypy.log.error("    File=", sub_share.filename)
             # cherrypy.log.error("    Fileinfo= %s" % hex(sub_share.file_attributes))
             # cherrypy.log.error("    File isdir= %s" % sub_share.isDirectory)
@@ -131,10 +144,13 @@ class Smb(object):
             listing["names"].append(sub_share.filename)
             listing["sizes"].append(sub_share.file_size)
             listing["types"].append(ftype)
-            listing["mtimes"].append(datetime.datetime.fromtimestamp(sub_share.last_write_time).isoformat())
+            listing["mtimes"].append(
+                datetime.datetime.fromtimestamp(sub_share.last_write_time).isoformat()
+            )
             listing["mime-types"].append(mime_type)
 
         return listing
+
 
 def create_session(username, password, server, share):
     """
@@ -163,12 +179,18 @@ def create_session(username, password, server, share):
             session_cache[smb_id] = Smb(username, password, server, share)
             if session_cache[smb_id].connect():
                 return smb_id
-            raise cherrypy.HTTPError("401 Remote smb connection failed: could not connect to smb drive")
+            raise cherrypy.HTTPError(
+                "401 Remote smb connection failed: could not connect to smb drive"
+            )
     except Exception as e:
-        cherrypy.log.error("Unknown exception for %s@%s: %s %s" % (username, server, type(e), str(e)))
-        cherrypy.log.error("slycat.web.server.smb.py create_session",
-                                "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s." % (
-                                    username, server, type(e), str(e)))
+        cherrypy.log.error(
+            "Unknown exception for %s@%s: %s %s" % (username, server, type(e), str(e))
+        )
+        cherrypy.log.error(
+            "slycat.web.server.smb.py create_session",
+            "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s."
+            % (username, server, type(e), str(e)),
+        )
         raise cherrypy.HTTPError("401 Remote smb connection failed: %s" % str(e))
 
 
@@ -211,8 +233,11 @@ def delete_session(sid):
         if sid in session_cache:
             session = session_cache[sid]
             cherrypy.log.error(
-                "Deleting remote session for %s@%s" % (session.username, session.hostname))
+                "Deleting remote session for %s@%s"
+                % (session.username, session.hostname)
+            )
             del session_cache[sid]
+
 
 def get_session(sid):
     """
@@ -238,6 +263,7 @@ def get_session(sid):
         session._accessed = datetime.datetime.utcnow()
         return session
 
+
 def _expire_session(sid):
     """
     Test an existing session to see if it is expired.
@@ -249,22 +275,30 @@ def _expire_session(sid):
         with session as con:
             if not con.list_Attributes():
                 cherrypy.log.error(
-                    "removing remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
+                    "removing remote session for %s@%s from %s"
+                    % (session.username, session.hostname, session.client)
+                )
                 del session_cache[sid]
+
 
 def _session_monitor():
     while True:
-        cherrypy.log.error("Remote session cleanup worker running.")
+        # cherrypy.log.error("Remote session cleanup worker running.")
         with session_cache_lock:
-            for sid in list(session_cache.keys()):  # We make an explicit copy of the keys because we may be modifying the dict contents
+            for sid in list(
+                session_cache.keys()
+            ):  # We make an explicit copy of the keys because we may be modifying the dict contents
                 _expire_session(sid)
-        cherrypy.log.error("Remote SMB session cleanup worker finished.")
+        # cherrypy.log.error("Remote SMB session cleanup worker finished.")
         time.sleep(datetime.timedelta(minutes=15).total_seconds())
+
 
 def _start_session_cleanup_worker():
     if _start_session_cleanup_worker.thread is None:
         cherrypy.log.error("Starting remote SMB session cleanup worker.")
-        _start_session_cleanup_worker.thread = threading.Thread(name="SMB Monitor", target=_session_monitor)
+        _start_session_cleanup_worker.thread = threading.Thread(
+            name="SMB Monitor", target=_session_monitor
+        )
         _start_session_cleanup_worker.thread.daemon = True
         _start_session_cleanup_worker.thread.start()
 
