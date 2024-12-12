@@ -43,7 +43,7 @@ def _login_session_cleanup_worker():
     while True:
         try:
             database = slycat.web.server.database.couchdb.connect()
-            cherrypy.log.error("Login session cleanup worker running.")
+            # cherrypy.log.error("Login session cleanup worker running.")
             cutoff = (
                 datetime.datetime.now(datetime.timezone.utc)
                 - cherrypy.request.app.config["slycat"]["session-timeout"]
