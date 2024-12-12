@@ -92,7 +92,7 @@ def _bookmark_cleanup_worker():
     # on a thread so we need to import this
     import cherrypy
 
-    cherrypy.log.error("Started server cache cleanup worker.")
+    cherrypy.log.error("Started server bookmark cleanup worker.")
     while True:
         # set the run frequency
         time.sleep(datetime.timedelta(days=1).total_seconds())
