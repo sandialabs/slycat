@@ -8,6 +8,7 @@ import {
   selectHideLabels,
   selectHorizontalSpacing,
   selectVerticalSpacing,
+  selectAutoScale,
 } from "./scatterplotSlice";
 import { selectHiddenSimulations } from "./dataSlice";
 import {
@@ -79,6 +80,14 @@ export const selectXValuesArray = createSelector(selectXValues, (xValues): any[]
   return Array.from(xValues);
 });
 
+export const selectYValuesArray = createSelector(selectYValues, (yValues): any[] => {
+  return Array.from(yValues);
+});
+
+export const selectVValuesArray = createSelector(selectVValues, (vValues): any[] => {
+  return Array.from(vValues);
+});
+
 export const selectXValuesLog = createSelector(
   selectXValuesArray,
   selectXColumnType,
@@ -97,16 +106,33 @@ export const selectXValuesLog = createSelector(
 
 export const selectXValuesDate = createSelector(
   selectXValuesArray,
-  selectXColumnType,
-  (xValues, selectXColumnType): (Date | undefined)[] => {
-    return xValues.map((value) => {
-      // Try to convert to a data object and return it. Otherwise return undefined.
-      const date = parseDate(value.toString());
-      if (isNaN(date.valueOf())) return undefined;
-      return date;
-    });
+  (xValues): (Date | undefined)[] => {
+    return convertValuesToDateObjects(xValues);
   },
 );
+
+export const selectYValuesDate = createSelector(
+  selectYValuesArray,
+  (yValues): (Date | undefined)[] => {
+    return convertValuesToDateObjects(yValues);
+  },
+);
+
+export const selectVValuesDate = createSelector(
+  selectVValuesArray,
+  (vValues): (Date | undefined)[] => {
+    return convertValuesToDateObjects(vValues);
+  },
+);
+
+function convertValuesToDateObjects(valuesArray: any[]): (Date | undefined)[] {
+  return valuesArray.map((value) => {
+    // Try to convert to a data object and return it. Otherwise return undefined.
+    const date = parseDate(value.toString());
+    if (isNaN(date.valueOf())) return undefined;
+    return date;
+  });
+}
 
 function convertValuesToIndexedObjects(valuesArray: any[]): { value: any; index: number }[] {
   return valuesArray.map((value, index) => ({ value: value, index: index }));
@@ -142,6 +168,51 @@ export const selectXValuesWithoutHidden = createSelector(
   (xValues: any[], hiddenSimulations: number[]): ValuesType => {
     // Removing hidden simulations from xValues.
     return removeHiddenSimulations(xValues, hiddenSimulations);
+  },
+);
+
+export const selectYValuesWithoutHidden = createSelector(
+  selectYValuesArray,
+  selectHiddenSimulations,
+  (yValuesArray: any[], hiddenSimulations: number[]): ValuesType => {
+    // Removing hidden simulations from yValues.
+    return removeHiddenSimulations(yValuesArray, hiddenSimulations);
+  },
+);
+
+export const selectVValuesWithoutHidden = createSelector(
+  selectVValuesArray,
+  selectHiddenSimulations,
+  (vValuesArray: any[], hiddenSimulations: number[]): ValuesType => {
+    // Removing hidden simulations from vValues.
+    return removeHiddenSimulations(vValuesArray, hiddenSimulations);
+  },
+);
+
+export const selectXValuesDateWithoutHidden = createSelector(
+  selectXValuesDate,
+  selectHiddenSimulations,
+  (xValuesDate, hiddenSimulations): (Date | undefined)[] => {
+    // Removing hidden simulations from xValuesDate.
+    return removeHiddenSimulations(xValuesDate, hiddenSimulations);
+  },
+);
+
+export const selectYValuesDateWithoutHidden = createSelector(
+  selectYValuesDate,
+  selectHiddenSimulations,
+  (yValuesDate, hiddenSimulations): (Date | undefined)[] => {
+    // Removing hidden simulations from yValuesDate.
+    return removeHiddenSimulations(yValuesDate, hiddenSimulations);
+  },
+);
+
+export const selectVValuesDateWithoutHidden = createSelector(
+  selectVValuesDate,
+  selectHiddenSimulations,
+  (vValuesDate, hiddenSimulations): (Date | undefined)[] => {
+    // Removing hidden simulations from vValuesDate.
+    return removeHiddenSimulations(vValuesDate, hiddenSimulations);
   },
 );
 
@@ -232,19 +303,28 @@ export const selectVScaleType = createSelector(
 
 const getExtent = (
   values: ValuesType,
+  valuesWithoutHidden: ValuesType,
+  valuesDate: (Date | undefined)[],
+  valuesDateWithoutHidden: (Date | undefined)[],
   variableRanges: VariableRangesType,
   index: number,
   columnTypes: ColumnTypesType[],
   scaleType: string,
-  tableStatistics: TableStatisticsType,
+  autoScale: boolean,
 ): ExtentType => {
+  // If selectAutoScale is true, use values without hidden simulations.
+  const values_date = autoScale ? valuesDateWithoutHidden : valuesDate;
+  const values_not_date = autoScale ? valuesWithoutHidden : values;
+  // If we have Date & Time values, use the Date & Time extent.
+  const values_for_extent = scaleType === "Date & Time" ? values_date : values_not_date;
+
   const extent: ExtentType = [undefined, undefined];
 
   switch (scaleType) {
     // For 'Date & Time' scales...
     case "Date & Time":
-      extent[0] = d3.min(values);
-      extent[1] = d3.max(values);
+      extent[0] = d3.min(values_for_extent);
+      extent[1] = d3.max(values_for_extent);
 
       // If we have a custom range, try to use that instead.
       const customRange = variableRanges[index];
@@ -268,16 +348,14 @@ const getExtent = (
       switch (columnTypes[index]) {
         // For string values, just return the min/max of the values.
         case "string":
-          extent[0] = d3.min(values);
-          extent[1] = d3.max(values);
+          extent[0] = d3.min(values_for_extent);
+          extent[1] = d3.max(values_for_extent);
           break;
 
         // For numeric values...
         default:
-          // Use the min/max of the values from table statistics retrieved from server.
-          const { min, max } = tableStatistics[index] || {};
-          extent[0] = min;
-          extent[1] = max;
+          extent[0] = d3.min(values_for_extent);
+          extent[1] = d3.max(values_for_extent);
 
           // If we have a custom range, use that instead.
           const customRange = variableRanges[index];
@@ -295,62 +373,106 @@ const getExtent = (
 
 export const selectXExtent = createSelector(
   selectXValues,
+  selectXValuesWithoutHidden,
   selectXValuesDate,
+  selectXValuesDateWithoutHidden,
   selectVariableRanges,
   selectXIndex,
   selectColumnTypes,
   selectXScaleType,
-  selectTableStatistics,
+  selectAutoScale,
   (
     xValues,
+    xValuesWithoutHidden,
     xValuesDate,
+    xValuesDateWithoutHidden,
     variableRanges: VariableRangesType,
     xIndex: number,
     columnTypes,
     xScaleType: string,
-    tableStatistics: TableStatisticsType,
+    selectAutoScale: boolean,
   ): ExtentType => {
-    // If we have Date & Time values, use the Date & Time extent.
-    const x_values = xScaleType === "Date & Time" ? xValuesDate : xValues;
-    return getExtent(x_values, variableRanges, xIndex, columnTypes, xScaleType, tableStatistics);
+    return getExtent(
+      xValues,
+      xValuesWithoutHidden,
+      xValuesDate,
+      xValuesDateWithoutHidden,
+      variableRanges,
+      xIndex,
+      columnTypes,
+      xScaleType,
+      selectAutoScale,
+    );
   },
 );
 
 const selectYExtent = createSelector(
   selectYValues,
+  selectYValuesWithoutHidden,
+  selectYValuesDate,
+  selectYValuesDateWithoutHidden,
   selectVariableRanges,
   selectYIndex,
   selectColumnTypes,
   selectYScaleType,
-  selectTableStatistics,
+  selectAutoScale,
   (
     yValues,
+    yValuesWithoutHidden,
+    yValuesDate,
+    yValuesDateWithoutHidden,
     variableRanges: VariableRangesType,
     yIndex: number,
     columnTypes,
     yScaleType: string,
-    tableStatistics: TableStatisticsType,
+    selectAutoScale: boolean,
   ): ExtentType => {
-    return getExtent(yValues, variableRanges, yIndex, columnTypes, yScaleType, tableStatistics);
+    return getExtent(
+      yValues,
+      yValuesWithoutHidden,
+      yValuesDate,
+      yValuesDateWithoutHidden,
+      variableRanges,
+      yIndex,
+      columnTypes,
+      yScaleType,
+      selectAutoScale,
+    );
   },
 );
 
 export const selectVExtent = createSelector(
   selectVValues,
+  selectVValuesWithoutHidden,
+  selectVValuesDate,
+  selectVValuesDateWithoutHidden,
   selectVariableRanges,
   selectVIndex,
   selectColumnTypes,
   selectVScaleType,
-  selectTableStatistics,
+  selectAutoScale,
   (
     vValues,
+    vValuesWithoutHidden,
+    vValuesDate,
+    vValuesDateWithoutHidden,
     variableRanges: VariableRangesType,
     vIndex: number,
     columnTypes,
     vScaleType: string,
-    tableStatistics: TableStatisticsType,
+    selectAutoScale: boolean,
   ): ExtentType => {
-    return getExtent(vValues, variableRanges, vIndex, columnTypes, vScaleType, tableStatistics);
+    return getExtent(
+      vValues,
+      vValuesWithoutHidden,
+      vValuesDate,
+      vValuesDateWithoutHidden,
+      variableRanges,
+      vIndex,
+      columnTypes,
+      vScaleType,
+      selectAutoScale,
+    );
   },
 );
 
@@ -576,8 +698,19 @@ export const selectLegendScaleAxis = createSelector(
   selectVerticalSpacing,
   selectHideLabels,
   selectVColumnType,
-  (legendScale: SlycatScaleType, verticalSpacing: number, hideLabels: boolean, vColumnType: string) => {
-    return adjustScaleDomain(legendScale, verticalSpacing, vColumnType === "string" && hideLabels, 1, true);
+  (
+    legendScale: SlycatScaleType,
+    verticalSpacing: number,
+    hideLabels: boolean,
+    vColumnType: string,
+  ) => {
+    return adjustScaleDomain(
+      legendScale,
+      verticalSpacing,
+      vColumnType === "string" && hideLabels,
+      1,
+      true,
+    );
   },
 );
 
