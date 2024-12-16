@@ -567,17 +567,14 @@ function constructor(params) {
                 .then((did) => {
                   // if the data id isn't empty
                   // delete model first
-                  client.delete_model_fetch({ mid: component.model._id() }).then(() => {
-                    // Get list of model ids project data is used in
-                    if (did.length >= 1) {
-                      client.get_project_data_parameter_fetch({ did: did, param: "mid" }).then((models) => {
-                        // if there are no more models using that project data, delete it
-                        if (models && models.length === 0) {
-                          client.delete_project_data_fetch({ did: did });
-                        }
-                      });
-                    }
-                  });
+                  // client.delete_model_fetch({ mid: component.model._id() }).then(() => {
+                  if (did.length >= 1) {
+                    client.get_project_data_parameter_fetch({ did: did, param: "mid" }).then((models) => {
+                      // if there are no more models using that project data, delete it
+                      client.delete_project_data_fetch({ did: did });
+                    });
+                  }
+                  // });
                 });
             }
             component.finish();
@@ -800,36 +797,6 @@ function constructor(params) {
           client.post_model_finish({
             mid: component.model._id(),
             success: function () {
-              if(component.useProjectData() == false) {
-                client
-                .get_project_data_in_model_fetch({
-                  mid: component.model._id(),
-                })
-                .then((did) => {
-                  // if the data id isn't empty
-                  if (did[0] !== "") {
-                    // Remove project data id from model
-                    client
-                      .delete_project_data_in_model_fetch({ did: did, mid: component.model._id() })
-                      .then(() => {
-                        // Remove model id from project data
-                        client
-                          .delete_model_in_project_data_fetch({ mid: component.model._id(), did: did })
-                          .then(() => {
-                            // Get the list of models using that project data
-                            client
-                              .get_project_data_parameter_fetch({ did: did, param: "mid" })
-                              .then((models) => {
-                                // if there are no more models using that project data, delete it
-                                if (models && models.length === 0) {
-                                  client.delete_project_data_fetch({ did: did });
-                                }
-                              });
-                          });
-                      });
-                  }
-                });
-              }
               component.go_to_model();
             },
           });

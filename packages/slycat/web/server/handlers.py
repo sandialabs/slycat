@@ -1177,24 +1177,26 @@ def delete_project_data(did, **kwargs):
         Nothing
     """
     database = slycat.web.server.database.couchdb.connect()
-    project_data = database.get("project_data", did)
-    project = database.get("project", project_data["project"])
-    slycat.web.server.authentication.require_project_writer(project)
+    with slycat.web.server.database.couchdb.db_lock:
 
-    for model in database.scan("slycat/models"):
-        updated = False
-        if "project_data" in model:
-            for index, model_did in enumerate(model["project_data"]):
-                if model_did == did:
-                    updated = True
-                    del model["project_data"][index]
-        if updated:
-            database.save(model)
+        project_data = database.get("project_data", did)
+        project = database.get("project", project_data["project"])
+        slycat.web.server.authentication.require_project_writer(project)
 
-    with slycat.web.server.get_project_data_lock(did):
-        database.delete(project_data)
+        for model in database.scan("slycat/models"):
+            updated = False
+            if "project_data" in model:
+                for index, model_did in enumerate(model["project_data"]):
+                    if model_did == did:
+                        updated = True
+                        del model["project_data"][index]
+            if updated:
+                database.save(model)
 
-    cherrypy.response.status = "204 Project Data deleted."
+        with slycat.web.server.get_project_data_lock(did):
+            database.delete(project_data)
+
+        cherrypy.response.status = "204 Project Data deleted."
 
 
 def model_command(mid, type, command, **kwargs):
