@@ -780,6 +780,10 @@ const adjustScaleDomain = (
       // Align the axis to fit the original scale
       .align(align ?? 0);
   }
+  // Reverse the domain if requested even if no filtering was done.
+  else if (reverse) {
+    adjusted_scale.domain(adjusted_scale.domain().reverse());
+  } 
   return adjusted_scale;
 };
 
