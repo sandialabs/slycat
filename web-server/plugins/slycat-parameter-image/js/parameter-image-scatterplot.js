@@ -42,6 +42,7 @@ import {
   selectXScaleAxis,
   selectYScaleAxis,
   selectLegendScaleAxis,
+  selectAxesVariables,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
@@ -945,6 +946,8 @@ $.widget("parameter_image.scatterplot", {
     var self = this;
     if (typeof value == "number" && !isNaN(value)) return true;
     if (typeof value == "string" && value.trim() !== "") return true;
+    // Check for valid Date objects
+    if (value instanceof Date && !isNaN(value.valueOf())) return true;
     return false;
   },
 
@@ -1539,6 +1542,11 @@ $.widget("parameter_image.scatterplot", {
           continue;
         }
         let value = v[index];
+        // Convert value to a date if v axis is Date & Time
+        const variable_scales = selectAxesVariables(window.store.getState());
+        if (variable_scales[self.options.v_index] == "Date & Time") {
+          value = parseDate(value);
+        }
         if (!self._validateValue(value))
           color = slycat_color_maps.get_null_color(window.store.getState().colormap);
         else if (!slycat_color_maps.isValueInColorscaleRange(value, self.options.colorscale))
@@ -1597,6 +1605,11 @@ $.widget("parameter_image.scatterplot", {
           continue;
         }
         let value = v[index];
+        // Convert value to a date if v axis is Date & Time
+        const variable_scales = selectAxesVariables(window.store.getState());
+        if (variable_scales[self.options.v_index] == "Date & Time") {
+          value = parseDate(value);
+        }
         if (!self._validateValue(value))
           color = slycat_color_maps.get_null_color(window.store.getState().colormap);
         else if (!slycat_color_maps.isValueInColorscaleRange(value, self.options.colorscale))
