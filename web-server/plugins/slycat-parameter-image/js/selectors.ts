@@ -727,6 +727,9 @@ const getScale = (
     case "Date & Time":
       scale = d3.scaleTime();
       break;
+    case "Log":
+      scale = d3.scaleLog();
+      break;
     default:
       // For numeric values, use a linear scale.
       if (columnType !== "string") scale = d3.scaleLinear();
@@ -783,7 +786,7 @@ const adjustScaleDomain = (
   // Reverse the domain if requested even if no filtering was done.
   else if (reverse) {
     adjusted_scale.domain(adjusted_scale.domain().reverse());
-  } 
+  }
   return adjusted_scale;
 };
 
