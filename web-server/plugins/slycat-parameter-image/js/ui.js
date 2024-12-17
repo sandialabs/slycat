@@ -100,6 +100,7 @@ import {
   selectScatterplotMarginTop,
   selectScatterplotMarginBottom,
   selectAxesVariables,
+  selectVExtent,
 } from "./selectors";
 
 import React from "react";
@@ -611,6 +612,7 @@ $(document).ready(function () {
           { objectPath: "threeD_sync", callback: threeD_sync_changed },
           { objectPath: "video_sync_time", callback: video_sync_time_changed },
           { objectPath: "data.hidden_simulations", callback: hidden_simulations_changed },
+          { objectPath: "axesVariables", callback: axes_scales_changed },
           {
             objectPath: "data.manually_hidden_simulations",
             callback: manually_hidden_simulations_changed,
@@ -1345,23 +1347,26 @@ $(document).ready(function () {
       filtered_v = v;
     }
 
-    if (v_type != "string") {
-      let axes_variables = store.getState().axesVariables[v_index];
-      let v_axis_type = axes_variables ?? "Linear";
-      // console.log(`v_axis_type is ${v_axis_type}`);
+    const axes_variable_scale = store.getState().axesVariables[v_index];
+    const v_variable_scale_type = axes_variable_scale ?? "Linear";
+    const colormap = store.getState().colormap;
 
-      // console.debug(`store.getState().colormap is %o`, store.getState().colormap);
-      const colormap = store.getState().colormap;
+    if (v_variable_scale_type == "Date & Time") {
+      const v_extent = _.cloneDeep(selectVExtent(store.getState()));
+      const min = v_extent[0];
+      const max = v_extent[1];
+      colorscale = slycat_color_maps.get_color_scale_time(colormap, min, max);
+    } else if (v_type != "string") {
       const min = custom_color_variable_range.min ?? d3.min(filtered_v);
       const max = custom_color_variable_range.max ?? d3.max(filtered_v);
       colorscale =
-        v_axis_type == "Log"
+        v_variable_scale_type == "Log"
           ? slycat_color_maps.get_color_scale_log(colormap, min, max)
           : slycat_color_maps.get_color_scale(colormap, min, max);
     } else {
       var uniqueValues = d3.set(filtered_v).values().sort();
       colorscale = slycat_color_maps.get_color_scale_ordinal(
-        store.getState().colormap,
+        colormap,
         uniqueValues,
       );
     }
@@ -1558,6 +1563,13 @@ $(document).ready(function () {
   function hidden_simulations_changed(hidden_simulations_value) {
     hidden_simulations = _.cloneDeep(hidden_simulations_value);
     update_widgets_when_hidden_simulations_change();
+  }
+
+  function axes_scales_changed(axes_variables_value) {
+    axes_variables_scale = _.cloneDeep(axes_variables_value);
+    update_current_colorscale();
+    $("#table").table("option", "colorscale", colorscale);
+    $("#scatterplot").scatterplot("option", "colorscale", colorscale);
   }
 
   function manually_hidden_simulations_changed(manually_hidden_simulations_value) {

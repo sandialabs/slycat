@@ -8,10 +8,10 @@ import * as d3v7 from "d3v7";
 export default {
   isValueInColorscaleRange: function (
     value: number,
-    colorscale: d3.ScaleLinear | d3.ScaleLogarithmic | d3.ScaleOrdinal
+    colorscale: d3.ScaleLinear | d3.ScaleLogarithmic | d3.ScaleOrdinal,
   ) {
-    // Check against min and max only if value is a number
-    if (Number.isFinite(value)) {
+    // Check against min and max only if value is a number or a Date object
+    if (Number.isFinite(value) || (value as any) instanceof Date) {
       const rangeMin = colorscale.domain()[0];
       const rangeMax = colorscale.domain()[colorscale.domain().length - 1];
       return rangeMin <= value && value <= rangeMax;
@@ -127,6 +127,21 @@ export default {
     return d3.scale.ordinal().domain(values).range(rgbRange);
   },
 
+  // Return a d3 time scale with the current color map for the domain [0, 1].
+  // Callers should modify the domain by passing a min and max to suit their own needs.
+  get_color_scale_time: function (name: string, min: number, max: number) {
+    if (name === undefined) name = window.store.getState().colormap;
+    if (min === undefined) min = 0.0;
+    if (max === undefined) max = 1.0;
+    var domain = [];
+    var domain_scale = d3.scale
+      .linear()
+      .domain([0, this.color_maps[name].colors.length - 1])
+      .range([min, max]);
+    for (var i in this.color_maps[name].colors) domain.push(domain_scale(i));
+    return d3.time.scale().domain(domain).range(this.color_maps[name].colors);
+  },
+
   // Deprecated
   get_color_map_ordinal: function (name: string, values: number[]) {
     return this.get_color_scale_ordinal(name, values);
@@ -148,7 +163,7 @@ export default {
 
   setUpColorMapsForAllColumns: function (
     name: string,
-    columns: { columnMin: number; columnMax: number; colorMap: string }[]
+    columns: { columnMin: number; columnMax: number; colorMap: string }[],
   ) {
     for (var j = 0; j != columns.length; ++j) {
       columns[j].colorMap = this.get_color_scale(name, columns[j].columnMin, columns[j].columnMax);

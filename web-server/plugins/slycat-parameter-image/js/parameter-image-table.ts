@@ -26,6 +26,8 @@ import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import _ from "lodash";
 import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
+import { selectAxesVariables, selectVIndex } from "./selectors";
+import { parseDate } from "js/slycat-dates";
 
 $.widget("parameter_image.table", {
   options: {
@@ -60,6 +62,13 @@ $.widget("parameter_image.table", {
 
     function get_color(colorscale, value) {
       // console.debug(`table get_color, colorscale is %o and value is %o`, colorscale, value);
+
+      // Convert value to a date if v axis scale type is Date & Time
+      const variable_scales = selectAxesVariables(window.store.getState());
+      if (variable_scales[selectVIndex(window.store.getState())] == "Date & Time") {
+        value = parseDate(value);
+      }
+
       // If the value is in the color scale's domain, just return the value from the colorscale
       if (slycat_color_maps.isValueInColorscaleRange(value, self.options.colorscale))
         return colorscale(value);
