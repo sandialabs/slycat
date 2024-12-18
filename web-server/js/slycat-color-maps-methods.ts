@@ -109,6 +109,12 @@ export default {
     for (const index of this.color_maps[colormap].colors.keys()) {
       domain.push(domain_scale.invert(index + 1));
     }
+
+    // Replace first and last values with rangeMin and rangeMax
+    // because rounding errors in .invert() sometimes cause the first and last values to be out of range.
+    domain[0] = rangeMin;
+    domain[domain.length - 1] = rangeMax;
+
     return d3.scale.log().domain(domain).range(this.color_maps[colormap].colors);
   },
 
