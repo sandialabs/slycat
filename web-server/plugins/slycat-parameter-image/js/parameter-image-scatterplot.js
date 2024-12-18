@@ -525,6 +525,7 @@ $.widget("parameter_image.scatterplot", {
         update_x_label: true,
         update_y: true,
         update_y_label: true,
+        update_v_label: true,
         update_leaders: true,
         render_data: true,
         render_selection: true,
@@ -1421,6 +1422,7 @@ $.widget("parameter_image.scatterplot", {
         // Get the bounding box of the text to position the icon
         const bbox = label.node().getBBox();
         const fontSize = self.options.axes_font_size;
+        const xOffset = x + bbox.width + Number(fontSize) / 2;
 
         self.x_axis_layer
           .append("text")
@@ -1430,7 +1432,8 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-toggle", "popover")
           .attr("data-trigger", "hover")
           .attr("data-placement", "auto")
-          .attr("transform", `translate(${bbox.x + bbox.width + fontSize / 2}, ${y})`) // Position after text with small gap
+          .attr("x", xOffset) // Position after text with small gap
+          .attr("y", y)
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
           .text("\uf06a");
@@ -1478,7 +1481,7 @@ $.widget("parameter_image.scatterplot", {
         // Get the bounding box of the text to position the icon
         const bbox = label.node().getBBox();
         const fontSize = self.options.axes_font_size;
-        const yOffset = bbox.y - bbox.height - fontSize / 2;
+        const xOffset = x + bbox.width / 2 + Number(fontSize);
 
         self.y_axis_layer
           .append("text")
@@ -1488,9 +1491,9 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-toggle", "popover")
           .attr("data-trigger", "hover")
           .attr("data-placement", "auto")
-          .attr("x", x)
-          .attr("y", yOffset)
-          .attr("transform", `rotate(-90,${x},${yOffset})`)
+          .attr("x", xOffset)
+          .attr("y", y)
+          .attr("transform", `rotate(-90,${x},${y})`)
           .style("text-anchor", "middle")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
@@ -1854,7 +1857,7 @@ $.widget("parameter_image.scatterplot", {
         // Get the bounding box of the text to position the icon
         const bbox = label.node().getBBox();
         const fontSize = self.options.axes_font_size;
-        const yOffset = bbox.y - bbox.height - fontSize / 2;
+        const xOffset = x + bbox.width / 2 + Number(fontSize);
 
         self.legend_layer
           .append("text")
@@ -1864,9 +1867,9 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-toggle", "popover")
           .attr("data-trigger", "hover")
           .attr("data-placement", "auto")
-          .attr("x", x)
-          .attr("y", yOffset)
-          .attr("transform", `rotate(-90,${x},${yOffset})`)
+          .attr("x", xOffset)
+          .attr("y", y)
+          .attr("transform", `rotate(-90,${x},${y})`)
           .style("text-anchor", "middle")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
