@@ -1,4 +1,6 @@
-# Slycat Docker-compose (Alpha release, non production build for development)
+# Slycat Docker-compose 
+This Docker system is primarily intended for Developer Use.  It can provide an example of a small, non-scalable, non-production Slycat instance that demonstrates how the Slycat service interacts with a web server and a CouchDB server.
+
 ## Requirements
   - Download `docker desktop for mac` see https://docs.docker.com/compose/install/
   - git
