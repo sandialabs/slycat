@@ -9,9 +9,9 @@
 
 This is Slycat - a web-based ensemble analysis and visualization platform, created at [Sandia National Laboratories](http://www.sandia.gov).
 
-# Quick Start
+# Demo and Developer Instance
 
-[Build Your own local slycat environment with docker-compose](https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose).
+[Build Your own development-oriented Slycat environment with docker-compose](https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose).
 
 # Documentation
 
