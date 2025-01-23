@@ -3,6 +3,7 @@
 // to use Redux across the entire model.
 
 import React from "react";
+import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 
 export interface IDropdownItems {
   key?: number | string;
@@ -36,19 +37,23 @@ interface ControlsDropdownProps {
 
 /**
  * React component used to create a dropdown.
- *
- *
- * @export
- * @class ControlsDropdown
- * @extends {React.Component<ControlsDropdownProps>}
  */
+const ControlsDropdown: React.FC<ControlsDropdownProps> = ({
+  items,
+  selected,
+  set_selected,
+  state_label,
+  trigger,
+  button_style,
+  id,
+  title,
+  label,
+  single,
+}) => {
+  // Use the custom hook
+  useDropdownMenuHeight();
 
-class ControlsDropdown extends React.Component<ControlsDropdownProps> {
-  constructor(props: ControlsDropdownProps) {
-    super(props);
-  }
-
-  makeItem = (item: IDropdownItems, index: number) => {
+  const makeItem = (item: IDropdownItems, index: number) => {
     switch (item.type) {
       case "divider":
         return <div className="dropdown-divider" key={`divider-${index}`} />;
@@ -60,25 +65,30 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
         );
       default:
         // Get the set_selected function from the item if it's been set, or use the one passed in from props
-        const set_selected_function = item.set_selected ?? this.props.set_selected;
+        const set_selected_function = item.set_selected ?? set_selected;
         // There are many times when item.selected is undefined.
         // In those cases, we determine selected by looking at what's set in props.selected.
         // But in cases where item.selected is already set to true or false, we just go with that value.
         // This lets you specify the selected item on the item itself or by passing it as a prop, with the item taking precedence.
-        const selected = item.selected ?? item.key == this.props.selected;
+        const isSelected = item.selected ?? item.key == selected;
         return (
           <button
             type="button"
             key={item.key}
-            className={"dropdown-item" + (selected ? " active" : "")}
+            className={"dropdown-item" + (isSelected ? " active" : "")}
             onClick={(e) =>
-              set_selected_function(
-                item.key!,
-                this.props.state_label,
-                this.props.trigger,
-                e,
-                this.props,
-              )
+              set_selected_function(item.key!, state_label, trigger, e, {
+                items,
+                selected,
+                set_selected,
+                state_label,
+                trigger,
+                button_style,
+                id,
+                title,
+                label,
+                single,
+              })
             }
             style={item.style}
           >
@@ -88,38 +98,36 @@ class ControlsDropdown extends React.Component<ControlsDropdownProps> {
     }
   };
 
-  render() {
-    let optionItems = this.props.items.map((item, index) => this.makeItem(item, index));
+  const optionItems = items.map((item, index) => makeItem(item, index));
 
-    let dropdown = (
-      <React.Fragment>
-        <button
-          type="button"
-          id={this.props.id}
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-          className={`btn dropdown-toggle btn-sm ${this.props.button_style}`}
-          title={this.props.title}
-        >
-          {this.props.label}&nbsp;
-        </button>
-        <div className="dropdown-menu" aria-labelledby={this.props.id}>
-          {optionItems}
-        </div>
-      </React.Fragment>
-    );
+  const dropdown = (
+    <React.Fragment>
+      <button
+        type="button"
+        id={id}
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+        className={`btn dropdown-toggle btn-sm ${button_style}`}
+        title={title}
+      >
+        {label}&nbsp;
+      </button>
+      <div className="dropdown-menu" aria-labelledby={id}>
+        {optionItems}
+      </div>
+    </React.Fragment>
+  );
 
-    return (
-      <React.Fragment>
-        {this.props.single != true ? (
-          <div className="btn-group">{dropdown}</div>
-        ) : (
-          <React.Fragment>{dropdown}</React.Fragment>
-        )}
-      </React.Fragment>
-    );
-  }
-}
+  return (
+    <React.Fragment>
+      {single !== true ? (
+        <div className="btn-group">{dropdown}</div>
+      ) : (
+        <React.Fragment>{dropdown}</React.Fragment>
+      )}
+    </React.Fragment>
+  );
+};
 
 export default ControlsDropdown;
