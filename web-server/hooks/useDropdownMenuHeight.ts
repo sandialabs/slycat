@@ -1,28 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, RefObject } from "react";
 import $ from "jquery";
 
-export const useDropdownMenuHeight = (containerSelector: string = ".ui-layout-container") => {
+export const useDropdownMenuHeight = (
+  dropdownMenuRef: RefObject<HTMLElement>,
+  containerSelector: string = ".ui-layout-container",
+) => {
   useEffect(() => {
+    if (!dropdownMenuRef?.current) return;
+
+    // Get the parent element that contains the dropdown trigger and menu
+    const dropdownContainer = $(dropdownMenuRef.current).parent();
+
     const handleDropdownShow = (event: JQuery.TriggeredEvent) => {
-      // Get all dropdown menus inside this element
-      const menus = $(".dropdown-menu", event.currentTarget);
+      if (!dropdownMenuRef?.current) return;
+      // Get the dropdown menu
+      const menu = $(dropdownMenuRef.current);
       // Get the container that holds the model's panes
       const container = $(containerSelector).first();
-      // Set the max height of each menu to 70px less than the container.
-      // This prevents the menus from sticking out beyond the page and allows
-      // them to be scrollable when they are too long.
+      // Set the max height of the menu to 70px less than the container.
+      // This prevents the menu from sticking out beyond the page and allows
+      // it to be scrollable when it is too long.
       const containerHeight = container.height();
       if (containerHeight !== undefined) {
-        menus.css("max-height", `${containerHeight - 70}px`);
+        menu.css("max-height", `${containerHeight - 70}px`).css("overflow-y", "auto");
       }
     };
 
-    // Add event listener
-    $("#controls-pane").on("show.bs.dropdown", handleDropdownShow);
+    // Add event listener to the dropdown container
+    dropdownContainer.on("show.bs.dropdown", handleDropdownShow);
 
     // Cleanup
     return () => {
-      $("#controls-pane").off("show.bs.dropdown", handleDropdownShow);
+      dropdownContainer.off("show.bs.dropdown", handleDropdownShow);
     };
-  }, [containerSelector]);
+  }, [dropdownMenuRef, containerSelector]);
 };

@@ -529,10 +529,6 @@ label.bottom-margin {
   white-space: pre-line;
 }
 
-/* Making sure that controls dropdowns scroll when contents are longer than the menu. */
-#controls-pane .dropdown-menu {
-  overflow-y: auto;
-}
 /* Making sure that controls dropdowns don't become wider than the screen. */
 #controls-pane .dropdown-menu,
 #controls-pane .dropdown-menu .dropdown-item {

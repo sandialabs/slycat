@@ -2,7 +2,7 @@
 // switched out for components/ControlsDropdown when the Parameter Space model is converted
 // to use Redux across the entire model.
 
-import React from "react";
+import React, { useRef } from "react";
 import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 
 export interface IDropdownItems {
@@ -50,8 +50,9 @@ const ControlsDropdown: React.FC<ControlsDropdownProps> = ({
   label,
   single,
 }) => {
-  // Use the custom hook
-  useDropdownMenuHeight();
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+  // Use the custom hook with the ref
+  useDropdownMenuHeight(dropdownMenuRef);
 
   const makeItem = (item: IDropdownItems, index: number) => {
     switch (item.type) {
@@ -113,7 +114,11 @@ const ControlsDropdown: React.FC<ControlsDropdownProps> = ({
       >
         {label}&nbsp;
       </button>
-      <div className="dropdown-menu" aria-labelledby={id}>
+      <div 
+        ref={dropdownMenuRef}
+        className="dropdown-menu" 
+        aria-labelledby={id}
+      >
         {optionItems}
       </div>
     </React.Fragment>

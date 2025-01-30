@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { connect } from "react-redux";
 import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
@@ -6,8 +6,9 @@ import _ from "lodash";
 import "../../css/controls-selection.css";
 
 const ControlsSelection = (props) => {
-  // Use the custom hook
-  useDropdownMenuHeight();
+  const dropdownMenuRef = useRef(null);
+  // Use the custom hook with the ref
+  useDropdownMenuHeight(dropdownMenuRef);
 
   const set_value = (variable, variableIndex, value, alert) => {
     dialog.prompt({
@@ -195,7 +196,12 @@ const ControlsSelection = (props) => {
       >
         Actions
       </button>
-      <div id="selection-switcher" className="dropdown-menu" aria-labelledby="selection-dropdown">
+      <div 
+        ref={dropdownMenuRef}
+        id="selection-switcher" 
+        className="dropdown-menu" 
+        aria-labelledby="selection-dropdown"
+      >
         <button
           type="button"
           className={`dropdown-item ${show_all_disabled ? "disabled" : ""}`}
