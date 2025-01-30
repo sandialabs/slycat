@@ -29,9 +29,19 @@ export const useDropdownMenuHeight = (
     // Add event listener to the dropdown container
     dropdownContainer.on("show.bs.dropdown", handleDropdownShow);
 
+    // Handle window resize
+    const handleResize = () => {
+      if (dropdownMenuRef?.current && $(dropdownMenuRef.current).is(":visible")) {
+        handleDropdownShow({ currentTarget: dropdownContainer[0] } as JQuery.TriggeredEvent);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
     // Cleanup
     return () => {
       dropdownContainer.off("show.bs.dropdown", handleDropdownShow);
+      window.removeEventListener("resize", handleResize);
     };
   }, [dropdownMenuRef, containerSelector]);
 };
