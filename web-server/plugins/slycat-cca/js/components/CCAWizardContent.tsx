@@ -8,14 +8,13 @@ export interface ModalContentProps {
   modalId: string,
   closingCallBack: Function;
   title: string;
-  body: JSX.Element;
   footer: JSX.Element[];
 }
 
 
-export const CCAModalContent = (props:ModalContentProps) => {
+export const CCAModalContent = (props:React.PropsWithChildren<ModalContentProps>) => {
 
-  const {modalId, closingCallBack, title, body, footer} = props;
+  const {modalId, closingCallBack, title, children, footer} = props;
   /**
    *close the modal and call the cleanup function
    * @memberof ModalContent
@@ -39,7 +38,7 @@ export const CCAModalContent = (props:ModalContentProps) => {
           </button>
         </div>
         <div className="modal-body" id="slycat-wizard">
-          {body}
+          {children}
         </div>
         <div className="modal-footer">{footer}</div>
       </div>
