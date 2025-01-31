@@ -3,17 +3,14 @@
  retains certain rights in this software. */
 import React from "react";
 import { createRoot } from "react-dom/client";
-// import TimeseriesWizard from "components/timeseries-wizard/TimeseriesWizard.tsx";
-import markings from "js/slycat-selectable-markings";
-import { CCAWizard } from ".//components/CCAWizard.tsx"
+// import markings from "js/slycat-selectable-markings";
+import { CCAWizard } from ".//components/CCAWizard.tsx";
 import ccaWizardUI from "../wizard-ui.html";
 
 function constructor(params) {
-  console.dir(params)
+  console.dir(params);
   const react_wizard_root = createRoot(document.querySelector(".react-wizard"));
-  react_wizard_root.render(
-    <CCAWizard></CCAWizard>
-  );
+  react_wizard_root.render(<CCAWizard />);
 
   // return an empty component since we are just using it to render react
   return {};
