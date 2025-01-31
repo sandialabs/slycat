@@ -8,7 +8,7 @@ export interface ModalContentProps {
   modalId: string,
   closingCallBack: Function;
   title: string;
-  footer: JSX.Element[];
+  footer?: React.ReactNode[] | undefined;
 }
 
 
