@@ -1,20 +1,23 @@
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
 import * as React from "react";
-import { CCAModalContent}  from "./CCAWizardContent";
-import { CCAWizardSteps } from "./CCAWizardSteps"
-import { useCCAWizardFooter } from "./CCAWizardUtils"
+import { CCAModalContent } from "./CCAWizardContent";
+import { CCAWizardSteps } from "./CCAWizardSteps";
+import { useCCAWizardFooter } from "./CCAWizardUtils";
 
-export const CCAWizard = () =>{
-    const cCAWizardFooter = useCCAWizardFooter();
-    return (
-          <CCAModalContent
-            key={'slycat-wizard'}
-            // slycat-wizard is the standard wizard id from knockout
-            modalId={'slycat-wizard'}
-            closingCallBack={()=>console.log('clean and delete model')}
-            title={"New CCA Model"}
-            footer={cCAWizardFooter}
-          >
-            <CCAWizardSteps key={'CCA Steps'}/>
-            </CCAModalContent>
-        );
-}
+export const CCAWizard = () => {
+  const cCAWizardFooter = useCCAWizardFooter();
+  return (
+    <CCAModalContent
+      key={"slycat-wizard"}
+      // slycat-wizard is the standard wizard id from knockout
+      modalId={"slycat-wizard"}
+      closingCallBack={() => console.log("clean and delete model")}
+      title={"New CCA Model"}
+      footer={cCAWizardFooter}
+    >
+      <CCAWizardSteps key={"CCA Steps"} />
+    </CCAModalContent>
+  );
+};
