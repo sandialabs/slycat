@@ -22,7 +22,6 @@ $.widget("timeseries.controls",
     color_variables : [],
     selection : [],
     hidden_simulations : [],
-    indices : [],
     highlight: [],
   },
 

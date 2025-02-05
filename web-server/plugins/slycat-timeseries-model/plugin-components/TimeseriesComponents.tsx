@@ -10,6 +10,7 @@ import Waveforms from "./Waveforms";
 import Legend from "./Legend";
 import Table from "./Table";
 import type { RootState, AppSubscribe, AppDispatch } from "../js/store";
+import { TableMetadataType } from "types/slycat";
 
 type Props = {
   dispatch: AppDispatch;
@@ -20,13 +21,10 @@ type Props = {
     state: string;
     "artifact:jid": string;
     "artifact:hostname": string;
+    name: string;
   };
   clusters: [] | undefined;
-  tableMetadata:
-    | {
-        "column-count": number;
-      }
-    | undefined;
+  tableMetadata: TableMetadataType;
 };
 
 /**
@@ -37,6 +35,7 @@ type Props = {
  */
 const TimeseriesComponents = (props: Props) => {
   const { model, clusters, tableMetadata, dispatch, get_state, subscribe } = props;
+
   if (model.state == "closed" && clusters && tableMetadata) {
     initialize_timeseries_model(dispatch, get_state, subscribe, model, clusters, tableMetadata);
   }
@@ -57,7 +56,7 @@ const TimeseriesComponents = (props: Props) => {
   // Otherwise, show the model
   return (
     <>
-      <Controls modelId={model._id} />
+      <Controls modelId={model._id} aid="inputs" model_name={model.name} metadata={tableMetadata} />
       <Dendrogram modelId={model._id} />
       <Waveforms modelId={model._id} />
       <Legend modelId={model._id} />

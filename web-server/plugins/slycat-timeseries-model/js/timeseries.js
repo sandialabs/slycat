@@ -17,7 +17,6 @@ import ko from "knockout";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
-import URI from "urijs";
 import * as chunker from "./chunker";
 import "./timeseries-cluster";
 import "./timeseries-controls";
@@ -34,6 +33,8 @@ import "layout-jquery3";
 
 import watch from "redux-watch";
 import slycat_color_maps from "js/slycat-color-maps";
+
+import { setSelectedSimulations, setHiddenSimulations } from "./services/dataSlice";
 
 export default function initialize_timeseries_model(
   dispatch,
@@ -88,6 +89,8 @@ export default function initialize_timeseries_model(
   var selected_waveform_indexes = null;
 
   var image_columns = null; // This holds the media columns
+
+  const indices = new Int32Array(Array.from({ length: table_metadata["row-count"] }).keys());
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout and forms.
@@ -751,6 +754,15 @@ export default function initialize_timeseries_model(
     selected_waveform_indexes[parseInt(cluster_index, 10)] = getWaveformIndexes(
       parameters.selection,
     );
+
+    // Hidden simulations are indices that don't exist in the selected waveforms
+    const hidden_simulations = Array.from(
+      indices.filter(
+        (index) => !selected_waveform_indexes[parseInt(cluster_index, 10)].includes(index),
+      ),
+    );
+    dispatch(setHiddenSimulations(hidden_simulations));
+
     selected_nodes[cluster_index] = getNodeIndexes(parameters.selection);
 
     // Only want to update the controls if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the controls at that time.
@@ -809,6 +821,7 @@ export default function initialize_timeseries_model(
     var bookmark_selected_simulations = {};
     bookmark_selected_simulations["simulation-selection"] = selected_simulations;
     bookmarker.updateState(bookmark_selected_simulations);
+    dispatch(setSelectedSimulations(selected_simulations));
   }
 
   function selected_variable_changed(variable) {
