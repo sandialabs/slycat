@@ -65,4 +65,4 @@ const TimeseriesComponents = (props: Props) => {
   );
 };
 
-export default React.memo(TimeseriesComponents);
+export default TimeseriesComponents;

@@ -43,6 +43,8 @@ const store = client
         [DATA_SLICE_NAME]: {
           selected_simulations: number[];
           hidden_simulations: number[];
+          cluster_index: number;
+          v_indices: number[];
         };
       };
     }) => {
@@ -68,6 +70,8 @@ const store = client
           [DATA_SLICE_NAME]: {
             selected_simulations: [],
             hidden_simulations: [],
+            cluster_index: 0,
+            v_indices: [],
           },
         };
         if (bookmarkedState.colormap !== undefined) {
@@ -77,6 +81,16 @@ const store = client
           legacyBookmarkState[DATA_SLICE_NAME].selected_simulations =
             bookmarkedState["simulation-selection"];
         }
+        if (bookmarkedState["cluster-index"] !== undefined) {
+          legacyBookmarkState[DATA_SLICE_NAME].cluster_index = bookmarkedState["cluster-index"];
+        }
+
+        let i = 0;
+        while (bookmarkedState[i + "-column-index"] !== undefined) {
+          legacyBookmarkState[DATA_SLICE_NAME].v_indices[i] = bookmarkedState[i + "-column-index"];
+          i++;
+        }
+
         preloadedState = {
           controls: { ...controlsInitialState, ...legacyBookmarkState.controls },
           [DATA_SLICE_NAME]: { ...dataInitialState, ...legacyBookmarkState[DATA_SLICE_NAME] },
