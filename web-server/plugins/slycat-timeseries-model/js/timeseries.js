@@ -30,7 +30,7 @@ import "layout-jquery3";
 import watch from "redux-watch";
 import _ from "lodash";
 import slycat_color_maps from "js/slycat-color-maps";
-import { selectCurrentVIndex } from "./services/dataSlice";
+import { selectCurrentVIndex, setClusterIndex } from "./services/dataSlice";
 
 import {
   setSelectedSimulations,
@@ -652,6 +652,7 @@ export default function initialize_timeseries_model(
       $("#dendrogram-viewer").bind("cluster-changed", function (event, cluster) {
         // Handle changes to the cluster selection ...
         selected_cluster_changed(cluster);
+        dispatch(setClusterIndex(cluster));
       });
     }
   }
