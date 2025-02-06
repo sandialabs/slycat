@@ -40,3 +40,4 @@ states to be labeled and saved.
   Models.rst
   Bookmarks.rst
   Templates.rst
+  DatatableCreation.rst
