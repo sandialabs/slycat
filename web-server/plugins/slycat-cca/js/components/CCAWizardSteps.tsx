@@ -2,71 +2,16 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
+import { CCAWizardSelectionTab } from "./CCAWizardSelectionTab";
+import { CCAWizardNavItems } from "./CCANavItems";
 
 export const CCAWizardSteps = () => {
   return (
     <div className="modal-body">
-      <ul className="nav nav-pills">
-        <li className="nav-item active" data-bind="css:{active:tab() == 0}">
-          <a className="nav-link">Locate Data</a>
-        </li>
-        <li
-          className="nav-item"
-          hidden={true}
-          data-bind="css:{active:tab() == 1}, visible: cca_type() == 'local'"
-        >
-          <a className="nav-link">Upload Table</a>
-        </li>
-        <li
-          className="nav-item"
-          hidden={true}
-          data-bind="css:{active:tab() == 2}, visible: cca_type() == 'remote'"
-        >
-          <a className="nav-link">Choose Host</a>
-        </li>
-        <li
-          className="nav-item"
-          hidden={true}
-          data-bind="css:{active:tab() == 3}, visible: cca_type() == 'remote'"
-        >
-          <a className="nav-link">Select Table</a>
-        </li>
-        <li className="nav-item" data-bind="css:{active:tab() == 4}">
-          <a className="nav-link">Select Columns</a>
-        </li>
-        <li className="nav-item" data-bind="css:{active:tab() == 5}">
-          <a className="nav-link">Name Model</a>
-        </li>
-      </ul>
+      <CCAWizardNavItems/>
 
       <div className="tab-content">
-        <div hidden={false}>
-          <div className="form-check" style={{ marginLeft: "15px" }}>
-            <label>
-              <input
-                type="radio"
-                name="local-or-remote-radios"
-                id="local-radio"
-                value="local"
-                data-bind="checked: cca_type"
-              />
-              Local
-            </label>
-          </div>
-          <div className="form-check" style={{ marginLeft: "15px" }}>
-            <label>
-              <input
-                type="radio"
-                name="local-or-remote-radios"
-                id="remote-radio"
-                value="remote"
-                data-bind="checked: cca_type"
-              />
-              Remote
-            </label>
-          </div>
-        </div>
-
+        <CCAWizardSelectionTab/>
         <div hidden={true}>
           <div
             className="alert alert-danger"
