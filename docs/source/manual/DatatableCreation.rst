@@ -1,5 +1,5 @@
-Data Table Creation
-===================
+Input Data Format
+=================
 
 **CSV File Format:**
 
