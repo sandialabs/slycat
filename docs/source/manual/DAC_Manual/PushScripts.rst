@@ -11,14 +11,14 @@ In order to use the push scripts, you must have Python installed on your compute
 and you must further install the slycat-web-client from https://pypi.org.  This
 is accomplised using, for example:
 
-.. code-block:: python
+.. code-block:: bash
 
     $ pip install slycat-web-client
 
 
 If you are working behind a proxy, you might also need, e.g.
 
-.. code-block:: python
+.. code-block:: bash
 
     $ pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
 
@@ -30,7 +30,7 @@ a model using the command line Python scripts ``dac_tdms`` or ``dac_tdms_batch``
 
 To upload a DAC TDMS model, use
 
-.. code-block:: python
+.. code-block:: bash
     
     $ dac_tdms data-file.TDM
 
@@ -48,7 +48,7 @@ Line 1 contains the authentication information for the Slycat server that
 you would pass to the ``dac_tdms`` script, but separated by commas.
 For example,
 
-.. code-block:: python
+.. code-block:: bash
 
     --user,smartin,--kerberos
 
@@ -57,14 +57,14 @@ If authentication information is unnecessary, just leave the line blank.
 Line 2 contains the project information for the project that will contain
 the DAC models to be created, e.g.
 
-.. code-block:: python
+.. code-block:: bash
 
     --project-name,Batch TDMS Models
 
 Line 2 can also be left blank.  It will default to "Batch TDMS Models".
 Lines 3 and beyond contain the model information for each model, such as
 
-.. code-block:: python
+.. code-block:: bash
 
     model-data-file-1.tdms,--model-name,Model 1
     model-data-file-2.tdms,--model-name,Model 2
@@ -75,14 +75,14 @@ you want to put models into different projects, you can override the
 original project given in line 2, by using the ``--project-name`` flag 
 again, e.g.
 
-.. code-block:: python
+.. code-block:: bash
 
     model-data-file-n.tdms,--model-name,Model n,--project-name,Special Project
 
 After the batch file has been created, you can call the TDMS batch 
 processor to create your models using:
 
-.. code-block:: python
+.. code-block:: bash
 
     $ dac_tdms_batch tdms-batch-file.txt
 
@@ -107,14 +107,14 @@ For example, to use standard password authentication for a Slycat
 server running on https://localhost:9000 without a security certificate,
 use:
 
-.. code-block:: python
+.. code-block:: bash
 
     $ python -m slycat.web.client.list_markings.py --user slycat --port 9000 --no-verify
 
 Or, to access a Kerberos authenticated server running at slycat.sandia.gov,
 use:
 
-.. code-block:: python
+.. code-block:: bash
 
     $ python -m slycat.web.client.list_markings.py --host https://slycat.sandia.gov --kerberos
 
@@ -125,7 +125,7 @@ The ``--kerberos`` option relies on a working Kerberos installation on your syst
 this will fail.  If you get an error related to Kerberos credentials (e.g. "Couldn't find
 Kerberos ticket," or "User not Kerberos authenticated"), try:
 
-.. code-block:: python
+.. code-block:: bash
 
     $ kinit
 
@@ -147,7 +147,8 @@ The proxy flags are by default set to "no proxy".  If you have proxies set in th
 environment variables, they will be ignored.  The proxy flags are used as follows
 (for example):
 
-.. code-block:: python
+.. code-block:: bash
+    
     $ python -m slycat.web.client.list_markings.py --http-proxy http://your.http.proxy --https-proxy https://your.https.proxy
 
 The ``--verify`` flag can be used to pass a security certificate as a command line argument and
