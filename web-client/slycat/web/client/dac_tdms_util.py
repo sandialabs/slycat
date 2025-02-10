@@ -292,7 +292,7 @@ def catalog_tdms_dir (arguments, log):
     for run_chart_dir in possible_run_chart_dirs:
 
         # get file name (ignore path)
-        base_dir = os.path.basename(run_chart_dir)
+        base_dir = os.path.basename(os.path.realpath(run_chart_dir))
 
         # check for part_lot_batch_sn format
         run_chart_ids = parse_run_chart(base_dir)
