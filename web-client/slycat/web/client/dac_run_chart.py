@@ -50,20 +50,40 @@ def catalog_tdms_files (arguments, log):
     # read all meta data before further run chart specific filtering
     metadata = dac_tdms_util.catalog_tdms_files(arguments, log)
 
-    # get common set of tdms types
-    common_tdms_types = set(metadata[0]["tdms_types"])
-    intersection_flag = False
+    # get a list of tdms types and number of occurences
+    tdms_types_occ = {}
     for row in range(len(metadata)):
+        for row_type in metadata[row]["tdms_types"]:
+            if row_type not in tdms_types_occ:
+                tdms_types_occ[row_type] = 1
+            else:
+                tdms_types_occ[row_type] += 1
 
-        # set intersection
-        common_tdms_types = common_tdms_types.intersection(set(metadata[row]["tdms_types"]))
+    # if --min_tdms_files is 0 then include only types occuring in all directories
+    min_tdms_files = len(metadata)
+    if arguments.min_tdms_files > 0:
+        min_tdms_files = arguments.min_tdms_files
+    
+    # check that --min_tdms_files is not greater than number of directories
+    if min_tdms_files > len(metadata):
+        log("Warning: --min_tdms_files value exceeds number of directories, defaulting to 0.")
+        min_tdms_files = len(metadata)
 
-        # set flag if intersection reduced number of files
-        if set(metadata[row]["tdms_types"]) != common_tdms_types:
+    # keep tdms types according to --min-tdms-files argument
+    common_tdms_types = []
+    intersection_flag = False
+    for tdms_type in tdms_types_occ:
+        if tdms_types_occ[tdms_type] >= min_tdms_files:
+            common_tdms_types.append(tdms_type)
+        else:
             intersection_flag = True
+
+    # sort common types
+    common_tdms_types = sorted(common_tdms_types)
 
     # remove files with uncommon types
     if intersection_flag:
+
         for row in range(len(metadata)):
             for tdms_ind in reversed(range(len(metadata[row]["tdms_types"]))):
                 if metadata[row]["tdms_types"][tdms_ind] not in common_tdms_types:
@@ -127,10 +147,10 @@ def catalog_tdms_files (arguments, log):
     for suffix in suffixes:
         log("\t%s" % suffix)
 
-    return metadata 
+    return metadata, common_tdms_types
 
 # read all tdms run chart data
-def read_tdms_files(metadata, run_chart_matches, log):
+def read_tdms_files(metadata, run_chart_matches, common_tdms_types, log):
 
     # go through each row in the table
     skipped_rows = np.zeros(len(metadata))
@@ -143,14 +163,11 @@ def read_tdms_files(metadata, run_chart_matches, log):
         module_SN = []
         # module_ID_SN = []
         run_chart_headers = []
-        tdms_types = []
+
         for tdms_file_ind in range(len(metadata[row]["tdms_files"])):
 
             # report progress
             log('Reading .tdms file: "' + metadata[row]["tdms_files"][tdms_file_ind] + '".')
-
-            # save run chart type
-            tdms_types.append(metadata[row]["tdms_types"][tdms_file_ind])
 
             # open tdms file
             tdms_file_name = metadata[row]["tdms_files"][tdms_file_ind]
@@ -183,7 +200,7 @@ def read_tdms_files(metadata, run_chart_matches, log):
                 # find numeric columns
                 numeric_group_df = group_df.select_dtypes('float64')
 
-                # select headers that with matching run charts
+                # select headers that have matching run charts
                 header_matches = []
                 rc_matches = []
                 for header in numeric_group_df.head():
@@ -247,13 +264,81 @@ def read_tdms_files(metadata, run_chart_matches, log):
         raise TDMSUploadError("Too many run charts were missing.  " + 
             "No data remaining to be processed.")
 
-    # go through metadata and check that run charts are the same, per tdms_type
-    run_charts = metadata[0]["run_chart_headers"]
+    # go through metadata and identify run chart/root property headers
+    # according to common tdms types
+    common_run_chart_headers = [[] for i in range(len(common_tdms_types))]
+    common_run_chart_roots = [[] for i in range(len(common_tdms_types))]
+    common_root_prop_headers = [[] for i in range(len(common_tdms_types))]
+
+    for tdms_type in range(len(common_tdms_types)):
+        for row in range(len(metadata)):
+            for col in range(len(metadata[row]["tdms_types"])):
+                if metadata[row]["tdms_types"][col] == common_tdms_types[tdms_type]:
+
+                    # check root properties headers
+                    if not common_root_prop_headers[tdms_type]:
+                        common_root_prop_headers[tdms_type] = \
+                            list(metadata[row]["root_properties"][col].columns)
+                    elif list(metadata[row]["root_properties"][col].columns) != \
+                        common_root_prop_headers[tdms_type]:
+                        raise TDMSUploadError('Found non-matching root property headers in directory"' +
+                            metadata[row]["source"] + '", can not continue.')
+
+                    # check run chart headers with units
+                    if not common_run_chart_headers[tdms_type]:
+                        common_run_chart_headers[tdms_type] = \
+                            list(metadata[row]["run_charts"][col].columns)
+                    elif list(metadata[row]["run_charts"][col].columns) != \
+                        common_run_chart_headers[tdms_type]:
+                        raise TDMSUploadError('Found non-matching run chart data in directory"' +
+                            metadata[row]["source"] + '", can not continue.')
+
+                    # check run chart headers no units
+                    if not common_run_chart_roots[tdms_type]:
+                        common_run_chart_roots[tdms_type] = \
+                            metadata[row]["run_chart_headers"][col]
+                    elif metadata[row]["run_chart_headers"][col] != \
+                        common_run_chart_roots[tdms_type]:
+                        raise TDMSUploadError('Found non-matching run chart data in directory"' +
+                            metadata[row]["source"] + '", can not continue.')
+
+    # go through metadata and add missing entries for each common tdms type
     for row in range(len(metadata)):
-        for tdms_type in range(len(metadata[row]["tdms_types"])):
-            if metadata[row]["run_chart_headers"][tdms_type] != run_charts[tdms_type]:
-                raise TDMSUploadError('Found non-matching run chart data in directory"' +
-                    metadata[row]["source"] + '", can not continue.')
+        for tdms_type in range(len(common_tdms_types)):
+            if common_tdms_types[tdms_type] not in metadata[row]["tdms_types"]:
+
+                # missing source tdms file
+                metadata[row]["tdms_files"].insert(tdms_type, np.nan)
+
+                # suffixes
+                metadata[row]["include_suffixes"].insert(tdms_type, np.nan)
+
+                # root properties
+                nan_root_properties = pd.DataFrame(np.nan, index=[0], 
+                    columns=common_root_prop_headers[tdms_type])
+                metadata[row]["root_properties"].insert(tdms_type, nan_root_properties)
+
+                # run charts
+                nan_run_chart = pd.DataFrame(np.nan, index=[0], 
+                    columns=common_run_chart_headers[tdms_type])
+                metadata[row]["run_charts"].insert(tdms_type, nan_run_chart)
+
+                # shot numbers
+                nan_shot_numbers = pd.Series(np.nan, index=[0],
+                    name="Shot Number")
+                metadata[row]["shot_numbers"].insert(tdms_type, nan_shot_numbers)
+
+                # module ID
+                metadata[row]["module_ID"].insert(tdms_type, np.nan)
+
+                # module SN
+                metadata[row]["module_SN"].insert(tdms_type, np.nan)
+
+        # use common tdms types for all data
+        metadata[row]["tdms_types"] = common_tdms_types
+
+        # use common run chart headers
+        metadata[row]["run_chart_headers"] = common_run_chart_roots
 
     return metadata
 
@@ -527,6 +612,11 @@ def read_shot_numbers (metadata):
                 set(metadata[row]["shot_numbers"][tdms_type])) for
                 tdms_type in range(len(metadata[0]['tdms_types']))]
 
+    # remove nan values 
+    for row in range(len(shot_numbers)):
+        no_nan_shot_numbers = {x for x in shot_numbers[row] if pd.notna(x)}
+        shot_numbers[row] = no_nan_shot_numbers
+
     # sort resulting shot numbers using natural sort
     shot_numbers = [[natsorted(list(shot_numbers[tdms_type]))] * 
         len(metadata[0]["run_chart_headers"][tdms_type]) for 
@@ -553,6 +643,7 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
     var_data = []
     var_data_nan = []
     inferred_variables = False
+    use_const_value = False
     for tdms_type in range(len(metadata[0]["tdms_types"])):
         for run_chart in range(len(metadata[0]["run_chart_headers"][tdms_type])):
             variable_i = []
@@ -563,8 +654,30 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
                 run_chart_data = list(metadata[row]["run_charts"][tdms_type].iloc[:,run_chart])
                 run_chart_data_nan = list(metadata[row]["run_charts"][tdms_type].iloc[:,run_chart])
 
+                # check if there are any actual numbers in the run chart
+                #if len(run_chart_data) > 1 or not np.isnan(run_chart_data[0]):
+                # for identically nan vectors, use_const_value
+                if np.isnan(run_chart_data).all():
+                    if arguments.use_const_value:
+
+                        # fill out run chart data with constant value
+                        run_chart_data = np.empty ((max_time_steps[tdms_type][run_chart]))
+                        run_chart_data[:] = arguments.use_const_value[0]
+
+                        # fill out run chart data with NaNs
+                        run_chart_data_nan = np.empty ((max_time_steps[tdms_type][run_chart]))
+                        run_chart_data_nan[:] = np.nan
+
+                        use_const_value = True
+
+                    else:
+                        raise TDMSUploadError('Found absent run chart in source "' +
+                            metadata[row]["source"] + '" for type "' + 
+                            metadata[row]["tdms_types"][tdms_type] + '".  Use const value option' +
+                            ' (e.g. --use-const-value) to specify value for absent run charts.')
+
                 # check for NaN values
-                if np.isnan(run_chart_data).any():
+                elif np.isnan(run_chart_data).any():
                     log('Skipping NaN values in file "' + metadata[row]["tdms_files"][tdms_type] +
                         '" run chart "' + metadata[row]["run_charts"][tdms_type].columns[run_chart] + '".')
                     
@@ -597,6 +710,9 @@ def read_variable_matrices (metadata, time_steps, arguments, log):
     if inferred_variables:
         log("Variables inferred to correct run chart length discrepancies.")
 
+    if use_const_value:
+        log('Used constant value "' + str(arguments.use_const_value[0]) + '" for missing variables.')
+
     return var_data, var_data_nan
 
 # get variables for shot numbers
@@ -617,6 +733,7 @@ def read_variable_shot_matrices (metadata, shot_numbers, combined_inds, argument
     var_data = []
     var_data_nan = []
     inferred_variables = False
+    use_const_value = False
     for tdms_type in range(len(metadata[0]["tdms_types"])):
         for run_chart in range(len(metadata[0]["run_chart_headers"][tdms_type])):
 
@@ -632,15 +749,30 @@ def read_variable_shot_matrices (metadata, shot_numbers, combined_inds, argument
                 run_chart_data_nan = np.empty ((max_shot_numbers[tdms_type][run_chart]))
                 run_chart_data_nan[:] = np.nan
 
-                # replace known entries with numbers
-                for i in range(len(run_chart_shots)):
-                    run_chart_data_nan[shot_numbers[tdms_type][run_chart].index(
-                        run_chart_shots[i])] = run_chart_data[i]
+                # check if there are any actual numbers in the run chart
+                if len(run_chart_shots) > 1 or not np.isnan(run_chart_shots[0]):
+
+                    # replace known entries with numbers
+                    for i in range(len(run_chart_shots)):
+                        run_chart_data_nan[shot_numbers[tdms_type][run_chart].index(
+                            run_chart_shots[i])] = run_chart_data[i]
 
                 # infer variables for NaN values
                 run_chart_data = np.copy(run_chart_data_nan)
                 mask = np.isnan(run_chart_data)
-                if any(mask):
+
+                # for identically nan vectors, use_const_value
+                if all(mask):
+                    if arguments.use_const_value:
+                        run_chart_data[mask] = arguments.use_const_value[0]
+                        use_const_value = True
+                    else:
+                        raise TDMSUploadError('Found absent run chart in source "' +
+                            metadata[row]["source"] + '" for type "' + 
+                            metadata[row]["tdms_types"][tdms_type] + '".  Use const value option' +
+                            ' (e.g. --use-const-value) to specify value for absent run charts.')
+
+                elif any(mask):
                     if arguments.infer_last_value:
                         run_chart_data[mask] = np.interp(np.flatnonzero(mask), 
                             np.flatnonzero(~mask), run_chart_data[~mask])
@@ -673,6 +805,9 @@ def read_variable_shot_matrices (metadata, shot_numbers, combined_inds, argument
     if inferred_variables:
         log("Variables inferred to correct run chart shot number discrepancies.")
     
+    if use_const_value:
+        log('Used constant value "' + str(arguments.use_const_value[0]) + '" for missing variables.')
+
     # add combined variables, if requested
     if arguments.combine:
 
@@ -855,7 +990,7 @@ def create_model(arguments, log):
         raise TDMSUploadError ('Must use .zip extension on output file name.')
 
     # organize tdms files
-    metadata = catalog_tdms_files(arguments, log)
+    metadata, common_tdms_types = catalog_tdms_files(arguments, log)
 
     # screen columns according to user input
     run_chart_matches = RUN_CHART_MATCHES
@@ -866,7 +1001,7 @@ def create_model(arguments, log):
     log("Using run charts in: " + str(run_chart_matches))
 
     # read tdms data
-    metadata = read_tdms_files(metadata, run_chart_matches, log)
+    metadata = read_tdms_files(metadata, run_chart_matches, common_tdms_types, log)
 
     # construct metadata table
     meta_col_names, meta_rows = read_metadata_table(metadata, arguments, log)
@@ -988,6 +1123,8 @@ def parser ():
              "from variable name.")
     parser.add_argument("--infer-last-value", action="store_true", 
         help="Fill out short run charts with last given value.")
+    parser.add_argument("--use-const-value", nargs=1, type=float,
+        help="Constant value to use for absent run charts (no default).")
     parser.add_argument("--plot-last-value", action="store_true",
         help="Plot filled values in run charts.")
     
@@ -1019,7 +1156,6 @@ def parser ():
         help="Highlight non-numeric a/b/c shot numbers using vertical lines, otherwise they "+
              "are converted to values of (.25, .5, .75).")
     
-    
     # combination time series
     parser.add_argument('--combine', nargs="+", action="append",
         help="Concatenate TDMS suffixes into a single run chart, e.g. " +
@@ -1029,6 +1165,13 @@ def parser ():
     parser.add_argument('--combine-length', default=10, type=int,
         help="Truncation length for each header in combined header.  Truncates to first " +
               'word or "--combine-length", whichever is less).')
+    
+    # minimum number of tdms types needed to keep variables
+    parser.add_argument('--min-tdms-files', type=int, default=0, 
+        help="Minimum number of tdms files necessary to include in the run chart.  Defaults " +
+              "to 0, meaning all files must be present.  If files are not present, " +
+              "the respective run charts are given 0 values for the dimension reduction " +
+              "calculation and NaN values for the plots.")
     
     return parser
 
