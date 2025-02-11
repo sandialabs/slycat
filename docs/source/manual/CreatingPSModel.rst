@@ -1,6 +1,8 @@
 Creating a Parameter Space Model
 --------------------------------
 
+For input table file format please see :ref:`input-data-format` on data format expectations.
+
 Like the CCA model, the core of the Parameter Space model is table data.  Up until the stage where inputs and outputs for the 
 model are selected, the model creation steps are identical to CCA (see Creating a CCA Model).  Instead of initializing all 
 variables as *Input*, the variables default to being assigned as *Neither*.  As with CCA, group selection operations using 

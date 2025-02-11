@@ -1,3 +1,5 @@
+.. _input-data-format:
+
 Input Data Format
 =================
 
@@ -82,6 +84,10 @@ Here is a CSV example for a **remote Windows file system**, that includes one me
      - 49
      - 2.3
      - smb://somehost.example.com/collab/myProject/exper_3/topView.jpg
+
+**Dakota File Format:**
+
+Most Slycat models can be created by a Dakota file which is a similar to CSV formatting. For a run review on Dakota formatting see `Dakota Documentation <https://snl-dakota.github.io/docs/6.20.0/users/usingdakota/inputfile.html>`_. 
 
 .. toctree::
   :maxdepth: 1

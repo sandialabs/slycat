@@ -38,6 +38,6 @@ states to be labeled and saved.
   Navbar.rst
   Projects.rst
   Models.rst
+  DatatableCreation.rst
   Bookmarks.rst
   Templates.rst
-  DatatableCreation.rst
