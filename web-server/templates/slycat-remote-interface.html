@@ -1,55 +1,102 @@
-<div class="slycat-remote-interface bootstrap-styles" style="padding: 1%;">
+<div class="slycat-remote-interface bootstrap-styles" style="padding: 1%">
   <form>
     <div id="form-group-wcid" class="form-group row">
-      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">Account ID</label>
+      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
+        >Account ID</label
+      >
       <div class="col-sm-8">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="text" placeholder="enter workload characterization key" data-bind="value: wckey, attr: {'disabled' : disabled}">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="text"
+          placeholder="enter workload characterization key"
+          data-bind="value: wckey, attr: {'disabled' : disabled}"
+        />
       </div>
     </div>
     <div id="form-group-partition" class="form-group row">
-      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">Partition/Queue</label>
+      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
+        >Partition/Queue</label
+      >
       <div class="col-sm-4">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="text" data-bind="value: partition, attr: {'disabled' : disabled}">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="text"
+          data-bind="value: partition, attr: {'disabled' : disabled}"
+        />
       </div>
     </div>
-<!--     <div class="form-group">
+    <!--     <div class="form-group">
       <label class="col-sm-4 col-form-label"></label>
       <div class="col-sm-8 form-text">
         Note: increasing the number of tasks per node will increase the memory usage for the node.
       </div>
     </div> -->
     <div id="form-group-nnodes" class="form-group row">
-      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">Number of nodes</label>
+      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
+        >Number of nodes</label
+      >
       <div class="col-sm-4">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="1" data-bind="value: nnodes, attr: {'disabled' : nnodes_disabled}">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="number"
+          min="1"
+          data-bind="value: nnodes, attr: {'disabled' : nnodes_disabled}"
+        />
       </div>
     </div>
     <div id="form-group-tasks-per-node" class="form-group row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">Cores</label>
       <div class="col-sm-4">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="1" data-bind="value: ntasks_per_node, attr: {'disabled' : disabled}">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="number"
+          min="1"
+          data-bind="value: ntasks_per_node, attr: {'disabled' : disabled}"
+        />
       </div>
     </div>
     <div id="form-group-time" class="form-group row">
       <!-- <fieldset data-bind="disable: time_recommended"> -->
-        <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">Requested Job Time</label>
-        <div class="col-sm-2">
-          <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" placeholder="hours" data-bind="value: time_hours, disable: time_recommended">
-          hours
-        </div>
-        <div class="col-sm-2">
-          <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" max="59" placeholder="minutes" data-bind="value: time_minutes, disable: time_recommended">
-          minutes
-        </div>
-        <div style="display: none;">
-          <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" max="59" placeholder="seconds" data-bind="value: time_seconds, disable: time_recommended">
-        </div>
+      <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
+        >Requested Job Time</label
+      >
+      <div class="col-sm-2">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="number"
+          min="0"
+          placeholder="hours"
+          data-bind="value: time_hours, disable: time_recommended"
+        />
+        hours
+      </div>
+      <div class="col-sm-2">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="number"
+          min="0"
+          max="59"
+          placeholder="minutes"
+          data-bind="value: time_minutes, disable: time_recommended"
+        />
+        minutes
+      </div>
+      <div style="display: none">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="number"
+          min="0"
+          max="59"
+          placeholder="seconds"
+          data-bind="value: time_seconds, disable: time_recommended"
+        />
+      </div>
       <!-- </fieldset> -->
       <div class="offset-sm-4 col-sm-8 mt-2">
         <div class="form-check pl-0">
           <label>
-            <input type="checkbox" data-bind="checked: time_recommended">
-            Estimate run time 
+            <input type="checkbox" data-bind="checked: time_recommended" />
+            Estimate run time
             <!-- Use recommended values -->
           </label>
         </div>
@@ -58,16 +105,28 @@
     <div id="form-group-workdir" class="form-group row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">
         Working Directory
-        <i class="fa fa-question-circle inline-help" aria-hidden="true" 
+        <i
+          class="fa fa-question-circle inline-help"
+          aria-hidden="true"
           title="When creating a time series model, Slycat™ needs a location for temporary files to be created and stored. Given that these files may end up being quite large, Slycat™ relies on users to select a suitable scratch disk location for creation of this directory. The directory will not be automatically deleted. Its location will be remembered in the .slycatrc file in your home directory and will be the default location provided in future invocations of the time series wizard. If you decide to keep the HDF5 files created by the wizard, they can be read directly into the wizard as a third input format. This can be useful if you want to experiment with seeing the effects of varying the sampling or dendrogram parameter choices for a particular ensemble."
         ></i>
       </label>
       <div class="col-sm-8">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="text" placeholder="full path for temporary slycat files" data-bind="value: workdir, attr: {'disabled' : disabled}">
+        <input
+          class="form-control slycat-remote-interface-prebuilt-field"
+          type="text"
+          placeholder="full path for temporary slycat files"
+          data-bind="value: workdir, attr: {'disabled' : disabled}"
+        />
       </div>
       <div class="offset-sm-4 col-sm-8 mt-2">
         <div class="form-check">
-          <input class="form-check-input" id="retain-hdf5-files" type="checkbox" data-bind="checked: retain_hdf5">
+          <input
+            class="form-check-input"
+            id="retain-hdf5-files"
+            type="checkbox"
+            data-bind="checked: retain_hdf5"
+          />
           <label class="form-check-label" for="retain-hdf5-files">Retain HDF5 files</label>
         </div>
       </div>
@@ -82,11 +141,15 @@
         </div>
         <div class="modal-body">
           <form role="form">
-            <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
+            <slycat-remote-controls
+              params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"
+            ></slycat-remote-controls>
           </form>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary" data-bind="click:connect,enable:remote.enable">Connect</button>
+          <button class="btn btn-primary" data-bind="click:connect,enable:remote.enable">
+            Connect
+          </button>
           <button class="btn btn-light float-left" data-bind="click:cancel">Cancel</button>
         </div>
       </div>
