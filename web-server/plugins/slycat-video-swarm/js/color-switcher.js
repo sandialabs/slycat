@@ -6,6 +6,7 @@ retains certain rights in this software.
 
 import d3 from "d3";
 import "jquery-ui";
+import { setupDropdownMenuHeight } from "./dropdown-menu-utils";
 
 $.widget("slycat.colorswitcher",
 {
@@ -154,6 +155,10 @@ $.widget("slycat.colorswitcher",
     this.list = $('<div class="dropdown-menu" aria-labelledby="colors-dropdown">')
       .appendTo(this.element)
       ;
+
+    // Setup dropdown menu height adjustment
+    setupDropdownMenuHeight(this.element, this.list);
+
     $.each(this.color_maps, function(key, value)
     {
       var gradient_data = self.get_gradient_data(key);

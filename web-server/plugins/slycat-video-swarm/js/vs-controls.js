@@ -10,6 +10,7 @@ import * as dialog from "js/slycat-dialog";
 //import _ from "js/lodash";
 import Papa from "papaparse";
 import "jquery-ui";
+import { setupDropdownMenuHeight } from "./dropdown-menu-utils";
 
 $.widget("mp.controls",
 {
@@ -52,6 +53,9 @@ $.widget("mp.controls",
     this.color_items = $('<div id="y-axis-switcher" class="dropdown-menu" aria-labelledby="color-dropdown">')
       .appendTo(self.color_control)
       ;
+
+    // Setup dropdown menu height adjustment
+    setupDropdownMenuHeight(self.color_control, self.color_items);
 
     // Alex disabling selection_control because it was a drop-down with a single item. Replacing it with at "Pin Selected" button.
     // this.selection_control = $('<div class="btn-group"></div>')
