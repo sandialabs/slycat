@@ -5,9 +5,7 @@ retains certain rights in this software.
 */
 
 import api_root from "js/slycat-api-root";
-import * as remotes from "js/slycat-remotes.js";
 import * as dialog from "js/slycat-dialog";
-//import _ from "js/lodash";
 import Papa from "papaparse";
 import "jquery-ui";
 import { setupDropdownMenuHeight } from "./dropdown-menu-utils";
@@ -51,21 +49,6 @@ $.widget("mp.controls", {
 
     // Setup dropdown menu height adjustment
     setupDropdownMenuHeight(self.color_control, self.color_items);
-
-    // Alex disabling selection_control because it was a drop-down with a single item. Replacing it with at "Pin Selected" button.
-    // this.selection_control = $('<div class="btn-group"></div>')
-    //   .appendTo(selection_controls)
-    //   ;
-    // this.selection_button = $('\
-    //   <button class="btn btn-primary dropdown-toggle" type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection"> \
-    //     Selection Action \
-    //   </button> \
-    //   ')
-    //   .appendTo(self.selection_control)
-    //   ;
-    // this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">')
-    //   .appendTo(self.selection_control)
-    //   ;
 
     this.pin_selected_button = $(
       '<button type="button" title="Show selected videos" class="btn btn-sm btn-outline-dark">Pin Selected</button>',
@@ -373,47 +356,6 @@ $.widget("mp.controls", {
 
   _set_selection_control: function () {
     var self = this;
-    // Alex disabling selection_control because it was a drop-down with a single item. Replacing it with at "Pin Selected" button.
-    // this.selection_items.empty();
-
-    // // Finish with global actions
-    // $('<li role="presentation" class="dropdown-header"></li>')
-    //   .text("Scatterplot Points")
-    //   .appendTo(self.selection_items)
-    //   ;
-
-    // self.pin_item = $("<li role='presentation'>")
-    //   .appendTo(self.selection_items)
-    //   .append(
-    //     $('<a role="menuitem" tabindex="-1">')
-    //       .html("Pin")
-    //       .attr("data-value", "pin")
-    //       .click(function()
-    //       {
-    //         var menu_item = $(this).parent();
-    //         if(menu_item.hasClass("disabled"))
-    //           return false;
-
-    //         // Check if highlighted_simulations are already in pinned_simulations. If so, return false.
-    //         // console.log("Pinned: " + self.options.pinned_simulations);
-    //         // console.log("Highlighted: " + self.options.highlighted_simulations);
-    //         var newPins = _.difference(self.options.highlighted_simulations, self.options.pinned_simulations);
-    //         // console.log("newPins: " + newPins);
-    //         if(_.isEmpty(newPins))
-    //         {
-    //           // console.log("No new pins, so returning false.");
-    //           // No new pins, so returnsing false
-    //           return false;
-    //         }
-    //         // Otherwise, create a new array of all highlighted_simulations and pinned simulations and trigger with that new array. Don't update local pinned_simulations.
-    //         else
-    //         {
-    //           // console.log("New pins exist. Here are the new pinned_simulations: " + _.union(self.options.pinned_simulations, newPins));
-    //           self.element.trigger("pinned_simulations_changed", [_.union(self.options.pinned_simulations, newPins)]);
-    //         }
-    //       })
-    //   )
-    //   ;
 
     // Set state
     self._set_selection();
@@ -429,16 +371,12 @@ $.widget("mp.controls", {
 
   _set_selection: function () {
     var self = this;
-    // Alex disabling selection_control because it was a drop-down with a single item. Replacing it with at "Pin Selected" button.
-    // self.selection_button.toggleClass("disabled", this.options.highlighted_simulations.length == 0);
     self._set_pin_item_state();
   },
 
   _set_pin_item_state: function () {
     var self = this;
     // Disable pin button when all highlighted_simulations are already part of pinned_simulations
-    // Alex disabling selection_control because it was a drop-down with a single item. Replacing it with at "Pin Selected" button.
-    // self.pin_item.toggleClass("disabled", _.isEmpty(_.difference(self.options.highlighted_simulations, self.options.pinned_simulations)) );
     self.pin_selected_button.prop(
       "disabled",
       _.isEmpty(
