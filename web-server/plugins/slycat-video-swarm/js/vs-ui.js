@@ -208,7 +208,7 @@ function model_loaded() {
     request.get_array("movies.links", 0),
     request.get_array("movies.xcoords", 0),
     request.get_array("movies.ycoords", 0),
-    request.get_array("movies.trajectories", 0)
+    request.get_array("movies.trajectories", 0),
   ).then(
     function (table_metadata, table_data, links, xcoords, ycoords, time_trajectories) {
       // look at variables (for debugging)
@@ -236,7 +236,7 @@ function model_loaded() {
       other_columns = _.difference(
         _.range(table_metadata[0]["column-count"] - 1),
         input_columns,
-        output_columns
+        output_columns,
       );
       color_variables = _.difference(_.range(table_metadata[0]["column-count"]), media_columns);
 
@@ -283,7 +283,7 @@ function model_loaded() {
         "get_color_scale",
         undefined,
         min_value,
-        max_value
+        max_value,
       );
       color_array = $("#color-switcher").colorswitcher("get_gradient_data", undefined);
 
@@ -294,7 +294,7 @@ function model_loaded() {
           .toString(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        "fill": $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+        fill: $("#color-switcher").colorswitcher("get_background", colormap).toString(),
         "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", colormap),
       });
       $("#mp-movies").css({
@@ -335,7 +335,7 @@ function model_loaded() {
         function (event, highlighted_simulations) {
           // Handle the waveform selection change
           highlighted_simulations_changed(highlighted_simulations);
-        }
+        },
       );
 
       // Changing the diagram time ...
@@ -433,7 +433,7 @@ function model_loaded() {
         function (event, highlighted_simulations) {
           // Handle the waveform selection change
           highlighted_simulations_changed(highlighted_simulations);
-        }
+        },
       );
 
       var controls_options = {
@@ -526,7 +526,7 @@ function model_loaded() {
         function (event, highlighted_simulations) {
           // Handle the waveform selection change
           highlighted_simulations_changed(highlighted_simulations);
-        }
+        },
       );
       $("#mp-datapoints-table").bind("color-selection-changed", function (event, newVar) {
         update_current_colorscale(table_data, newVar);
@@ -538,7 +538,7 @@ function model_loaded() {
     },
     function () {
       console.log("Server failure: could not load movie plex data.");
-    }
+    },
   );
 }
 
@@ -552,12 +552,12 @@ function highlighted_simulations_changed(waveform_indexes) {
     $("#waveform-viewer").trajectories(
       "option",
       "highlighted_simulations",
-      highlighted_simulations.slice()
+      highlighted_simulations.slice(),
     ); // Passing copy of highlighted_simulations to ensure that others don't make changes to it
     $("#mp-mds-scatterplot").scatterplot(
       "option",
       "highlighted_simulations",
-      highlighted_simulations.slice()
+      highlighted_simulations.slice(),
     ); // Passing copy of highlighted_simulations to ensure that others don't make changes to it
     $("#mp-datapoints-table").table("option", "row-selection", highlighted_simulations.slice()); // Passing copy of highlighted_simulations to ensure that others don't make changes to it
 
@@ -644,7 +644,7 @@ function video_sync_time_changed(new_video_sync_time) {
     clearTimeout(video_sync_time_changed_throttle_timeout);
     video_sync_time_changed_throttle_timeout = setTimeout(
       bookmark_video_sync_time_and_diagram_time,
-      video_sync_time_changed_throttle_ms
+      video_sync_time_changed_throttle_ms,
     );
   }
 }
@@ -754,7 +754,7 @@ function update_waveform_color() {
     "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
   });
   $("#waveform-viewer rect.selectionMask").css({
-    "fill": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    fill: $("#color-switcher").colorswitcher("get_background", undefined).toString(),
     "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", undefined),
   });
 
@@ -795,7 +795,7 @@ function update_current_colorscale(table_data, new_color_variable) {
     "get_color_scale",
     undefined,
     min_value,
-    max_value
+    max_value,
   );
   color_array = $("#color-switcher").colorswitcher("get_gradient_data", undefined);
 
