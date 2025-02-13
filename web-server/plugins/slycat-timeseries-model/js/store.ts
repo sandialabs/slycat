@@ -1,5 +1,10 @@
 import { configureStore, PreloadedState } from "@reduxjs/toolkit";
 import { apiSlice } from "./apiSlice";
+import {
+  dataSlice,
+  SLICE_NAME as DATA_SLICE_NAME,
+  initialState as dataInitialState,
+} from "./services/dataSlice";
 import controlsReducer, { initialState as controlsInitialState } from "./services/controlsSlice";
 import modelSlice from "./services/modelSlice";
 // @ts-ignore
@@ -20,7 +25,7 @@ const store = client
   .get_model_fetch(modelId)
   // Create a bookmark manager for this model and project.
   .then((model: { project: string; _id: string }) =>
-    bookmark_manager.create(model.project, model._id)
+    bookmark_manager.create(model.project, model._id),
   )
   // Get the bookmarked state from the bookmark manager.
   .then((bookmarker: { getStateFetch(): Promise<{}> }) => {
@@ -35,6 +40,12 @@ const store = client
         controls: {
           colormap: string;
         };
+        [DATA_SLICE_NAME]: {
+          selected_simulations: number[];
+          hidden_simulations: number[];
+          cluster_index: number;
+          v_indices: number[];
+        };
       };
     }) => {
       // If we have no bookmarked state, we'll use the default state.
@@ -46,6 +57,7 @@ const store = client
         console.debug("Found bookmarked Redux state, using that.");
         preloadedState = {
           controls: { ...controlsInitialState, ...bookmarkedState.state.controls },
+          [DATA_SLICE_NAME]: { ...dataInitialState, ...bookmarkedState.state[DATA_SLICE_NAME] },
         };
       }
       // Otherwise, we have legacy bookmarked state, so we'll convert it to Redux state.
@@ -55,12 +67,33 @@ const store = client
           controls: {
             colormap: "string",
           },
+          [DATA_SLICE_NAME]: {
+            selected_simulations: [],
+            hidden_simulations: [],
+            cluster_index: 0,
+            v_indices: [],
+          },
         };
         if (bookmarkedState.colormap !== undefined) {
           legacyBookmarkState.controls.colormap = bookmarkedState.colormap;
         }
+        if (bookmarkedState["simulation-selection"] !== undefined) {
+          legacyBookmarkState[DATA_SLICE_NAME].selected_simulations =
+            bookmarkedState["simulation-selection"];
+        }
+        if (bookmarkedState["cluster-index"] !== undefined) {
+          legacyBookmarkState[DATA_SLICE_NAME].cluster_index = bookmarkedState["cluster-index"];
+        }
+
+        let i = 0;
+        while (bookmarkedState[i + "-column-index"] !== undefined) {
+          legacyBookmarkState[DATA_SLICE_NAME].v_indices[i] = bookmarkedState[i + "-column-index"];
+          i++;
+        }
+
         preloadedState = {
           controls: { ...controlsInitialState, ...legacyBookmarkState.controls },
+          [DATA_SLICE_NAME]: { ...dataInitialState, ...legacyBookmarkState[DATA_SLICE_NAME] },
         };
       }
 
@@ -69,6 +102,7 @@ const store = client
           [apiSlice.reducerPath]: apiSlice.reducer,
           controls: controlsReducer,
           model: modelSlice,
+          [DATA_SLICE_NAME]: dataSlice.reducer,
         },
         middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(apiSlice.middleware),
         devTools: process.env.NODE_ENV !== "production",
@@ -93,7 +127,7 @@ const store = client
       store.subscribe(bookmarkReduxStateTree);
 
       return store;
-    }
+    },
   );
 
 export default await store;

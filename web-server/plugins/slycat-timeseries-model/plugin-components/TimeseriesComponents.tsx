@@ -10,6 +10,7 @@ import Waveforms from "./Waveforms";
 import Legend from "./Legend";
 import Table from "./Table";
 import type { RootState, AppSubscribe, AppDispatch } from "../js/store";
+import { TableMetadataType } from "types/slycat";
 
 type Props = {
   dispatch: AppDispatch;
@@ -20,55 +21,48 @@ type Props = {
     state: string;
     "artifact:jid": string;
     "artifact:hostname": string;
+    name: string;
   };
   clusters: [] | undefined;
-  tableMetadata: {
-    "column-count": number;
-  } | undefined;
+  tableMetadata: TableMetadataType;
 };
 
 /**
  * determine if we should mount the loading page or the actually timeseries model
- * 
+ *
  * @param props see Props type
  * @returns JSX
  */
 const TimeseriesComponents = (props: Props) => {
   const { model, clusters, tableMetadata, dispatch, get_state, subscribe } = props;
-    if (model.state == "closed" && clusters && tableMetadata) {
-      initialize_timeseries_model(
-        dispatch,
-        get_state,
-        subscribe,
-        model,
-        clusters,
-        tableMetadata
-      );
-    }
 
-    // check if we are running or wating on the cluster
-    if (model["state"] === "waiting" || model["state"] === "running") {
-      // Show loading page
-      return (
-        <LoadingPage
-          modelId={model._id}
-          modelState={model["state"]}
-          jid={model["artifact:jid"]}
-          hostname={model["artifact:hostname"] ? model["artifact:hostname"] : "missing"}
-        />
-      );
-    }
+  if (model.state == "closed" && clusters && tableMetadata) {
+    initialize_timeseries_model(dispatch, get_state, subscribe, model, clusters, tableMetadata);
+  }
 
-    // Otherwise, show the model
+  // check if we are running or wating on the cluster
+  if (model["state"] === "waiting" || model["state"] === "running") {
+    // Show loading page
     return (
-      <>
-        <Controls modelId={model._id} />
-        <Dendrogram modelId={model._id} />
-        <Waveforms modelId={model._id} />
-        <Legend modelId={model._id} />
-        <Table modelId={model._id} />
-      </>
+      <LoadingPage
+        modelId={model._id}
+        modelState={model["state"]}
+        jid={model["artifact:jid"]}
+        hostname={model["artifact:hostname"] ? model["artifact:hostname"] : "missing"}
+      />
     );
-}
+  }
 
-export default React.memo(TimeseriesComponents);
+  // Otherwise, show the model
+  return (
+    <>
+      <Controls modelId={model._id} aid="inputs" model_name={model.name} metadata={tableMetadata} />
+      <Dendrogram modelId={model._id} />
+      <Waveforms modelId={model._id} />
+      <Legend modelId={model._id} />
+      <Table modelId={model._id} />
+    </>
+  );
+};
+
+export default TimeseriesComponents;

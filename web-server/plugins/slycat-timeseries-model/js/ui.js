@@ -1,4 +1,3 @@
-// @ts-check
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "../plugin-components/App";
@@ -21,10 +20,9 @@ const TimeseriesAppWrapper = () => {
   return <App get_state={getState} subscribe={subscribe} dispatch={dispatch} />;
 };
 
-// @ts-ignore
 const timeseries_model = createRoot(document.getElementById("timeseries-model"));
 timeseries_model.render(
   <Provider store={store}>
     <TimeseriesAppWrapper />
-  </Provider>
+  </Provider>,
 );

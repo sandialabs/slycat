@@ -10,17 +10,12 @@ import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
 import "css/slick-slycat-theme.css";
 import "../css/ui.css";
 
-import LoadingPage from "../plugin-components/LoadingPage.tsx";
-
 import api_root from "js/slycat-api-root";
 import ko from "knockout";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
-import URI from "urijs";
 import * as chunker from "./chunker";
-import "./timeseries-cluster";
-import "./timeseries-controls";
 import "./timeseries-legend";
 import "./timeseries-table";
 import "./timeseries-dendrogram";
@@ -33,7 +28,15 @@ import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
 import watch from "redux-watch";
+import _ from "lodash";
 import slycat_color_maps from "js/slycat-color-maps";
+import { selectCurrentVIndex, setClusterIndex } from "./services/dataSlice";
+
+import {
+  setSelectedSimulations,
+  setHiddenSimulations,
+  setCurrentVIndex,
+} from "./services/dataSlice";
 
 export default function initialize_timeseries_model(
   dispatch,
@@ -78,7 +81,6 @@ export default function initialize_timeseries_model(
   var expanded_nodes = null; // This holds the expanded nodes
   var selected_nodes = null; // This holds the selected nodes
 
-  var controls_ready = false;
   var colorscale_ready = false;
   var dendrogram_ready = false;
   var waveformplot_ready = false;
@@ -88,6 +90,8 @@ export default function initialize_timeseries_model(
   var selected_waveform_indexes = null;
 
   var image_columns = null; // This holds the media columns
+
+  const indices = new Int32Array(Array.from({ length: table_metadata["row-count"] }).keys());
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout and forms.
@@ -298,6 +302,30 @@ export default function initialize_timeseries_model(
     });
   }
 
+  let v_index_changed = (newVal) => {
+    const variable = parseInt(newVal);
+    selected_variable_changed(variable);
+    $("#table").table("option", "variable-selection", [variable]);
+  };
+
+  // Subscribing to changes in various selectors
+  [
+    {
+      selector: selectCurrentVIndex,
+      callback: v_index_changed,
+    },
+  ].forEach((subscription) => {
+    subscribe(
+      watch(
+        () => subscription.selector(get_state()),
+        null,
+        _.isEqual,
+      )((newVal, oldVal) => {
+        subscription.callback(newVal, oldVal);
+      }),
+    );
+  });
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup the rest of the UI as data is received.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -388,52 +416,6 @@ export default function initialize_timeseries_model(
       });
     }
 
-    // Setup controls ...
-    if (
-      !controls_ready &&
-      bookmark &&
-      s_to_a(clusters) &&
-      cluster_index !== null &&
-      selected_simulations != null &&
-      color_variables !== null &&
-      selected_waveform_indexes !== null &&
-      selected_column !== null &&
-      cluster_index !== null
-    ) {
-      controls_ready = true;
-
-      $("#cluster-pane .load-status").css("display", "none");
-
-      var controls_options = {
-        mid: model._id,
-        model_name: window.model_name,
-        aid: "inputs",
-        metadata: table_metadata,
-        highlight: selected_simulations,
-        clusters: s_to_a(clusters),
-        cluster: cluster_index,
-        color_variables: color_variables,
-        "color-variable": selected_column[cluster_index],
-        selection: selected_waveform_indexes[parseInt(cluster_index, 10)],
-        image_columns: image_columns,
-      };
-
-      $("#controls").controls(controls_options);
-
-      // Changes to the cluster selection ...
-      $("#controls").bind("cluster-changed", function (event, cluster) {
-        // Handle changes to the cluster selection ...
-        selected_cluster_changed(cluster);
-      });
-
-      // Changes to the waveform color ...
-      $("#controls").bind("color-selection-changed", function (event, variable) {
-        variable = parseInt(variable);
-        selected_variable_changed(variable);
-        $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
-      });
-    }
-
     // // Setup the color switcher ...
     if (!colorscale_ready && bookmark !== null) {
       colorscale_ready = true;
@@ -514,8 +496,6 @@ export default function initialize_timeseries_model(
         selected_simulations_changed(waveform_indexes);
         // Updates the dendrogram ...
         $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
-        // Updates the controls ...
-        $("#controls").controls("option", "highlight", waveform_indexes);
         // Updates the table row selection ...
         $("#table").table("option", "row-selection", waveform_indexes);
       });
@@ -559,8 +539,6 @@ export default function initialize_timeseries_model(
       $("#table").bind("row-selection-changed", function (event, waveform_indexes) {
         // Log changes to the table row selection
         selected_simulations_changed(waveform_indexes);
-        // Update the controls ...
-        $("#controls").controls("option", "highlight", waveform_indexes);
         // Update the waveform plot ...
         $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
         // Changing the table row selection updates the dendrogram ...
@@ -582,7 +560,7 @@ export default function initialize_timeseries_model(
       // Changing the table variable selection logs it, updates the waveform plot and dendrogram...
       $("#table").bind("variable-selection-changed", function (event, parameters) {
         selected_variable_changed(parameters.variable[0]);
-        $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
+        dispatch(setCurrentVIndex(parameters.variable[0]));
       });
 
       // Call setup_widgets when table is finished initializing because
@@ -658,8 +636,6 @@ export default function initialize_timeseries_model(
         function (event, waveform_indexes) {
           // Log changes to the waveform selection
           selected_simulations_changed(waveform_indexes);
-          // Update the controls ...
-          $("#controls").controls("option", "highlight", waveform_indexes);
           // Update the waveform plot ...
           $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
           // Update the table row selection ...
@@ -676,6 +652,7 @@ export default function initialize_timeseries_model(
       $("#dendrogram-viewer").bind("cluster-changed", function (event, cluster) {
         // Handle changes to the cluster selection ...
         selected_cluster_changed(cluster);
+        dispatch(setClusterIndex(cluster));
       });
     }
   }
@@ -737,7 +714,6 @@ export default function initialize_timeseries_model(
 
     // Changing the cluster updates the table variable selection ...
     $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
-    $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
     update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
     $.ajax({
@@ -751,19 +727,20 @@ export default function initialize_timeseries_model(
     selected_waveform_indexes[parseInt(cluster_index, 10)] = getWaveformIndexes(
       parameters.selection,
     );
+
+    // Hidden simulations are indices that don't exist in the selected waveforms
+    const hidden_simulations = Array.from(
+      indices.filter(
+        (index) => !selected_waveform_indexes[parseInt(cluster_index, 10)].includes(index),
+      ),
+    );
+    dispatch(setHiddenSimulations(hidden_simulations));
+
     selected_nodes[cluster_index] = getNodeIndexes(parameters.selection);
 
     // Only want to update the controls if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the controls at that time.
     // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
     if (parameters.skip_bookmarking != true) {
-      // Changing the selected dendrogram node updates the controls ...
-      $("#controls").controls(
-        "option",
-        "selection",
-        selected_waveform_indexes[parseInt(cluster_index, 10)],
-      );
-      $("#controls").controls("option", "highlight", selected_simulations);
-
       // Changing the selected dendrogram node updates the waveform plot ...
       $("#waveform-viewer").waveformplot(
         "option",
@@ -809,6 +786,7 @@ export default function initialize_timeseries_model(
     var bookmark_selected_simulations = {};
     bookmark_selected_simulations["simulation-selection"] = selected_simulations;
     bookmarker.updateState(bookmark_selected_simulations);
+    dispatch(setSelectedSimulations(selected_simulations));
   }
 
   function selected_variable_changed(variable) {

@@ -142,6 +142,10 @@ class ControlsButtonDownloadDataTable extends React.Component {
       buttons: buttons_save,
       callback: function(button)
       {
+        // If the user clicks the close X, the button will be undefined
+        // so we need to return early.
+        if(!button) return;
+
         if(button.label === "Save Entire Table")
           self._write_data_table();
         else if(button.label === "Save Selected")

@@ -529,17 +529,13 @@ label.bottom-margin {
   white-space: pre-line;
 }
 
-/* Making sure that controls dropdowns scroll when contents are longer than the menu. */
-#controls .dropdown-menu {
-  overflow-y: auto;
-}
 /* Making sure that controls dropdowns don't become wider than the screen. */
-#controls .dropdown-menu,
-#controls .dropdown-menu .dropdown-item {
+#controls-pane .dropdown-menu,
+#controls-pane .dropdown-menu .dropdown-item {
   max-width: 70vw;
 }
 /* Attempting to force long menu items to wrap, but doesn't seem to be working. */
-#controls .dropdown-menu .dropdown-item {
+#controls-pane .dropdown-menu .dropdown-item {
   overflow-wrap: anywhere;
 }
 
