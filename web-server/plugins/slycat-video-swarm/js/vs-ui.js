@@ -238,7 +238,22 @@ function model_loaded() {
         input_columns,
         output_columns,
       );
-      color_variables = _.difference(_.range(table_metadata[0]["column-count"]), media_columns);
+
+      // Color variables are all columns that are not strings
+      color_variables = _.range(table_metadata[0]["column-count"]).filter(function (index) {
+        return table_metadata[0]["column-types"][index] !== "string";
+      });
+
+      // Move the last element to the front of color_variables array since it appears as the first column in the table
+      if (color_variables.length > 0) {
+        var lastElement = color_variables.pop();
+        color_variables.unshift(lastElement);
+      }
+
+      // Verify that color_variable has not been defaulted to a string column
+      if (table_metadata[0]["column-types"][color_variable] === "string") {
+        color_variable = color_variables[0];
+      }
 
       $("#color-switcher").colorswitcher({ colormap: colormap });
       $("#color-switcher").bind("colormap-changed", function (event, colormap) {
