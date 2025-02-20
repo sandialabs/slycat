@@ -26,6 +26,7 @@ import 'js/slycat-plugins';
 // import "bootstrap/js/dist/modal";
 // Under Bootstrap 4, we seem to be able to import it here and need it to create popovers on the breadcrumbs.
 import "bootstrap";
+import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 import config from 'config.json';
 
@@ -90,6 +91,12 @@ export function renderNavBar() {
       component.GIT_SLYCAT_VERSION = GIT_SLYCAT_VERSION;
       component.GIT_SLYCAT_BRANCH = GIT_SLYCAT_BRANCH;
       component.GIT_SLYCAT_COMMITHASH = GIT_SLYCAT_COMMITHASH;
+
+      // Adding UI labels
+      component.slycatAuthLabelUsername = SLYCAT_AUTH_LABELS.username;
+      component.slycatAuthLabelPassword = SLYCAT_AUTH_LABELS.password;
+      component.slycatAuthLabelSignIn = SLYCAT_AUTH_LABELS.signIn;
+      component.slycatAuthLabelSignOut = SLYCAT_AUTH_LABELS.signOut;
 
       // Retrieve current project, if any.
       if(component.project_id())

@@ -137,7 +137,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">Connect to host...</h4>
+          <h4 class="modal-title" data-bind="text: remoteAuthLabelConnectTitle"></h4>
         </div>
         <div class="modal-body">
           <form role="form">
@@ -147,8 +147,11 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary" data-bind="click:connect,enable:remote.enable">
-            Connect
+          <button
+            class="btn btn-primary"
+            data-bind="click:connect,enable:remote.enable, text: remoteAuthLabelConnectButton"
+          >
+            [Replaced with Connect button text]
           </button>
           <button class="btn btn-light float-left" data-bind="click:cancel">Cancel</button>
         </div>

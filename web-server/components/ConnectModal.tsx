@@ -2,6 +2,7 @@ import * as React from "react";
 import ModalMedium from "components/ModalMedium.tsx";
 import ConnectButton from 'components/ConnectButton.tsx';
 import client from '../js/slycat-web-client';
+import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
 
 /**
  * @member modalId string dom id for the modal
@@ -120,10 +121,10 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
       this.checkRemoteStatus(this.props.hostname)
     }).catch((errorResponse:any) => {
       if (errorResponse.status == 403){
-        alert(`${errorResponse.statusText} \n\n-Make sure your username and password are entered correctly.
-        \n-Note you also may have tried to many times with bad credentials and been suspended for the next few minutes`)
+        alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
+        \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`)
       } else if (errorResponse.status == 401){
-        alert(`${errorResponse.statusText} \n\n-Make sure the Hostname is entered correctly.`)
+        alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`)
       } else {
         alert(`${errorResponse.statusText}`)
       }

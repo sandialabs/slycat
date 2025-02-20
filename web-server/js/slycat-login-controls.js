@@ -4,6 +4,7 @@
 
 import ko from "knockout";
 import slycatLoginControls from "templates/slycat-login-controls.html";
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 ko.components.register("slycat-login-controls",
 {
@@ -18,6 +19,10 @@ ko.components.register("slycat-login-controls",
       component.status_type = params.status_type || ko.observable(null);
       component.enable = params.enable || ko.observable(true);
       component.focus = params.focus || ko.observable(false);
+
+      // Adding UI labels
+      component.remoteAuthLabelUsername = REMOTE_AUTH_LABELS.username;
+      component.remoteAuthLabelPassword = REMOTE_AUTH_LABELS.password;
 
       component.status_classes = ko.pureComputed(function()
       {

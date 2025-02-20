@@ -95,9 +95,9 @@
           activate:connect,
           session_exists:remote.session_exists
         "></slycat-remote-controls>
-        <div class="smb-wizard-login" style="padding-left: 16px;" data-bind="visible: ps_type() == 'smb'">SMB</div>
+        <div class="smb-wizard-login" style="padding-left: 16px;" data-bind="visible: ps_type() == 'smb'">${remoteAuthLabelSMB}</div>
         <label class="col-sm-9 alert alert-danger slycat-big-scrolling-alert" role="alert" 
-          data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb', text: 'Remote authentication failed.'" style="position:relative; left:145px;"></label>
+          data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb', text: '${remoteAuthErrorSMB}'" style="position:relative; left:145px;"></label>
       </form>
     </div>
 

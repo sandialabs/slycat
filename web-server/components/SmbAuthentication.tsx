@@ -1,5 +1,6 @@
 import React from 'react';
 import client from "js/slycat-web-client";
+import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
 
 /**
  * this class sets up and tests a remote session to an agent
@@ -237,7 +238,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
     return (
       <div>
         <div className='form-group row mb-3'>
-          <label className='col-sm-2 col-form-label'>Share Name</label>
+          <label className='col-sm-2 col-form-label'>{REMOTE_AUTH_LABELS.share}</label>
           <div className='col-sm-9'>
             <input disabled={this.props.loadingData} 
               className='form-control' type='text'
@@ -246,7 +247,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
           </div>
         </div>
         <div className='form-group row mb-3'>
-          <label className='col-sm-2 col-form-label'>Username</label>
+          <label className='col-sm-2 col-form-label'>{REMOTE_AUTH_LABELS.username}</label>
           <div className='col-sm-4'>
             <input disabled={this.props.loadingData} 
               className='form-control' type='text'
@@ -270,7 +271,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
             </div>
         </div>
         {!this.state.session_exists&&(<div className='form-group row mb-3'>
-          <label className='col-sm-2 col-form-label'>Password</label>
+          <label className='col-sm-2 col-form-label'>{REMOTE_AUTH_LABELS.password}</label>
           <div className='col-sm-9'>
             <input disabled={this.props.loadingData} 
               className='form-control' type='password' 

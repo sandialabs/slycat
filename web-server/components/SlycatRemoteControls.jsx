@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import client from "js/slycat-web-client";
 import ConnectButton from 'components/ConnectButton.tsx';
+import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
 
 /**
  * this class sets up and tests a remote session to an agent
@@ -167,7 +168,7 @@ export default class SlycatRemoteControls extends Component {
       return (
         <div>
           <div className='form-group row mb-3'>
-            <label className='col-sm-2 col-form-label'>Username</label>
+            <label className='col-sm-2 col-form-label'>{REMOTE_AUTH_LABELS.username}</label>
             <div className='col-sm-9'>
               <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
                 className='form-control' type='text'
@@ -176,7 +177,7 @@ export default class SlycatRemoteControls extends Component {
             </div>
           </div>
           <div className='form-group row mb-3' data-bind-old='visible: !session_exists()'>
-            <label className='col-sm-2 col-form-label'>Password</label>
+            <label className='col-sm-2 col-form-label'>{REMOTE_AUTH_LABELS.password}</label>
             <div className='col-sm-9'>
               <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
                 className='form-control' type='password' 

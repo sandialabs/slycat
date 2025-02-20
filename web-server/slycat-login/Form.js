@@ -7,6 +7,7 @@ import URI from 'urijs';
 import "css/slycat-bootstrap.scss";
 import './styles.css';
 import api_root from 'js/slycat-api-root';
+import { SLYCAT_AUTH_LABELS } from 'utils/ui-labels';
 
 class Form extends Component {
 
@@ -89,15 +90,15 @@ class Form extends Component {
     return (
     <div className="component-login-form">
       <form className="form-signin" onSubmit={this.handleSubmit}>
-        <div className="alert alert-danger" role="alert" id="signin-alert">Oops, that username and password did not work. Please try again.</div>
+        <div className="alert alert-danger" role="alert" id="signin-alert">{SLYCAT_AUTH_LABELS.authErrorDescription}</div>
         
         <label htmlFor="username" className="sr-only"></label>
-        <input id="username" className="form-control" placeholder="Username" required="" type="text" value={this.state.credentials.username} onChange={this.changeUsername} />
+        <input id="username" className="form-control" placeholder={SLYCAT_AUTH_LABELS.username} required="" type="text" value={this.state.credentials.username} onChange={this.changeUsername} />
 
         <label htmlFor="password" className="sr-only"></label>
-        <input id="password" className="form-control" placeholder="Password" required="" type="password" value={this.state.credentials.password} onChange={this.changePassword} />
+        <input id="password" className="form-control" placeholder={SLYCAT_AUTH_LABELS.password} required="" type="password" value={this.state.credentials.password} onChange={this.changePassword} />
 
-        <button className="btn btn-lg btn-primary btn-block" id="go" type="submit">Sign In</button>
+        <button className="btn btn-lg btn-primary btn-block" id="go" type="submit">{SLYCAT_AUTH_LABELS.signIn}</button>
       </form>
     </div>
     );
