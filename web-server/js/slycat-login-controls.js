@@ -6,12 +6,9 @@ import ko from "knockout";
 import slycatLoginControls from "templates/slycat-login-controls.html";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
-ko.components.register("slycat-login-controls",
-{
-  viewModel:
-  {
-    createViewModel: function(params, component_info)
-    {
+ko.components.register("slycat-login-controls", {
+  viewModel: {
+    createViewModel: function (params, component_info) {
       var component = {};
       component.username = params.username;
       component.password = params.password;
@@ -24,71 +21,57 @@ ko.components.register("slycat-login-controls",
       component.remoteAuthLabelUsername = REMOTE_AUTH_LABELS.username;
       component.remoteAuthLabelPassword = REMOTE_AUTH_LABELS.password;
 
-      component.status_classes = ko.pureComputed(function()
-      {
+      component.status_classes = ko.pureComputed(function () {
         var classes = [];
-        if(component.status())
-          classes.push("in");
-        if(component.status_type())
-          classes.push("alert-" + component.status_type());
+        if (component.status()) classes.push("in");
+        if (component.status_type()) classes.push("alert-" + component.status_type());
         return classes.join(" ");
       });
 
-      if(!component.username())
+      if (!component.username())
         component.username(localStorage.getItem("slycat-login-controls-username"));
 
-      component.username.subscribe(function(value)
-      {
+      component.username.subscribe(function (value) {
         localStorage.setItem("slycat-login-controls-username", value);
         component.status(null);
       });
 
-      component.password.subscribe(function(value)
-      {
+      component.password.subscribe(function (value) {
         component.status(null);
       });
 
-      component.focus.subscribe(function(value)
-      {
+      component.focus.subscribe(function (value) {
         var username = component.username();
         var password = component.password();
         var username_input = $(component_info.element).find("input").eq(0);
         var password_input = $(component_info.element).find("input").eq(1);
 
-        if(value == true)
-        {
-          if(component.username())
-          {
+        if (value == true) {
+          if (component.username()) {
             value = "password";
-          }
-          else
-          {
+          } else {
             value = "username";
           }
         }
 
-        if(value == "username")
-        {
+        if (value == "username") {
           username_input.focus();
-          if(username)
-            username_input.get(0).setSelectionRange(0, username.length);
+          if (username) username_input.get(0).setSelectionRange(0, username.length);
         }
-        if(value == "password")
-        {
+        if (value == "password") {
           password_input.focus();
-          if(password)
-            password_input.get(0).setSelectionRange(0, password.length);
+          if (password) password_input.get(0).setSelectionRange(0, password.length);
         }
       });
 
-      $(component_info.element).find("input").keydown(function(e)
-      {
-        if(e.which == 13 && params.activate)
-          params.activate();
-      });
+      $(component_info.element)
+        .find("input")
+        .keydown(function (e) {
+          if (e.which == 13 && params.activate) params.activate();
+        });
 
       return component;
     },
   },
-  template: slycatLoginControls
+  template: slycatLoginControls,
 });

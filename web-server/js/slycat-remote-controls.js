@@ -10,16 +10,13 @@ import slycatRemoteControls from "templates/slycat-remote-controls.html";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 // Set alert message when user needs to reauthenticate
 export function remoteControlsReauth(status, status_type) {
-  status('Oops, your session has disconnected. Please log in again.');
+  status("Oops, your session has disconnected. Please log in again.");
   status_type("danger");
-}  
+}
 
-ko.components.register("slycat-remote-controls",
-{
-  viewModel:
-  {
-    createViewModel: function(params, component_info)
-    {
+ko.components.register("slycat-remote-controls", {
+  viewModel: {
+    createViewModel: function (params, component_info) {
       var component = {};
       component.hostname = params.hostname;
       component.username = params.username;
@@ -38,74 +35,57 @@ ko.components.register("slycat-remote-controls",
       component.remoteAuthLabelConnectTitle = REMOTE_AUTH_LABELS.connectTitle;
       component.remoteAuthLabelConnectButton = REMOTE_AUTH_LABELS.connectButton;
 
-      component.status_classes = ko.pureComputed(function()
-      {
+      component.status_classes = ko.pureComputed(function () {
         var classes = [];
-        if(component.status())
-          classes.push("in");
-        if(component.status_type())
-          classes.push("alert-" + component.status_type());
+        if (component.status()) classes.push("in");
+        if (component.status_type()) classes.push("alert-" + component.status_type());
         return classes.join(" ");
       });
 
-      component.use_remote = function(remote_host)
-      {
+      component.use_remote = function (remote_host) {
         component.hostname(remote_host.hostname());
-      }
+      };
 
-      if(!component.hostname())
+      if (!component.hostname())
         component.hostname(localStorage.getItem("slycat-remote-controls-hostname"));
-      if(!component.username())
+      if (!component.username())
         component.username(localStorage.getItem("slycat-remote-controls-username"));
 
-      component.hostname.subscribe(function(value)
-      {
+      component.hostname.subscribe(function (value) {
         localStorage.setItem("slycat-remote-controls-hostname", value);
         component.status_type(null);
         component.status(null);
 
-        if(value != null && value.trim() != "")
-        {
+        if (value != null && value.trim() != "") {
           client.get_remotes({
             hostname: value,
-            success: function(result)
-            {
-              if(component.hostname() == value)
-              {
-                if(result.status)
-                  component.session_exists(true);
-                else
-                  component.session_exists(false);
+            success: function (result) {
+              if (component.hostname() == value) {
+                if (result.status) component.session_exists(true);
+                else component.session_exists(false);
               }
             },
-            error: function(request, status, reason_phrase)
-            {
-              if(component.hostname() == value)
-                component.session_exists(false);
-            }
+            error: function (request, status, reason_phrase) {
+              if (component.hostname() == value) component.session_exists(false);
+            },
           });
-        }
-        else
-        {
+        } else {
           component.session_exists(false);
         }
       });
 
-      component.username.subscribe(function(value)
-      {
+      component.username.subscribe(function (value) {
         localStorage.setItem("slycat-remote-controls-username", value);
         component.status_type(null);
         component.status(null);
       });
 
-      component.password.subscribe(function(value)
-      {
+      component.password.subscribe(function (value) {
         component.status_type(null);
         component.status(null);
       });
 
-      component.focus.subscribe(function(value)
-      {
+      component.focus.subscribe(function (value) {
         var hostname = component.hostname();
         var username = component.username();
         var password = component.password();
@@ -113,64 +93,49 @@ ko.components.register("slycat-remote-controls",
         var username_input = $(component_info.element).find("input").eq(1);
         var password_input = $(component_info.element).find("input").eq(2);
 
-        if(value == true)
-        {
-          if(component.hostname() && component.username())
-          {
+        if (value == true) {
+          if (component.hostname() && component.username()) {
             value = "password";
-          }
-          else if(component.hostname())
-          {
+          } else if (component.hostname()) {
             value = "username";
-          }
-          else
-          {
+          } else {
             value = "hostname";
           }
         }
 
-        if(value == "hostname")
-        {
+        if (value == "hostname") {
           hostname_input.focus();
-          if(hostname)
-            hostname_input.get(0).setSelectionRange(0, hostname.length);
+          if (hostname) hostname_input.get(0).setSelectionRange(0, hostname.length);
         }
-        if(value == "username")
-        {
+        if (value == "username") {
           username_input.focus();
-          if(username)
-            username_input.get(0).setSelectionRange(0, username.length);
+          if (username) username_input.get(0).setSelectionRange(0, username.length);
         }
-        if(value == "password")
-        {
+        if (value == "password") {
           password_input.focus();
-          if(password)
-            password_input.get(0).setSelectionRange(0, password.length);
+          if (password) password_input.get(0).setSelectionRange(0, password.length);
         }
       });
 
-      $(component_info.element).find("input").keydown(function(e)
-      {
-        if(e.which == 13 && params.activate)
-          params.activate();
-      });
+      $(component_info.element)
+        .find("input")
+        .keydown(function (e) {
+          if (e.which == 13 && params.activate) params.activate();
+        });
 
-      client.get_configuration_remote_hosts(
-      {
-        success: function(remote_hosts)
-        {
+      client.get_configuration_remote_hosts({
+        success: function (remote_hosts) {
           var current_host = component.hostname();
-          remote_hosts.sort(function(left, right)
-          {
+          remote_hosts.sort(function (left, right) {
             return left.hostname == right.hostname ? 0 : left.hostname < right.hostname ? -1 : 1;
           });
           mapping.fromJS(remote_hosts, component.remote_hosts);
           component.hostname(current_host || component.hostname());
-        }
+        },
       });
 
       return component;
     },
   },
-  template: slycatRemoteControls
+  template: slycatRemoteControls,
 });
