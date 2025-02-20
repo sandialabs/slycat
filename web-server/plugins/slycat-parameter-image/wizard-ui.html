@@ -172,10 +172,8 @@
         <div
           class="smb-wizard-login"
           style="padding-left: 16px"
-          data-bind="visible: ps_type() == 'smb'"
-        >
-          ${remoteAuthLabelSMB}
-        </div>
+          data-bind="visible: ps_type() == 'smb', text: remoteAuthLabelSMB"
+        ></div>
         <label
           class="col-sm-9 alert alert-danger slycat-big-scrolling-alert"
           role="alert"
