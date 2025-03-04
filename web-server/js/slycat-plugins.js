@@ -11,7 +11,6 @@ import 'plugins/slycat-project-wizards/slycat-project-wizards';
 import 'plugins/slycat-parameter-image/slycat-parameter-image';
 import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
 import 'plugins/slycat-cca/slycat-cca';
-import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
 import 'plugins/slycat-video-swarm/vs-model';
 import 'plugins/slycat-dac/dial-a-cluster-model';
 
@@ -36,15 +35,6 @@ export async function loadTemplate(name, format) {
       break;
     case "cca":
       html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca/ui.html');
-      break;
-    case "parameter-image-plus":
-      html = await import(/* webpackChunkName: "ui_parameter_image_plus_template" */ 'plugins/slycat-parameter-image-plus-model/ui.html');
-      break;
-    case "run-command":
-      html = await import(/* webpackChunkName: "run_command_template" */ 'plugins/slycat-run-command/ui.html');
-      break;
-    case "smb":
-      html = await import(/* webpackChunkName: "smb_template" */ 'plugins/slycat-smb/ui.html');
       break;
     case "VS":
       html = await import(/* webpackChunkName: "ui_video_swarm_template" */ 'plugins/slycat-video-swarm/html/vs-ui.html');
@@ -85,15 +75,6 @@ export async function loadModule(name) {
       break;
     case "cca":
       module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca/js/ui.js');
-      break;
-    case "parameter-image-plus":
-      module = await import(/* webpackChunkName: "ui_parameter_image_plus_module" */ 'plugins/slycat-parameter-image-plus-model/js/ui.js');
-      break;
-    case "run-command":
-      module = await import(/* webpackChunkName: "run_command_module" */ 'plugins/slycat-run-command/ui.js');
-      break;
-    case "smb":
-      module = await import(/* webpackChunkName: "run_command_module" */ 'plugins/slycat-smb/ui.js');
       break;
     case "VS":
       module = await import(/* webpackChunkName: "ui_video_swarm_module" */ 'plugins/slycat-video-swarm/js/vs-ui.js');
