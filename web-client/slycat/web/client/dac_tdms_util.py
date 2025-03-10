@@ -150,18 +150,14 @@ def check_parms (arguments, parms):
 # parse test data subdirectory
 def parse_run_chart (run_chart):
 
-    # default return is None
-    run_chart_id = None
-
     # split run_chart string on "_" to get identifiers
-    run_chart_id = run_chart.split("_")
+    run_chart_split = run_chart.split("_")
 
-    # keep only first four identifiers, if they exist
-    if len(run_chart_id) >= 4:
-        run_chart_id = run_chart_id[0:4]
-    else:
-        run_chart_id = [None, None, None, None]
-    
+    # keep first four, if less than four use None
+    run_chart_id = [None, None, None, None]
+    if len(run_chart_split) >= 4:
+        run_chart_id = run_chart_split[0:4]
+
     return run_chart_id
 
 # helper function for catalog_tmds_files, converts string specifying batch
@@ -235,6 +231,10 @@ def exclude_suffixes (arguments, file_list):
 # catalog tdms types and matches
 def list_tdms_types (file_list, list_suffixes, run_chart_ids, part_lot_batch_sn=True):
 
+    # do not match part_lot_batch_sn if not present in directory name
+    if run_chart_ids[3] is None:
+        part_lot_batch_sn = False
+
     # screen for .tdms files according to argument parameters
     run_chart_tdms_matches = []
     run_chart_tdms_types = []
@@ -284,8 +284,7 @@ def catalog_tdms_dir (arguments, log):
 
     # check that we found data directories
     if len(possible_run_chart_dirs) == 0:
-        raise TDMSUploadError('No data subdirectories found for part number match "' + 
-            part_num_match + '".')
+        raise TDMSUploadError('No data subdirectories found for root dir "' + root_dir + '".')
 
     # go through each run chart directory
     metadata = []
@@ -305,7 +304,7 @@ def catalog_tdms_dir (arguments, log):
     
         # check that we have .tdms files
         if len(run_chart_tdms_files) == 0:
-            log ('Skipping subdirectory "' + str(run_chart_ids[0]) + '" -- does not ' +
+            log ('Skipping subdirectory "' + str(run_chart_dir) + '" -- does not ' +
                     'contain any TDMS files.')
             continue
 
@@ -318,21 +317,80 @@ def catalog_tdms_dir (arguments, log):
 
         # check that we have matching .tdms files
         if len(run_chart_tdms_matches) == 0:
-            log ('Skipping subdirectory "' + str(run_chart_ids[0]) + '" -- does not ' +
+            log ('Skipping subdirectory "' + str(run_chart_dir) + '" -- does not ' +
                     'contain any TDMS files with file matches.')
             continue
 
-        # store in metadata structure
-        metadata.append({"part": str(run_chart_ids[0]),
-                        "lot": str(run_chart_ids[1]),
-                        "batch": str(run_chart_ids[2]),
-                        "sn": str(run_chart_ids[3]),
-                        "source": os.path.abspath(run_chart_dir),
-                        "tdms_files": run_chart_tdms_matches,
-                        "tdms_types": run_chart_tdms_types,
-                        "include_suffixes": list_suffixes})
+        # check for unstructed directory name
+        if run_chart_ids[0] is None:
+            if not arguments.unstructured:
+                raise TDMSUploadError('Found unstructed directory, to force generation of ' +
+                    'run chart use --unstructured option.')
+            else:
+
+                # split according to part/lot/batch/sn in file names
+                [split_ids, split_files, split_types] = \
+                    split_tdms_file_names(run_chart_tdms_matches, run_chart_tdms_types, log)
+
+                # store each split according to part/lot/batch/sn
+                for i in range(len(split_ids)):
+                    metadata.append({"part": str(split_ids[i][0]),
+                                    "lot": str(split_ids[i][1]),
+                                    "batch": str(split_ids[i][2]),
+                                    "sn": str(split_ids[i][3]),
+                                    "source": os.path.abspath(run_chart_dir),
+                                    "tdms_files": split_files[i],
+                                    "tdms_types": split_types[i],
+                                    "include_suffixes": list_suffixes})
+        else:
+
+            # store in metadata structure
+            metadata.append({"part": str(run_chart_ids[0]),
+                            "lot": str(run_chart_ids[1]),
+                            "batch": str(run_chart_ids[2]),
+                            "sn": str(run_chart_ids[3]),
+                            "source": os.path.abspath(run_chart_dir),
+                            "tdms_files": run_chart_tdms_matches,
+                            "tdms_types": run_chart_tdms_types,
+                            "include_suffixes": list_suffixes})
 
     return metadata
+
+# split a list of tdms files into groups by part-lot-batch-sn in file names
+def split_tdms_file_names(tdms_matches, tdms_types, log):
+    
+    # get unique file name prefixes
+    match_prefixes = []
+    match_ids = []
+    for match in tdms_matches:
+        run_chart_ids = parse_run_chart(match)
+
+        # skip if bad part-lot-batch-sn
+        if run_chart_ids[0] is None:
+            log('Skipping file "' + match + '" -- Could not find part/lot/batch/sn from file name.')
+            continue
+
+        # sort by prefix
+        match_prefix = '_'.join(run_chart_ids)
+        if match_prefix not in match_prefixes:
+            match_prefixes.append (match_prefix)
+            match_ids.append(run_chart_ids)
+
+    
+    # group by prefixes
+    tdms_groups = []
+    type_groups = []
+    for prefix in match_prefixes:
+        prefix_group = []
+        tdms_type_group= []
+        for i in range(len(tdms_matches)):
+            if prefix in tdms_matches[i]:
+                prefix_group.append(tdms_matches[i])
+                tdms_type_group.append(tdms_types[i])
+        tdms_groups.append(prefix_group)
+        type_groups.append(tdms_type_group)
+
+    return match_ids, tdms_groups, type_groups
 
 # enumerate tdms files based on command line inputs, according to directory list
 def catalog_tdms_files (arguments, log):

@@ -384,7 +384,6 @@ def read_metadata_table (metadata, arguments, log):
         root_props = metadata[i]["root_properties"]
 
         # is it a short root header?
-        delete_i = False
         for j in range(len(root_props)):
         
             root_props_j = list(root_props[j].columns)
@@ -398,11 +397,6 @@ def read_metadata_table (metadata, arguments, log):
                 log ('Found TDMS file with inconsistent root property header: "' +
                      metadata[i]["source"] + '" for "' + metadata[i]["tdms_types"][j] + 
                     '" -- using NaN values for missing columns.')
-                delete_i = True
-        
-        # delete entry for any short headers
-        # if delete_i:
-        #     metadata.pop(i)
 
     # go through and get constant values
     constants = np.ones(len(root_head))
@@ -898,10 +892,13 @@ def compute_PCA (var_data, arguments, log):
 
         # compute PCA using sklearn
         pca = PCA(n_components=arguments.num_PCA_comps)
+
         try:
             dist_i = pca.fit_transform(var_data[i])
+
         except ValueError:
-            raise TDMSUploadError("Could not perform PCA, too few components.")
+            dist_i = np.zeros ((len(var_data[i]), arguments.num_PCA_comps))
+            log('Warning: could not perform PCA, too few components -- using zero values.')
 
         # save PCA projections
         var_dist.append(dist_i)
@@ -965,11 +962,6 @@ def mat2str (mat):
 # check arguments and create model
 def create_model(arguments, log):
 
-    # if you have --curve, you must also have --plot-last-value
-    if arguments.curve:
-        if not arguments.plot_last_value:
-            raise TDMSUploadError('Must use "--plot-last-value" with "--curve".')
-        
     # if you have --highlight-shot-numbers, you also have to have --use-shot-numbers
     if arguments.highlight_shot_numbers:
         if not arguments.use_shot_numbers:
@@ -1022,12 +1014,8 @@ def create_model(arguments, log):
     var_dist = compute_PCA (var_data, arguments, log)
     
     # save files, use nans in plot if requested
-    if arguments.plot_last_value:
-        write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
-                    time_steps, var_data, var_dist, arguments)
-    else:
-        write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
-                    time_steps, var_data_nan, var_dist, arguments)
+    write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
+                  time_steps, var_data, var_dist, arguments)
 
     # add output file for dac_gen script
     dac_gen_args = Namespace(**vars(arguments), **{'dac_gen_zip': arguments.output_zip_file})
@@ -1081,6 +1069,10 @@ def parser ():
         help="Use all .tdms files in root directory as input. Produces one run chart per " +
              "subdirectory found containing .tdms files.")
 
+    # unstructured option for tdms dir
+    parser.add_argument("--unstructured", action="store_true",
+        help="For unstructured directory names, infer run chart groups from file names instead.")
+    
     # output file for dac generic format, mandatory
     parser.add_argument("output_zip_file",
         help="Output file name for writing dac generic format of the run " +
@@ -1125,8 +1117,6 @@ def parser ():
         help="Fill out short run charts with last given value.")
     parser.add_argument("--use-const-value", nargs=1, type=float,
         help="Constant value to use for absent run charts (no default).")
-    parser.add_argument("--plot-last-value", action="store_true",
-        help="Plot filled values in run charts.")
     
     # exclude XML by default
     parser.add_argument("--include_configuration_XML", action="store_true",
