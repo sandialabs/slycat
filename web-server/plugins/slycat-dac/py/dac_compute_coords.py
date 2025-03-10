@@ -359,7 +359,12 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
 
     # compute 2D coordinates using PCA
     pca = PCA(n_components=2)
-    mds_landmark_coords = pca.fit_transform(full_dist_mat)
+    try:
+        mds_landmark_coords = pca.fit_transform(full_dist_mat)
+
+    except ValueError:
+        # Could not perform PCA, use zero values
+        mds_landmark_coords = np.zeros((full_dist_mat.shape[0], 2))
 
     # if not in landmarks, assign old coordinates
     mds_coords = old_coords
