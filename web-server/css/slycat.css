@@ -439,25 +439,6 @@ slycat-navbar nav .alert pre {
   color: #cccccc;
 }
 
-/* New PIP model wizard */
-#slycat-wizard .parameter-image-plus-model-wizard .local-browser,
-#slycat-wizard .parameter-image-plus-model-wizard .remote-controls,
-#slycat-wizard .parameter-image-plus-model-wizard .compute-interface {
-  margin-left: 60px;
-}
-#slycat-wizard .parameter-image-plus-model-wizard .radio label {
-  font-weight: bold;
-}
-#slycat-wizard .parameter-image-plus-model-wizard .radio.remote {
-  margin-top: 60px;
-}
-#slycat-wizard .parameter-image-plus-model-wizard label.disabled,
-#slycat-wizard .parameter-image-plus-model-wizard #slycat-local-browser-file:disabled {
-  color: gray;
-}
-#slycat-wizard .parameter-image-plus-model-wizard .cluster-column {
-  margin-top: 30px;
-}
 .bootstrap-styles .navbar .dropdown-header {
   color: #777777;
   font-weight: normal;
