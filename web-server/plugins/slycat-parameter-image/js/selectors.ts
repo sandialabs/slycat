@@ -16,9 +16,9 @@ import {
   VariableRangesType,
   TableStatisticsType,
   AxesVariablesType,
-  ColumnTypesType,
   ValuesType,
 } from "./store";
+import { ColumnTypesType } from "types/slycat";
 import { parseDate } from "js/slycat-dates";
 
 // Constants

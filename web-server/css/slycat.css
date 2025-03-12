@@ -439,25 +439,6 @@ slycat-navbar nav .alert pre {
   color: #cccccc;
 }
 
-/* New PIP model wizard */
-#slycat-wizard .parameter-image-plus-model-wizard .local-browser,
-#slycat-wizard .parameter-image-plus-model-wizard .remote-controls,
-#slycat-wizard .parameter-image-plus-model-wizard .compute-interface {
-  margin-left: 60px;
-}
-#slycat-wizard .parameter-image-plus-model-wizard .radio label {
-  font-weight: bold;
-}
-#slycat-wizard .parameter-image-plus-model-wizard .radio.remote {
-  margin-top: 60px;
-}
-#slycat-wizard .parameter-image-plus-model-wizard label.disabled,
-#slycat-wizard .parameter-image-plus-model-wizard #slycat-local-browser-file:disabled {
-  color: gray;
-}
-#slycat-wizard .parameter-image-plus-model-wizard .cluster-column {
-  margin-top: 30px;
-}
 .bootstrap-styles .navbar .dropdown-header {
   color: #777777;
   font-weight: normal;
@@ -529,17 +510,13 @@ label.bottom-margin {
   white-space: pre-line;
 }
 
-/* Making sure that controls dropdowns scroll when contents are longer than the menu. */
-#controls .dropdown-menu {
-  overflow-y: auto;
-}
 /* Making sure that controls dropdowns don't become wider than the screen. */
-#controls .dropdown-menu,
-#controls .dropdown-menu .dropdown-item {
+#controls-pane .dropdown-menu,
+#controls-pane .dropdown-menu .dropdown-item {
   max-width: 70vw;
 }
 /* Attempting to force long menu items to wrap, but doesn't seem to be working. */
-#controls .dropdown-menu .dropdown-item {
+#controls-pane .dropdown-menu .dropdown-item {
   overflow-wrap: anywhere;
 }
 

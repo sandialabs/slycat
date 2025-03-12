@@ -2,7 +2,6 @@ import { createSlice, createSelector } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import _ from "lodash";
-import { select } from "docs/html/_static/underscore-1.3.1";
 
 export const SLICE_NAME = "data";
 

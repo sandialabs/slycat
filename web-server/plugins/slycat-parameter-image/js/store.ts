@@ -20,6 +20,7 @@ import {
   initialState as dataInitialState,
   DataState,
 } from "./dataSlice";
+import { TableMetadataType } from "types/slycat";
 
 export type AxisType = "Linear" | "Log" | "Date & Time";
 
@@ -69,15 +70,6 @@ export type DerivedStateType = {
   // ToDo: Add more specific types for these
   three_d_colorby_range: {};
   three_d_colorby_legends: {};
-};
-
-export type ColumnTypesType = "string" | "float64" | "int64";
-
-export type TableMetadataType = {
-  "row-count": number;
-  "column-count": number;
-  "column-names": string[];
-  "column-types": ColumnTypesType[];
 };
 
 export type OpenMediaType = {

@@ -559,6 +559,11 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
         for i in range(0, num_vars):
 
             attr, dim, data = parse_mat_file(zip_ref.read("var/variable_" + str(i+1) + ".var"))
+
+            # make sure we have a 2d array, even if there is only one data point
+            if data.ndim < 2:
+                data = numpy.expand_dims(data, axis=0)
+
             variable.append(numpy.array(data))
 
         parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
@@ -574,11 +579,9 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
 
             attr, dim, data = parse_mat_file(zip_ref.read("time/variable_" + str(i + 1) + ".time"))
 
-            # check that time steps match variable length
             if len(variable[i][0]) != len(data):
-
                 dac_error.quit_raise_exception(database, model, parse_error_log,
-                                     'Time steps do not match variable data for variable ' + str(i+1) + ".")
+                    'Time steps do not match variable data for variable ' + str(i+1) + ".")
 
             time_steps.append(list(data))
 
@@ -594,6 +597,10 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
         for i in range(0, num_vars):
 
             attr, dim, data = parse_mat_file(zip_ref.read("dist/variable_" + str(i + 1) + ".dist"))
+
+            # make sure we have a 2d array, even if there is only one data point
+            if data.ndim < 2:
+                data = numpy.expand_dims(data, axis=0)
 
             # check that distance matrix is (num_datapoint, num_landmarks)
             if data.shape[0] != num_datapoints or data.shape[1] != num_landmarks:

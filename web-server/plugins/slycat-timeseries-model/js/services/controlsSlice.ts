@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "../store";
 
 export interface ControlsState {
   colormap: string;
@@ -25,4 +26,7 @@ export const controlsSlice = createSlice({
 
 // Action creators are generated for each case reducer function
 export const { setColormap } = controlsSlice.actions;
+
+export const selectColormap = (state: RootState) => state.controls.colormap;
+
 export default controlsSlice.reducer;

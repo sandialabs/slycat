@@ -123,13 +123,19 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     dimensions = [dict(name="row", end=len(meta_rows))]
     attributes = [dict(name=name, type=type) for name, type in zip(meta_column_str_names, meta_column_types)]
 
+    cherrypy.log.error(str(dimensions))
+    cherrypy.log.error(str(attributes))
+    cherrypy.log.error(str(len(attributes)))
+    cherrypy.log.error(str(meta_columns))
+    cherrypy.log.error(str(len(meta_columns)))
+
     slycat.web.server.put_model_array(database, model, "dac-datapoints-meta", 0, attributes, dimensions)
 
     # upload data into the array
     for index, data in enumerate(meta_columns):
         slycat.web.server.put_model_arrayset_data(
             database, model, "dac-datapoints-meta", "0/%s/..." % index, [data])
-
+        
     # create variables.meta table on server
     slycat.web.server.put_model_arrayset(database, model, "dac-variables-meta")
 

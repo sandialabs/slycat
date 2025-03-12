@@ -5,7 +5,6 @@
 import pandas as pd
 import numpy 
 from io import StringIO
-import cherrypy
 
 # common csv parsing code used by both slycat-web-server and slycat-web-client
 # does not call slycat.web.server directly, instead returns any error messages
