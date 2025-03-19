@@ -38,9 +38,9 @@
             </select>
           </div>
           <div class="col-sm-6">
-            <input type="text" class="form-control" data-bind="textInput: new_user" placeholder="Username" required>
+            <input type="text" class="form-control" data-bind="textInput: new_user, attr: { placeholder: slycatAuthLabelUsername }" required>
             <div class="invalid-feedback">
-              Please enter a username.
+              Please enter a <span data-bind="text: slycatAuthLabelUsername.toLowerCase()"></span>.
             </div>
           </div>
           <div class="col-sm-2">

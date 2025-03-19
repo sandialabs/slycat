@@ -8,10 +8,12 @@ import * as dialog from "js/slycat-dialog";
 import ko from 'knockout';
 import mapping from "knockout-mapping";
 import editUI from "./edit-ui.html";
+import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 function constructor(params)
 {
   var component = {};
+  component.slycatAuthLabelUsername = SLYCAT_AUTH_LABELS.username;
   component.project = params.projects()[0];
   component.modified = mapping.fromJS(mapping.toJS(component.project));
   component.permission = ko.observable("reader");

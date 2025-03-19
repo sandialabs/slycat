@@ -21,7 +21,9 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" data-bind="click:login,enable:remote.enable">
-            <i class="fa fa-spinner fa-pulse" data-bind="style: {display: remote.enable() ? 'none' : 'inline-block'}"></i> Login</button>
+            <i class="fa fa-spinner fa-pulse" data-bind="style: {display: remote.enable() ? 'none' : 'inline-block'}"></i>
+            <span data-bind="text: remoteAuthLabelSignIn"></span>
+          </button>
         </div>
       </div>
     </div>

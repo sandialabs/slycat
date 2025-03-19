@@ -10,7 +10,9 @@ import slycatRemoteControls from "templates/slycat-remote-controls.html";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 // Set alert message when user needs to reauthenticate
 export function remoteControlsReauth(status, status_type) {
-  status("Oops, your session has disconnected. Please log in again.");
+  status(
+    `Oops, your session has disconnected. Please ${REMOTE_AUTH_LABELS.signIn.toLowerCase()} again.`,
+  );
   status_type("danger");
 }
 

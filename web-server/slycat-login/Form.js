@@ -19,6 +19,10 @@ class Form extends Component {
     this.b64EncodeUnicode = this.b64EncodeUnicode.bind(this);
   }
 
+  componentDidMount() {
+    document.title = `${SLYCAT_AUTH_LABELS.signIn} to Slycat`;
+  }
+
   changeUsername(event) {
     const credentials = this.state.credentials;
     credentials.username = event.target.value;

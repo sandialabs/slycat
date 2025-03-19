@@ -15,8 +15,7 @@ import server_root from "js/slycat-server-root";
 import URI from "urijs";
 import "js/slycat-login-controls";
 import * as remotes from "js/slycat-remotes";
-//import _ from "js/lodash";
-
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 $.widget("mp.movies",
 {
   options:
@@ -322,7 +321,7 @@ $.widget("mp.movies",
           self.login_open = true;
           self.remotes.get_remote({
             hostname: uri.hostname(),
-            title: "Login to " + uri.hostname(),
+            title: `${REMOTE_AUTH_LABELS.signIn} to ${uri.hostname()}`,
             message: "Loading " + uri.pathname(),
             cancel: function() {
               self.login_open = false;

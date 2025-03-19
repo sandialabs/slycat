@@ -15,6 +15,7 @@ import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
 import _ from "lodash";
 import checkColumns from "utils/check-columns.ts";
+import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 let initialState = {};
 const localNavBar = ['Locate Data', 'Upload Table'];
@@ -389,7 +390,7 @@ export default class ControlsButtonUpdateTable extends Component {
 
       {this.state.visible_tab === "2" && this.state.reauth ? 
         <div className='alert alert-danger' role='alert'>
-          Oops, your session has disconnected. Please log in again.
+          Oops, your session has disconnected. Please {SLYCAT_AUTH_LABELS.signIn.toLowerCase()} again.
         </div>
       : null}
 
