@@ -11,12 +11,15 @@ import "bootstrap";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 export function login(params) {
   var component = {};
   let smb_info = {};
   smb_info["hostname"] = params.hostname;
   smb_info["collab"] = params.collab_name;
+
+  component.remoteAuthLabelSignIn = REMOTE_AUTH_LABELS.signIn;
 
   component.cancel = function () {
     component.container.children().modal("hide");

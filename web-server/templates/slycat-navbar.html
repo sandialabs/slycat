@@ -33,12 +33,18 @@
             aria-labelledby="slycat-personal-tools-user"
           >
             <h6 class="dropdown-header" data-bind="text: user.name">User's Actual Name</h6>
-            <h6 class="dropdown-header" data-bind="text:'Username: ' + user.uid()">Username</h6>
+            <h6
+              class="dropdown-header"
+              data-bind="text:`${slycatAuthLabelUsername}: ` + user.uid()"
+            >
+              [Replaced by username label and user uid]
+            </h6>
             <div role="separator" class="dropdown-divider"></div>
 
             <!-- ko if: ispasswordrequired.slycat_passwordrequired -->
             <a class="dropdown-item" data-bind="click:sign_out">
-              <span class="fa fa-sign-out"></span> Sign Out
+              <span class="fa fa-sign-out"></span>
+              <span data-bind="text: slycatAuthLabelSignOut"></span>
             </a>
             <!-- /ko -->
           </div>
