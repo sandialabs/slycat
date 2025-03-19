@@ -11,20 +11,31 @@
     <div class="form-group row required">
       <label for="slycat-edit-project-name" class="col-sm-2 col-form-label">Name</label>
       <div class="col-sm-10">
-        <input id="slycat-edit-project-name" class="form-control" type="text" data-bind="value: modified.name" required></input>
-        <div class="invalid-feedback">
-          Please enter a project name.
-        </div>
+        <input
+          id="slycat-edit-project-name"
+          class="form-control"
+          type="text"
+          data-bind="value: modified.name"
+          required
+        />
+        <div class="invalid-feedback">Please enter a project name.</div>
       </div>
     </div>
     <div class="form-group row">
-      <label for="slycat-edit-project-description" class="col-sm-2 col-form-label">Description</label>
+      <label for="slycat-edit-project-description" class="col-sm-2 col-form-label"
+        >Description</label
+      >
       <div class="col-sm-10">
-        <textarea id="slycat-edit-project-description" class="form-control" rows="5" data-bind="value: modified.description"></textarea>
+        <textarea
+          id="slycat-edit-project-description"
+          class="form-control"
+          rows="5"
+          data-bind="value: modified.description"
+        ></textarea>
       </div>
     </div>
   </form>
-  
+
   <div class="form-group row">
     <label class="col-sm-2 col-form-label">Members</label>
     <div class="col-sm-10">
@@ -38,67 +49,98 @@
             </select>
           </div>
           <div class="col-sm-6">
-            <input type="text" class="form-control" data-bind="textInput: new_user, attr: { placeholder: slycatAuthLabelUsername }" required>
+            <input
+              type="text"
+              class="form-control"
+              data-bind="textInput: new_user, attr: { placeholder: slycatAuthLabelUsername }"
+              required
+            />
             <div class="invalid-feedback">
               Please enter a <span data-bind="text: slycatAuthLabelUsername.toLowerCase()"></span>.
             </div>
           </div>
           <div class="col-sm-2">
-            <button class="btn btn-secondary" type="button" 
+            <button
+              class="btn btn-secondary"
+              type="button"
               data-bind="
                 click: function(data, event) { add_project_member(document.getElementById('edit-project-members-form'), data, event) }
-              ">Add</button>
+              "
+            >
+              Add
+            </button>
           </div>
         </div>
       </form>
       <div class="row">
         <div class="col-sm-12">
-          <p class="form-text" data-bind="text:permission_description" style="text-align: center; padding-top: 10px; padding-bottom:20px;"></p>
+          <p
+            class="form-text"
+            data-bind="text:permission_description"
+            style="text-align: center; padding-top: 10px; padding-bottom: 20px"
+          ></p>
         </div>
       </div>
 
       <div class="row">
         <div class="col-sm-12">
-        <!-- ko foreach: modified.acl.administrators -->
+          <!-- ko foreach: modified.acl.administrators -->
           <div class="btn-group" role="group">
-            <button class="btn btn-sm btn-danger"
-                data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as an administrator'}">
+            <button
+              class="btn btn-sm btn-danger"
+              data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as an administrator'}"
+            >
               <span class="fa fa-trash-o"></span>
             </button>
-            <div class="btn btn-sm btn-danger" style="pointer-events: none;">
+            <div class="btn btn-sm btn-danger" style="pointer-events: none">
               <span data-bind="text:user"></span>
             </div>
           </div>
-        <!-- /ko -->
-        <!-- ko foreach: modified.acl.writers -->
-          <div style="margin: 5px;" class="btn-group" role="group">
-            <button class="btn btn-sm btn-warning" title="Remove this user"
-                data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a writer'}">
+          <!-- /ko -->
+          <!-- ko foreach: modified.acl.writers -->
+          <div style="margin: 5px" class="btn-group" role="group">
+            <button
+              class="btn btn-sm btn-warning"
+              title="Remove this user"
+              data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a writer'}"
+            >
               <span class="fa fa-trash-o"></span>
             </button>
-            <div class="btn btn-sm btn-warning" style="pointer-events: none;">
+            <div class="btn btn-sm btn-warning" style="pointer-events: none">
               <span data-bind="text:user"></span>
             </div>
           </div>
-        <!-- /ko -->
-        <!-- ko foreach: modified.acl.readers -->
-          <div style="margin: 5px;" class="btn-group" role="group">
-            <button class="btn btn-sm btn-primary"
-                data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a reader'}">
+          <!-- /ko -->
+          <!-- ko foreach: modified.acl.readers -->
+          <div style="margin: 5px" class="btn-group" role="group">
+            <button
+              class="btn btn-sm btn-primary"
+              data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a reader'}"
+            >
               <span class="fa fa-trash-o"></span>
             </button>
-            <div class="btn btn-sm btn-primary" style="pointer-events: none;">
+            <div class="btn btn-sm btn-primary" style="pointer-events: none">
               <span data-bind="text:user"></span>
             </div>
           </div>
-        <!-- /ko -->
+          <!-- /ko -->
         </div>
       </div>
     </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-danger mr-auto" data-bind="click:delete_project_cache" data-dismiss="modal">Delete Project Media Cache</button>
-  <button class="btn btn-primary" data-bind="click: function(data, event) { save_project(document.getElementById('edit-project-form'), data, event) }">Save Changes</button>
+  <button
+    class="btn btn-danger mr-auto"
+    data-bind="click:delete_project_cache"
+    data-dismiss="modal"
+  >
+    Delete Project Media Cache
+  </button>
+  <button
+    class="btn btn-primary"
+    data-bind="click: function(data, event) { save_project(document.getElementById('edit-project-form'), data, event) }"
+  >
+    Save Changes
+  </button>
 </div>
-

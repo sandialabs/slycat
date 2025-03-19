@@ -4,7 +4,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title" data-bind="text:title"></h3>
-          <button type="button" class="close" data-bind="click:cancel" data-dismiss="modal" aria-label="Close">
+          <button
+            type="button"
+            class="close"
+            data-bind="click:cancel"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -13,15 +19,25 @@
           <!-- ko if: ispasswordrequired.ssh_passwordrequired -->
           <div class="smb-login"></div>
           <form role="form">
-            <slycat-login-controls data-bind="visible: !smb" params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:login"></slycat-login-controls>
+            <slycat-login-controls
+              data-bind="visible: !smb"
+              params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:login"
+            ></slycat-login-controls>
           </form>
-          <label class="col-sm-9 alert alert-danger slycat-big-scrolling-alert" role="alert" 
-          data-bind="visible:remote.status_type() == 'danger', text: 'Remote authentication failed.'" style="position:relative; left:80px;"></label>
+          <label
+            class="col-sm-9 alert alert-danger slycat-big-scrolling-alert"
+            role="alert"
+            data-bind="visible:remote.status_type() == 'danger', text: 'Remote authentication failed.'"
+            style="position: relative; left: 80px"
+          ></label>
           <!-- /ko -->
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" data-bind="click:login,enable:remote.enable">
-            <i class="fa fa-spinner fa-pulse" data-bind="style: {display: remote.enable() ? 'none' : 'inline-block'}"></i>
+            <i
+              class="fa fa-spinner fa-pulse"
+              data-bind="style: {display: remote.enable() ? 'none' : 'inline-block'}"
+            ></i>
             <span data-bind="text: remoteAuthLabelSignIn"></span>
           </button>
         </div>
