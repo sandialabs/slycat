@@ -294,7 +294,7 @@ export default class SmbAuthentication extends React.Component<any, any> {
     return (
       <div>
         <div className="form-group row mb-3">
-          <label className="col-sm-2 col-form-label">{REMOTE_AUTH_LABELS.share}</label>
+          <label className="col-sm-2 col-form-label">Share Name</label>
           <div className="col-sm-9">
             <input
               disabled={this.props.loadingData}

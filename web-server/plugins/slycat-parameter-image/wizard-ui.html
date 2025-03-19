@@ -172,14 +172,17 @@
         <div
           class="smb-wizard-login"
           style="padding-left: 16px"
-          data-bind="visible: ps_type() == 'smb', text: remoteAuthLabelSMB"
-        ></div>
+          data-bind="visible: ps_type() == 'smb'"
+        >
+          SMB
+        </div>
         <label
           class="col-sm-9 alert alert-danger slycat-big-scrolling-alert"
           role="alert"
-          data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb', text: '${remoteAuthErrorSMB}'"
+          data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb'"
           style="position: relative; left: 145px"
-        ></label>
+          >Remote authentication failed.</label
+        >
       </form>
     </div>
 

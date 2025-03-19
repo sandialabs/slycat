@@ -34,8 +34,6 @@ ko.components.register("slycat-remote-controls", {
       // Adding UI labels
       component.remoteAuthLabelUsername = REMOTE_AUTH_LABELS.username;
       component.remoteAuthLabelPassword = REMOTE_AUTH_LABELS.password;
-      component.remoteAuthLabelConnectTitle = REMOTE_AUTH_LABELS.connectTitle;
-      component.remoteAuthLabelConnectButton = REMOTE_AUTH_LABELS.connectButton;
 
       component.status_classes = ko.pureComputed(function () {
         var classes = [];

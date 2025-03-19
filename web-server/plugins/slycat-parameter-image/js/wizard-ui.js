@@ -21,7 +21,7 @@ import { createRoot } from "react-dom/client";
 import SmbRemoteFileBrowser from "components/SmbRemoteFileBrowser.tsx";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import HDF5Browser from "components/HDF5Browser.tsx";
-import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+
 function constructor(params) {
   var component = {};
   component.tab = ko.observable(0);
@@ -33,10 +33,6 @@ function constructor(params) {
   component.error_messages = ko.observable("");
   component.warning_messages = ko.observable("");
   component.useProjectData = ko.observable(false);
-
-  // Adding UI labels
-  component.remoteAuthLabelSMB = REMOTE_AUTH_LABELS.smb;
-  component.remoteAuthErrorSMB = REMOTE_AUTH_LABELS.authErrorSmb;
 
   component.model = mapping.fromJS({
     _id: null,
