@@ -3,9 +3,10 @@
  retains certain rights in this software. */
 import * as React from "react";
 
-export const CCAWizardSelectionTab = () => {
+export const CCAWizardDataSelectionTab = (props: {hidden?: boolean}) => {
+  const { hidden = false } = props;
   return (
-    <div>
+    <div hidden={hidden}>
       <div className="form-check" style={{ marginLeft: "15px" }}>
         <label>
           <input
