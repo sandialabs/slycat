@@ -2,17 +2,20 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
-import { CCAWizardSelectionTab } from "./CCAWizardSelectionTab";
+import { CCAWizardDataSelectionTab } from "./wizard-tabs/CCADataWizardSelectionTab";
 import { CCAWizardNavItems } from "./CCANavItems";
+import { useAppSelector, useAppDispatch } from "./wizard-store/hooks";
+import { selectTab, TabNames } from "./wizard-store/reducers/tabTrackingSlice";
 
 export const CCAWizardSteps = () => {
+  // The `state` arg is correctly typed as `RootState` already
+  const tabName = useAppSelector(selectTab)
   return (
     <div className="modal-body">
       <CCAWizardNavItems/>
-
       <div className="tab-content">
-        <CCAWizardSelectionTab/>
-        <div hidden={true}>
+        <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCADataWizardSelectionTab)}/>
+        <div hidden={!(tabName === TabNames.CCSLocalBrowserTab)}>
           <div
             className="alert alert-danger"
             role="alert"
