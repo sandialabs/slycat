@@ -10,12 +10,6 @@ import markings from "js/slycat-selectable-markings";
 import timeseriesWizardUI from "../wizard-ui.html";
 
 function constructor(params) {
-  // this is where we render react into the timeseries modal
-  // ReactDOM.render(
-  //   <TimeseriesWizard project={params.projects()[0]} markings={markings.preselected()} />,
-  //   document.querySelector(".react-wizard")
-  // );
-  // React 18 createRoot conversion breaks here 
   const react_wizard_root = createRoot(document.querySelector(".react-wizard"));
   react_wizard_root.render(
     <TimeseriesWizard project={params.projects()[0]} markings={markings.preselected()} />

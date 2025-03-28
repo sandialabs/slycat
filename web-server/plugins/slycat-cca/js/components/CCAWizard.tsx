@@ -6,24 +6,34 @@ import { CCAModalContent } from "./CCAWizardContent";
 import { CCAWizardSteps } from "./CCAWizardSteps";
 import { useCCAWizardFooter } from "./CCAWizardUtils";
 import { useAppDispatch } from "./wizard-store/hooks";
-import { resetTabTracking } from "./wizard-store/reducers/tabTrackingSlice";
+import { resetCCAWizard, setPid } from "./wizard-store/reducers/cCAWizardSlice";
 
-export const CCAWizard = () => {
+interface CCAWizardParams {
+  pid: string;
+}
+
+export const CCAWizard = (params: CCAWizardParams) => {
+  const { pid } = params;
   const cCAWizardFooter = useCCAWizardFooter();
   const dispatch = useAppDispatch();
+
+  React.useEffect(() => {
+    dispatch(setPid(pid));
+   }, [dispatch, pid])
+  
   return (
-      <CCAModalContent
-        key={"slycat-wizard"}
-        // slycat-wizard is the standard wizard id from knockout
-        modalId={"slycat-wizard"}
-        closingCallBack={() => {
-          console.log("clean and delete model")
-          dispatch(resetTabTracking())
-        }}
-        title={"New CCA Model"}
-        footer={cCAWizardFooter}
-      >
-        <CCAWizardSteps key={"CCA Steps"} />
-      </CCAModalContent>
+    <CCAModalContent
+      key={"slycat-wizard"}
+      // slycat-wizard is the standard wizard id from knockout
+      modalId={"slycat-wizard"}
+      closingCallBack={() => {
+        console.log("clean and delete model");
+        dispatch(resetCCAWizard());
+      }}
+      title={"New CCA Model"}
+      footer={cCAWizardFooter}
+    >
+      <CCAWizardSteps key={"CCA Steps"} />
+    </CCAModalContent>
   );
 };

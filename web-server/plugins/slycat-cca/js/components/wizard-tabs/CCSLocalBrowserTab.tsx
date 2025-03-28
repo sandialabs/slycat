@@ -4,11 +4,11 @@
 import * as React from "react";
 import { SlycatLocalBrowser } from "../slycat-local-browser/SlycatLocalBrowser";
 
-export const CCALocalBrowserTab = (props: {hidden?: boolean}) => {
+export const CCALocalBrowserTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   return (
     <div hidden={hidden}>
-        <SlycatLocalBrowser/>
+      <SlycatLocalBrowser />
     </div>
   );
 };
