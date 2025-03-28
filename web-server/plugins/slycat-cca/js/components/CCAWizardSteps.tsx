@@ -4,8 +4,9 @@
 import * as React from "react";
 import { CCAWizardDataSelectionTab } from "./wizard-tabs/CCADataWizardSelectionTab";
 import { CCAWizardNavItems } from "./CCANavItems";
-import { useAppSelector, useAppDispatch } from "./wizard-store/hooks";
-import { selectTab, TabNames } from "./wizard-store/reducers/tabTrackingSlice";
+import { useAppSelector } from "./wizard-store/hooks";
+import { selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
+import { CCALocalBrowserTab } from "./wizard-tabs/CCSLocalBrowserTab";
 
 export const CCAWizardSteps = () => {
   // The `state` arg is correctly typed as `RootState` already
@@ -14,8 +15,9 @@ export const CCAWizardSteps = () => {
     <div className="modal-body">
       <CCAWizardNavItems/>
       <div className="tab-content">
-        <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCADataWizardSelectionTab)}/>
-        <div hidden={!(tabName === TabNames.CCSLocalBrowserTab)}>
+        <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB)}/>
+        <CCALocalBrowserTab hidden={!(tabName === TabNames.CCA_LOCAL_BROWSER_TAB)}/>
+        <div hidden={true}>
           <div
             className="alert alert-danger"
             role="alert"
