@@ -22,8 +22,8 @@ export const CCAModalContent = (props: React.PropsWithChildren<ModalContentProps
    */
   const handleCloseModal = React.useCallback(
     (e: React.MouseEvent): void => {
-      closingCallBack();
       ($("#" + modalId) as any).modal("hide");
+      closingCallBack();
     },
     [modalId, closingCallBack],
   );
