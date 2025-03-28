@@ -1,9 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit'
-import tabTrackingReducer from './reducers/tabTrackingSlice'
+import cCAWizardReducer from './reducers/cCAWizardSlice'
 const globalWindow = (window as any);
 export const cCAWizardStore = configureStore({
   reducer: {
-    tabTracking: tabTrackingReducer
+    cCAWizard: cCAWizardReducer
   },
 })
 
