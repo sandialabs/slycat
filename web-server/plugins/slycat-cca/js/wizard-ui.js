@@ -10,11 +10,11 @@ import { Provider } from 'react-redux'
 import { cCAWizardStore } from ".//components/wizard-store/store";
 
 function constructor(params) {
-  console.dir(params);
+  console.log(params.projects()[0]?._id());
   const react_wizard_root = createRoot(document.querySelector(".react-wizard"));
   react_wizard_root.render(
     <Provider store={cCAWizardStore}>
-      <CCAWizard />
+      <CCAWizard pid={params.projects()[0]?._id()}/>
     </Provider>
 );
 
