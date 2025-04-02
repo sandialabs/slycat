@@ -33,8 +33,7 @@ function constructor(params) {
   component.error_messages = ko.observable("");
   component.warning_messages = ko.observable("");
   component.useProjectData = ko.observable(false);
-  // Alex removing default model name per team meeting discussion
-  // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
+
   component.model = mapping.fromJS({
     _id: null,
     name: "",
@@ -146,47 +145,47 @@ function constructor(params) {
         aid: "error-messages",
       })
       .then((errors) => {
-
         // keep track of both warnings and errors
         var error_messages = "";
         var warning_messages = "";
 
         // check if there are actual errors or just warnings
         if (errors.length >= 1) {
-          for (var i=0; i<errors.length; i++) {
+          for (var i = 0; i < errors.length; i++) {
             if (errors[i]["type"] == "error") {
-              error_messages = "The errors listed below must be fixed before you can upload a model.\n" +
-                               "Please close this dialog or try again with a new file.\n";
+              error_messages =
+                "The errors listed below must be fixed before you can upload a model.\n" +
+                "Please close this dialog or try again with a new file.\n";
             } else if (errors[i]["type"] == "warning") {
-              warning_messages = "The warnings listed below indicate that your original data has " + 
-                                 "been altered.\n";
+              warning_messages =
+                "The warnings listed below indicate that your original data has " +
+                "been altered.\n";
             }
           }
 
           // display warnings/errors
-          for (var i=0; i<errors.length; i++) {
-            if (errors[i]["type"] == "warning"){
+          for (var i = 0; i < errors.length; i++) {
+            if (errors[i]["type"] == "warning") {
               warning_messages += "\nWarning: " + errors[i]["message"] + "\n";
             } else {
               error_messages += "\nError: " + errors[i]["message"] + "\n";
-            }   
+            }
           }
           component.error_messages(error_messages);
           component.warning_messages(warning_messages);
 
           // if there were errors, cleanup project data
           if (error_messages.length > 0) {
-
             // delete model and data
             client
-            .get_project_data_in_model_fetch({
-              mid: component.model._id(),
-            })
-            .then((did) => {
-              if (did.length !== 0) {
-                client.delete_project_data_fetch({ did: did });
-              }
-            });
+              .get_project_data_in_model_fetch({
+                mid: component.model._id(),
+              })
+              .then((did) => {
+                if (did.length !== 0) {
+                  client.delete_project_data_fetch({ did: did });
+                }
+              });
 
             // set progress bar back to zero
             component.browser.progress(0);
@@ -194,23 +193,19 @@ function constructor(params) {
 
             // re-enable button
             $(".browser-continue").toggleClass("disabled", false);
-
           } else {
-
             // only warnings, continue
             component.tab(4);
             $(".browser-continue").toggleClass("disabled", false);
-
           }
         } else {
           component.error_messages(error_messages);
         }
         if (component.error_messages().length == 0) {
-          if (component.parser() == 'slycat-hdf5-parser') {
+          if (component.parser() == "slycat-hdf5-parser") {
             component.tab(6);
             this.hdf5_input_browse();
-          }
-          else{
+          } else {
             component.tab(4);
             $(".browser-continue").toggleClass("disabled", false);
           }
@@ -225,7 +220,8 @@ function constructor(params) {
   component.cancel = function () {
     component.smb_wizard_login_root.unmount();
     if (component.model._id()) {
-      client.get_project_data_in_model_fetch({
+      client
+        .get_project_data_in_model_fetch({
           mid: component.model._id(),
         })
         .then((did) => {
@@ -265,7 +261,7 @@ function constructor(params) {
     share,
     domain,
     session_exists,
-    last_key
+    last_key,
   ) {
     component.remote.hostname(hostname);
     component.remote.username(username);
@@ -295,7 +291,7 @@ function constructor(params) {
       component.smb_wizard_login_root.render(
         <div>
           <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />
-        </div>
+        </div>,
       );
     }
   };
@@ -304,13 +300,12 @@ function constructor(params) {
     uploader.progress(95);
     uploader.progress_status("Finishing...");
     // Don't need to get column headers if HDF5 file
-    if(component.parser() == 'slycat-hdf5-parser') {
+    if (component.parser() == "slycat-hdf5-parser") {
       $(".local-browser-continue").toggleClass("disabled", false);
       uploader.progress(100);
       uploader.progress_status("Finished");
       component.get_error_messages();
-    }
-    else {
+    } else {
       client.get_model_command({
         mid: component.model._id(),
         type: "parameter-image",
@@ -360,7 +355,7 @@ function constructor(params) {
     // check that a file has been selected
     if (component.browser.selection().length == 0) {
       component.error_messages("You must selected a file before continuing.");
-      return
+      return;
     }
 
     // set progress bar to zero
@@ -384,7 +379,7 @@ function constructor(params) {
       },
       error: function () {
         dialog.ajax_error(
-          "Did you choose the correct file and filetype?  There was a problem parsing the file: "
+          "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
         )();
         $(".local-browser-continue").toggleClass("disabled", false);
         component.browser.progress(null);
@@ -406,11 +401,14 @@ function constructor(params) {
           pid={component.project._id()}
           mid={component.model._id()}
         />
-      </div>)
-  }
+      </div>,
+    );
+  };
 
   component.hdf5_output_browse = function () {
-    const hdf5_wizard_browse_root = createRoot(document.querySelector(".hdf5-wizard-output-browse"));
+    const hdf5_wizard_browse_root = createRoot(
+      document.querySelector(".hdf5-wizard-output-browse"),
+    );
     hdf5_wizard_browse_root.render(
       <div>
         <HDF5Browser
@@ -420,8 +418,9 @@ function constructor(params) {
           pid={component.project._id()}
           mid={component.model._id()}
         />
-      </div>)
-  }
+      </div>,
+    );
+  };
 
   component.connectSMB = function () {
     component.remote.enable(false);
@@ -437,7 +436,7 @@ function constructor(params) {
             onReauthCallBack={onReauth}
             hostname={component.remote.hostname()}
           />
-        </div>
+        </div>,
       );
       component.tab(3);
       component.remote.enable(true);
@@ -467,7 +466,7 @@ function constructor(params) {
                   onReauthCallBack={onReauth}
                   hostname={component.remote.hostname()}
                 />
-              </div>
+              </div>,
             );
           } else {
             component.remote.enable(true);
@@ -525,22 +524,20 @@ function constructor(params) {
     let pathInput = component.browser.path();
     pathInput = pathInput.replace(/(?!^)\//g, "-");
     client.post_hdf5_table({
-      path : pathInput,
+      path: pathInput,
       pid: component.project._id(),
       mid: component.model._id(),
       aids: [["data-table"], file_name],
-      success : (results) =>
-      {
-        console.log('Success!');
+      success: (results) => {
+        console.log("Success!");
         component.tab(7);
         component.hdf5_output_browse();
       },
-      error : (results) =>
-      {
-        console.log('Failure...');
-      }
+      error: (results) => {
+        console.log("Failure...");
+      },
     });
-  }
+  };
 
   component.load_hdf5_output = function () {
     const file_name = component.browser.path().split("/")[
@@ -550,18 +547,17 @@ function constructor(params) {
     let pathInput = component.browser.path();
     pathInput = pathInput.replace(/(?!^)\//g, "-");
     client.post_hdf5_table({
-      path : pathInput,
+      path: pathInput,
       pid: component.project._id(),
       mid: component.model._id(),
       aids: [["data-table"], file_name],
-      success : (results) =>
-      {
+      success: (results) => {
         client.post_combine_hdf5_tables({
           mid: component.model._id(),
-          success : (results) =>
-          {
+          success: (results) => {
             if (component.model._id() && component.useProjectData() == false) {
-              client.get_project_data_in_model_fetch({
+              client
+                .get_project_data_in_model_fetch({
                   mid: component.model._id(),
                 })
                 .then((did) => {
@@ -569,24 +565,25 @@ function constructor(params) {
                   // delete model first
                   // client.delete_model_fetch({ mid: component.model._id() }).then(() => {
                   if (did.length >= 1) {
-                    client.get_project_data_parameter_fetch({ did: did, param: "mid" }).then((models) => {
-                      // if there are no more models using that project data, delete it
-                      client.delete_project_data_fetch({ did: did });
-                    });
+                    client
+                      .get_project_data_parameter_fetch({ did: did, param: "mid" })
+                      .then((models) => {
+                        // if there are no more models using that project data, delete it
+                        client.delete_project_data_fetch({ did: did });
+                      });
                   }
                   // });
                 });
             }
             component.finish();
-          }
-        })
+          },
+        });
       },
-      error : (results) =>
-      {
-        console.log('Failure...');
-      }
+      error: (results) => {
+        console.log("Failure...");
+      },
     });
-  }
+  };
 
   component.load_table_smb = function () {
     $(".remote-browser-continue").toggleClass("disabled", true);
@@ -608,7 +605,7 @@ function constructor(params) {
       },
       error: function () {
         dialog.ajax_error(
-          "Did you choose the correct file and filetype?  There was a problem parsing the file: "
+          "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
         )();
         $(".remote-browser-continue").toggleClass("disabled", false);
         component.remote.progress(null);
@@ -619,7 +616,6 @@ function constructor(params) {
   };
 
   component.load_table = function () {
-
     $(".remote-browser-continue").toggleClass("disabled", true);
     const file_name = component.browser.selection()[0].split("/")[
       component.browser.selection()[0].split("/").length - 1
@@ -640,7 +636,7 @@ function constructor(params) {
       },
       error: function () {
         dialog.ajax_error(
-          "Did you choose the correct file and filetype?  There was a problem parsing the file: "
+          "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
         )();
         $(".remote-browser-continue").toggleClass("disabled", false);
         component.remote.progress(null);
@@ -708,34 +704,33 @@ function constructor(params) {
       if (component.attributes()[i].image()) image_columns.push(i);
     }
 
-    if (component.parser() == 'slycat-hdf5-parser') {
-        client.put_model_parameter({
-          mid: component.model._id(),
-          aid: "rating-columns",
-          value: rating_columns,
-          input: true,
-          success: function () {
-            client.put_model_parameter({
-              mid: component.model._id(),
-              aid: "category-columns",
-              value: category_columns,
-              input: true,
-              success: function () {
-                client.put_model_parameter({
-                  mid: component.model._id(),
-                  aid: "image-columns",
-                  value: image_columns,
-                  input: true,
-                  success: function () {
-                    component.tab(5);
-                  },
-                });
-              },
-            });
-          },
-        });
-      }
-    else {
+    if (component.parser() == "slycat-hdf5-parser") {
+      client.put_model_parameter({
+        mid: component.model._id(),
+        aid: "rating-columns",
+        value: rating_columns,
+        input: true,
+        success: function () {
+          client.put_model_parameter({
+            mid: component.model._id(),
+            aid: "category-columns",
+            value: category_columns,
+            input: true,
+            success: function () {
+              client.put_model_parameter({
+                mid: component.model._id(),
+                aid: "image-columns",
+                value: image_columns,
+                input: true,
+                success: function () {
+                  component.tab(5);
+                },
+              });
+            },
+          });
+        },
+      });
+    } else {
       client.put_model_parameter({
         mid: component.model._id(),
         aid: "input-columns",
@@ -778,7 +773,7 @@ function constructor(params) {
         },
       });
     }
-  }
+  };
 
   component.name_model = function (formElement) {
     // Validating
@@ -871,7 +866,7 @@ function constructor(params) {
       component.browser.progress_status("");
     }
 
-    if (component.parser() == 'slycat-hdf5-parser' && component.tab() == 5) {
+    if (component.parser() == "slycat-hdf5-parser" && component.tab() == 5) {
       target++;
       target++;
       target++;
