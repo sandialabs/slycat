@@ -150,7 +150,7 @@ def catalog_tdms_files (arguments, log):
     return metadata, common_tdms_types
 
 # read all tdms run chart data
-def read_tdms_files(metadata, run_chart_matches, common_tdms_types, log):
+def read_tdms_files(arguments, metadata, run_chart_matches, common_tdms_types, log):
 
     # go through each row in the table
     skipped_rows = np.zeros(len(metadata))
@@ -180,8 +180,12 @@ def read_tdms_files(metadata, run_chart_matches, common_tdms_types, log):
                 # get group properties
                 group_header = None
                 group_rows = []
+                group_nums = []
                 for group in tdms_file.groups():
 
+                    # keep group ID in cases shot number is missing
+                    group_nums.append(group.name)
+                    
                     # check that header is the same
                     if group_header is None:
                         group_header = list(group.properties.keys())
@@ -236,7 +240,16 @@ def read_tdms_files(metadata, run_chart_matches, common_tdms_types, log):
                     run_chart_headers.append(rc_matches)
 
                     # also save shot numbers
-                    shot_numbers.append(group_df["Shot Number"])
+                    try:
+                        shot_numbers.append(group_df["Shot Number"])
+                    except KeyError:
+                        if arguments.use_group_numbers:
+                            shot_numbers.append(group_nums)
+                        else:
+                            raise TDMSUploadError('Missing shot number in "' +
+                                metadata[row]["source"] + '", try --use-group-numbers to ' +
+                                'substitute value with group name.')
+
 
                     # check for module SN
                     module_ID_i = check_module_col(group_df, "Module ID", tdms_file_path, log)
@@ -993,7 +1006,7 @@ def create_model(arguments, log):
     log("Using run charts in: " + str(run_chart_matches))
 
     # read tdms data
-    metadata = read_tdms_files(metadata, run_chart_matches, common_tdms_types, log)
+    metadata = read_tdms_files(arguments, metadata, run_chart_matches, common_tdms_types, log)
 
     # construct metadata table
     meta_col_names, meta_rows = read_metadata_table(metadata, arguments, log)
@@ -1014,8 +1027,13 @@ def create_model(arguments, log):
     var_dist = compute_PCA (var_data, arguments, log)
     
     # save files, use nans in plot if requested
-    write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
-                  time_steps, var_data, var_dist, arguments)
+    if arguments.plot_last_value:
+        write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
+                    time_steps, var_data, var_dist, arguments)
+
+    else:
+        write_dac_gen(meta_col_names, meta_rows, meta_var_names, meta_vars, 
+                    time_steps, var_data_nan, var_dist, arguments)
 
     # add output file for dac_gen script
     dac_gen_args = Namespace(**vars(arguments), **{'dac_gen_zip': arguments.output_zip_file})
@@ -1069,6 +1087,11 @@ def parser ():
         help="Use all .tdms files in root directory as input. Produces one run chart per " +
              "subdirectory found containing .tdms files.")
 
+    # input zipped directory with tdms files
+    group.add_argument("--input-tdms-zip", nargs=1,
+        help="Use all .tdms files in a zipped directory as input. Produces one run chart per " +
+             "subdirectory found containing .tdms files.")
+
     # unstructured option for tdms dir
     parser.add_argument("--unstructured", action="store_true",
         help="For unstructured directory names, infer run chart groups from file names instead.")
@@ -1117,6 +1140,8 @@ def parser ():
         help="Fill out short run charts with last given value.")
     parser.add_argument("--use-const-value", nargs=1, type=float,
         help="Constant value to use for absent run charts (no default).")
+    parser.add_argument("--plot-last-value", action="store_true",
+        help="Plot filled values in run charts.")
     
     # exclude XML by default
     parser.add_argument("--include_configuration_XML", action="store_true",
@@ -1140,6 +1165,8 @@ def parser ():
     # use shot numbers to line up plots
     parser.add_argument('--use-shot-numbers', action="store_true",
         help="Use actual shot numbers (default is to use shot number order only).")
+    parser.add_argument('--use-group-numbers', action='store_true',
+        help="Use group numbers if shot numbers are not available.")
     
     # add vertical lines to indicate non-numeric time steps
     parser.add_argument('--highlight-shot-numbers', action="store_true",

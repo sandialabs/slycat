@@ -44,7 +44,7 @@ copyfile('../packages/slycat/__init__.py', 'slycat/__init__.py')
 copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 
 # we also need the slycat csv parser
-copyfile('../packages/slycat/pandas_util.py', 'slycat/pandas_util.py')
+# copyfile('../packages/slycat/pandas_util.py', 'slycat/pandas_util.py')
 
 # get Slycat version
 import slycat.web.client
@@ -81,13 +81,13 @@ setup(
     license="Sandia",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.13",
     ],
     packages=setuptools.find_packages(),
     include_package_data=True,
     install_requires=["requests", "requests-kerberos",
                       "numpy", "cherrypy", "scikit-learn", 
-                      "nptdms==1.6.0", "pandas", "natsort"],
+                      "npTDMS", "pandas", "natsort"],
     entry_points={
         "console_scripts": [
             "dac_tdms=slycat.web.client.dac_tdms:main",
