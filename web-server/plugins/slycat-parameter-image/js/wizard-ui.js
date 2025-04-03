@@ -26,6 +26,7 @@ function constructor(params) {
   var component = {};
   component.tab = ko.observable(0);
   component.project = params.projects()[0];
+  component.file_extension = ko.observable("");
   component.server_files = ko.observableArray();
   component.selected_file = ko.observable("");
   component.current_aids = ko.observable("");
@@ -276,6 +277,51 @@ function constructor(params) {
   };
 
   component.select_type = function () {
+
+    const selectElementLocal = document.getElementById("slycat-local-browser-file");
+    const selectElementRemote = document.getElementById("slycat-remote-browser-files");
+    console.log(selectElementRemote);
+    // Local upload - Automatically chooses the parser based on selected file type
+    if (selectElementLocal) {
+      selectElementLocal.addEventListener("change", (event) => {
+        component.file_extension(event.target.files[0]);
+        if (typeof event.target.files[0] !== 'undefined') {
+          console.log(event.target.files[0]);
+          let file_name = event.target.files[0].name;
+          let file_extension = file_name.split('.')[1];
+          
+          if (file_extension == 'csv') {
+            component.parser('slycat-csv-parser');
+          }
+          else if (file_extension == 'dat') {
+            component.parser('slycat-dakota-parser');
+          }
+          else if (file_extension == 'h5' || file_extension == 'hdf5') {
+            component.parser('slycat-hdf5-parser');
+          }
+        }
+      });
+    }
+    // Remote upload - Automatically chooses the parser based on selected file type
+    if (selectElementRemote) {
+      selectElementRemote.addEventListener("click", function() {
+        let file_path = component.browser.selection()[0];
+        let split_path = file_path.split('/');
+        let file_name = split_path[split_path.length - 1];
+        let file_extension = file_name.split('.')[1];
+
+        if (file_extension == 'csv') {
+          component.parser('slycat-csv-parser');
+        }
+        else if (file_extension == 'dat') {
+          component.parser('slycat-dakota-parser');
+        }
+        else if (file_extension == 'h5' || file_extension == 'hdf5') {
+          component.parser('slycat-hdf5-parser');
+        }
+      });
+    }
+
     var type = component.ps_type();
     component.remote.username(null);
     component.remote.password(null);
@@ -339,6 +385,9 @@ function constructor(params) {
               mapping.fromJS(attributes, component.attributes);
               component.get_error_messages();
             },
+            error: function (errorThrown) {
+              window.alert("There was a fatal error with your CSV.");
+            },
           });
         },
       });
@@ -352,6 +401,10 @@ function constructor(params) {
   };
 
   component.upload_table = function () {
+    // cleanup
+    document.getElementById('slycat-local-browser-file').removeAttribute("onchange");
+    document.getElementById('slycat-remote-browser').remoteAttribute("onchange");
+
     // check that a file has been selected
     if (component.browser.selection().length == 0) {
       component.error_messages("You must selected a file before continuing.");
