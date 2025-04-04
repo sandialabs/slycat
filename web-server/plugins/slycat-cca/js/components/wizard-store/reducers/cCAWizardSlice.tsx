@@ -57,5 +57,7 @@ export const {
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
 export const selectDataLocation = (state: RootState) => state.cCAWizard.dataLocation;
+export const selectPid = (state: RootState) => state.cCAWizard.pid;
+export const selectMid = (state: RootState) => state.cCAWizard.mid;
 
 export default cCAWizardSlice.reducer;
