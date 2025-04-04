@@ -286,7 +286,6 @@ function constructor(params) {
       selectElementLocal.addEventListener("change", (event) => {
         component.file_extension(event.target.files[0]);
         if (typeof event.target.files[0] !== 'undefined') {
-          console.log(event.target.files[0]);
           let file_name = event.target.files[0].name;
           let file_extension = file_name.split('.')[1];
           
@@ -305,19 +304,23 @@ function constructor(params) {
     // Remote upload - Automatically chooses the parser based on selected file type
     if (selectElementRemote) {
       selectElementRemote.addEventListener("click", function() {
-        let file_path = component.browser.selection()[0];
-        let split_path = file_path.split('/');
-        let file_name = split_path[split_path.length - 1];
-        let file_extension = file_name.split('.')[1];
+        if ((component.browser.selection().length == 0)) {
+          if (typeof component.browser.selection()[0] !== 'undefined') {
+            let file_path = component.browser.selection()[0];
+            let split_path = file_path.split('/');
+            let file_name = split_path[split_path.length - 1];
+            let file_extension = file_name.split('.')[1];
 
-        if (file_extension == 'csv') {
-          component.parser('slycat-csv-parser');
-        }
-        else if (file_extension == 'dat') {
-          component.parser('slycat-dakota-parser');
-        }
-        else if (file_extension == 'h5' || file_extension == 'hdf5') {
-          component.parser('slycat-hdf5-parser');
+            if (file_extension == 'csv') {
+              component.parser('slycat-csv-parser');
+            }
+            else if (file_extension == 'dat') {
+              component.parser('slycat-dakota-parser');
+            }
+            else if (file_extension == 'h5' || file_extension == 'hdf5') {
+              component.parser('slycat-hdf5-parser');
+            }
+          }
         }
       });
     }
