@@ -162,7 +162,6 @@ function constructor(params) {
     component.show_local_browser_error(false);
     $(".local-browser-continue").toggleClass("disabled", true);
     
-    //TODO: add logic to the file uploader to look for multiple files list to add
     var file = component.browser.selection()[0];
     let file_name = file.name;
     var fileObject = {
