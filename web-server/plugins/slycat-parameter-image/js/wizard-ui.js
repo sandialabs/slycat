@@ -304,7 +304,7 @@ function constructor(params) {
     // Remote upload - Automatically chooses the parser based on selected file type
     if (selectElementRemote) {
       selectElementRemote.addEventListener("click", function() {
-        if ((component.browser.selection().length == 0)) {
+        if ((component.browser.selection().length > 0)) {
           if (typeof component.browser.selection()[0] !== 'undefined') {
             let file_path = component.browser.selection()[0];
             let split_path = file_path.split('/');
