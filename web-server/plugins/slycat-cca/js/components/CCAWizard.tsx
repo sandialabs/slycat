@@ -4,16 +4,13 @@
 import * as React from "react";
 import { CCAModalContent } from "./CCAWizardContent";
 import { CCAWizardSteps } from "./CCAWizardSteps";
-import { useCCAWizardFooter } from "./CCAWizardUtils";
-import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import {
-  resetCCAWizard,
-  selectMid,
-  selectPid,
-  setMid,
-  setPid,
-} from "./wizard-store/reducers/cCAWizardSlice";
-import client from "js/slycat-web-client";
+  useCCAWizardFooter,
+  useHandleClosingCallback,
+  useHandleWizardSetup,
+} from "./CCAWizardUtils";
+import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
+import { selectMid, selectPid } from "./wizard-store/reducers/cCAWizardSlice";
 
 interface CCAWizardParams {
   pid: string;
@@ -27,27 +24,13 @@ export const CCAWizard = (params: CCAWizardParams) => {
   const dispatch = useAppDispatch();
   const statePid = useAppSelector(selectPid);
   const stateMid = useAppSelector(selectMid);
+  const handleClosingCallback = useHandleClosingCallback(setModalOpen, stateMid);
+  const handleWizardSetup = useHandleWizardSetup(pid, statePid, stateMid, marking);
 
   React.useEffect(() => {
     console.log("statePid, pid, selectMid", statePid, pid, stateMid);
     if (modalOpen) {
-      if (!statePid) {
-        dispatch(setPid(pid));
-      }
-      if (!stateMid && statePid) {
-        // create the model on open so we have something to reference later
-        client
-          .post_project_models_fetch({
-            pid: statePid,
-            type: "cca",
-            name: "",
-            description: "",
-            marking: marking ?? "",
-          })
-          .then((result) => {
-            dispatch(setMid(result.id));
-          });
-      }
+      handleWizardSetup()
     }
   }, [dispatch, pid, statePid, stateMid]);
 
@@ -56,14 +39,7 @@ export const CCAWizard = (params: CCAWizardParams) => {
       key={"slycat-wizard"}
       // slycat-wizard is the standard wizard id from knockout
       modalId={"slycat-wizard"}
-      closingCallBack={React.useCallback(() => {
-        setModalOpen(false);
-        if (stateMid) {
-          console.log("delete");
-          client.delete_model_fetch({ mid: stateMid });
-        }
-        dispatch(resetCCAWizard());
-      }, [stateMid])}
+      closingCallBack={handleClosingCallback}
       title={"New CCA Model"}
       footer={cCAWizardFooter}
     >
