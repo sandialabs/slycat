@@ -4,12 +4,16 @@
 import * as React from "react";
 import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import {
+  resetCCAWizard,
   selectDataLocation,
   selectTab,
+  setMid,
+  setPid,
   setTabName,
   TabNames,
   uploadFile,
 } from "./wizard-store/reducers/cCAWizardSlice";
+import client from "js/slycat-web-client";
 
 export const useCCAWizardFooter = () => {
   const tabName = useAppSelector(selectTab);
@@ -52,4 +56,61 @@ export const useCCAWizardFooter = () => {
     </button>
   );
   return React.useMemo(() => [backButton, nextButton], [tabName, dataLocation, dispatch]);
+};
+
+/**
+ * Function to handle setup for creating a cca model in the model wizard modal
+ * @param pid project id
+ * @param statePid redux project id
+ * @param stateMid redux model id
+ * @param marking initial marking for the model
+ * @returns memoized () => void
+ */
+export const useHandleWizardSetup = (
+  pid: string,
+  statePid: string | undefined,
+  stateMid: string | undefined,
+  marking: string | undefined,
+) => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(() => {
+    if (!statePid) {
+      dispatch(setPid(pid));
+    }
+    if (!stateMid && statePid) {
+      // create the model on open so we have something to reference later
+      client
+        .post_project_models_fetch({
+          pid: statePid,
+          type: "cca",
+          name: "",
+          description: "",
+          marking: marking ?? "",
+        })
+        .then((result) => {
+          dispatch(setMid(result.id));
+        });
+    }
+  }, [pid, statePid, stateMid, marking]);
+};
+
+/**
+ * Handle the cleanup for closing the cca wizard modal
+ * @param setModalOpen function for setting local state for if the wizard is open
+ * @param stateMid redux model id
+ * @returns memoized () => void
+ */
+export const useHandleClosingCallback = (
+  setModalOpen: (value: React.SetStateAction<boolean>) => void,
+  stateMid: string | undefined,
+) => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(() => {
+    setModalOpen(false);
+    if (stateMid) {
+      console.log("delete");
+      client.delete_model_fetch({ mid: stateMid });
+    }
+    dispatch(resetCCAWizard());
+  }, [stateMid, setModalOpen]);
 };
