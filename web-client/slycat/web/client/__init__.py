@@ -4,7 +4,7 @@
 
 # This module supports interacting with the Slycat server from Python and the command line.
 
-__version__ = "4.5.1"
+__version__ = "4.5.2"
 
 # standard libraries
 
