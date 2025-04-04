@@ -8,18 +8,15 @@ import { CCAWizard } from ".//components/CCAWizard.tsx";
 import ccaWizardUI from "../wizard-ui.html";
 import { Provider } from 'react-redux'
 import { cCAWizardStore } from ".//components/wizard-store/store";
+import markings from "js/slycat-selectable-markings";
 
 function constructor(params) {
-  console.log(params.projects()[0]?._id());
   const react_wizard_root = createRoot(document.querySelector(".react-wizard"));
   react_wizard_root.render(
     <Provider store={cCAWizardStore}>
-      <CCAWizard pid={params.projects()[0]?._id()}/>
+      <CCAWizard pid={params.projects()[0]?._id()} marking={markings.preselected()}/>
     </Provider>
 );
-
-  // return an empty component since we are just using it to render react
-  return {};
 }
 
 export default {
