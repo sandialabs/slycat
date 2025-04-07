@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import {
   resetCCAWizard,
   selectDataLocation,
+  selectMid,
+  selectPid,
   selectTab,
   setMid,
   setPid,
@@ -14,6 +16,8 @@ import {
   uploadFile,
 } from "./wizard-store/reducers/cCAWizardSlice";
 import client from "js/slycat-web-client";
+import fileUploader from "js/slycat-file-uploader-factory";
+import * as dialog from "js/slycat-dialog";
 
 export const useCCAWizardFooter = () => {
   const tabName = useAppSelector(selectTab);
@@ -113,4 +117,49 @@ export const useHandleClosingCallback = (
     }
     dispatch(resetCCAWizard());
   }, [stateMid, setModalOpen]);
+};
+
+/**
+ * handle file submission
+ */
+export const useHandleSubmit = ():[(file: File) => void, number, string] => {
+  const mid = useAppSelector(selectMid);
+  const pid = useAppSelector(selectPid);
+  const [progress, setProgress] = React.useState<number>(0);
+  const [progressStatus, setProgressStatus] = React.useState("");
+  const handleSubmit = React.useCallback(
+    (file: File) => {
+      const progressCallback = (input?: number) => {
+        if (!input) {
+          return progress;
+        }
+        setProgress(input);
+      };
+      const fileObject = {
+        pid,
+        mid,
+        file: file,
+        aids: [["data-table"], file?.name],
+        // parser: component.parser(),
+        progress: progress,
+        progress_status: progressCallback,
+        progress_final: 90,
+        success: function () {
+          // set browser tab
+        },
+        error: function () {
+          dialog.ajax_error(
+            "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
+          )();
+          // TODO: toggle disabled for continue
+          setProgress(0);
+          setProgressStatus("");
+        },
+      };
+      fileUploader.uploadFile(fileObject);
+    },
+    [mid, pid, progress, setProgress, setProgressStatus],
+  );
+
+  return [handleSubmit, progress, progressStatus];
 };

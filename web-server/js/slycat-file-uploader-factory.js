@@ -24,7 +24,7 @@ module.MEGABYTE = 10000000; //the number of bytes we will split large files on
  *      success: function called if upload is successful
  *    }
  */
-module.uploadFile = function (fileObject, useProjectData) {
+module.uploadFile = function (fileObject, useProjectData = false) {
   if (fileObject.hostname && fileObject.paths) {
     // console.log("creating remote file upload session");
     client.post_uploads({
