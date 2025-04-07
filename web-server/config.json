@@ -55,16 +55,16 @@
     {
       "action": "delete",
       "context": "model",
-      "page": "delete-model-ui.html",
-      "js": "delete-model-ui.js",
+      "page": "delete-ui.html",
+      "js": "delete-ui.js",
       "type": "slycat-delete-model",
       "label": "Delete Model"
     },
     {
       "action": "edit",
       "context": "model",
-      "page": "edit-model-ui.html",
-      "js": "edit-model-ui.js",
+      "page": "edit-ui.html",
+      "js": "edit-ui.js",
       "type": "slycat-edit-model",
       "label": "Name Model"
     },
@@ -95,18 +95,25 @@
     {
       "action": "info",
       "context": "model",
-      "page": "reset-model-ui.html",
-      "js": "reset-model-ui.js",
+      "page": "reset-ui.html",
+      "js": "reset-ui.js",
       "type": "slycat-reset-model",
       "label": "Reset Model"
     },
     {
       "action": "info",
       "context": "model",
-      "page": "info-model-ui.html",
-      "js": "info-model-ui.js",
+      "page": "info-ui.html",
+      "js": "info-ui.js",
       "type": "slycat-info-model",
       "label": "Model Details"
+    },
+    {
+      "action": "info",
+      "context": "model",
+      "js": "share-ui.ts",
+      "type": "slycat-share-model",
+      "label": "Share Model"
     }
   ],
   "server_url" : "https://localhost:9000",
