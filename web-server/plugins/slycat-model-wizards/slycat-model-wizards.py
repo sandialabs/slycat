@@ -13,3 +13,5 @@ def register_slycat_plugin(context):
   context.register_wizard("slycat-apply-template", "Apply Template", require={"action":"edit", "context":"model"})
   context.register_wizard("slycat-reset-model", "Reset Model", require={"action":"info", "context":"model"})
   context.register_wizard("slycat-info-model", "Model Details", require={"action":"info", "context":"model"})
+  context.register_wizard("slycat-share-model", "Share Model", require={"action":"info", "context":"model"})
+  
