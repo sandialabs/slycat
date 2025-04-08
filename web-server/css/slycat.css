@@ -173,7 +173,7 @@ slycat-navbar nav .alert pre {
 .bootstrap-styles #slycat-wizard input[type="file"] {
   padding: 6px 0;
 }
-.bootstrap-styles #slycat-wizard .nav > li > a {
+.bootstrap-styles #slycat-wizard .nav:not(.share-model-tabs) > li > a {
   color: #333333;
 }
 .bootstrap-styles #slycat-wizard .nav > li > a:hover {
