@@ -3,14 +3,48 @@ import React, { useState, useEffect, useRef } from "react";
 /**
  * ShareModel component for the Share Model dialog
  */
-const ShareModel: React.FC = () => {
+interface ShareModelProps {
+  modelType?: string;
+}
+
+// Model feature configuration - defines which UI elements each model type supports
+interface ModelFeatures {
+  hasTable: boolean;
+  hasBarplot: boolean;
+  hasFilters: boolean;
+  hasControls: boolean;
+}
+
+const MODEL_FEATURES: Record<string, ModelFeatures> = {
+  "cca": {
+    hasTable: true,
+    hasBarplot: true,
+    hasFilters: false,
+    hasControls: true
+  },
+  "parameter-image": {
+    hasTable: true,
+    hasBarplot: false,
+    hasFilters: true,
+    hasControls: true
+  },
+  // Default configuration for unknown model types
+  "default": {
+    hasTable: true,
+    hasBarplot: true,
+    hasFilters: true,
+    hasControls: true
+  }
+};
+
+const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
   const [activeTab, setActiveTab] = useState<string>("embed");
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const [embedUrl, setEmbedUrl] = useState<string>("");
   const [copyLinkSuccess, setCopyLinkSuccess] = useState<boolean>(false);
   const [copyEmbedSuccess, setCopyEmbedSuccess] = useState<boolean>(false);
   const [hideTable, setHideTable] = useState<boolean>(false);
-  const [hideScatterplot, setHideScatterplot] = useState<boolean>(false);
+  const [hideBarplot, setHideBarplot] = useState<boolean>(false);
   const [hideFilters, setHideFilters] = useState<boolean>(false);
   const [hideControls, setHideControls] = useState<boolean>(false);
   const [iframeWidth, setIframeWidth] = useState<string>("100");
@@ -19,41 +53,52 @@ const ShareModel: React.FC = () => {
   const linkInputRef = useRef<HTMLInputElement>(null);
   const embedTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Get the features for the current model type
+  const getModelFeatures = (): ModelFeatures => {
+    if (!modelType || !MODEL_FEATURES[modelType]) {
+      return MODEL_FEATURES.default;
+    }
+    return MODEL_FEATURES[modelType];
+  };
+
+  const features = getModelFeatures();
+
   useEffect(() => {
     const url = window.location.href;
     setCurrentUrl(url);
-    updateEmbedUrl(url, hideTable, hideScatterplot, hideFilters, hideControls);
-  }, [hideTable, hideScatterplot, hideFilters, hideControls]);
+    updateEmbedUrl(url, hideTable, hideBarplot, hideFilters, hideControls);
+  }, [hideTable, hideBarplot, hideFilters, hideControls]);
 
   const updateEmbedUrl = (
     baseUrl: string,
     hideTable: boolean,
-    hideScatterplot: boolean,
+    hideBarplot: boolean,
     hideFilters: boolean,
     hideControls: boolean,
   ) => {
     const urlObj = new URL(baseUrl);
     urlObj.searchParams.set("embed", "true");
 
-    if (hideTable) {
+    // Only add parameters for features that the model supports
+    if (features.hasTable && hideTable) {
       urlObj.searchParams.set("hideTable", "true");
     } else {
       urlObj.searchParams.delete("hideTable");
     }
 
-    if (hideScatterplot) {
-      urlObj.searchParams.set("hideScatterplot", "true");
+    if (features.hasBarplot && hideBarplot) {
+      urlObj.searchParams.set("hideBarplot", "true");
     } else {
-      urlObj.searchParams.delete("hideScatterplot");
+      urlObj.searchParams.delete("hideBarplot");
     }
 
-    if (hideFilters) {
+    if (features.hasFilters && hideFilters) {
       urlObj.searchParams.set("hideFilters", "true");
     } else {
       urlObj.searchParams.delete("hideFilters");
     }
 
-    if (hideControls) {
+    if (features.hasControls && hideControls) {
       urlObj.searchParams.set("hideControls", "true");
     } else {
       urlObj.searchParams.delete("hideControls");
@@ -66,8 +111,8 @@ const ShareModel: React.FC = () => {
     setHideTable(e.target.checked);
   };
 
-  const handleHideScatterplotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setHideScatterplot(e.target.checked);
+  const handleHideBarplotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setHideBarplot(e.target.checked);
   };
 
   const handleHideFiltersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,54 +264,65 @@ const ShareModel: React.FC = () => {
                 </div>
               </div>
 
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="hideTable"
-                  checked={hideTable}
-                  onChange={handleHideTableChange}
-                />
-                <label className="form-check-label" htmlFor="hideTable">
-                  Hide Table
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="hideScatterplot"
-                  checked={hideScatterplot}
-                  onChange={handleHideScatterplotChange}
-                />
-                <label className="form-check-label" htmlFor="hideScatterplot">
-                  Hide Scatterplot
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="hideFilters"
-                  checked={hideFilters}
-                  onChange={handleHideFiltersChange}
-                />
-                <label className="form-check-label" htmlFor="hideFilters">
-                  Hide Filters
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="hideControls"
-                  checked={hideControls}
-                  onChange={handleHideControlsChange}
-                />
-                <label className="form-check-label" htmlFor="hideControls">
-                  Hide Controls
-                </label>
-              </div>
+              {features.hasFilters && (
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="hideFilters"
+                    checked={hideFilters}
+                    onChange={handleHideFiltersChange}
+                  />
+                  <label className="form-check-label" htmlFor="hideFilters">
+                    Hide Filters
+                  </label>
+                </div>
+              )}
+              
+              {features.hasControls && (
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="hideControls"
+                    checked={hideControls}
+                    onChange={handleHideControlsChange}
+                  />
+                  <label className="form-check-label" htmlFor="hideControls">
+                    Hide Controls
+                  </label>
+                </div>
+              )}
+              
+              {features.hasBarplot && (
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="hideBarplot"
+                    checked={hideBarplot}
+                    onChange={handleHideBarplotChange}
+                  />
+                  <label className="form-check-label" htmlFor="hideBarplot">
+                    Hide Barplot
+                  </label>
+                </div>
+              )}
+              
+              {features.hasTable && (
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="hideTable"
+                    checked={hideTable}
+                    onChange={handleHideTableChange}
+                  />
+                  <label className="form-check-label" htmlFor="hideTable">
+                    Hide Table
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="form-group mt-5">
