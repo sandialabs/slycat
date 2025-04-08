@@ -112,7 +112,7 @@ const ShareModel: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="share-model">
       <div className="modal-header">
         <h3 className="modal-title">Share Model</h3>
         <button type="button" className="close" data-dismiss="modal" aria-label="Close">
@@ -120,11 +120,12 @@ const ShareModel: React.FC = () => {
         </button>
       </div>
       <div className="modal-body">
-        <ul className="nav nav-tabs mb-3">
+        <ul className="nav share-model-tabs nav-tabs mb-4">
           <li className="nav-item">
-            <a
-              className={`nav-link ${activeTab === "embed" ? "active" : ""}`}
-              href="#"
+            <a 
+              className={`nav-link ${activeTab === "embed" ? "active" : ""} font-weight-bold`} 
+              style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
+              href="#" 
               onClick={(e) => {
                 e.preventDefault();
                 setActiveTab("embed");
@@ -134,9 +135,10 @@ const ShareModel: React.FC = () => {
             </a>
           </li>
           <li className="nav-item">
-            <a
-              className={`nav-link ${activeTab === "link" ? "active" : ""}`}
-              href="#"
+            <a 
+              className={`nav-link ${activeTab === "link" ? "active" : ""} font-weight-bold`} 
+              style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
+              href="#" 
               onClick={(e) => {
                 e.preventDefault();
                 setActiveTab("link");
@@ -149,7 +151,7 @@ const ShareModel: React.FC = () => {
 
         {activeTab === "embed" && (
           <div className="tab-content">
-            <p>Copy the code below to embed this model in your website.</p>
+            <p>Copy the HTML Embed Code below to embed this model in your website.</p>
 
             <div className="mt-3">
               <h5>Display Options</h5>
@@ -253,7 +255,7 @@ const ShareModel: React.FC = () => {
                 />
                 <div className="input-group-append align-self-stretch">
                   <button
-                    className={`btn ${copyEmbedSuccess ? "btn-success" : "btn-outline-secondary"} h-100`}
+                    className={`btn ${copyEmbedSuccess ? "btn-success" : "btn-primary"} h-100`}
                     type="button"
                     onClick={handleCopyEmbed}
                   >
@@ -267,7 +269,7 @@ const ShareModel: React.FC = () => {
 
         {activeTab === "link" && (
           <div className="tab-content">
-            <p>Share this link with others to give them access to this model:</p>
+            <p>Share this link with others to give them access to this model.</p>
             <div className="form-group">
               <div className="input-group">
                 <input
@@ -280,7 +282,7 @@ const ShareModel: React.FC = () => {
                 />
                 <div className="input-group-append">
                   <button
-                    className={`btn ${copyLinkSuccess ? "btn-success" : "btn-outline-secondary"}`}
+                    className={`btn ${copyLinkSuccess ? "btn-success" : "btn-primary"}`}
                     type="button"
                     onClick={handleCopyLink}
                   >
@@ -293,11 +295,11 @@ const ShareModel: React.FC = () => {
         )}
       </div>
       <div className="modal-footer">
-        <button className="btn btn-primary" data-dismiss="modal">
+        <button className="btn btn-secondary" data-dismiss="modal">
           Close
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
