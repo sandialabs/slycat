@@ -13,7 +13,8 @@ const ShareModel: React.FC = () => {
   const [hideScatterplot, setHideScatterplot] = useState<boolean>(false);
   const [hideFilters, setHideFilters] = useState<boolean>(false);
   const [hideControls, setHideControls] = useState<boolean>(false);
-  const [iframeWidth, setIframeWidth] = useState<string>("100%");
+  const [iframeWidth, setIframeWidth] = useState<string>("100");
+  const [widthUnit, setWidthUnit] = useState<string>("%");
   const [iframeHeight, setIframeHeight] = useState<string>("600");
   const linkInputRef = useRef<HTMLInputElement>(null);
   const embedTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -108,7 +109,8 @@ const ShareModel: React.FC = () => {
   };
 
   const getIframeCode = () => {
-    return `<iframe src='${embedUrl}' width='${iframeWidth}' height='${iframeHeight}'></iframe>`;
+    const widthValue = widthUnit === "%" ? `${iframeWidth}%` : iframeWidth;
+    return `<iframe src='${embedUrl}' width='${widthValue}' height='${iframeHeight}'></iframe>`;
   };
 
   return (
@@ -153,7 +155,7 @@ const ShareModel: React.FC = () => {
           <div className="tab-content">
             <p>Copy the HTML Embed Code below to embed this model in your website.</p>
 
-            <div className="mt-3">
+            <div className="mt-4">
               <h5>Display Options</h5>
 
               <div className="row mb-3">
@@ -166,13 +168,38 @@ const ShareModel: React.FC = () => {
                       id="iframeWidth"
                       value={iframeWidth}
                       onChange={handleWidthChange}
-                      placeholder="e.g. 100% or 800"
+                      placeholder={widthUnit === "%" ? "e.g. 100" : "e.g. 800"}
                     />
                     <div className="input-group-append">
-                      <span className="input-group-text">px / %</span>
+                      <button 
+                        className={`btn ${widthUnit === "%" ? "btn-secondary" : "btn-outline-secondary"}`} 
+                        type="button"
+                        onClick={() => {
+                          if (widthUnit !== "%") {
+                            setWidthUnit("%");
+                            setIframeWidth("100");
+                          }
+                        }}
+                      >
+                        %
+                      </button>
+                      <button 
+                        className={`btn ${widthUnit === "px" ? "btn-secondary" : "btn-outline-secondary"}`} 
+                        type="button"
+                        onClick={() => {
+                          if (widthUnit !== "px") {
+                            setWidthUnit("px");
+                            setIframeWidth("1024");
+                          }
+                        }}
+                      >
+                        px
+                      </button>
                     </div>
                   </div>
-                  <small className="form-text text-muted">Use % for responsive width</small>
+                  <small className="form-text text-muted">
+                    {widthUnit === "%" ? "Percentage of container width" : "Pixels"}
+                  </small>
                 </div>
                 <div className="col-6">
                   <label htmlFor="iframeHeight">Height</label>
@@ -242,8 +269,8 @@ const ShareModel: React.FC = () => {
               </div>
             </div>
 
-            <div className="form-group">
-              <h5 className="mt-4">HTML Embed Code</h5>
+            <div className="form-group mt-5">
+              <h5>HTML Embed Code</h5>
               <div className="input-group">
                 <textarea
                   className="form-control"
