@@ -11,7 +11,7 @@ def register_slycat_plugin(context):
   # context.register_wizard("slycat-create-saved-bookmark", "Save As", require={"action":"create", "context":"model"})
   context.register_wizard("slycat-create-saved-bookmark", "Create New", require={"action":"create", "context":"model"})
   context.register_wizard("slycat-apply-template", "Apply Template", require={"action":"edit", "context":"model"})
-  context.register_wizard("slycat-reset-model", "Reset Model", require={"action":"info", "context":"model"})
   context.register_wizard("slycat-info-model", "Model Details", require={"action":"info", "context":"model"})
-  context.register_wizard("slycat-share-model", "Share Model", require={"action":"info", "context":"model"})
+  context.register_wizard("slycat-share-model", "Share Model", require={"action":"info", "context":"model", "model-type":["cca", "parameter-image"]})
+  context.register_wizard("slycat-reset-model", "Reset Model", require={"action":"info", "context":"model"})
   
