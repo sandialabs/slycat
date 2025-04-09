@@ -38,7 +38,7 @@ const MODEL_FEATURES: Record<string, ModelFeatures> = {
 };
 
 const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
-  const [activeTab, setActiveTab] = useState<string>("embed");
+  const [activeTab, setActiveTab] = useState<string>("link");
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const [embedUrl, setEmbedUrl] = useState<string>("");
   const [copyLinkSuccess, setCopyLinkSuccess] = useState<boolean>(false);
@@ -170,6 +170,19 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
         <ul className="nav share-model-tabs nav-tabs mb-4">
           <li className="nav-item">
             <a 
+              className={`nav-link ${activeTab === "link" ? "active" : ""} font-weight-bold`} 
+              style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
+              href="#" 
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("link");
+              }}
+            >
+              Share Link
+            </a>
+          </li>
+          <li className="nav-item">
+            <a 
               className={`nav-link ${activeTab === "embed" ? "active" : ""} font-weight-bold`} 
               style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
               href="#" 
@@ -181,20 +194,34 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
               Embed Model
             </a>
           </li>
-          <li className="nav-item">
-            <a 
-              className={`nav-link ${activeTab === "link" ? "active" : ""} font-weight-bold`} 
-              style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
-              href="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                setActiveTab("link");
-              }}
-            >
-              Send Link
-            </a>
-          </li>
         </ul>
+
+        {activeTab === "link" && (
+          <div className="tab-content">
+            <p>Share this link with others to give them access to this model.</p>
+            <div className="form-group">
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  readOnly
+                  value={currentUrl}
+                  ref={linkInputRef}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <div className="input-group-append">
+                  <button
+                    className={`btn ${copyLinkSuccess ? "btn-success" : "btn-primary"}`}
+                    type="button"
+                    onClick={handleCopyLink}
+                  >
+                    {copyLinkSuccess ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {activeTab === "embed" && (
           <div className="tab-content">
@@ -343,33 +370,6 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                     onClick={handleCopyEmbed}
                   >
                     {copyEmbedSuccess ? "Copied!" : "Copy"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "link" && (
-          <div className="tab-content">
-            <p>Share this link with others to give them access to this model.</p>
-            <div className="form-group">
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  readOnly
-                  value={currentUrl}
-                  ref={linkInputRef}
-                  onClick={(e) => (e.target as HTMLInputElement).select()}
-                />
-                <div className="input-group-append">
-                  <button
-                    className={`btn ${copyLinkSuccess ? "btn-success" : "btn-primary"}`}
-                    type="button"
-                    onClick={handleCopyLink}
-                  >
-                    {copyLinkSuccess ? "Copied!" : "Copy"}
                   </button>
                 </div>
               </div>
