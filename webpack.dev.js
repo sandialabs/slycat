@@ -9,6 +9,7 @@ module.exports = merge(common, {
       publicPath: "/",
       index: "slycat_projects.html",
     },
+    // test
     // Only compiles on refresh, not on file change. But does not work, complains of running webpack twice.
     // lazy: true,
 
