@@ -148,32 +148,19 @@ function constructor(params) {
       .then((errors) => {
         // keep track of both warnings and errors
         var error_messages = "";
-        var warning_messages = "";
 
         // check if there are actual errors or just warnings
         if (errors.length >= 1) {
           for (var i = 0; i < errors.length; i++) {
-            if (errors[i]["type"] == "error") {
-              error_messages =
-                "The errors listed below must be fixed before you can upload a model.\n" +
-                "Please close this dialog or try again with a new file.\n";
-            } else if (errors[i]["type"] == "warning") {
-              warning_messages =
-                "The warnings listed below indicate that your original data has " +
-                "been altered.\n";
-            }
+            error_messages =
+              "The errors listed below must be fixed before you can upload a model.\n"
           }
 
           // display warnings/errors
           for (var i = 0; i < errors.length; i++) {
-            if (errors[i]["type"] == "warning") {
-              warning_messages += "\nWarning: " + errors[i]["message"] + "\n";
-            } else {
-              error_messages += "\nError: " + errors[i]["message"] + "\n";
-            }
+            error_messages += "\nError: " + errors[i] + "\n";
           }
           component.error_messages(error_messages);
-          component.warning_messages(warning_messages);
 
           // if there were errors, cleanup project data
           if (error_messages.length > 0) {
@@ -195,7 +182,6 @@ function constructor(params) {
             // re-enable button
             $(".browser-continue").toggleClass("disabled", false);
           } else {
-            // only warnings, continue
             component.tab(4);
             $(".browser-continue").toggleClass("disabled", false);
           }
@@ -207,6 +193,12 @@ function constructor(params) {
             component.tab(6);
             this.hdf5_input_browse();
           } else {
+            if (component.ps_type() == 'local') {
+              upload_success(component.browser);
+            }
+            else if (component.ps_type() == 'remote') {
+              upload_success(component.remote);
+            }
             component.tab(4);
             $(".browser-continue").toggleClass("disabled", false);
           }
@@ -386,7 +378,7 @@ function constructor(params) {
                   tooltip: "",
                 });
               mapping.fromJS(attributes, component.attributes);
-              component.get_error_messages();
+              // component.get_error_messages();
             },
             error: function (errorThrown) {
               window.alert("There was a fatal error with your CSV.");
@@ -431,12 +423,24 @@ function constructor(params) {
       progress_status: component.browser.progress_status,
       progress_final: 90,
       success: function () {
-        upload_success(component.browser);
+        component.get_error_messages();
       },
       error: function () {
-        dialog.ajax_error(
-          "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
-        )();
+        let error_messages = ""
+
+        client.get_model_parameter_fetch({
+          mid: component.model._id(),
+          aid: "error-messages",
+        })
+        .then((errors) => {
+          if(errors.length > 0) {
+            for (var i = 0; i < errors.length; i++) {
+              error_messages += errors[i] + "\n"
+            }
+            dialog.ajax_error(error_messages)();
+          }
+        });
+
         $(".local-browser-continue").toggleClass("disabled", false);
         component.browser.progress(null);
         component.browser.progress_status("");
@@ -657,7 +661,7 @@ function constructor(params) {
       progress_status: component.remote.progress_status,
       progress_final: 90,
       success: function () {
-        upload_success(component.remote);
+        component.get_error_messages();
       },
       error: function () {
         dialog.ajax_error(
@@ -688,7 +692,7 @@ function constructor(params) {
       progress_status: component.remote.progress_status,
       progress_final: 90,
       success: function () {
-        upload_success(component.remote);
+        component.get_error_messages();
       },
       error: function () {
         dialog.ajax_error(
