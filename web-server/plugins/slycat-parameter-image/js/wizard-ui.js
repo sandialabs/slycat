@@ -306,10 +306,10 @@ function constructor(params) {
       selectElementRemote.addEventListener("click", function() {
         if ((component.browser.selection().length > 0)) {
           if (typeof component.browser.selection()[0] !== 'undefined') {
-            let file_path = component.browser.selection()[0];
-            let split_path = file_path.split('/');
-            let file_name = split_path[split_path.length - 1];
-            let file_extension = file_name.split('.')[1];
+            const file_path = component.browser.selection()[0];
+            const split_path = file_path.split('/');
+            const file_name = split_path[split_path.length - 1];
+            const file_extension = file_name.split('.')[1];
 
             if (file_extension == 'csv') {
               component.parser('slycat-csv-parser');
