@@ -38,21 +38,29 @@ export const useCCAWizardFooter = () => {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
-      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
     }
-  }, [dispatch, setTabName, tabName]);
+    if (tabName === TabNames.CCA_TABLE_INGESTION) {
+      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+    }
+  }, [dispatch, fileUploaded, setTabName, tabName]);
 
   /**
    * handle back operation
    */
   const handleBack = React.useCallback(() => {
-    dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB) {
+      dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+    }
+    if (tabName === TabNames.CCA_TABLE_INGESTION) {
+      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
   }, [dispatch, setTabName, tabName]);
 
   const backButton = (
     <button
       key="back button"
-      disabled={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB}
+      style={{visibility: tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ? "hidden": "visible"}}
       className="btn btn-light mr-auto"
       onClick={handleBack}
     >
