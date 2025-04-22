@@ -4,6 +4,7 @@ import { RootState } from "../store";
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCSLocalBrowserTab",
+  CCA_TABLE_INGESTION = "CCATableIngestion"
 }
 export enum dataLocationType {
   LOCAL = "local",
