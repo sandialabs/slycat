@@ -4,8 +4,8 @@ LABEL maintainer="Matthew Letter <mletter@sandia.gov>"
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update && \
-    apt-get --yes install openssh-server rsync git && \
+RUN apt-get update
+RUN apt-get --yes install openssh-server rsync git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir -vp /var/run/sshd && \
