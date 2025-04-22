@@ -54,7 +54,7 @@ export const CCAWizardSteps = () => {
           </div>
         </div>
 
-        <div hidden={true}>
+        <div hidden={!(tabName === TabNames.CCA_TABLE_INGESTION)}>
           {/* <slycat-table-ingestion
               params="
               variables: attributes,
