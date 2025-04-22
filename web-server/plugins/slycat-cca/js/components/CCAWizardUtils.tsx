@@ -6,22 +6,28 @@ import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import {
   resetCCAWizard,
   selectDataLocation,
+  selectFileUploaded,
   selectMid,
   selectPid,
   selectTab,
+  setFileUploaded,
   setMid,
   setPid,
   setTabName,
   TabNames,
-  uploadFile,
 } from "./wizard-store/reducers/cCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
 
+/**
+ * A hook for controlling how the back and continue buttons work based on the current redux state
+ * @returns the back button and continue button jsx
+ */
 export const useCCAWizardFooter = () => {
   const tabName = useAppSelector(selectTab);
   const dataLocation = useAppSelector(selectDataLocation);
+  const fileUploaded = useAppSelector(selectFileUploaded);
   const dispatch = useAppDispatch();
 
   /**
@@ -31,8 +37,8 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB) {
-      dispatch(uploadFile());
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
+      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
   }, [dispatch, setTabName, tabName]);
 
@@ -55,11 +61,16 @@ export const useCCAWizardFooter = () => {
   );
 
   const nextButton = (
-    <button key="continue" className="btn btn-primary" onClick={handleContinue}>
-      Continue
+    <button
+      key="continue"
+      className="btn btn-primary"
+      onClick={handleContinue}
+      disabled={tabName === TabNames.CCA_LOCAL_BROWSER_TAB && !fileUploaded}
+    >
+      Continue {fileUploaded.toString()}
     </button>
   );
-  return React.useMemo(() => [backButton, nextButton], [tabName, dataLocation, dispatch]);
+  return React.useMemo(() => [backButton, nextButton], [fileUploaded, tabName, dataLocation, dispatch]);
 };
 
 /**
@@ -122,32 +133,47 @@ export const useHandleClosingCallback = (
 /**
  * handle file submission
  */
-export const useHandleSubmit = ():[(file: File) => void, number, string] => {
+export const useHandleLocalFileSubmit = (): [
+  (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => void,
+  number,
+  string,
+] => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
   const [progress, setProgress] = React.useState<number>(0);
   const [progressStatus, setProgressStatus] = React.useState("");
   const handleSubmit = React.useCallback(
-    (file: File) => {
+    (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
       const progressCallback = (input?: number) => {
         if (!input) {
           return progress;
         }
         setProgress(input);
       };
+      const progressStatusCallback = (input?: string) => {
+        if (!input) {
+          return progressStatus;
+        }
+        setProgressStatus(input);
+      };
       const fileObject = {
         pid,
         mid,
         file: file,
+        parser: parser,
         aids: [["data-table"], file?.name],
         // parser: component.parser(),
-        progress: progress,
-        progress_status: progressCallback,
+        progress: progressCallback,
+        progress_status: progressStatusCallback,
         progress_final: 90,
         success: function () {
-          // set browser tab
+          console.log("uploaded");
+          setProgress(100);
+          setProgressStatus("File upload complete");
+          setUploadStatus(true);
         },
         error: function () {
+          setUploadStatus(false);
           dialog.ajax_error(
             "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
           )();
@@ -162,4 +188,28 @@ export const useHandleSubmit = ():[(file: File) => void, number, string] => {
   );
 
   return [handleSubmit, progress, progressStatus];
+};
+
+/**
+ * Returns a function that sets the callback "setParser" value to the selected parser
+ */
+export const handleParserChange = (
+  setParser: React.Dispatch<React.SetStateAction<string | undefined>>,
+) =>
+  React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setParser(e?.target?.value ?? undefined);
+    },
+    [setParser],
+  );
+
+export const useSetUploadStatus = () => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (status: boolean) => {
+      console.log("dispatching", status);
+      dispatch(setFileUploaded(status));
+    },
+    [dispatch],
+  );
 };

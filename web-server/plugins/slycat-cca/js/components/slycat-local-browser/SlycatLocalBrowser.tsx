@@ -2,12 +2,14 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
-import { useHandleSubmit } from "../CCAWizardUtils";
+import { useHandleLocalFileSubmit } from "../CCAWizardUtils";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 
-export const SlycatLocalBrowser = () => {
+export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) => void, disabled?: boolean }) => {
+  const { setUploadStatus, disabled } = props;
   const [file, setFile] = React.useState<File | undefined>(undefined);
-  const [handleSubmit, progress, progressStatus] = useHandleSubmit();
+  const [parser, setParser] = React.useState<string | undefined>(undefined);
+  const [handleSubmit, progress, progressStatus] = useHandleLocalFileSubmit();
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files !== null && e.target.files.length >= 1) {
       setFile(e.target.files[0]);
@@ -24,6 +26,23 @@ export const SlycatLocalBrowser = () => {
           id="slycat-local-browser-file"
           placeholder="file"
         ></input>
+        <SlycatParserControls setParser={setParser} />
+        <button
+          key="Upload File To Server"
+          disabled={disabled ?? false }
+          style={{visibility: progress<=0? 'visible': 'hidden'}}
+          className="btn btn-primary"
+          data-toggle="tooltip"
+          data-placement="top" 
+          title="You must selected a file before continuing."
+          onClick={React.useCallback(() => {
+            if (file) {
+              handleSubmit(file, parser, setUploadStatus);
+            }
+          }, [file, handleSubmit])}
+        >
+          Upload File parser
+        </button>
         <div className="progress" style={{ visibility: progress > 0 ? undefined : "hidden" }}>
           <div
             className="progress-bar progress-bar-striped progress-bar-animated"
@@ -36,18 +55,6 @@ export const SlycatLocalBrowser = () => {
             {progressStatus}
           </div>
         </div>
-        <SlycatParserControls/>
-        <button
-          key="Upload File To Server"
-          className="btn btn-primary"
-          onClick={React.useCallback(() => {
-            if (file) {
-              handleSubmit(file);
-            }
-          }, [file, handleSubmit])}
-        >
-          Upload File
-        </button>
       </div>
     </div>
   );

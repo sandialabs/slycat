@@ -18,23 +18,6 @@ export const CCAWizardSteps = () => {
         <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB)}/>
         <CCALocalBrowserTab hidden={!(tabName === TabNames.CCA_LOCAL_BROWSER_TAB)}/>
         <div hidden={true}>
-          <div
-            className="alert alert-danger"
-            role="alert"
-            data-bind="visible:show_local_browser_error()"
-          >
-            You must selected a file before continuing.
-          </div>
-          {/* <slycat-local-browser
-              params="
-              selection:browser.selection,
-              progress:browser.progress,
-              progress_status:browser.progress_status"
-            ></slycat-local-browser>
-            <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls> */}
-        </div>
-
-        <div hidden={true}>
           <form role="form">
             {/* <slycat-remote-controls
                 params="

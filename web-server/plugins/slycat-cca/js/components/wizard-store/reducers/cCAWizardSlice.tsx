@@ -14,12 +14,14 @@ export interface CCAWizardState {
   dataLocation: dataLocationType;
   mid: string | undefined;
   pid: string | undefined;
+  fileUploaded: boolean;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
   dataLocation: dataLocationType.LOCAL,
   mid: undefined,
-  pid: undefined
+  pid: undefined,
+  fileUploaded: false
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -35,12 +37,12 @@ export const cCAWizardSlice = createSlice({
       state.mid = action.payload;
     },
     setPid: (state, action: PayloadAction<string>) => {
-       // TODO: dispatch model creation if no MID present aka undefined
       state.pid = action.payload;
     },
-    uploadFile: (state) => {
-      console.log(`upload`);
-    },
+    setFileUploaded:(state, action: PayloadAction<boolean>) => {
+      console.log("dispatching action.payload", action.payload)
+     state.fileUploaded = action.payload;
+   },
     resetCCAWizard: () => initialState,
   },
 });
@@ -51,12 +53,13 @@ export const {
   setDataLocation,
   setMid,
   setPid,
-  uploadFile,
   resetCCAWizard: resetCCAWizard,
+  setFileUploaded
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
 export const selectDataLocation = (state: RootState) => state.cCAWizard.dataLocation;
+export const selectFileUploaded= (state: RootState) => state.cCAWizard.fileUploaded;
 export const selectPid = (state: RootState) => state.cCAWizard.pid;
 export const selectMid = (state: RootState) => state.cCAWizard.mid;
 
