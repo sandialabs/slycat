@@ -21,18 +21,16 @@ export const CCAWizard = (params: CCAWizardParams) => {
   const { pid, marking } = params;
   const [modalOpen, setModalOpen] = React.useState(true);
   const cCAWizardFooter = useCCAWizardFooter();
-  const dispatch = useAppDispatch();
   const statePid = useAppSelector(selectPid);
   const stateMid = useAppSelector(selectMid);
   const handleClosingCallback = useHandleClosingCallback(setModalOpen, stateMid);
   const handleWizardSetup = useHandleWizardSetup(pid, statePid, stateMid, marking);
 
   React.useEffect(() => {
-    console.log("statePid, pid, selectMid", statePid, pid, stateMid);
     if (modalOpen) {
       handleWizardSetup()
     }
-  }, [dispatch, pid, statePid, stateMid]);
+  }, [pid, statePid, stateMid]);
 
   return (
     <CCAModalContent
