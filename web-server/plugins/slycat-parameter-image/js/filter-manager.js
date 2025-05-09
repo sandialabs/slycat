@@ -626,7 +626,7 @@ FilterManager.prototype.build_sliders = function () {
             message: "Please enter a number between " + min_limit + " and " + max_limit + ".",
             buttons: [{ className: "btn-primary", label: "OK" }],
             callback: function (button) {
-              if (button.label == "OK") $(event.target).focus();
+              if (button?.label == "OK") $(event.target).focus();
             },
           });
         } else {
@@ -672,7 +672,7 @@ FilterManager.prototype.build_sliders = function () {
             message: "Please enter a number between " + min_limit + " and " + max_limit + ".",
             buttons: [{ className: "btn-primary", label: "OK" }],
             callback: function (button) {
-              if (button.label == "OK") {
+              if (button?.label == "OK") {
                 $(event.target).focus();
               }
             },

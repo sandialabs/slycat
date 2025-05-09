@@ -324,7 +324,7 @@ export default class SmbAuthentication extends React.Component<any, any> {
                   className="btn btn-secondary dropdown-toggle"
                   type="button"
                   id="dropdownMenuButton"
-                  data-toggle="dropdown"
+                  data-bs-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
                 />
@@ -423,7 +423,7 @@ export default class SmbAuthentication extends React.Component<any, any> {
                   className="btn btn-secondary dropdown-toggle"
                   type="button"
                   id="dropdownMenuButton"
-                  data-toggle="dropdown"
+                  data-bs-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
                 />

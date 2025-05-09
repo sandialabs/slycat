@@ -136,7 +136,7 @@ $.widget("slycat.colorswitcher", {
     };
 
     this.button = $(
-      '<button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="false" title="Scatterplot Color Theme"> \
+      '<button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="colors-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Scatterplot Color Theme"> \
           Colors \
         </button>',
     ).appendTo(this.element);

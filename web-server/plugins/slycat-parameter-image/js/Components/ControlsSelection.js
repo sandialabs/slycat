@@ -189,7 +189,7 @@ const ControlsSelection = (props) => {
         }`}
         type="button"
         id="selection-dropdown"
-        data-toggle="dropdown"
+        data-bs-toggle="dropdown"
         aria-expanded="false"
         aria-haspopup="true"
         title="Perform Action On Selection"

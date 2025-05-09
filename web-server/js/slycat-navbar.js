@@ -110,7 +110,7 @@ export function renderNavBar() {
               success: function (result) {
                 mapping.fromJS(result, component.project_models);
                 // Initialize popovers
-                $('[data-toggle="popover"]').popover();
+                $('[data-bs-toggle="popover"]').popover();
               },
               error: function (request, status, reason_phrase) {
                 console.log("Unable to retrieve project models.");

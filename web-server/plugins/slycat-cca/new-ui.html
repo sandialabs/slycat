@@ -4,12 +4,12 @@
   <h3 class="modal-title">New CCA Model</h3>
   <button
     type="button"
-    class="close"
+    class="btn-close"
     data-bind="click: cancel"
-    data-dismiss="modal"
+    data-bs-dismiss="modal"
     aria-label="Close"
   >
-    <span aria-hidden="true">&times;</span>
+    
   </button>
 </div>
 <div class="modal-body">
@@ -120,8 +120,8 @@
       "
       ></slycat-table-ingestion>
       <form role="form">
-        <div class="form-group mt-3">
-          <div class="form-check pl-1">
+        <div class="mb-3 mt-3">
+          <div class="form-check ps-1">
             <label>
               <input type="checkbox" data-bind="checked: scale_inputs" /> Scale to unit variance
             </label>
@@ -140,7 +140,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
+  <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
     Back
   </button>
   <button class="btn btn-primary" data-bind="visible: tab() == 0,click:select_type">

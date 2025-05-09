@@ -42,7 +42,7 @@ export default class ModalLarge  extends React.Component<ModalLargeProps,ModalLa
 
   render () {
     return(
-      <div className='modal fade' data-backdrop='false' id={this.props.modalId}>
+      <div className='modal fade' data-bs-backdrop='false' id={this.props.modalId}>
         <div className='modal-dialog modal-lg'>
           <div className='modal-content'>
             <div className='modal-header'>

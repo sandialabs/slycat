@@ -1445,7 +1445,7 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-trigger", "hover")
           .attr("data-placement", "auto");
 
-        $('.scatterplot-svg [data-toggle="popover"]').popover();
+        $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
       }
     }
 
@@ -1506,7 +1506,7 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-trigger", "hover")
           .attr("data-placement", "auto");
 
-        $('.scatterplot-svg [data-toggle="popover"]').popover();
+        $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
       }
     }
 
@@ -1882,7 +1882,7 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-trigger", "hover")
           .attr("data-placement", "auto");
 
-        $('.scatterplot-svg [data-toggle="popover"]').popover();
+        $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
       }
     }
 

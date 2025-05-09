@@ -281,7 +281,7 @@ export default class TimeseriesWizard extends React.Component<
     let footerJSX = [];
     if (this.state.visibleTab != "0") {
       footerJSX.push(
-        <button key={1} type='button' className='btn btn-light mr-auto' onClick={this.back}>
+        <button key={1} type='button' className='btn btn-light me-auto' onClick={this.back}>
           Back
       </button>
       );
