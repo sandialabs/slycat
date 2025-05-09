@@ -247,8 +247,8 @@ $.widget("mp.controls", {
         message: txt,
         buttons: buttons_save,
         callback: function (button) {
-          if (button.label == "Save Entire Table") self._write_data_table();
-          else if (button.label == "Save Selected")
+          if (button?.label == "Save Entire Table") self._write_data_table();
+          else if (button?.label == "Save Selected")
             self._write_data_table(self.options.highlighted_simulations);
         },
       });
