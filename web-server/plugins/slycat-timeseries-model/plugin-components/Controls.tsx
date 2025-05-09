@@ -66,7 +66,7 @@ export const Controls: React.FC<Props> = (props) => {
         <div id="general-controls" className="btn-group"></div>
         {metadata && (
           <>
-            <ControlsGroup id="general-controls" class="btn-group ml-3">
+            <ControlsGroup id="general-controls" class="btn-group ms-3">
               <ControlsDropdown
                 button_style={button_style}
                 key="color-dropdown"
@@ -89,7 +89,7 @@ export const Controls: React.FC<Props> = (props) => {
                 button_style={button_style}
               />
             </ControlsGroup>
-            <ControlsGroup id="color-switcher" class="btn-group ml-3">
+            <ControlsGroup id="color-switcher" class="btn-group ms-3">
               <ControlsDropdownColor
                 button_style={button_style}
                 colormaps={slycat_color_maps}

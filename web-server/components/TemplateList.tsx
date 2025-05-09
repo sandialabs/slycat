@@ -49,7 +49,7 @@ class Template extends React.Component<TemplateProps> {
   public render() {
     return (
       <div className="list-group-item list-group-item-action">
-        <span className="badge badge-secondary mr-1">
+        <span className="badge text-bg-secondary me-1">
           {`${model_names.translate_model_type(this.props.model_type)} model`}
         </span>
         &nbsp;
@@ -59,7 +59,7 @@ class Template extends React.Component<TemplateProps> {
             Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
           </em>
         </small>
-        <span className="float-right">
+        <span className="float-end">
           {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
           <button
             type="button"

@@ -2,15 +2,15 @@
 
 <div class="modal-header">
   <h3 class="modal-title">Create Template</h3>
-  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+    
   </button>
 </div>
 <div class="modal-body">
   <div>
     <p class="lead">A template stores the state of the current visualization so it can be applied to a different model.</p>
     <form data-bind="submit: save_template" id="create-template-form" novalidate>
-      <div class="form-group row required">
+      <div class="mb-3 row required">
         <label for="slycat-template-name" class="col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
           <input id="slycat-template-name" class="form-control" type="text" data-bind="value:name" required></input>

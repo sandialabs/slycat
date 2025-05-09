@@ -9,12 +9,12 @@ S. Martin
   <h3 class="modal-title">New Dial-A-Cluster Model</h3>
   <button
     type="button"
-    class="close"
+    class="btn-close"
     data-bind="click: cancel"
-    data-dismiss="modal"
+    data-bs-dismiss="modal"
     aria-label="Close"
   >
-    <span aria-hidden="true">&times;</span>
+    
   </button>
 </div>
 
@@ -502,7 +502,7 @@ S. Martin
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
+  <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
     Back
   </button>
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>

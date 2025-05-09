@@ -560,7 +560,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
       <Provider store={this.props.store}>
         <React.Fragment>
           <React.StrictMode>
-            <ControlsGroup id={this.scatterplot_id} class="btn-group ml-3">
+            <ControlsGroup id={this.scatterplot_id} class="btn-group ms-3">
               {this.props.xy_pairs_items.length > 0 && (
                 <ControlsDropdown
                   key="xypair-dropdown"
@@ -605,7 +605,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 button_style={button_style}
               />
             </ControlsGroup>
-            <ControlsGroup id={this.selection_id} class="btn-group ml-3">
+            <ControlsGroup id={this.selection_id} class="btn-group ms-3">
               <ControlsButtonToggle
                 title="Auto Scale"
                 icon={faExternalLinkAlt}
@@ -654,7 +654,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
             {any_video_open && (
               <ControlsGroup
                 id="video-controls"
-                class="input-group input-group-sm ml-3 playback-controls"
+                class="input-group input-group-sm ms-3 playback-controls"
               >
                 <ControlsVideo
                   video_sync={this.props.video_sync}
@@ -679,11 +679,11 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
               </ControlsGroup>
             )}
             {any_threeD_open && (
-              <ControlsGroup id="threeD-controls" class="btn-group ml-3">
+              <ControlsGroup id="threeD-controls" class="btn-group ms-3">
                 <ControlsThreeD any_threeD_open={any_threeD_open} button_style={button_style} />
               </ControlsGroup>
             )}
-            <ControlsGroup id="color-switcher" class="btn-group ml-3">
+            <ControlsGroup id="color-switcher" class="btn-group ms-3">
               <ControlsDropdownColor
                 button_style={button_style}
                 colormaps={slycat_color_maps}

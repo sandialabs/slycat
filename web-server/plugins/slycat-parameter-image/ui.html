@@ -7,37 +7,35 @@
       id="controls"
       style="height: 100%"
     >
-      <div class="form-inline">
-        <div class="form-group">
-          <div id="filter-controls" class="btn-group">
-            <!-- ko if: allFilters().length > 0 && !hideFilters -->
+      <div class="d-flex flex-row align-items-center">
+        <div id="filter-controls" class="btn-group">
+          <!-- ko if: allFilters().length > 0 && !hideFilters -->
+          <button
+            id="filter-dropdown"
+            class="btn btn-sm btn-outline-dark dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            title="Select Filter Variables"
+            data-bind="css: { disabled: allFilters().length == activeFilters().length }"
+          >
+            Filter
+          </button>
+          <div class="dropdown-menu" aria-labelledby="filter-dropdown">
+            <!-- ko foreach: availableFilters -->
             <button
-              id="filter-dropdown"
-              class="btn btn-sm btn-outline-dark dropdown-toggle"
               type="button"
-              data-toggle="dropdown"
-              aria-expanded="false"
-              title="Select Filter Variables"
-              data-bind="css: { disabled: allFilters().length == activeFilters().length }"
-            >
-              Filter
-            </button>
-            <div class="dropdown-menu" aria-labelledby="filter-dropdown">
-              <!-- ko foreach: availableFilters -->
-              <button
-                type="button"
-                class="dropdown-item"
-                data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"
-              ></button>
-              <!-- /ko -->
-            </div>
+              class="dropdown-item"
+              data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"
+            ></button>
             <!-- /ko -->
           </div>
-
-          <div class="form-group" id="react-controls"></div>
-
-          <div id="add-note" class="btn-group ml-3"></div>
+          <!-- /ko -->
         </div>
+
+        <div id="react-controls"></div>
+
+        <div id="add-note" class="btn-group ms-3"></div>
       </div>
     </div>
   </div>
@@ -235,7 +233,7 @@
             data-bind="click: $parent.removeFilter"
           ></i>
           <i
-            class="fa auto-width-button button"
+            class="fa auto-collapse-horizontal-button button"
             data-bind="
                 click: $parent.toggleAutoWidth, 
                 css: { 'fa-chevron-left': autowidth(), 'fa-chevron-right': !autowidth() },

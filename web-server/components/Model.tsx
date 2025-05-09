@@ -51,14 +51,14 @@ const Model = (props: ModelProps) => {
                 style={{ color: 'inherit', textDecoration: 'inherit'}}
             >
                 <div className='h6'>
-                    <span className='badge badge-secondary mr-1'>
+                    <span className='badge text-bg-secondary me-1'>
                         {model_names.translate_model_type(props.model_type) + " model"}
                     </span>
                     &nbsp;
                     <strong>{props.name}</strong>
                 </div>
                 {props.result == "failed" && (
-                    <span className='badge badge-danger' title={props.message}>
+                    <span className='badge text-bg-danger' title={props.message}>
                         Failed
                     </span>
                 )}
@@ -69,7 +69,7 @@ const Model = (props: ModelProps) => {
                     </em>
                 </small>
             </a>
-            <span className='float-right ml-3'>
+            <span className='float-end ms-3'>
                     <button
                         type='button'
                         className='btn btn-sm btn-outline-danger'

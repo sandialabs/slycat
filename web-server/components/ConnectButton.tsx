@@ -127,7 +127,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
       <button
         disabled={this.state.loadingData}
         type="button"
-        className="btn btn-primary float-right"
+        className="btn btn-primary float-end"
         onClick={this.connect}
       >
         {this.state.loadingData ? (

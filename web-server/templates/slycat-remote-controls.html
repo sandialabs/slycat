@@ -1,4 +1,4 @@
-<div class="form-group row">
+<div class="mb-3 row">
   <label class="col-sm-2 col-form-label" data-bind="css: {'disabled' : !enable()}">Hostname</label>
   <div class="col-sm-10">
     <div class="input-group">
@@ -7,7 +7,7 @@
           type="button"
           class="btn btn-secondary dropdown-toggle"
           data-bind="css:{disabled:!enable()}"
-          data-toggle="dropdown"
+          data-bs-toggle="dropdown"
           aria-expanded="false"
         ></button>
         <ul class="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
@@ -21,7 +21,7 @@
   </div>
 </div>
 <!-- ko if: ispasswordrequired.ssh_passwordrequired -->
-<div class="form-group row" data-bind="visible: !session_exists()">
+<div class="mb-3 row" data-bind="visible: !session_exists()">
   <label
     class="col-sm-2 col-form-label"
     data-bind="css: {'disabled' : !enable()}, text: remoteAuthLabelUsername"
@@ -31,7 +31,7 @@
     <input class="form-control" type="text" data-bind="enable:enable, textInput:username" />
   </div>
 </div>
-<div class="form-group row" data-bind="visible: !session_exists()">
+<div class="mb-3 row" data-bind="visible: !session_exists()">
   <label
     class="col-sm-2 col-form-label"
     data-bind="css: {'disabled' : !enable()}, text: remoteAuthLabelPassword"

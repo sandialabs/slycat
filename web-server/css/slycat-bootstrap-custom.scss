@@ -1,2 +1,14 @@
-// Bootstrap customizations for Slycat, per https://getbootstrap.com/docs/4.3/getting-started/theming/
-// Currently empty because we have not started customizing
+// Bootstrap customizations for Slycat, per https://getbootstrap.com/docs/5.3/customize/overview/
+
+// Customizing the spacing variables.
+// Only added 25 for three-quarter spacing in navbar, but had to redeclare all the spacers anyway.
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,
+  2: $spacer * .5,
+  25: $spacer * .75,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+);

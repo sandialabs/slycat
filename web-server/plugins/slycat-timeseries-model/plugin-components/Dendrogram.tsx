@@ -27,7 +27,7 @@ export const Dendrogram: React.FC<Props> = (props) => {
             className="outputs btn btn-outline-dark btn-sm dropdown-toggle"
             type="button"
             id="outputs-dropdown"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-expanded="false"
             title="Change Outputs"
           >
