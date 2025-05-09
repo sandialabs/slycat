@@ -5,7 +5,7 @@ import * as React from "react";
  * @member title test for the top of the modal
  */
 export interface ModalContentProps {
-  modalId: string,
+  modalId: string;
   closingCallBack: Function;
   title: string;
   body: JSX.Element;
@@ -17,10 +17,7 @@ export interface ModalContentProps {
  */
 export interface ModalContentState {}
 
-export default class ModalContent extends React.Component<
-  ModalContentProps,
-  ModalContentState
-> {
+export default class ModalContent extends React.Component<ModalContentProps, ModalContentState> {
   public constructor(props: ModalContentProps) {
     super(props);
     this.state = {};
@@ -42,12 +39,11 @@ export default class ModalContent extends React.Component<
           <h3 className="modal-title">{this.props.title}</h3>
           <button
             type="button"
-            className="close"
+            className="btn-close"
+            data-bs-dismiss="modal"
             aria-label="Close"
             onClick={this.closeModal}
-          >
-            
-          </button>
+          ></button>
         </div>
         <div className="modal-body" id="slycat-wizard">
           {this.props.body}

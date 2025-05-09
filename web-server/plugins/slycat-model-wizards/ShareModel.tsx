@@ -16,25 +16,25 @@ interface ModelFeatures {
 }
 
 const MODEL_FEATURES: Record<string, ModelFeatures> = {
-  "cca": {
+  cca: {
     hasTable: true,
     hasBarplot: true,
     hasFilters: false,
-    hasControls: true
+    hasControls: true,
   },
   "parameter-image": {
     hasTable: true,
     hasBarplot: false,
     hasFilters: true,
-    hasControls: true
+    hasControls: true,
   },
   // Default configuration for unknown model types
-  "default": {
+  default: {
     hasTable: true,
     hasBarplot: true,
     hasFilters: true,
-    hasControls: true
-  }
+    hasControls: true,
+  },
 };
 
 const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
@@ -162,17 +162,20 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
     <div className="share-model">
       <div className="modal-header">
         <h3 className="modal-title">Share Model</h3>
-        <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
-          
-        </button>
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div className="modal-body">
         <ul className="nav share-model-tabs nav-tabs mb-4">
           <li className="nav-item">
-            <a 
-              className={`nav-link ${activeTab === "link" ? "active" : ""} font-weight-bold`} 
+            <a
+              className={`nav-link ${activeTab === "link" ? "active" : ""} font-weight-bold`}
               style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
-              href="#" 
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 setActiveTab("link");
@@ -182,10 +185,10 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
             </a>
           </li>
           <li className="nav-item">
-            <a 
-              className={`nav-link ${activeTab === "embed" ? "active" : ""} font-weight-bold`} 
+            <a
+              className={`nav-link ${activeTab === "embed" ? "active" : ""} font-weight-bold`}
               style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
-              href="#" 
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 setActiveTab("embed");
@@ -243,8 +246,8 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                       placeholder={widthUnit === "%" ? "e.g. 100" : "e.g. 800"}
                     />
                     <div className="input-group-append">
-                      <button 
-                        className={`btn ${widthUnit === "%" ? "btn-secondary" : "btn-outline-secondary"}`} 
+                      <button
+                        className={`btn ${widthUnit === "%" ? "btn-secondary" : "btn-outline-secondary"}`}
                         type="button"
                         onClick={() => {
                           if (widthUnit !== "%") {
@@ -255,8 +258,8 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                       >
                         %
                       </button>
-                      <button 
-                        className={`btn ${widthUnit === "px" ? "btn-secondary" : "btn-outline-secondary"}`} 
+                      <button
+                        className={`btn ${widthUnit === "px" ? "btn-secondary" : "btn-outline-secondary"}`}
                         type="button"
                         onClick={() => {
                           if (widthUnit !== "px") {
@@ -305,7 +308,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                   </label>
                 </div>
               )}
-              
+
               {features.hasControls && (
                 <div className="form-check">
                   <input
@@ -320,7 +323,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                   </label>
                 </div>
               )}
-              
+
               {features.hasBarplot && (
                 <div className="form-check">
                   <input
@@ -335,7 +338,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                   </label>
                 </div>
               )}
-              
+
               {features.hasTable && (
                 <div className="form-check">
                   <input

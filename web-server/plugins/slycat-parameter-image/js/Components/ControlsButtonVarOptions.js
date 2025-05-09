@@ -338,12 +338,11 @@ class ControlsButtonVarOptions extends React.PureComponent {
                 <h3 className="modal-title">{this.title}</h3>
                 <button
                   type="button"
-                  className="close"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
                   aria-label="Close"
                   onClick={this.closeModal}
-                >
-                  
-                </button>
+                ></button>
               </div>
               <div className="modal-body">
                 <ul className="nav nav-tabs" role="tablist">
