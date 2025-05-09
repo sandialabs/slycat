@@ -46,7 +46,7 @@ export default class ModalContent extends React.Component<
             aria-label="Close"
             onClick={this.closeModal}
           >
-            <span aria-hidden="true">&times;</span>
+            
           </button>
         </div>
         <div className="modal-body" id="slycat-wizard">

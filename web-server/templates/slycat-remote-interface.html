@@ -1,6 +1,6 @@
 <div class="slycat-remote-interface bootstrap-styles" style="padding: 1%">
   <form>
-    <div id="form-group-wcid" class="form-group row">
+    <div id="form-group-wcid" class="mb-3 row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
         >Account ID</label
       >
@@ -13,7 +13,7 @@
         />
       </div>
     </div>
-    <div id="form-group-partition" class="form-group row">
+    <div id="form-group-partition" class="mb-3 row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
         >Partition/Queue</label
       >
@@ -25,13 +25,13 @@
         />
       </div>
     </div>
-    <!--     <div class="form-group">
+    <!--     <div class="mb-3">
       <label class="col-sm-4 col-form-label"></label>
       <div class="col-sm-8 form-text">
         Note: increasing the number of tasks per node will increase the memory usage for the node.
       </div>
     </div> -->
-    <div id="form-group-nnodes" class="form-group row">
+    <div id="form-group-nnodes" class="mb-3 row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
         >Number of nodes</label
       >
@@ -44,7 +44,7 @@
         />
       </div>
     </div>
-    <div id="form-group-tasks-per-node" class="form-group row">
+    <div id="form-group-tasks-per-node" class="mb-3 row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">Cores</label>
       <div class="col-sm-4">
         <input
@@ -55,7 +55,7 @@
         />
       </div>
     </div>
-    <div id="form-group-time" class="form-group row">
+    <div id="form-group-time" class="mb-3 row">
       <!-- <fieldset data-bind="disable: time_recommended"> -->
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label"
         >Requested Job Time</label
@@ -93,7 +93,7 @@
       </div>
       <!-- </fieldset> -->
       <div class="offset-sm-4 col-sm-8 mt-2">
-        <div class="form-check pl-0">
+        <div class="form-check ps-0">
           <label>
             <input type="checkbox" data-bind="checked: time_recommended" />
             Estimate run time
@@ -102,7 +102,7 @@
         </div>
       </div>
     </div>
-    <div id="form-group-workdir" class="form-group row">
+    <div id="form-group-workdir" class="mb-3 row">
       <label for="slycat-remote-interface-command" class="col-sm-4 col-form-label">
         Working Directory
         <i
@@ -133,7 +133,7 @@
     </div>
   </form>
 
-  <div id="slycat-remote-interface-connect-modal" class="modal fade" data-backdrop="static">
+  <div id="slycat-remote-interface-connect-modal" class="modal fade" data-bs-backdrop="static">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -150,7 +150,7 @@
           <button class="btn btn-primary" data-bind="click:connect,enable:remote.enable">
             Connect
           </button>
-          <button class="btn btn-light float-left" data-bind="click:cancel">Cancel</button>
+          <button class="btn btn-light float-start" data-bind="click:cancel">Cancel</button>
         </div>
       </div>
     </div>

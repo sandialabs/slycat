@@ -50,6 +50,10 @@ html#slycat-model-page body {
 }
 .bootstrap-styles .navbar .breadcrumb a {
   color: rgb(136, 0, 0);
+  text-decoration: none;
+}
+.bootstrap-styles .navbar .breadcrumb a:hover {
+  text-decoration: underline;
 }
 .bootstrap-styles .navbar-btn {
   margin-left: 0;

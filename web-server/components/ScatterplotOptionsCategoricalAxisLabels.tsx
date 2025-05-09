@@ -59,12 +59,12 @@ const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
           </label>
         </div>
       </div>
-      <div className={`form-row mb-2 mt-4 ml-3 ${disabled_class}`}>
+      <div className={`form-row mb-2 mt-4 ms-3 ${disabled_class}`}>
         <div className="col-5"> </div>
         <div className={`col-2 font-weight-bold d-flex justify-content-center`}>Horizontal</div>
         <div className={`col-2 font-weight-bold d-flex justify-content-center`}>Vertical</div>
       </div>
-      <div className="form-row mb-2 ml-3">
+      <div className="form-row mb-2 ms-3">
         <div className={`col-5 font-weight-bold ${disabled_class}`}>
           Categorical Axis Label Spacing
         </div>

@@ -7,8 +7,8 @@ S. Martin
 
 <div class="modal-header">
     <h3 class="modal-title">Dial-A-Cluster Time Filtered Model</h3>
-    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+    <button type="button" class="btn-close" data-bind="click: cancel" data-bs-dismiss="modal" aria-label="Close">
+        
     </button>
 </div>
 
@@ -46,7 +46,7 @@ S. Martin
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click:back">Back</button>
+    <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click:back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:reset_sliders">Reset</button>
     <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 0,click:check_time_filters">Continue</button>
     <button class="btn btn-primary dac-launch-thread"

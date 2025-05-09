@@ -162,8 +162,8 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
     <div className="share-model">
       <div className="modal-header">
         <h3 className="modal-title">Share Model</h3>
-        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+        <button type="button" className="close" data-bs-dismiss="modal" aria-label="Close">
+          
         </button>
       </div>
       <div className="modal-body">
@@ -378,7 +378,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
         )}
       </div>
       <div className="modal-footer">
-        <button className="btn btn-secondary" data-dismiss="modal">
+        <button className="btn btn-secondary" data-bs-dismiss="modal">
           Close
         </button>
       </div>

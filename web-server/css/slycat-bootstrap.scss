@@ -1,2 +1,4 @@
+// Import our customizations first, so they're available when Bootstrap loads
 @import "slycat-bootstrap-custom.scss";
-@import "bootstrap/scss/bootstrap.scss";
+// Then import Bootstrap which will use our custom variables
+@import "bootstrap/scss/bootstrap";

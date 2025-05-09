@@ -37,7 +37,7 @@ class Caret extends React.PureComponent {
           width="1em"
           height="1em"
           viewBox="0 0 16 16"
-          className="bi bi-caret-right-fill ml-2 mb-1"
+          className="bi bi-caret-right-fill ms-2 mb-1"
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -47,7 +47,7 @@ class Caret extends React.PureComponent {
           width="1em"
           height="1em"
           viewBox="0 0 16 16"
-          className="bi bi-caret-down-fill ml-2 mb-1"
+          className="bi bi-caret-down-fill ms-2 mb-1"
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -89,7 +89,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
   componentDidMount() {
     // Showing and hiding Clear All buttons based on current tab
     let thisModal = $(`#${this.modalId}`);
-    $(`a[data-toggle="tab"]`, thisModal).on("shown.bs.tab", function (e) {
+    $(`a[data-bs-toggle="tab"]`, thisModal).on("shown.bs.tab", function (e) {
       // First let's hide all .tabDependent elements
       $(`.tabDependent`, thisModal).addClass("d-none");
       // Now let's show the appropirate elements based on the
@@ -331,7 +331,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
         }`}
         </style>
 
-        <div className="modal fade" data-backdrop="false" id={this.modalId}>
+        <div className="modal fade" data-bs-backdrop="false" id={this.modalId}>
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
@@ -342,7 +342,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                   aria-label="Close"
                   onClick={this.closeModal}
                 >
-                  <span aria-hidden="true">&times;</span>
+                  
                 </button>
               </div>
               <div className="modal-body">
@@ -351,7 +351,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     <a
                       className="nav-link active"
                       id="axes-scales-tab"
-                      data-toggle="tab"
+                      data-bs-toggle="tab"
                       href="#axes-scales-tab-content"
                       role="tab"
                       aria-controls="axes-scales-tab-content"
@@ -364,7 +364,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     <a
                       className="nav-link"
                       id="variable-ranges-tab"
-                      data-toggle="tab"
+                      data-bs-toggle="tab"
                       href="#variable-ranges-tab-content"
                       role="tab"
                       aria-controls="variable-ranges-tab-content"
@@ -379,7 +379,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       <a
                         className="nav-link"
                         id="variable-alias-tab"
-                        data-toggle="tab"
+                        data-bs-toggle="tab"
                         href="#variable-alias-tab-content"
                         role="tab"
                         aria-controls="variable-alias-tab-content"
@@ -393,7 +393,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     <a
                       className="nav-link"
                       id="scatterplot-options-tab"
-                      data-toggle="tab"
+                      data-bs-toggle="tab"
                       href="#scatterplot-options-tab-content"
                       role="tab"
                       aria-controls="scatterplot-options-tab-content"
@@ -423,7 +423,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                                 className="btn btn-sm border-secondary text-dark dropdown-toggle"
                                 type="button"
                                 id="font-family"
-                                data-toggle="dropdown"
+                                data-bs-toggle="dropdown"
                                 aria-haspopup="true"
                                 aria-expanded="false"
                                 style={{ fontFamily: this.props.font_family }}
@@ -447,7 +447,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                           </div>
                         </div>
                         <div className="form-group">
-                          <label className="ml-5 pr-2" htmlFor="font-size">
+                          <label className="ms-5 pr-2" htmlFor="font-size">
                             Size
                           </label>
                           <div className="input-group input-group-sm">
@@ -503,8 +503,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               <button
                                 className="btn btn-link btn-block text-center"
                                 type="button"
-                                data-toggle="collapse"
-                                data-target="#collapseOne"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseOne"
                                 aria-expanded="true"
                                 aria-controls="collapseOne"
                               >
@@ -528,8 +528,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               <button
                                 className="btn btn-link btn-block text-center collapsed"
                                 type="button"
-                                data-toggle="collapse"
-                                data-target="#collapseTwo"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseTwo"
                                 aria-expanded="false"
                                 aria-controls="collapseTwo"
                               >
@@ -592,10 +592,10 @@ class ControlsButtonVarOptions extends React.PureComponent {
                 </div>
               </div>
               <div className="modal-footer">
-                <div className="mr-auto">
+                <div className="me-auto">
                   <button
                     type="button"
-                    className="btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none"
+                    className="btn btn-danger me-2 tabDependent variable-alias-tab-content d-none"
                     disabled={Object.keys(this.props.variable_aliases).length === 0}
                     onClick={this.clearAllVariableAliasLabels}
                   >

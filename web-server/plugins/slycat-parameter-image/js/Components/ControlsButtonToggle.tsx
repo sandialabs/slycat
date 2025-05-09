@@ -25,7 +25,7 @@ export default class ControlsButtonToggle extends React.PureComponent<ControlsBu
       <button
         // Don't set data-toggle because it now causes Bootstrap to activate and deactivate the button
         // automatically, which interferes with React's toggling of attributes based on props.active.
-        // data-toggle='button'
+        // data-bs-toggle='button'
         className={`slycatControlsButtonToggle btn btn-sm ${this.props.button_style} ${
           this.props.active ? "active" : "notActive"
         }`}

@@ -2,23 +2,23 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 <div class="modal-header">
   <h3 class="modal-title">Apply Template</h3>
-  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+    
   </button>
 </div>
 <div class="modal-body">
   <div>
     <p class="lead">Apply an existing visualization template to the current model.</p>
     <form>
-      <div class="form-group row">
+      <div class="mb-3 row">
         <label for="slycat-template" class="col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
-          <select id="slycat-template" class="form-control" data-bind="options:references,optionsValue:'bid',optionsText:'name',value:reference,valueAllowUnset:false"></select>
+          <select id="slycat-template" class="form-select" data-bind="options:references,optionsValue:'bid',optionsText:'name',value:reference,valueAllowUnset:false"></select>
         </div>
       </div>
     </form>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary" data-bind="click:apply_template" data-dismiss="modal">Apply Template</button>
+  <button class="btn btn-primary" data-bind="click:apply_template" data-bs-dismiss="modal">Apply Template</button>
 </div>

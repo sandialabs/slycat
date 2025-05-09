@@ -49,7 +49,7 @@ export default class Project extends React.Component<ProjectProps, ProjectState>
       <div className='list-group-item list-group-item-action'>
         <a href={server_root + 'projects/' + this.props.id} style={{ color: 'inherit', textDecoration: 'inherit'}}>
           <div className='h6'>
-            <span className='badge badge-secondary mr-1'>project</span> {this.props.name}
+            <span className='badge text-bg-secondary me-1'>project</span> {this.props.name}
           </div>
           <p className='mb-2'>{this.props.description}</p>
           <small>
@@ -58,7 +58,7 @@ export default class Project extends React.Component<ProjectProps, ProjectState>
             </em>
           </small>
         </a>
-        <span className='float-right'>
+        <span className='float-end'>
             <button
                 type='button'
                 className='btn btn-sm btn-outline-danger'
