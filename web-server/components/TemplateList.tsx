@@ -34,7 +34,7 @@ class Template extends React.Component<TemplateProps> {
         { className: 'btn-danger', label: 'OK' }
       ],
       callback(button: any) {
-        if (button.label !== 'OK') return;
+        if (button?.label !== 'OK') return;
         client.delete_reference({
           rid: templateId,
           success() {

@@ -146,11 +146,11 @@ class ControlsButtonDownloadDataTable extends React.Component {
         // so we need to return early.
         if(!button) return;
 
-        if(button.label === "Save Entire Table")
+        if(button?.label === "Save Entire Table")
           self._write_data_table();
-        else if(button.label === "Save Selected")
+        else if(button?.label === "Save Selected")
           self._write_data_table( self.props.selection );
-        else if(button.label === "Save Visible")
+        else if(button?.label === "Save Visible")
           self._write_data_table( self._filterIndices() );
       },
     });

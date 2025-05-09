@@ -92,7 +92,7 @@ export function confirm(params)
     buttons: [{className: "btn-light", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
     callback: function(button)
     {
-      if(button.label === "OK")
+      if(button?.label === "OK")
       {
         if(params.ok)
           params.ok();
