@@ -1,31 +1,25 @@
-<div class="mb-3 row">
-  <label for="slycat-login-username" class="col-sm-2 col-form-label" data-bind="text:remoteAuthLabelUsername"
+<div class="mb-3">
+  <label for="slycat-login-username" class="form-label" data-bind="text:remoteAuthLabelUsername"
     >[Replaced with Username label]</label
   >
-  <div class="col-sm-10">
-    <input
-      id="slycat-login-username"
-      class="form-control"
-      type="text"
-      data-bind="enable:enable, textInput:username"
-    />
-  </div>
+  <input
+    id="slycat-login-username"
+    class="form-control"
+    type="text"
+    data-bind="enable:enable, textInput:username"
+  />
 </div>
-<div class="mb-3 row">
-  <label for="slycat-login-password" class="col-sm-2 col-form-label" data-bind="text:remoteAuthLabelPassword"
+<div class="mb-3">
+  <label for="slycat-login-password" class="form-label" data-bind="text:remoteAuthLabelPassword"
     >[Replaced with Password label]</label
   >
-  <div class="col-sm-10">
-    <input
-      id="slycat-login-password"
-      class="form-control"
-      type="password"
-      data-bind="enable:enable, textInput:password"
-    />
-  </div>
+  <input
+    id="slycat-login-password"
+    class="form-control"
+    type="password"
+    data-bind="enable:enable, textInput:password"
+  />
 </div>
-<div class="row">
-  <div class="col-sm-offset-2 col-sm-10">
-    <div class="alert fade" role="alert" data-bind="css:status_classes,text:status"></div>
-  </div>
+<div data-bind="visible: status">
+  <div class="alert" role="alert" data-bind="css:status_classes,text:status"></div>
 </div>
