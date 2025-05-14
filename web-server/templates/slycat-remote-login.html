@@ -10,9 +10,7 @@
             data-bind="click:cancel"
             data-bs-dismiss="modal"
             aria-label="Close"
-          >
-            
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
           <p data-bind="visible:message, text:message"></p>
@@ -24,12 +22,11 @@
               params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:login"
             ></slycat-login-controls>
           </form>
-          <label
-            class="col-sm-9 alert alert-danger slycat-big-scrolling-alert"
+          <div
+            class="alert alert-danger slycat-big-scrolling-alert"
             role="alert"
             data-bind="visible:remote.status_type() == 'danger', text: 'Remote authentication failed.'"
-            style="position: relative; left: 80px"
-          ></label>
+          ></div>
           <!-- /ko -->
         </div>
         <div class="modal-footer">
