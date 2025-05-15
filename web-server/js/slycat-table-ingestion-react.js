@@ -25,6 +25,7 @@ export default function SlycatTableIngestion(props) {
 
   function selectAll(e) {
     let property = e.target.dataset.property;
+    let batchRadio = [];
     for (let [index, variableSelected] of selected.entries()) {
       if (variableSelected) {
         // Find the radio button that needs to be selected based on its name and value attributes
@@ -33,9 +34,13 @@ export default function SlycatTableIngestion(props) {
         );
         // Fire the onChange handler only if radio button is not disabled
         if (!radio.disabled) {
+          batchRadio.push(radio);
           props.onChange({ currentTarget: radio });
         }
       }
+    }
+    if (props.onBatchChange) {
+      props.onBatchChange({ batchTarget: batchRadio });
     }
   }
 
