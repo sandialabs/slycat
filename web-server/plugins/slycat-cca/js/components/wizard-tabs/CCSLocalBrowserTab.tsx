@@ -13,7 +13,7 @@ export const CCALocalBrowserTab = (props: { hidden?: boolean }) => {
   const setUploadStatus = useSetUploadStatus();
   return (
     <div hidden={hidden}>
-      <SlycatLocalBrowser disabled={fileUploaded} setUploadStatus={setUploadStatus}/>
+      <SlycatLocalBrowser setUploadStatus={setUploadStatus} />
     </div>
   );
 };

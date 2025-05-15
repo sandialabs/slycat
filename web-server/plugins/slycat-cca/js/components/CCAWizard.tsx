@@ -28,7 +28,7 @@ export const CCAWizard = (params: CCAWizardParams) => {
 
   React.useEffect(() => {
     if (modalOpen) {
-      handleWizardSetup()
+      handleWizardSetup();
     }
   }, [pid, statePid, stateMid]);
 

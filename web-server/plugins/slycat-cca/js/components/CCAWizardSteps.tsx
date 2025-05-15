@@ -7,16 +7,18 @@ import { CCAWizardNavItems } from "./CCANavItems";
 import { useAppSelector } from "./wizard-store/hooks";
 import { selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
 import { CCALocalBrowserTab } from "./wizard-tabs/CCSLocalBrowserTab";
+import { CCATableIngestion } from "./wizard-tabs/CCATableIngestion";
 
 export const CCAWizardSteps = () => {
   // The `state` arg is correctly typed as `RootState` already
-  const tabName = useAppSelector(selectTab)
+  const tabName = useAppSelector(selectTab);
   return (
     <div className="modal-body">
-      <CCAWizardNavItems/>
+      <CCAWizardNavItems />
       <div className="tab-content">
-        <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB)}/>
-        <CCALocalBrowserTab hidden={!(tabName === TabNames.CCA_LOCAL_BROWSER_TAB)}/>
+        <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB)} />
+        <CCALocalBrowserTab hidden={!(tabName === TabNames.CCA_LOCAL_BROWSER_TAB)} />
+        <CCATableIngestion hidden={!(tabName === TabNames.CCA_TABLE_INGESTION)} />
         <div hidden={true}>
           <form role="form">
             {/* <slycat-remote-controls
@@ -53,25 +55,6 @@ export const CCAWizardSteps = () => {
               <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls> */}
           </div>
         </div>
-
-        <div hidden={!(tabName === TabNames.CCA_TABLE_INGESTION)}>
-          {/* <slycat-table-ingestion
-              params="
-              variables: attributes,
-              properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
-            "
-            ></slycat-table-ingestion> */}
-          <form role="form">
-            <div className="form-group mt-3">
-              <div className="form-check pl-1">
-                <label>
-                  <input type="checkbox" data-bind="checked: scale_inputs" /> Scale to unit variance
-                </label>
-              </div>
-            </div>
-          </form>
-        </div>
-
         <div hidden={true}>
           <form data-bind="submit: name_model" id="new-cca-name-model-form" noValidate>
             {/* <slycat-model-controls
