@@ -3,13 +3,16 @@
  retains certain rights in this software. */
 import * as React from "react";
 import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
+import { produce } from "immer";
 import {
+  Attribute,
   resetCCAWizard,
   selectDataLocation,
   selectFileUploaded,
   selectMid,
   selectPid,
   selectTab,
+  setAttributes,
   setFileUploaded,
   setMid,
   setPid,
@@ -19,6 +22,7 @@ import {
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
+import { useSelector } from "node_modules/react-redux/dist/react-redux";
 
 /**
  * A hook for controlling how the back and continue buttons work based on the current redux state
@@ -60,7 +64,9 @@ export const useCCAWizardFooter = () => {
   const backButton = (
     <button
       key="back button"
-      style={{visibility: tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ? "hidden": "visible"}}
+      style={{
+        visibility: tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ? "hidden" : "visible",
+      }}
       className="btn btn-light mr-auto"
       onClick={handleBack}
     >
@@ -78,7 +84,10 @@ export const useCCAWizardFooter = () => {
       Continue {fileUploaded.toString()}
     </button>
   );
-  return React.useMemo(() => [backButton, nextButton], [fileUploaded, tabName, dataLocation, dispatch]);
+  return React.useMemo(
+    () => [backButton, nextButton],
+    [fileUploaded, tabName, dataLocation, dispatch],
+  );
 };
 
 /**
@@ -139,7 +148,65 @@ export const useHandleClosingCallback = (
 };
 
 /**
- * handle file submission
+ * callback function for when a file is done uploading for gathering and setting all the file meta data
+ * @returns a memoized function to call once uploading a file is done
+ */
+const useFileUploadSuccess = () => {
+  const mid = useAppSelector(selectMid);
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (
+      setProgress: (status: number) => void,
+      setProgressStatus: (status: string) => void,
+      setUploadStatus: (status: boolean) => void,
+    ) => {
+      setProgress(95);
+      setProgressStatus("Finishing...");
+      client.get_model_arrayset_metadata({
+        mid: mid,
+        aid: "data-table",
+        arrays: "0",
+        statistics: "0/...",
+        success: function (metadata: any) {
+          setProgress(100);
+          setProgressStatus("Finished");
+          const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
+            (attribute: any, index) => {
+              const constant = metadata.statistics[index].unique === 1;
+              const string = attribute.type == "string";
+              let tooltip = "";
+              if (string) {
+                tooltip =
+                  "This variable's values contain strings, so it cannot be included in the analysis.";
+              } else if (constant) {
+                tooltip =
+                  "This variable's values are all identical, so it cannot be included in the analysis.";
+              }
+              return {
+                index: index,
+                name: attribute.name,
+                type: attribute.type,
+                "Axis Type": constant || string ? "" : "Input",
+                constant: constant,
+                disabled: constant || string,
+                hidden: false,
+                selected: false,
+                lastSelected: false,
+                tooltip: tooltip,
+              };
+            },
+          );
+          dispatch(setAttributes(attributes ?? []));
+          setUploadStatus(true);
+        },
+      });
+    },
+    [mid, dispatch],
+  );
+};
+
+/**
+ * handle local file submission
  */
 export const useHandleLocalFileSubmit = (): [
   (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => void,
@@ -148,6 +215,7 @@ export const useHandleLocalFileSubmit = (): [
 ] => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
+  const fileUploadSuccess = useFileUploadSuccess();
   const [progress, setProgress] = React.useState<number>(0);
   const [progressStatus, setProgressStatus] = React.useState("");
   const handleSubmit = React.useCallback(
@@ -179,6 +247,7 @@ export const useHandleLocalFileSubmit = (): [
           setProgress(100);
           setProgressStatus("File upload complete");
           setUploadStatus(true);
+          fileUploadSuccess(setProgress, setProgressStatus, setUploadStatus);
         },
         error: function () {
           setUploadStatus(false);
@@ -219,5 +288,39 @@ export const useSetUploadStatus = () => {
       dispatch(setFileUploaded(status));
     },
     [dispatch],
+  );
+};
+
+/**
+ * A function to handle effects of selection on the radio buttons in the ingestion tab for CCA
+ * @param attributes from redux
+ * @returns memoized onChange function to handle radio button selection
+ */
+export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (input: any) => {
+      // this function is overloaded to handle batching so we need to check for target or batchTarget
+      if (input?.target && (input as any)?.target?.name && (input as any)?.target?.value) {
+        const nextAttributes = produce(attributes, (draftState) => {
+          draftState[input?.target?.name] = {
+            ...draftState[input?.target?.name],
+            "Axis Type": input?.target?.value,
+          };
+        });
+        dispatch(setAttributes(nextAttributes));
+      } else if (input?.batchTarget && input?.batchTarget?.length > 0) {
+        const nextAttributes = produce(attributes, (draftState) => {
+          input?.batchTarget.forEach((row: any) => {
+            draftState[row?.name] = {
+              ...draftState[row?.name],
+              "Axis Type": row?.value,
+            };
+          });
+        });
+        dispatch(setAttributes(nextAttributes));
+      }
+    },
+    [attributes, dispatch],
   );
 };
