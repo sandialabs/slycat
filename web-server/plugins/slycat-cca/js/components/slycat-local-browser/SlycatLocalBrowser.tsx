@@ -5,13 +5,15 @@ import * as React from "react";
 import { useHandleLocalFileSubmit } from "../CCAWizardUtils";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 
-export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) => void, disabled?: boolean }) => {
-  const { setUploadStatus, disabled } = props;
+export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) => void }) => {
+  const { setUploadStatus } = props;
+  const [fileSelected, setFileSelected] = React.useState<boolean>(false);
   const [file, setFile] = React.useState<File | undefined>(undefined);
   const [parser, setParser] = React.useState<string | undefined>(undefined);
   const [handleSubmit, progress, progressStatus] = useHandleLocalFileSubmit();
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files !== null && e.target.files.length >= 1) {
+      setFileSelected(true);
       setFile(e.target.files[0]);
     }
   };
@@ -29,11 +31,11 @@ export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) =
         <SlycatParserControls setParser={setParser} />
         <button
           key="Upload File To Server"
-          disabled={disabled ?? false }
-          style={{visibility: progress<=0? 'visible': 'hidden'}}
+          disabled={!fileSelected}
+          style={{ visibility: progress <= 0 ? "visible" : "hidden" }}
           className="btn btn-primary"
           data-toggle="tooltip"
-          data-placement="top" 
+          data-placement="top"
           title="You must selected a file before continuing."
           onClick={React.useCallback(() => {
             if (file) {
@@ -41,7 +43,7 @@ export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) =
             }
           }, [file, handleSubmit])}
         >
-          Upload File parser
+          {fileSelected ? `Upload File: ${file?.name}` : "Select A File"}
         </button>
         <div className="progress" style={{ visibility: progress > 0 ? undefined : "hidden" }}>
           <div

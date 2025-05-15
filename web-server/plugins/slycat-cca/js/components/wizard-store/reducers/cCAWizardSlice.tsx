@@ -4,11 +4,23 @@ import { RootState } from "../store";
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCSLocalBrowserTab",
-  CCA_TABLE_INGESTION = "CCATableIngestion"
+  CCA_TABLE_INGESTION = "CCATableIngestion",
 }
 export enum dataLocationType {
   LOCAL = "local",
   REMOTE = "remote",
+}
+export interface Attribute {
+  index: number;
+  "Axis Type": string;
+  name: string;
+  type: string;
+  constant: boolean;
+  disabled: boolean;
+  hidden: boolean;
+  selected: boolean;
+  lastSelected: boolean;
+  tooltip: string;
 }
 export interface CCAWizardState {
   tab: TabNames;
@@ -16,13 +28,15 @@ export interface CCAWizardState {
   mid: string | undefined;
   pid: string | undefined;
   fileUploaded: boolean;
+  attributes: Attribute[];
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
   dataLocation: dataLocationType.LOCAL,
   mid: undefined,
   pid: undefined,
-  fileUploaded: false
+  fileUploaded: false,
+  attributes: [],
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -40,10 +54,12 @@ export const cCAWizardSlice = createSlice({
     setPid: (state, action: PayloadAction<string>) => {
       state.pid = action.payload;
     },
-    setFileUploaded:(state, action: PayloadAction<boolean>) => {
-      console.log("dispatching action.payload", action.payload)
-     state.fileUploaded = action.payload;
-   },
+    setFileUploaded: (state, action: PayloadAction<boolean>) => {
+      state.fileUploaded = action.payload;
+    },
+    setAttributes: (state, action: PayloadAction<Attribute[]>) => {
+      state.attributes = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -55,13 +71,15 @@ export const {
   setMid,
   setPid,
   resetCCAWizard: resetCCAWizard,
-  setFileUploaded
+  setFileUploaded,
+  setAttributes,
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
 export const selectDataLocation = (state: RootState) => state.cCAWizard.dataLocation;
-export const selectFileUploaded= (state: RootState) => state.cCAWizard.fileUploaded;
+export const selectFileUploaded = (state: RootState) => state.cCAWizard.fileUploaded;
 export const selectPid = (state: RootState) => state.cCAWizard.pid;
 export const selectMid = (state: RootState) => state.cCAWizard.mid;
+export const selectAttributes = (state: RootState) => state.cCAWizard.attributes;
 
 export default cCAWizardSlice.reducer;
