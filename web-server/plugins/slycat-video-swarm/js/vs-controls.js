@@ -37,7 +37,7 @@ $.widget("mp.controls", {
     this.color_control = $('<div class="btn-group"></div>').appendTo(scatterplot_controls);
     this.color_button = $(
       '\
-      <button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="false" title="Change Point Color"> \
+      <button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="color-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Change Point Color"> \
         Point Color \
       </button> \
       ',
@@ -108,7 +108,7 @@ $.widget("mp.controls", {
 
     this.video_sync_button = $(
       "\
-        <button class='btn btn-sm btn-outline-dark slycatControlsButtonToggle' data-toggle='button'> \
+        <button class='btn btn-sm btn-outline-dark slycatControlsButtonToggle' data-bs-toggle='button'> \
           <span class='fa fa-video-camera' aria-hidden='true'></span> \
         </button> \
       ",
@@ -247,8 +247,8 @@ $.widget("mp.controls", {
         message: txt,
         buttons: buttons_save,
         callback: function (button) {
-          if (button.label == "Save Entire Table") self._write_data_table();
-          else if (button.label == "Save Selected")
+          if (button?.label == "Save Entire Table") self._write_data_table();
+          else if (button?.label == "Save Selected")
             self._write_data_table(self.options.highlighted_simulations);
         },
       });

@@ -2,15 +2,15 @@
 
 <div class="modal-header">
   <h3 class="modal-title">Create Saved Bookmark</h3>
-  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+    
   </button>
 </div>
 <div class="modal-body">
   <div>
     <p class="lead">A saved bookmark stores the current model and visualization as part of the project so you can open them again later.</p>
     <form data-bind="submit: save_bookmark" id="create-bookmark-form" novalidate>
-      <div class="form-group row required">
+      <div class="mb-3 row required">
         <label for="slycat-template-name" class="col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
           <input id="slycat-template-name" class="form-control" type="text" data-bind="value:name" required></input>

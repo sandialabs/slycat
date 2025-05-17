@@ -13,7 +13,7 @@ interface RemoteLoginTabProps {
 function RemoteLoginTab(props: RemoteLoginTabProps) {
     return (
         <div>
-            <form className='ml-3'>
+            <form className='ms-3'>
                 <SlycatFormRadioCheckbox
                     checked={props.checked === 'xyce'}
                     onChange={props.onChange}

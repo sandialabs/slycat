@@ -297,19 +297,17 @@ class VariableRangesRow extends React.PureComponent {
               value={this.props.min_value}
               onChange={this.props.handleChange}
             />
-            <div className="input-group-append">
-              <button
-                className="btn btn-outline-secondary"
-                type="button"
-                title="Clear axis min"
-                name={this.props.min_name}
-                value=""
-                disabled={this.props.min_value === ""}
-                onClick={this.props.handleChange}
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
+            <button
+              className="btn btn-outline-secondary"
+              type="button"
+              title="Clear axis min"
+              name={this.props.min_name}
+              value=""
+              disabled={this.props.min_value === ""}
+              onClick={this.props.handleChange}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
           </div>
         </td>
         <td className={`lessThanValidationMessageCell align-middle ${this.props.text_align}`}>
@@ -332,19 +330,17 @@ class VariableRangesRow extends React.PureComponent {
               value={this.props.max_value}
               onChange={this.props.handleChange}
             />
-            <div className="input-group-append">
-              <button
-                className="btn btn-outline-secondary"
-                type="button"
-                title="Clear axis max"
-                name={this.props.max_name}
-                value=""
-                disabled={this.props.max_value === ""}
-                onClick={this.props.handleChange}
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
+            <button
+              className="btn btn-outline-secondary"
+              type="button"
+              title="Clear axis max"
+              name={this.props.max_name}
+              value=""
+              disabled={this.props.max_value === ""}
+              onClick={this.props.handleChange}
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
           </div>
         </td>
         <td className={`align-middle px-2 ${this.props.text_align} data-max`}>

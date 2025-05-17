@@ -37,7 +37,7 @@ class Caret extends React.PureComponent {
           width="1em"
           height="1em"
           viewBox="0 0 16 16"
-          className="bi bi-caret-right-fill ml-2 mb-1"
+          className="bi bi-caret-right-fill ms-2 mb-1"
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -47,7 +47,7 @@ class Caret extends React.PureComponent {
           width="1em"
           height="1em"
           viewBox="0 0 16 16"
-          className="bi bi-caret-down-fill ml-2 mb-1"
+          className="bi bi-caret-down-fill ms-2 mb-1"
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -89,7 +89,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
   componentDidMount() {
     // Showing and hiding Clear All buttons based on current tab
     let thisModal = $(`#${this.modalId}`);
-    $(`a[data-toggle="tab"]`, thisModal).on("shown.bs.tab", function (e) {
+    $(`a[data-bs-toggle="tab"]`, thisModal).on("shown.bs.tab", function (e) {
       // First let's hide all .tabDependent elements
       $(`.tabDependent`, thisModal).addClass("d-none");
       // Now let's show the appropirate elements based on the
@@ -287,15 +287,16 @@ class ControlsButtonVarOptions extends React.PureComponent {
     ];
 
     const fontItems = fonts.map((font, index) => (
-      <a
-        key={index}
-        onClick={this.props.changeFontFamily}
-        style={{ fontFamily: font.fontFamily }}
-        className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
-        data-value={font.name}
-      >
-        {font.name}
-      </a>
+      <li key={index}>
+        <a
+          onClick={this.props.changeFontFamily}
+          style={{ fontFamily: font.fontFamily }}
+          className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
+          data-value={font.name}
+        >
+          {font.name}
+        </a>
+      </li>
     ));
 
     let scatterplotVariableRanges = (
@@ -331,19 +332,18 @@ class ControlsButtonVarOptions extends React.PureComponent {
         }`}
         </style>
 
-        <div className="modal fade" data-backdrop="false" id={this.modalId}>
+        <div className="modal fade" data-bs-backdrop="false" id={this.modalId}>
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
                 <h3 className="modal-title">{this.title}</h3>
                 <button
                   type="button"
-                  className="close"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
                   aria-label="Close"
                   onClick={this.closeModal}
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
+                ></button>
               </div>
               <div className="modal-body">
                 <ul className="nav nav-tabs" role="tablist">
@@ -351,7 +351,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     <a
                       className="nav-link active"
                       id="axes-scales-tab"
-                      data-toggle="tab"
+                      data-bs-toggle="tab"
                       href="#axes-scales-tab-content"
                       role="tab"
                       aria-controls="axes-scales-tab-content"
@@ -364,7 +364,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     <a
                       className="nav-link"
                       id="variable-ranges-tab"
-                      data-toggle="tab"
+                      data-bs-toggle="tab"
                       href="#variable-ranges-tab-content"
                       role="tab"
                       aria-controls="variable-ranges-tab-content"
@@ -379,7 +379,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       <a
                         className="nav-link"
                         id="variable-alias-tab"
-                        data-toggle="tab"
+                        data-bs-toggle="tab"
                         href="#variable-alias-tab-content"
                         role="tab"
                         aria-controls="variable-alias-tab-content"
@@ -393,7 +393,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     <a
                       className="nav-link"
                       id="scatterplot-options-tab"
-                      data-toggle="tab"
+                      data-bs-toggle="tab"
                       href="#scatterplot-options-tab-content"
                       role="tab"
                       aria-controls="scatterplot-options-tab-content"
@@ -412,28 +412,28 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     aria-labelledby="axes-scales-tab"
                   >
                     <div className="slycat-axes-font">
-                      <div className="form-inline">
-                        <div className="form-group">
-                          <label className="pr-2" htmlFor="font-family">
+                      <div className="row align-items-center gx-2">
+                        <div className="col-auto">
+                          <label className="col-form-label" htmlFor="font-family">
                             Font
                           </label>
-                          <div className="btn-group btn-group-sm">
-                            <div className="btn-group dropdown font-family-dropdown">
-                              <button
-                                className="btn btn-sm border-secondary text-dark dropdown-toggle"
-                                type="button"
-                                id="font-family"
-                                data-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                                style={{ fontFamily: this.props.font_family }}
-                              >
-                                {this.props.font_family}
-                              </button>
-                              <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                                {fontItems}
-                              </div>
-                            </div>
+                        </div>
+                        <div className="col-auto">
+                          <div className="input-group input-group-sm dropdown font-family-dropdown">
+                            <button
+                              className="btn btn-sm border-secondary text-dark dropdown-toggle"
+                              type="button"
+                              id="font-family"
+                              data-bs-toggle="dropdown"
+                              aria-haspopup="true"
+                              aria-expanded="false"
+                              style={{ fontFamily: this.props.font_family }}
+                            >
+                              {this.props.font_family}
+                            </button>
+                            <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
+                              {fontItems}
+                            </ul>
                             <button
                               className="btn btn-outline-secondary"
                               type="button"
@@ -446,34 +446,34 @@ class ControlsButtonVarOptions extends React.PureComponent {
                             </button>
                           </div>
                         </div>
-                        <div className="form-group">
-                          <label className="ml-5 pr-2" htmlFor="font-size">
+                        <div className="col-auto">
+                          <label className="ms-5 col-form-label" htmlFor="font-size">
                             Size
                           </label>
-                          <div className="input-group input-group-sm">
-                            <input
-                              type="number"
-                              className="form-control form-control-sm border border-secondary"
-                              id="font-size"
-                              max="40"
-                              min="8"
-                              step="1"
-                              style={{ width: "70px" }}
-                              value={this.props.font_size}
-                              onChange={this.props.changeFontSize}
-                            />
-                            <div className="input-group-append">
-                              <button
-                                className="btn btn-outline-secondary"
-                                type="button"
-                                title="Reset font size to default"
-                                value={DEFAULT_FONT_SIZE}
-                                disabled={this.props.font_size == DEFAULT_FONT_SIZE}
-                                onClick={this.props.changeFontSize}
-                              >
-                                <FontAwesomeIcon icon={faUndo} />
-                              </button>
-                            </div>
+                        </div>
+                        <div className="col-auto">
+                        <div className="input-group input-group-sm">
+                          <input
+                            type="number"
+                            className="form-control form-control-sm border border-secondary"
+                            id="font-size"
+                            max="40"
+                            min="8"
+                            step="1"
+                            style={{ width: "70px" }}
+                            value={this.props.font_size}
+                            onChange={this.props.changeFontSize}
+                          />
+                          <button
+                            className="btn btn-outline-secondary"
+                            type="button"
+                            title="Reset font size to default"
+                            value={DEFAULT_FONT_SIZE}
+                            disabled={this.props.font_size == DEFAULT_FONT_SIZE}
+                            onClick={this.props.changeFontSize}
+                          >
+                              <FontAwesomeIcon icon={faUndo} />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -503,8 +503,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               <button
                                 className="btn btn-link btn-block text-center"
                                 type="button"
-                                data-toggle="collapse"
-                                data-target="#collapseOne"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseOne"
                                 aria-expanded="true"
                                 aria-controls="collapseOne"
                               >
@@ -528,8 +528,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               <button
                                 className="btn btn-link btn-block text-center collapsed"
                                 type="button"
-                                data-toggle="collapse"
-                                data-target="#collapseTwo"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseTwo"
                                 aria-expanded="false"
                                 aria-controls="collapseTwo"
                               >
@@ -592,10 +592,10 @@ class ControlsButtonVarOptions extends React.PureComponent {
                 </div>
               </div>
               <div className="modal-footer">
-                <div className="mr-auto">
+                <div className="me-auto">
                   <button
                     type="button"
-                    className="btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none"
+                    className="btn btn-danger me-2 tabDependent variable-alias-tab-content d-none"
                     disabled={Object.keys(this.props.variable_aliases).length === 0}
                     onClick={this.clearAllVariableAliasLabels}
                   >

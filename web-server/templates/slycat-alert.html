@@ -1,11 +1,11 @@
 <div class="bootstrap-styles">
-  <div class="modal fade" data-backdrop="static">
+  <div class="modal fade" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title" data-bind="text:title"></h3>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            
           </button>
         </div>
         <div class="modal-body">
@@ -21,7 +21,7 @@
               attr:{placeholder:placeholder}">
           <!--/ko-->
           <!--ko if: select -->
-          <select class="custom-select" 
+          <select class="form-select" 
             data-bind="
               attr:{multiple:multiple},
               options: options,

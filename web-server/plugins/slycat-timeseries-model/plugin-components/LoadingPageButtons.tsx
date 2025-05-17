@@ -11,15 +11,15 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
   // wait until all the jquery stuff is loaded
   $(document).ready(function ($) {
     // enable tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-bs-toggle="tooltip"]').tooltip();
   });
   return (
     <React.Fragment>
       <button
         className="btn btn-outline-primary"
         type="button"
-        data-toggle="collapse"
-        data-target="#collapseJobCodes"
+        data-bs-toggle="collapse"
+        data-bs-target="#collapseJobCodes"
         aria-expanded="false"
         aria-controls="collapseJobCodes"
         title="Job status will be in the grey info block below after loading from HPC"

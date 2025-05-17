@@ -106,7 +106,7 @@ const ControlsDropdown: React.FC<ControlsDropdownProps> = ({
       <button
         type="button"
         id={id}
-        data-toggle="dropdown"
+        data-bs-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
         className={`btn dropdown-toggle btn-sm ${button_style}`}

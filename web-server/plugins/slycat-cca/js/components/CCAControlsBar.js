@@ -22,7 +22,7 @@ class CCAControlsBar extends React.Component {
     return (
       <React.Fragment>
         <React.StrictMode>
-          <ControlsGroup id='controls' class='btn-group ml-3'>
+          <ControlsGroup id='controls' class='btn-group ms-3'>
             <ControlsDropdown 
               id='color-dropdown' 
               label='Point Color' 
@@ -43,7 +43,7 @@ class CCAControlsBar extends React.Component {
               indices={this.props.indices} 
               button_style={button_style} />
           </ControlsGroup>
-          <ControlsGroup id='color-switcher' class='btn-group ml-3'>
+          <ControlsGroup id='color-switcher' class='btn-group ms-3'>
             <ControlsDropdownColor 
               button_style={button_style}
               colormaps={slycat_color_maps}
