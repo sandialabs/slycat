@@ -287,15 +287,17 @@ class ControlsButtonVarOptions extends React.PureComponent {
     ];
 
     const fontItems = fonts.map((font, index) => (
-      <a
-        key={index}
-        onClick={this.props.changeFontFamily}
-        style={{ fontFamily: font.fontFamily }}
-        className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
-        data-value={font.name}
-      >
-        {font.name}
-      </a>
+      <li>
+        <a
+          key={index}
+          onClick={this.props.changeFontFamily}
+          style={{ fontFamily: font.fontFamily }}
+          className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
+          data-value={font.name}
+        >
+          {font.name}
+        </a>
+      </li>
     ));
 
     let scatterplotVariableRanges = (
@@ -411,28 +413,28 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     aria-labelledby="axes-scales-tab"
                   >
                     <div className="slycat-axes-font">
-                      <div className="form-inline">
-                        <div className="form-group">
-                          <label className="pr-2" htmlFor="font-family">
+                      <div className="row align-items-center gx-2">
+                        <div className="col-auto">
+                          <label className="col-form-label" htmlFor="font-family">
                             Font
                           </label>
-                          <div className="btn-group btn-group-sm">
-                            <div className="btn-group dropdown font-family-dropdown">
-                              <button
-                                className="btn btn-sm border-secondary text-dark dropdown-toggle"
-                                type="button"
-                                id="font-family"
-                                data-bs-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                                style={{ fontFamily: this.props.font_family }}
-                              >
-                                {this.props.font_family}
-                              </button>
-                              <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                                {fontItems}
-                              </div>
-                            </div>
+                        </div>
+                        <div className="col-auto">
+                          <div className="input-group input-group-sm dropdown font-family-dropdown">
+                            <button
+                              className="btn btn-sm border-secondary text-dark dropdown-toggle"
+                              type="button"
+                              id="font-family"
+                              data-bs-toggle="dropdown"
+                              aria-haspopup="true"
+                              aria-expanded="false"
+                              style={{ fontFamily: this.props.font_family }}
+                            >
+                              {this.props.font_family}
+                            </button>
+                            <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
+                              {fontItems}
+                            </ul>
                             <button
                               className="btn btn-outline-secondary"
                               type="button"
@@ -445,34 +447,34 @@ class ControlsButtonVarOptions extends React.PureComponent {
                             </button>
                           </div>
                         </div>
-                        <div className="form-group">
-                          <label className="ms-5 pr-2" htmlFor="font-size">
+                        <div className="col-auto">
+                          <label className="ms-5 col-form-label" htmlFor="font-size">
                             Size
                           </label>
-                          <div className="input-group input-group-sm">
-                            <input
-                              type="number"
-                              className="form-control form-control-sm border border-secondary"
-                              id="font-size"
-                              max="40"
-                              min="8"
-                              step="1"
-                              style={{ width: "70px" }}
-                              value={this.props.font_size}
-                              onChange={this.props.changeFontSize}
-                            />
-                            <div className="input-group-append">
-                              <button
-                                className="btn btn-outline-secondary"
-                                type="button"
-                                title="Reset font size to default"
-                                value={DEFAULT_FONT_SIZE}
-                                disabled={this.props.font_size == DEFAULT_FONT_SIZE}
-                                onClick={this.props.changeFontSize}
-                              >
-                                <FontAwesomeIcon icon={faUndo} />
-                              </button>
-                            </div>
+                        </div>
+                        <div className="col-auto">
+                        <div className="input-group input-group-sm">
+                          <input
+                            type="number"
+                            className="form-control form-control-sm border border-secondary"
+                            id="font-size"
+                            max="40"
+                            min="8"
+                            step="1"
+                            style={{ width: "70px" }}
+                            value={this.props.font_size}
+                            onChange={this.props.changeFontSize}
+                          />
+                          <button
+                            className="btn btn-outline-secondary"
+                            type="button"
+                            title="Reset font size to default"
+                            value={DEFAULT_FONT_SIZE}
+                            disabled={this.props.font_size == DEFAULT_FONT_SIZE}
+                            onClick={this.props.changeFontSize}
+                          >
+                              <FontAwesomeIcon icon={faUndo} />
+                            </button>
                           </div>
                         </div>
                       </div>
