@@ -74,7 +74,7 @@ class ScatterplotOptions extends React.PureComponent {
           </thead>
           <tbody>
             <tr className="align-middle">
-              <th className={`pe-5`}>Unselected Points</th>
+              <th className={`ps-0 pe-5`}>Unselected Points</th>
               <td className="pe-3">
                 <SlycatNumberInput
                   value={this.props.unselected_point_size}
@@ -99,7 +99,7 @@ class ScatterplotOptions extends React.PureComponent {
               </td>
             </tr>
             <tr className="align-middle">
-              <th className={`pe-5`}>Selected Points</th>
+              <th className={`ps-0 pe-5`}>Selected Points</th>
               <td className="pe-3">
                 <SlycatNumberInput
                   value={this.props.selected_point_size}
