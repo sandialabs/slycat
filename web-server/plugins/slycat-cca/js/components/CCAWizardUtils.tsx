@@ -1,0 +1,326 @@
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+import * as React from "react";
+import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
+import { produce } from "immer";
+import {
+  Attribute,
+  resetCCAWizard,
+  selectDataLocation,
+  selectFileUploaded,
+  selectMid,
+  selectPid,
+  selectTab,
+  setAttributes,
+  setFileUploaded,
+  setMid,
+  setPid,
+  setTabName,
+  TabNames,
+} from "./wizard-store/reducers/cCAWizardSlice";
+import client from "js/slycat-web-client";
+import fileUploader from "js/slycat-file-uploader-factory";
+import * as dialog from "js/slycat-dialog";
+import { useSelector } from "node_modules/react-redux/dist/react-redux";
+
+/**
+ * A hook for controlling how the back and continue buttons work based on the current redux state
+ * @returns the back button and continue button jsx
+ */
+export const useCCAWizardFooter = () => {
+  const tabName = useAppSelector(selectTab);
+  const dataLocation = useAppSelector(selectDataLocation);
+  const fileUploaded = useAppSelector(selectFileUploaded);
+  const dispatch = useAppDispatch();
+
+  /**
+   * handle continue operation
+   */
+  const handleContinue = React.useCallback(() => {
+    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation) {
+      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
+      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+    }
+    if (tabName === TabNames.CCA_TABLE_INGESTION) {
+      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+    }
+  }, [dispatch, fileUploaded, setTabName, tabName]);
+
+  /**
+   * handle back operation
+   */
+  const handleBack = React.useCallback(() => {
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB) {
+      dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+    }
+    if (tabName === TabNames.CCA_TABLE_INGESTION) {
+      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+  }, [dispatch, setTabName, tabName]);
+
+  const backButton = (
+    <button
+      key="back button"
+      style={{
+        visibility: tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ? "hidden" : "visible",
+      }}
+      className="btn btn-light mr-auto"
+      onClick={handleBack}
+    >
+      Back
+    </button>
+  );
+
+  const nextButton = (
+    <button
+      key="continue"
+      className="btn btn-primary"
+      onClick={handleContinue}
+      disabled={tabName === TabNames.CCA_LOCAL_BROWSER_TAB && !fileUploaded}
+    >
+      Continue {fileUploaded.toString()}
+    </button>
+  );
+  return React.useMemo(
+    () => [backButton, nextButton],
+    [fileUploaded, tabName, dataLocation, dispatch],
+  );
+};
+
+/**
+ * Function to handle setup for creating a cca model in the model wizard modal
+ * @param pid project id
+ * @param statePid redux project id
+ * @param stateMid redux model id
+ * @param marking initial marking for the model
+ * @returns memoized () => void
+ */
+export const useHandleWizardSetup = (
+  pid: string,
+  statePid: string | undefined,
+  stateMid: string | undefined,
+  marking: string | undefined,
+) => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(() => {
+    if (!statePid) {
+      dispatch(setPid(pid));
+    }
+    if (!stateMid && statePid) {
+      // create the model on open so we have something to reference later
+      client
+        .post_project_models_fetch({
+          pid: statePid,
+          type: "cca",
+          name: "",
+          description: "",
+          marking: marking ?? "",
+        })
+        .then((result) => {
+          dispatch(setMid(result.id));
+        });
+    }
+  }, [pid, statePid, stateMid, marking]);
+};
+
+/**
+ * Handle the cleanup for closing the cca wizard modal
+ * @param setModalOpen function for setting local state for if the wizard is open
+ * @param stateMid redux model id
+ * @returns memoized () => void
+ */
+export const useHandleClosingCallback = (
+  setModalOpen: (value: React.SetStateAction<boolean>) => void,
+  stateMid: string | undefined,
+) => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(() => {
+    setModalOpen(false);
+    if (stateMid) {
+      console.log("delete");
+      client.delete_model_fetch({ mid: stateMid });
+    }
+    dispatch(resetCCAWizard());
+  }, [stateMid, setModalOpen]);
+};
+
+/**
+ * callback function for when a file is done uploading for gathering and setting all the file meta data
+ * @returns a memoized function to call once uploading a file is done
+ */
+const useFileUploadSuccess = () => {
+  const mid = useAppSelector(selectMid);
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (
+      setProgress: (status: number) => void,
+      setProgressStatus: (status: string) => void,
+      setUploadStatus: (status: boolean) => void,
+    ) => {
+      setProgress(95);
+      setProgressStatus("Finishing...");
+      client.get_model_arrayset_metadata({
+        mid: mid,
+        aid: "data-table",
+        arrays: "0",
+        statistics: "0/...",
+        success: function (metadata: any) {
+          setProgress(100);
+          setProgressStatus("Finished");
+          const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
+            (attribute: any, index) => {
+              const constant = metadata.statistics[index].unique === 1;
+              const string = attribute.type == "string";
+              let tooltip = "";
+              if (string) {
+                tooltip =
+                  "This variable's values contain strings, so it cannot be included in the analysis.";
+              } else if (constant) {
+                tooltip =
+                  "This variable's values are all identical, so it cannot be included in the analysis.";
+              }
+              return {
+                index: index,
+                name: attribute.name,
+                type: attribute.type,
+                "Axis Type": constant || string ? "" : "Input",
+                constant: constant,
+                disabled: constant || string,
+                hidden: false,
+                selected: false,
+                lastSelected: false,
+                tooltip: tooltip,
+              };
+            },
+          );
+          dispatch(setAttributes(attributes ?? []));
+          setUploadStatus(true);
+        },
+      });
+    },
+    [mid, dispatch],
+  );
+};
+
+/**
+ * handle local file submission
+ */
+export const useHandleLocalFileSubmit = (): [
+  (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => void,
+  number,
+  string,
+] => {
+  const mid = useAppSelector(selectMid);
+  const pid = useAppSelector(selectPid);
+  const fileUploadSuccess = useFileUploadSuccess();
+  const [progress, setProgress] = React.useState<number>(0);
+  const [progressStatus, setProgressStatus] = React.useState("");
+  const handleSubmit = React.useCallback(
+    (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
+      const progressCallback = (input?: number) => {
+        if (!input) {
+          return progress;
+        }
+        setProgress(input);
+      };
+      const progressStatusCallback = (input?: string) => {
+        if (!input) {
+          return progressStatus;
+        }
+        setProgressStatus(input);
+      };
+      const fileObject = {
+        pid,
+        mid,
+        file: file,
+        parser: parser,
+        aids: [["data-table"], file?.name],
+        // parser: component.parser(),
+        progress: progressCallback,
+        progress_status: progressStatusCallback,
+        progress_final: 90,
+        success: function () {
+          console.log("uploaded");
+          setProgress(100);
+          setProgressStatus("File upload complete");
+          setUploadStatus(true);
+          fileUploadSuccess(setProgress, setProgressStatus, setUploadStatus);
+        },
+        error: function () {
+          setUploadStatus(false);
+          dialog.ajax_error(
+            "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
+          )();
+          // TODO: toggle disabled for continue
+          setProgress(0);
+          setProgressStatus("");
+        },
+      };
+      fileUploader.uploadFile(fileObject);
+    },
+    [mid, pid, progress, setProgress, setProgressStatus],
+  );
+
+  return [handleSubmit, progress, progressStatus];
+};
+
+/**
+ * Returns a function that sets the callback "setParser" value to the selected parser
+ */
+export const handleParserChange = (
+  setParser: React.Dispatch<React.SetStateAction<string | undefined>>,
+) =>
+  React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setParser(e?.target?.value ?? undefined);
+    },
+    [setParser],
+  );
+
+export const useSetUploadStatus = () => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (status: boolean) => {
+      console.log("dispatching", status);
+      dispatch(setFileUploaded(status));
+    },
+    [dispatch],
+  );
+};
+
+/**
+ * A function to handle effects of selection on the radio buttons in the ingestion tab for CCA
+ * @param attributes from redux
+ * @returns memoized onChange function to handle radio button selection
+ */
+export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (input: any) => {
+      // this function is overloaded to handle batching so we need to check for target or batchTarget
+      if (input?.target && (input as any)?.target?.name && (input as any)?.target?.value) {
+        const nextAttributes = produce(attributes, (draftState) => {
+          draftState[input?.target?.name] = {
+            ...draftState[input?.target?.name],
+            "Axis Type": input?.target?.value,
+          };
+        });
+        dispatch(setAttributes(nextAttributes));
+      } else if (input?.batchTarget && input?.batchTarget?.length > 0) {
+        const nextAttributes = produce(attributes, (draftState) => {
+          input?.batchTarget.forEach((row: any) => {
+            draftState[row?.name] = {
+              ...draftState[row?.name],
+              "Axis Type": row?.value,
+            };
+          });
+        });
+        dispatch(setAttributes(nextAttributes));
+      }
+    },
+    [attributes, dispatch],
+  );
+};
