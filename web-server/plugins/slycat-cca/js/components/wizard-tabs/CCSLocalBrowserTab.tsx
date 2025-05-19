@@ -9,7 +9,6 @@ import { selectFileUploaded } from "../wizard-store/reducers/cCAWizardSlice";
 
 export const CCALocalBrowserTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
-  const fileUploaded = useAppSelector(selectFileUploaded);
   const setUploadStatus = useSetUploadStatus();
   return (
     <div hidden={hidden}>
