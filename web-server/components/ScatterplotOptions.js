@@ -60,118 +60,154 @@ class ScatterplotOptions extends React.PureComponent {
     // console.log('ScatterplotOptions render');
     return (
       <div className={`slycat-scatterplot-options ${this.props.uniqueID}`}>
-        <div className="slycat-point-size">
-          <div className="form-row mb-2">
-            <div className="col-3"> </div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Point Size</div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Border Width</div>
-          </div>
-          <div className="form-row mb-2">
-            <div className="col-3 font-weight-bold">Unselected Points</div>
-            <SlycatNumberInput
-              value={this.props.unselected_point_size}
-              default_value={DEFAULT_UNSELECTED_POINT_SIZE}
-              min_value={MIN_UNSELECTED_POINT_SIZE}
-              max_value={MAX_UNSELECTED_POINT_SIZE}
-              step={POINT_SIZE_STEP}
-              handle_change={this.props.setUnselectedPointSize}
-              title_reset="Reset size of unselected points to default"
-            />
-            <SlycatNumberInput
-              value={this.props.unselected_border_size}
-              default_value={DEFAULT_UNSELECTED_BORDER_SIZE}
-              min_value={MIN_UNSELECTED_BORDER_SIZE}
-              max_value={MAX_UNSELECTED_BORDER_SIZE}
-              step={BORDER_SIZE_STEP}
-              handle_change={this.props.setUnselectedBorderSize}
-              title_reset="Reset border width of unselected points to default"
-            />
-          </div>
-          <div className="form-row">
-            <div className="col-3 font-weight-bold">Selected Points</div>
-            <SlycatNumberInput
-              value={this.props.selected_point_size}
-              default_value={DEFAULT_SELECTED_POINT_SIZE}
-              min_value={MIN_SELECTED_POINT_SIZE}
-              max_value={MAX_SELECTED_POINT_SIZE}
-              step={POINT_SIZE_STEP}
-              handle_change={this.props.setSelectedPointSize}
-              title_reset="Reset size of selected points to default"
-            />
-            <SlycatNumberInput
-              value={this.props.selected_border_size}
-              default_value={DEFAULT_SELECTED_BORDER_SIZE}
-              min_value={MIN_SELECTED_BORDER_SIZE}
-              max_value={MAX_SELECTED_BORDER_SIZE}
-              step={BORDER_SIZE_STEP}
-              handle_change={this.props.setSelectedBorderSize}
-              title_reset="Reset border width of selected points to default"
-            />
-          </div>
-        </div>
+        <table className={`table table-borderless mt-4 w-auto`} role="grid">
+          <thead>
+            <tr>
+              <td className={`pb-0 pe-3`} />
+              <th className={`pb-0 pe-3`} scope="col">
+                Point Size
+              </th>
+              <th className={`pb-0 pe-3`} scope="col">
+                Border Width
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="align-middle">
+              <th className={`pe-5`}>Unselected Points</th>
+              <td className="pe-3">
+                <SlycatNumberInput
+                  value={this.props.unselected_point_size}
+                  default_value={DEFAULT_UNSELECTED_POINT_SIZE}
+                  min_value={MIN_UNSELECTED_POINT_SIZE}
+                  max_value={MAX_UNSELECTED_POINT_SIZE}
+                  step={POINT_SIZE_STEP}
+                  handle_change={this.props.setUnselectedPointSize}
+                  title_reset="Reset size of unselected points to default"
+                />
+              </td>
+              <td className="pe-3">
+                <SlycatNumberInput
+                  value={this.props.unselected_border_size}
+                  default_value={DEFAULT_UNSELECTED_BORDER_SIZE}
+                  min_value={MIN_UNSELECTED_BORDER_SIZE}
+                  max_value={MAX_UNSELECTED_BORDER_SIZE}
+                  step={BORDER_SIZE_STEP}
+                  handle_change={this.props.setUnselectedBorderSize}
+                  title_reset="Reset border width of unselected points to default"
+                />
+              </td>
+            </tr>
+            <tr className="align-middle">
+              <th className={`pe-5`}>Selected Points</th>
+              <td className="pe-3">
+                <SlycatNumberInput
+                  value={this.props.selected_point_size}
+                  default_value={DEFAULT_SELECTED_POINT_SIZE}
+                  min_value={MIN_SELECTED_POINT_SIZE}
+                  max_value={MAX_SELECTED_POINT_SIZE}
+                  step={POINT_SIZE_STEP}
+                  handle_change={this.props.setSelectedPointSize}
+                  title_reset="Reset size of selected points to default"
+                />
+              </td>
+              <td className="pe-3">
+                <SlycatNumberInput
+                  value={this.props.selected_border_size}
+                  default_value={DEFAULT_SELECTED_BORDER_SIZE}
+                  min_value={MIN_SELECTED_BORDER_SIZE}
+                  max_value={MAX_SELECTED_BORDER_SIZE}
+                  step={BORDER_SIZE_STEP}
+                  handle_change={this.props.setSelectedBorderSize}
+                  title_reset="Reset border width of selected points to default"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <hr className="mt-4 mb-4" />
         <div className="slycat-plot-margins">
-          <div className="form-row mb-2">
-            <div className="col-2 font-weight-bold">Margins</div>
+          <div className="row mb-2">
+            <div className="col-auto fw-bold">Margins</div>
           </div>
-          <div className="form-row mb-2">
-            <div className="col-2 font-weight-bold"></div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Top</div>
-          </div>
-          <div className="form-row mb-2">
-            <div className="col-2 font-weight-bold"></div>
-            <SlycatNumberInput
-              name={"top"}
-              value={this.props.scatterplot_margin_top}
-              default_value={DEFAULT_SCATTERPLOT_MARGIN_TOP}
-              min_value={MIN_MARGIN}
-              step={MARGIN_STEP}
-              handle_change={this.handleMarginChange}
-              title_reset="Reset size of top plot margin to default"
-            />
-          </div>
-          <div className="form-row mb-2">
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Left</div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Right</div>
-          </div>
-          <div className="form-row mb-2">
-            <SlycatNumberInput
-              name={"left"}
-              value={this.props.scatterplot_margin_left}
-              default_value={DEFAULT_SCATTERPLOT_MARGIN_LEFT}
-              min_value={MIN_MARGIN}
-              step={MARGIN_STEP}
-              handle_change={this.handleMarginChange}
-              title_reset="Reset size of left plot margin to default"
-            />
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
-            <SlycatNumberInput
-              name={"right"}
-              value={this.props.scatterplot_margin_right}
-              default_value={DEFAULT_SCATTERPLOT_MARGIN_RIGHT}
-              min_value={MIN_MARGIN}
-              step={MARGIN_STEP}
-              handle_change={this.handleMarginChange}
-              title_reset="Reset size of right plot margin to default"
-            />
-          </div>
-          <div className="form-row mb-2">
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
-            <div className="col-2 font-weight-bold d-flex justify-content-center">Bottom</div>
-          </div>
-          <div className="form-row mb-4">
-            <div className="col-2 font-weight-bold d-flex justify-content-center"></div>
-            <SlycatNumberInput
-              name={"bottom"}
-              value={this.props.scatterplot_margin_bottom}
-              default_value={DEFAULT_SCATTERPLOT_MARGIN_BOTTOM}
-              min_value={MIN_MARGIN}
-              step={MARGIN_STEP}
-              handle_change={this.handleMarginChange}
-              title_reset="Reset size of bottom plot margin to default"
-            />
-          </div>
+          <table className={`table table-borderless text-center mt-4 ms-3 w-auto`} role="grid">
+            <tbody>
+              <tr>
+                <td className={`pb-0 pe-3`} />
+                <th className={`pb-0 pe-3`} scope="col">
+                  Top
+                </th>
+                <td className={`pb-0 pe-3`} />
+              </tr>
+              <tr>
+                <td className={`pb-0 pe-3`} />
+                <td className={`pb-0 pe-3`}>
+                  <SlycatNumberInput
+                    name={"top"}
+                    value={this.props.scatterplot_margin_top}
+                    default_value={DEFAULT_SCATTERPLOT_MARGIN_TOP}
+                    min_value={MIN_MARGIN}
+                    step={MARGIN_STEP}
+                    handle_change={this.handleMarginChange}
+                    title_reset="Reset size of top plot margin to default"
+                  />
+                </td>
+                <td className={`pb-0 pe-3`} />
+              </tr>
+              <tr>
+                <th className={`pb-0 pe-3`}>Left</th>
+                <td className={`pb-0 pe-3`} />
+                <th className={`pb-0 pe-3`}>Right</th>
+              </tr>
+              <tr>
+                <td className={`pb-0 pe-3`}>
+                  <SlycatNumberInput
+                    name={"left"}
+                    value={this.props.scatterplot_margin_left}
+                    default_value={DEFAULT_SCATTERPLOT_MARGIN_LEFT}
+                    min_value={MIN_MARGIN}
+                    step={MARGIN_STEP}
+                    handle_change={this.handleMarginChange}
+                    title_reset="Reset size of left plot margin to default"
+                  />
+                </td>
+                <td className={`pb-0 pe-3`}></td>
+                <td className={`pb-0 pe-3`}>
+                  <SlycatNumberInput
+                    name={"right"}
+                    value={this.props.scatterplot_margin_right}
+                    default_value={DEFAULT_SCATTERPLOT_MARGIN_RIGHT}
+                    min_value={MIN_MARGIN}
+                    step={MARGIN_STEP}
+                    handle_change={this.handleMarginChange}
+                    title_reset="Reset size of right plot margin to default"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className={`pb-0 pe-3`} />
+                <th className={`pb-0 pe-3`} scope="col">
+                  Bottom
+                </th>
+                <td className={`pb-0 pe-3`} />
+              </tr>
+              <tr>
+                <td className={`pb-0 pe-3`} />
+                <td className={`pb-0 pe-3`}>
+                  <SlycatNumberInput
+                    name={"bottom"}
+                    value={this.props.scatterplot_margin_bottom}
+                    default_value={DEFAULT_SCATTERPLOT_MARGIN_BOTTOM}
+                    min_value={MIN_MARGIN}
+                    step={MARGIN_STEP}
+                    handle_change={this.handleMarginChange}
+                    title_reset="Reset size of bottom plot margin to default"
+                  />
+                </td>
+                <td className={`pb-0 pe-3`} />
+              </tr>
+            </tbody>
+          </table>
         </div>
         <hr className="mt-4 mb-4" />
         <div className="slycat-scatterplot-grid">
@@ -191,7 +227,7 @@ class ScatterplotOptions extends React.PureComponent {
 export class SlycatNumberInput extends React.Component {
   render() {
     return (
-      <div className="col-2 d-flex justify-content-center input-group input-group-sm">
+      <div className="input-group input-group-sm w-auto d-inline-flex slycat-component-SlycatNumberInput">
         <input
           type="number"
           name={this.props.name}
@@ -204,19 +240,17 @@ export class SlycatNumberInput extends React.Component {
           onChange={this.props.handle_change}
           disabled={this.props.disabled}
         />
-        <div className="input-group-append">
-          <button
-            className="btn btn-outline-secondary"
-            type="button"
-            name={this.props.name}
-            title={this.props.title_reset}
-            value={this.props.default_value}
-            disabled={this.props.disabled || this.props.value == this.props.default_value}
-            onClick={this.props.handle_change}
-          >
-            <FontAwesomeIcon icon={faUndo} />
-          </button>
-        </div>
+        <button
+          className="btn btn-outline-secondary"
+          type="button"
+          name={this.props.name}
+          title={this.props.title_reset}
+          value={this.props.default_value}
+          disabled={this.props.disabled || this.props.value == this.props.default_value}
+          onClick={this.props.handle_change}
+        >
+          <FontAwesomeIcon icon={faUndo} />
+        </button>
       </div>
     );
   }
