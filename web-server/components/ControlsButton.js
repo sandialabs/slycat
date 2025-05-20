@@ -4,7 +4,7 @@ const ControlsButton = (props) => {
   // wait until all the jquery stuff is loaded
   $( document ).ready(function( $ ) {
     // enable the tooltip
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-bs-toggle="tooltip"]').tooltip()
   })
   return props.hidden ? null : (
     <button
@@ -14,8 +14,8 @@ const ControlsButton = (props) => {
       title={props.title}
       disabled={props.disabled}
       onClick={props.click}
-      data-toggle={props.data_toggle}
-      data-target={props.data_target}
+      data-bs-toggle={props.data_toggle}
+      data-bs-target={props.data_target}
     >
       {props.icon && <span className={"fa " + props.icon} aria-hidden="true" />}
       {props.label}

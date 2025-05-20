@@ -31,8 +31,8 @@ Matthew Letter
 
 <div class="modal-header">
     <h3 class="modal-title">Dial-A-Cluster Model Preferences</h3>
-    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+    <button type="button" class="btn-close" data-bind="click: cancel" data-bs-dismiss="modal" aria-label="Close">
+        
     </button>
 </div>
 
@@ -224,7 +224,7 @@ Matthew Letter
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+    <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:check_variables">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 1,click:check_metadata">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 2,click:speedup_preferences">Continue</button>

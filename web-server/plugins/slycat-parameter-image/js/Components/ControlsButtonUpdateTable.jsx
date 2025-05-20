@@ -303,7 +303,7 @@ export default class ControlsButtonUpdateTable extends Component {
     let footerJSX = [];
     if (this.state.visible_tab != "0") {
       footerJSX.push(
-        <button key={1} type="button" className="btn btn-light mr-auto" onClick={this.back}>
+        <button key={1} type="button" className="btn btn-light me-auto" onClick={this.back}>
           Back
         </button>,
       );
@@ -366,7 +366,7 @@ export default class ControlsButtonUpdateTable extends Component {
           <NavBar navNames={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />
         )}
         {this.state.visible_tab === "0" ? (
-          <form className="ml-3">
+          <form className="ms-3">
             <SlycatFormRadioCheckbox
               checked={this.state.selectedOption === "local"}
               onChange={this.sourceSelect}

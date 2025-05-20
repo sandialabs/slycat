@@ -1,13 +1,13 @@
 <div class="bootstrap-styles" id="slycat-navbar-container">
   <!-- Navigation Bar -->
-  <nav class="navbar navbar-light navbar-expand-sm" data-bind="css: {'model' : model_id()}">
+  <nav class="navbar navbar-light navbar-expand-sm px-3 py-2" data-bind="css: {'model' : model_id()}">
     <!-- Branding element. Slycat name visible only on projects listing page.  -->
     <a
-      class="navbar-brand text-dark font-weight-bold"
+      class="navbar-brand text-dark fw-bold"
       data-bind="attr:{href:server_root}"
       title="Slycat"
     >
-      <span class="pl-3" data-bind="visible: project().length == 0, text: server_friendly_name"
+      <span class="ps-3" data-bind="visible: project().length == 0, text: server_friendly_name"
         >Slycat</span
       >
     </a>
@@ -22,14 +22,14 @@
           <a
             id="slycat-personal-tools-user"
             class="btn btn-sm dropdown-toggle text-secondary"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             <span class="fa fa-user"></span>
           </a>
           <div
-            class="dropdown-menu dropdown-menu-right"
+            class="dropdown-menu dropdown-menu-end"
             aria-labelledby="slycat-personal-tools-user"
           >
             <h6 class="dropdown-header" data-bind="text: user.name">User's Actual Name</h6>
@@ -53,14 +53,14 @@
           <a
             id="slycat-personal-tools-help"
             class="btn btn-sm dropdown-toggle text-secondary"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             <span class="fa fa-question-circle"></span>
           </a>
           <div
-            class="dropdown-menu dropdown-menu-right"
+            class="dropdown-menu dropdown-menu-end"
             aria-labelledby="slycat-personal-tools-help"
           >
             <a class="dropdown-item" data-bind="click:about"
@@ -77,20 +77,20 @@
       </div>
 
       <!-- Menus -->
-      <div class="nav navbar-menus navbar-nav navbar-right btn-group flex-nowrap mr-2">
+      <div class="nav navbar-menus navbar-nav navbar-right btn-group flex-nowrap me-2">
         <!-- ko if: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length -->
         <div class="btn-group">
           <button
             type="button"
             id="slycat-create-wizards"
             class="btn btn-sm btn-success dropdown-toggle"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             Create
           </button>
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="slycat-create-wizards">
+          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="slycat-create-wizards">
             <!-- ko foreach: model_create_wizards -->
             <button
               type="button"
@@ -129,13 +129,13 @@
             type="button"
             id="slycat-edit-wizards"
             class="btn btn-sm btn-warning dropdown-toggle"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             Edit
           </button>
-          <div class="dropdown-menu dropdown-menu-right">
+          <div class="dropdown-menu dropdown-menu-end">
             <!-- ko foreach: model_edit_wizards -->
             <button
               type="button"
@@ -174,13 +174,13 @@
             type="button"
             id="slycat-info-wizards"
             class="btn btn-sm btn-info dropdown-toggle"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             Info
           </button>
-          <div class="dropdown-menu dropdown-menu-right">
+          <div class="dropdown-menu dropdown-menu-end">
             <!-- ko foreach: project_info_wizards -->
             <button
               type="button"
@@ -203,13 +203,13 @@
           <button
             type="button"
             class="btn btn-sm btn-primary dropdown-toggle"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             Bookmarks
           </button>
-          <div class="dropdown-menu dropdown-menu-right dropdown-menu-bookmarks">
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-bookmarks">
             <!-- ko foreach: model_bookmark_wizards -->
             <a class="dropdown-item bookmark-new" data-bind="click: $parent.run_wizard">
               <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
@@ -280,7 +280,7 @@
               </span>
               &nbsp;
               <span
-                class="badge badge-secondary mr-1"
+                class="badge text-bg-secondary me-1"
                 data-bind="visible: model_type, text:$parent.model_names.translate_model_type(model_type) + ' model'"
               ></span>
               <strong>
@@ -306,13 +306,13 @@
             type="button"
             id="slycat-delete-wizards"
             class="btn btn-sm btn-danger dropdown-toggle"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
             Delete
           </button>
-          <div class="dropdown-menu dropdown-menu-right">
+          <div class="dropdown-menu dropdown-menu-end">
             <!-- ko foreach: model_delete_wizards -->
             <button
               type="button"
@@ -348,8 +348,8 @@
       </div>
 
       <!-- Breadcrumb -->
-      <nav aria-label="breadcrumb" class="mr-auto">
-        <ol class="breadcrumb pl-0" data-bind="css: {'slycat-no-models': model().length == 0}">
+      <nav aria-label="breadcrumb" class="me-auto">
+        <ol class="breadcrumb pe-3 py-25 ps-0" data-bind="css: {'slycat-no-models': model().length == 0}">
           <!-- ko foreach: project -->
           <li
             class="breadcrumb-item project"
@@ -361,12 +361,12 @@
               text:name,
               attr:{
                 href:$parent.server_root + 'projects/' + _id(),
-                'data-content': $parent.navbar_popover()
+                'data-bs-content': $parent.navbar_popover()
               },
               "
-              data-toggle="popover"
-              data-trigger="hover"
-              data-html="true"
+              data-bs-toggle="popover"
+              data-bs-trigger="hover"
+              data-bs-html="true"
             ></a>
             <!-- /ko -->
             <!-- ko if: $parent.model().length == 0 -->
@@ -375,28 +375,28 @@
               data-bind="
                 text:name,
                 attr:{
-                  'data-content': $parent.navbar_popover()
+                  'data-bs-content': $parent.navbar_popover()
                 },
               "
-              data-toggle="popover"
-              data-trigger="hover"
-              data-html="true"
+              data-bs-toggle="popover"
+              data-bs-trigger="hover"
+              data-bs-html="true"
             ></span>
             <!-- /ko -->
           </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
           <li
-            class="breadcrumb-item active model text-dark font-weight-bold"
+            class="breadcrumb-item active model text-dark fw-bold"
             data-bind="
               text:name,
               attr:{
-                'data-content': $parent.navbar_popover()
+                'data-bs-content': $parent.navbar_popover()
               },
               "
-            data-toggle="popover"
-            data-trigger="hover"
-            data-html="true"
+            data-bs-toggle="popover"
+            data-bs-trigger="hover"
+            data-bs-html="true"
           ></li>
           <!-- /ko -->
         </ol>
@@ -424,7 +424,7 @@
     ></pre>
   </div>
   <!-- /ko -->
-  <div class="modal fade" tabindex="-1" role="dialog" id="slycat-wizard" data-backdrop="static">
+  <div class="modal fade" tabindex="-1" role="dialog" id="slycat-wizard" data-bs-backdrop="static">
     <div class="modal-dialog" role="document" data-bind="css: { 'modal-lg': wizard }">
       <div class="modal-content">
         <!-- adding a .react-wizard class so we can start rendering based on the selector for new react wizards -->
@@ -442,7 +442,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
-          <div class="jumbotron">
+          <div class="bg-light mb-4 rounded-2 py-5 px-3">
             <img src="../img/slycat-brand.png" />
             <p>
               &hellip; is the web-based analysis and visualization platform created at Sandia
@@ -476,7 +476,7 @@
           </p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>

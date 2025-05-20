@@ -23,7 +23,7 @@ ko.components.register("slycat-login-controls", {
 
       component.status_classes = ko.pureComputed(function () {
         var classes = [];
-        if (component.status()) classes.push("in");
+        if (component.status()) classes.push("fadein");
         if (component.status_type()) classes.push("alert-" + component.status_type());
         return classes.join(" ");
       });

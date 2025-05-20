@@ -29,12 +29,12 @@ S. Martin
   <h3 class="modal-title">New VideoSwarm Model</h3>
   <button
     type="button"
-    class="close"
+    class="btn-close"
     data-bind="click: cancel"
-    data-dismiss="modal"
+    data-bs-dismiss="modal"
     aria-label="Close"
   >
-    <span aria-hidden="true">&times;</span>
+    
   </button>
 </div>
 
@@ -165,7 +165,7 @@ S. Martin
       <label>Please choose column of CSV file with links to video files.</label>
       <select
         data-bind="options: vs_media_columns"
-        class="form-control"
+        class="form-select"
         id="vs-local-links-selector"
       ></select>
       <label
@@ -233,7 +233,7 @@ S. Martin
       >
       <select
         data-bind="options: vs_media_columns"
-        class="form-control"
+        class="form-select"
         id="vs-remote-frames-selector"
       ></select>
       <div className="alert alert-warning" role="alert">
@@ -383,7 +383,7 @@ S. Martin
         >
         <select
           data-bind="options: vs_media_columns, optionsCaption: 'Select an item...', disable: movie_source() == 'dir' || movie_source() == null"
-          class="form-control"
+          class="form-select"
           id="vs-remote-movie-selector"
         ></select>
       </div>
@@ -404,11 +404,11 @@ S. Martin
     <!-- select frame/movie columns -->
     <div data-bind="visible:tab() == 6">
       <!-- <label style="margin-top:15px">Please choose column of CSV file with links to video frame files (format "name.#.jpg").</label>
-      <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-frames-selector">
+      <select data-bind="options: vs_media_columns" class="form-select" id="vs-remote-frames-selector">
       </select> -->
 
       <!-- <label style="margin-top:30px">Please choose column of CSV file with links to video files.</label>
-      <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-videos-selector">
+      <select data-bind="options: vs_media_columns" class="form-select" id="vs-remote-videos-selector">
       </select> -->
 
       <label style="margin-top: 30px"
@@ -478,13 +478,13 @@ S. Martin
     <!-- gather HPC information, if needed -->
     <div class="bootstrap-styles" data-bind="visible:tab() == 7" style="padding: 1%">
       <form class="form-horizontal">
-        <div id="form-group-HPC" class="form-group">
+        <div id="form-group-HPC" class="mb-3">
           <div>
             <input type="checkbox" data-bind="checked: HPC_Job" />
             <label> HPC Job:</label>
           </div>
         </div>
-        <div id="form-group-wcid" class="form-group">
+        <div id="form-group-wcid" class="mb-3">
           <label class="col-form-label">Account ID</label>
           <div>
             <input
@@ -497,7 +497,7 @@ S. Martin
             <div class="invalid-feedback">Please enter an account ID.</div>
           </div>
         </div>
-        <div id="form-group-partition" class="form-group">
+        <div id="form-group-partition" class="mb-3">
           <label class="col-form-label">Partition/Queue</label>
           <div>
             <input
@@ -510,7 +510,7 @@ S. Martin
           </div>
         </div>
         <div class="row" style="margin-top: 20px">
-          <div id="form-group-nnodes" class="form-group">
+          <div id="form-group-nnodes" class="mb-3">
             <div class="col-sm-12">
               <label>Number of Nodes</label>
               <input
@@ -523,7 +523,7 @@ S. Martin
               <div class="invalid-feedback">Must be > 0.</div>
             </div>
           </div>
-          <div id="form-group-tasks-per-node" class="form-group">
+          <div id="form-group-tasks-per-node" class="mb-3">
             <div class="col-sm-12">
               <label>Number of Cores</label>
               <input
@@ -540,7 +540,7 @@ S. Martin
 
         <label style="margin-top: 10px">Requested Job Time</label>
         <div id="form-group-time" class="row">
-          <div class="form-group">
+          <div class="mb-3">
             <div class="col-sm-12">
               <input
                 id="VS-nhours"
@@ -554,7 +554,7 @@ S. Martin
               hours
             </div>
           </div>
-          <div class="form-group">
+          <div class="mb-3">
             <div class="col-sm-12">
               <input
                 id="VS-nminutes"
@@ -593,7 +593,7 @@ S. Martin
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
+  <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
     Back
   </button>
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>

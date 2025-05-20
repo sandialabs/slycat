@@ -2,14 +2,14 @@
 
 <div class="modal-header">
   <h3 class="modal-title">Delete Model &ldquo;<span data-bind="text:model.name()"></span>&rdquo;?</h3>
-  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+    
   </button>
 </div>
 <div class="modal-body">
   <p class="lead">All data will be deleted immediately, and this cannot be undone.</p>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
   <button class="btn btn-danger" data-bind="click:delete_model">Delete Model</button>
 </div>

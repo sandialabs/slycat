@@ -3,8 +3,8 @@
     <button class="btn btn-warning btn-sm slycat-3d-btn-reset">Reset</button>
     <button class="btn btn-primary btn-sm slycat-3d-btn-settings" data-bind="click: run_settings">Settings</button>
     <button class="btn btn-primary btn-sm slycat-3d-btn-rotate" data-bind="click: rotate, css: {active: rotating}">Rotate</button>
-    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <span class="sr-only">Toggle Dropdown</span>
+    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="visually-hidden">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu">
       <li class="dropdown-header">Axis of rotation</li>
@@ -16,13 +16,13 @@
     </ul>
   </div>
 
-  <!-- <button class="btn btn-secondary btn-sm slycat-3d-btn-settings" data-toggle="modal" data-target="#slycat-3d-modal">Settings</button> -->
+  <!-- <button class="btn btn-secondary btn-sm slycat-3d-btn-settings" data-bs-toggle="modal" data-bs-target="#slycat-3d-modal">Settings</button> -->
   
   <div class="slycat-3d-stats" style="display: none; float: right; margin-right: 25px;">
     Number of faces: <span id="slycat-3d-face3-number"></span>
   </div>
 
-  <div class="modal fade" data-bind="attr: { id: settings_modal_id }" data-backdrop="static">
+  <div class="modal fade" data-bind="attr: { id: settings_modal_id }" data-bs-backdrop="static">
     <div class="modal-dialog" style="margin-top: 135px;">
       <div class="modal-content">
         <div data-bind="if: settings" style="height: 100%">
@@ -32,22 +32,22 @@
 
           <div class="modal-body">
             <ul class="nav nav-tabs" role="tablist" style="margin-bottom: 25px;">
-              <li role="presentation" class="active"><a data-bind="attr: { href: settings_scene_href, 'action-controls': settings_scene_id}" role="tab" data-toggle="tab">Scene</a></li>
-              <li role="presentation"><a data-bind="attr: { href: settings_geometry_href, 'action-controls': settings_geometry_id}" role="tab" data-toggle="tab">Geometry</a></li>
-              <li role="presentation"><a data-bind="attr: { href: settings_lights_href, 'action-controls': settings_lights_id}" role="tab" data-toggle="tab">Lights</a></li>
-              <li role="presentation"><a data-bind="attr: { href: settings_controls_href, 'action-controls': settings_controls_id}" role="tab" data-toggle="tab">Controls</a></li>
+              <li role="presentation" class="active"><a data-bind="attr: { href: settings_scene_href, 'action-controls': settings_scene_id}" role="tab" data-bs-toggle="tab">Scene</a></li>
+              <li role="presentation"><a data-bind="attr: { href: settings_geometry_href, 'action-controls': settings_geometry_id}" role="tab" data-bs-toggle="tab">Geometry</a></li>
+              <li role="presentation"><a data-bind="attr: { href: settings_lights_href, 'action-controls': settings_lights_id}" role="tab" data-bs-toggle="tab">Lights</a></li>
+              <li role="presentation"><a data-bind="attr: { href: settings_controls_href, 'action-controls': settings_controls_id}" role="tab" data-bs-toggle="tab">Controls</a></li>
             </ul>
 
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane active" data-bind="attr: { id: settings_scene_id }" style="height: 90px;">
                 <form>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Background:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: backgroundColor" placeholder="Background color i.e. #000000" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Ambient light:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: ambientLightColor" placeholder="Ambient light color i.e. #000000">
@@ -58,25 +58,25 @@
 
               <div role="tabpanel" class="tab-pane" data-bind="attr: { id: settings_geometry_id }" style="height: 165px;">
                 <form>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Material:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: materialColor" placeholder="Material color i.e. #000000" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Wireframe:</label>
                     <div class="col-sm-8">
                       <input type="checkbox" data-bind="checked: wireframe" style="margin: 12px 0px 10px 0px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Transparency:</label>
                     <div class="col-sm-8">
                       <input type="checkbox" data-bind="checked: transparency" style="margin: 12px 0px 18px 0px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Opacity:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: opacity" placeholder="Value is between 0 and 1">
@@ -87,49 +87,49 @@
 
               <div role="tabpanel" class="tab-pane" data-bind="attr: { id: settings_lights_id }" style="height: 350px;">
                 <form>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 1:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightOneColor" placeholder="Light 1 color i.e. #000000" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 1 X:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightOneX" placeholder="Light 1 x-position" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 1 Y:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightOneY" placeholder="Light 1 y-position" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 1 Z:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightOneZ" placeholder="Light 1 z-position" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 2:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightTwoColor" placeholder="Light 2 color i.e. #000000" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 2 X:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightTwoX" placeholder="Light 2 x-position" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row" style="margin-bottom: 10px;">
+                  <div class="mb-3 row" style="margin-bottom: 10px;">
                     <label class="col-sm-3 col-form-label">Light 2 Y:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightTwoY" placeholder="Light 2 y-position" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Light 2 Z:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: lightTwoZ" placeholder="Light 2 z-position" style="margin-bottom: 10px;">
@@ -140,25 +140,25 @@
 
               <div role="tabpanel" class="tab-pane" data-bind="attr: { id: settings_controls_id }" style="height: 187px">
                 <form>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Rotation:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: controlsRotationSpeed" placeholder="Rotation speed" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Zooming:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: controlsZoomingSpeed" placeholder="Zooming speed" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Panning:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: controlsPanningSpeed" placeholder="Panning speed" style="margin-bottom: 10px;">
                     </div>
                   </div>
-                  <div class="form-group row">
+                  <div class="mb-3 row">
                     <label class="col-sm-3 col-form-label">Dynamic damping factor:</label>
                     <div class="col-sm-8">
                       <input type="text" class="form-control" data-bind="value: controlsDynamicDampingFactor" placeholder="Dynamic damping factor" style="margin-top: 9px;">
@@ -170,7 +170,7 @@
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-primary" data-bind="click: apply_settings">Apply</button>
           </div>
         </div>
