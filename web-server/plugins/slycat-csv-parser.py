@@ -100,8 +100,6 @@ def parse_file(file, model, database):
                 data_types.append(str(type(column[i])))
         data_types = set(data_types)
         
-        cherrypy.log.error(str(data_types))
-
         if len(data_types) > 1:
             cherrypy.log.error("slycat-csv-parser.py parse_file", "Mixed data type columns found.")
             error_message.append(
