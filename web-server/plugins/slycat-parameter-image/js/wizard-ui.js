@@ -272,7 +272,6 @@ function constructor(params) {
 
     const selectElementLocal = document.getElementById("slycat-local-browser-file");
     const selectElementRemote = document.getElementById("slycat-remote-browser-files");
-    console.log(selectElementRemote);
     // Local upload - Automatically chooses the parser based on selected file type
     if (selectElementLocal) {
       selectElementLocal.addEventListener("change", (event) => {
@@ -398,7 +397,7 @@ function constructor(params) {
   component.upload_table = function () {
     // cleanup
     document.getElementById('slycat-local-browser-file').removeAttribute("onchange");
-    document.getElementById('slycat-remote-browser').remoteAttribute("onchange");
+    document.getElementById('slycat-remote-browser-files').removeAttribute("onchange");
 
     // check that a file has been selected
     if (component.browser.selection().length == 0) {
