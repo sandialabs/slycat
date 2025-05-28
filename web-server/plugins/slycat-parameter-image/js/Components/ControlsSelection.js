@@ -278,10 +278,11 @@ const ControlsSelection = (props) => {
             >
               Close All Pins
             </button>
-            <div className="form-check dropdown-item">
+            <div className="dropdown-item form-check form-switch form-check-reverse">
               <input
-                className="form-check-input"
+                className="form-check-input me-0"
                 type="checkbox"
+                role="switch"
                 value=""
                 id="syncScaling"
                 disabled={sync_scaling_disabled}
