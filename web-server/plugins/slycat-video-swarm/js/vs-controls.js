@@ -102,10 +102,6 @@ $.widget("mp.controls", {
       })
       .appendTo(selection_controls);
 
-    this.video_sync_button_wrapper = $("<div class='input-group-prepend'></div>").appendTo(
-      video_controls,
-    );
-
     this.video_sync_button = $(
       "\
         <button class='btn btn-sm btn-outline-dark slycatControlsButtonToggle' data-bs-toggle='button'> \
@@ -116,11 +112,11 @@ $.widget("mp.controls", {
       .click(function () {
         self.options.video_sync = !$(this).hasClass("active");
         self._respond_pinned_simulations_changed();
-        self.element.trigger("video_sync", !$(this).hasClass("active"));
+        self.element.trigger("video_sync", $(this).hasClass("active"));
         this.title = self.options.video_sync ? "Unsync videos" : "Sync videos";
       })
       .attr("title", self.options.video_sync ? "Unsync videos" : "Sync videos")
-      .appendTo(self.video_sync_button_wrapper);
+      .appendTo(self.video_controls);
 
     this.video_sync_time = $(
       "\
