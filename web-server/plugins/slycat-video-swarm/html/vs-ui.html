@@ -7,91 +7,80 @@ S. Martin
 4/3/2017
 -->
 
-<div id="mp-model" style="-webkit-flex:1; flex:1;">
+<div id="mp-model" style="-webkit-flex: 1; flex: 1">
+  <div id="vs-progress-feedback" class="bootstrap-styles" style="margin: 20px">
+    <label>Data is being processed for the model (it is safe to close the browser):</label>
+    <div id="vs-react"></div>
+  </div>
 
-	<div id="vs-progress-feedback" class="bootstrap-styles" style="margin: 20px;">
-		<label>Data is being processed for the model (it is safe to close the browser):</label>
-		<div id="vs-react"></div>
-	</div>
+  <div id="controls-pane" class="ui-layout-north vs-model-content bootstrap-styles">
+    <div
+      class="d-flex justify-content-center align-items-center mx-2"
+      id="controls"
+      style="height: 100%"
+    >
+      <div class="d-flex align-items-center">
+        <div id="scatterplot-controls" class="btn-group"></div>
+        <div id="selection-controls" class="btn-group ms-3"></div>
+        <div id="video-controls" class="input-group input-group-sm ms-3 d-inline-flex w-auto"></div>
+        <div id="playback-controls" class="btn-group ms-3"></div>
+        <div id="color-switcher" class="btn-group ms-3"></div>
+        <div id="add-note" class="btn-group ms-3"></div>
+      </div>
+    </div>
+  </div>
 
-	<div id="controls-pane" class="ui-layout-north vs-model-content bootstrap-styles">
-		<div class="d-flex justify-content-center align-items-center mx-2" id="controls" style="height: 100%;">
-			<div class="d-flex align-items-center">
+  <div class="ui-layout-center vs-model-content">
+    <div class="ui-layout-center">
+      <div class="ui-layout-center" id="mp-mds-pane">
+        <!-- MDS Scatter Plot -->
+        <svg id="mp-mds-scatterplot"></svg>
+      </div>
 
-					<div id="scatterplot-controls" class="btn-group"></div>
+      <div class="ui-layout-south" id="mp-trajectories">
+        <div class="load-status"></div>
+        <svg id="waveform-viewer" width="100%" height="100%" style="position: absolute"></svg>
+        <div id="waveform-progress">
+          <input class="waveformPie" value="1" />
+        </div>
+        <div id="waveform-selection-progress">
+          <input class="waveformPie" value="1" />
+        </div>
+        <div id="waveform-selector-progress-wrapper">
+          <div id="waveform-selector-progress">
+            <input class="waveformPie" value="1" />
+            Please wait while we prepare the ability to select waveforms...
+          </div>
+        </div>
+        <div id="waveform-selection-wrapper"></div>
+        <div id="trajectories-scrubber">
+          <slycat-scrubber
+            params="axis: 'horizontal',
+										length: length,
+										height: height,
+										color: color,
+										hover_background_color: hover_background_color,
+										thumb_width: thumb_width,
+										thumb_height: thumb_height,
+										domain_min: domain_min,
+										domain_max: domain_max,
+										domain_value: domain_value,
+										"
+          ></slycat-scrubber>
+        </div>
+      </div>
+    </div>
 
-					<div id="selection-controls" class="btn-group ms-3"></div>
+    <div class="ui-layout-south" id="mp-datapoints-pane">
+      <!-- MetaData Table -->
+      <div id="mp-datapoints-table"></div>
+    </div>
+  </div>
 
-					<div id="video-controls" class="input-group input-group-sm ms-3 d-inline-flex w-auto"></div>
-
-					<div id="playback-controls" class="btn-group ms-3"></div>
-
-					<div id="color-switcher" class="btn-group ms-3"></div>
-
-					<div id="add-note" class="btn-group ms-3"></div>
-
-			</div>
-		</div>
-	</div>
-
-	<div class="ui-layout-center vs-model-content">
-
-		<div class="ui-layout-center">
-
-			<div class="ui-layout-center" id="mp-mds-pane">
-
-				<!-- MDS Scatter Plot -->
-				<svg id="mp-mds-scatterplot"></svg>
-
-			</div>
-
-			<div class="ui-layout-south" id="mp-trajectories">
-
-				<div class="load-status"></div>
-				<svg id="waveform-viewer" width="100%" height="100%" style="position: absolute;"></svg>
-				<div id="waveform-progress">
-					<input class="waveformPie" value="1" />
-				</div>
-				<div id="waveform-selection-progress">
-					<input class="waveformPie" value="1" />
-				</div>
-				<div id="waveform-selector-progress-wrapper">
-					<div id="waveform-selector-progress">
-						<input class="waveformPie" value="1" />
-						Please wait while we prepare the ability to select waveforms...
-					</div>
-				</div>
-				<div id="waveform-selection-wrapper"></div>
-				<div id="trajectories-scrubber">
-					<slycat-scrubber params="
-			                    axis: 'horizontal',
-			                    length: length,
-			                    height: height,
-			                    color: color,
-			                    hover_background_color: hover_background_color,
-			                    thumb_width: thumb_width,
-			                    thumb_height: thumb_height,
-			                    domain_min: domain_min,
-			                    domain_max: domain_max,
-			                    domain_value: domain_value,
-			                    "></slycat-scrubber>
-				</div>
-
-			</div>
-
-		</div>
-
-		<div class="ui-layout-south" id="mp-datapoints-pane">
-			<!-- MetaData Table -->
-			<div id="mp-datapoints-table"></div>
-		</div>
-
-	</div>
-
-	<div class="ui-layout-east vs-model-content" id="mp-movies">
-		<div id="movie-help-text">
-			To open movies, select one or more points, lines, or table rows, then click the Pin Selected button.
-		</div>
-	</div>
-
+  <div class="ui-layout-east vs-model-content" id="mp-movies">
+    <div id="movie-help-text">
+      To open movies, select one or more points, lines, or table rows, then click the Pin Selected
+      button.
+    </div>
+  </div>
 </div>
