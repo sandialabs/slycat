@@ -312,7 +312,7 @@ class VariableRangesRow extends React.PureComponent {
         </td>
         <td className={`lessThanValidationMessageCell align-middle ${this.props.text_align}`}>
           <span
-            className={`text-danger font-weight-bold lessThanValidationMessage validationPopover is-invalid
+            className={`text-danger fw-bold lessThanValidationMessage validationPopover is-invalid
               ${this.props.min_valid && this.props.max_valid ? "valid" : ""}
             `}
           >
