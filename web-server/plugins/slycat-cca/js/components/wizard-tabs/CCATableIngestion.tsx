@@ -23,7 +23,6 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
   ];
   return (
     <div hidden={hidden}>
-      test
       <SlycatTableIngestion
         uniqueID="varOptions"
         variables={attributes}
