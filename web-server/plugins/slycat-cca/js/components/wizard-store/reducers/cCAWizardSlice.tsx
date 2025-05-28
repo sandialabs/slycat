@@ -5,6 +5,7 @@ export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCSLocalBrowserTab",
   CCA_TABLE_INGESTION = "CCATableIngestion",
+  CCA_FINISH_MODEL= "CCAFinishModel"
 }
 export enum dataLocationType {
   LOCAL = "local",
@@ -29,6 +30,7 @@ export interface CCAWizardState {
   pid: string | undefined;
   fileUploaded: boolean;
   attributes: Attribute[];
+  scaleInputs: boolean;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -37,6 +39,7 @@ const initialState: CCAWizardState = {
   pid: undefined,
   fileUploaded: false,
   attributes: [],
+  scaleInputs: false
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -60,6 +63,9 @@ export const cCAWizardSlice = createSlice({
     setAttributes: (state, action: PayloadAction<Attribute[]>) => {
       state.attributes = action.payload;
     },
+    setScaleInputs: (state, action: PayloadAction<boolean>) => {
+      state.scaleInputs = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -73,6 +79,7 @@ export const {
   resetCCAWizard: resetCCAWizard,
   setFileUploaded,
   setAttributes,
+  setScaleInputs
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -81,5 +88,6 @@ export const selectFileUploaded = (state: RootState) => state.cCAWizard.fileUplo
 export const selectPid = (state: RootState) => state.cCAWizard.pid;
 export const selectMid = (state: RootState) => state.cCAWizard.mid;
 export const selectAttributes = (state: RootState) => state.cCAWizard.attributes;
+export const selectScaleInputs = (state: RootState) => state.cCAWizard.scaleInputs;
 
 export default cCAWizardSlice.reducer;
