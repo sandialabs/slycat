@@ -196,10 +196,10 @@ const ControlsSelection = (props) => {
       >
         Actions
       </button>
-      <div 
+      <div
         ref={dropdownMenuRef}
-        id="selection-switcher" 
-        className="dropdown-menu" 
+        id="selection-switcher"
+        className="dropdown-menu"
         aria-labelledby="selection-dropdown"
       >
         <button
