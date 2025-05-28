@@ -7,10 +7,12 @@ import { produce } from "immer";
 import {
   Attribute,
   resetCCAWizard,
+  selectAttributes,
   selectDataLocation,
   selectFileUploaded,
   selectMid,
   selectPid,
+  selectScaleInputs,
   selectTab,
   setAttributes,
   setFileUploaded,
@@ -22,7 +24,6 @@ import {
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
-import { useSelector } from "node_modules/react-redux/dist/react-redux";
 
 /**
  * A hook for controlling how the back and continue buttons work based on the current redux state
@@ -33,6 +34,7 @@ export const useCCAWizardFooter = () => {
   const dataLocation = useAppSelector(selectDataLocation);
   const fileUploaded = useAppSelector(selectFileUploaded);
   const dispatch = useAppDispatch();
+  const uploadSelection = useUploadSelection();
 
   /**
    * handle continue operation
@@ -45,9 +47,9 @@ export const useCCAWizardFooter = () => {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
-      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+      uploadSelection();
     }
-  }, [dispatch, fileUploaded, setTabName, tabName]);
+  }, [dispatch, uploadSelection, fileUploaded, setTabName, tabName]);
 
   /**
    * handle back operation
@@ -58,6 +60,9 @@ export const useCCAWizardFooter = () => {
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_FINISH_MODEL) {
+      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
     }
   }, [dispatch, setTabName, tabName]);
 
@@ -86,7 +91,7 @@ export const useCCAWizardFooter = () => {
   );
   return React.useMemo(
     () => [backButton, nextButton],
-    [fileUploaded, tabName, dataLocation, dispatch],
+    [fileUploaded, handleContinue, handleBack, tabName, dataLocation, dispatch],
   );
 };
 
@@ -198,6 +203,7 @@ const useFileUploadSuccess = () => {
           );
           dispatch(setAttributes(attributes ?? []));
           setUploadStatus(true);
+          dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
         },
       });
     },
@@ -215,6 +221,7 @@ export const useHandleLocalFileSubmit = (): [
 ] => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
+  const dispatch = useAppDispatch();
   const fileUploadSuccess = useFileUploadSuccess();
   const [progress, setProgress] = React.useState<number>(0);
   const [progressStatus, setProgressStatus] = React.useState("");
@@ -323,4 +330,62 @@ export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
     },
     [attributes, dispatch],
   );
+};
+
+/**
+ * Hook for dealing with submission to the server of the inputs, outputs, and scale inputs to the server.
+ * @returns a function for updating inputs and outputs
+ */
+export const useUploadSelection = () => {
+  const mid = useAppSelector(selectMid);
+  const scaleInputs = useAppSelector(selectScaleInputs);
+  const attributes = useAppSelector(selectAttributes);
+  const dispatch = useAppDispatch();
+  return React.useCallback(() => {
+    const inputs = attributes
+      .filter((attribute) => attribute["Axis Type"] === "Input")
+      .map((attribute) => attribute.index);
+    const outputs = attributes
+      .filter((attribute) => attribute["Axis Type"] === "Output")
+      .map((attribute) => attribute.index);
+    console.log("attributes", attributes);
+    console.log("inputs", inputs);
+    console.log("outputs", outputs);
+    if (inputs.length === 0) {
+      dialog.dialog({
+        message: "The number of inputs must be at least one.",
+      });
+    } else if (outputs.length === 0) {
+      dialog.dialog({
+        message: "The number of outputs must be at least one.",
+      });
+    } else {
+      client.put_model_parameter({
+        mid: mid,
+        aid: "input-columns",
+        value: inputs,
+        input: true,
+        success: function () {
+          client.put_model_parameter({
+            mid: mid,
+            aid: "output-columns",
+            value: outputs,
+            input: true,
+            success: function () {
+              client.put_model_parameter({
+                mid: mid,
+                aid: "scale-inputs",
+                value: scaleInputs,
+                input: true,
+                success: function () {
+                  // set the tab
+                  dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
+                },
+              });
+            },
+          });
+        },
+      });
+    }
+  }, [mid, attributes, scaleInputs, dispatch]);
 };

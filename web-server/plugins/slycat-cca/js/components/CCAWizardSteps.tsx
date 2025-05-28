@@ -55,7 +55,7 @@ export const CCAWizardSteps = () => {
               <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls> */}
           </div>
         </div>
-        <div hidden={true}>
+        <div hidden={!(tabName === TabNames.CCA_FINISH_MODEL)}>
           <form data-bind="submit: name_model" id="new-cca-name-model-form" noValidate>
             {/* <slycat-model-controls
                 params="name:model.name,description:model.description,marking:model.marking"

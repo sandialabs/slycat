@@ -19,13 +19,26 @@ export const CCAWizardNavItems = () => {
         key={"Upload Table"}
         name={"Upload Table"}
         active={tabName === TabNames.CCA_LOCAL_BROWSER_TAB}
-        hidden={false}
+        hidden={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB}
+      />
+      <CCANavItem
+        key={"Select Columns"}
+        name={"Select Columns"}
+        active={tabName === TabNames.CCA_TABLE_INGESTION}
+        hidden={
+          tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
+          tabName === TabNames.CCA_LOCAL_BROWSER_TAB
+        }
+      />
+      <CCANavItem
+        key={"Name Model"}
+        name={"Name Model"}
+        active={tabName === TabNames.CCA_FINISH_MODEL}
+        hidden={tabName !== TabNames.CCA_FINISH_MODEL}
       />
       {/* TODO: the hidden tabs below should be consolidated */}
       <CCANavItem key={"Choose Host"} name={"Choose Host"} hidden={true} />
       <CCANavItem key={"Select Table"} name={"Select Table"} hidden={true} />
-      <CCANavItem key={"Select Columns"} name={"Select Columns"} />
-      <CCANavItem key={"Name Model"} name={"Name Model"} />
     </ul>
   );
 };
