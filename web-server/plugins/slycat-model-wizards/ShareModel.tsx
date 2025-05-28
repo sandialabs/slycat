@@ -173,7 +173,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
         <ul className="nav share-model-tabs nav-tabs mb-4">
           <li className="nav-item">
             <a
-              className={`nav-link ${activeTab === "link" ? "active" : ""} font-weight-bold`}
+              className={`nav-link ${activeTab === "link" ? "active" : ""} fw-bold`}
               style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
               href="#"
               onClick={(e) => {
@@ -186,7 +186,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
           </li>
           <li className="nav-item">
             <a
-              className={`nav-link ${activeTab === "embed" ? "active" : ""} font-weight-bold`}
+              className={`nav-link ${activeTab === "embed" ? "active" : ""} fw-bold`}
               style={{ fontSize: "1.1rem", padding: "0.75rem 1.25rem" }}
               href="#"
               onClick={(e) => {

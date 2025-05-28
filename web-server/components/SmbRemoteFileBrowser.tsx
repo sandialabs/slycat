@@ -326,7 +326,7 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
       }
       return (
         <div className="slycat-remote-browser">
-            <label className='font-weight-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
+            <label className='fw-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
             {this.props.hostname}:
             </label>
             <div className="form-group row path mb-3">
