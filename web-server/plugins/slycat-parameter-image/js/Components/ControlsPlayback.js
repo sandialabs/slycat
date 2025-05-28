@@ -3,7 +3,7 @@ import ControlsButton from "components/ControlsButton";
 
 const ControlsPlayback = (props) => {
     return !props.any_video_open ? null : (
-      <div className='input-group-append'>
+      <>
         <ControlsButton title='Jump to beginning' icon='fa-fast-backward' 
           button_style={props.button_style} 
           disabled={props.disabled} 
@@ -38,7 +38,7 @@ const ControlsPlayback = (props) => {
           disabled={props.disabled} 
           click={props.trigger_jump_to_end} 
         />
-      </div>
+      </>
     );
 };
 

@@ -37,15 +37,13 @@ class ControlsVideo extends React.Component {
   render() {
     return !this.props.any_video_open ? null : (
       <React.Fragment>
-        <div className="input-group-prepend">
-          <ControlsButtonToggle
-            title={this.props.video_sync ? "Unsync videos" : "Sync videos"}
-            icon={faVideo}
-            active={this.props.video_sync}
-            toggle_active_state={this.props.toggle_video_sync}
-            button_style={this.props.button_style}
-          />
-        </div>
+        <ControlsButtonToggle
+          title={this.props.video_sync ? "Unsync videos" : "Sync videos"}
+          icon={faVideo}
+          active={this.props.video_sync}
+          toggle_active_state={this.props.toggle_video_sync}
+          button_style={this.props.button_style}
+        />
         <input
           type="text"
           className="form-control form-control-sm video-sync-time"

@@ -654,7 +654,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
             {any_video_open && (
               <ControlsGroup
                 id="video-controls"
-                class="input-group input-group-sm ms-3 playback-controls"
+                class="input-group input-group-sm ms-3 playback-controls d-inline-flex w-auto"
               >
                 <ControlsVideo
                   video_sync={this.props.video_sync}
