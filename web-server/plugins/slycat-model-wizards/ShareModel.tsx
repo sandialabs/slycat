@@ -158,6 +158,8 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
     return `<iframe src='${embedUrl}' width='${widthValue}' height='${iframeHeight}'></iframe>`;
   };
 
+  const readOnlyInputClasses = "bg-body-secondary text-dark-emphasis";
+
   return (
     <div className="share-model">
       <div className="modal-header">
@@ -169,7 +171,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
           aria-label="Close"
         ></button>
       </div>
-      <div className="modal-body">
+      <div className="modal-body pb-4">
         <ul className="nav share-model-tabs nav-tabs mb-4">
           <li className="nav-item">
             <a
@@ -202,26 +204,22 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
         {activeTab === "link" && (
           <div className="tab-content">
             <p>Share this link with others to give them access to this model.</p>
-            <div className="form-group">
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  readOnly
-                  value={currentUrl}
-                  ref={linkInputRef}
-                  onClick={(e) => (e.target as HTMLInputElement).select()}
-                />
-                <div className="input-group-append">
-                  <button
-                    className={`btn ${copyLinkSuccess ? "btn-success" : "btn-primary"}`}
-                    type="button"
-                    onClick={handleCopyLink}
-                  >
-                    {copyLinkSuccess ? "Copied!" : "Copy"}
-                  </button>
-                </div>
-              </div>
+            <div className="input-group">
+              <input
+                type="text"
+                className={`form-control ${readOnlyInputClasses}`}
+                readOnly
+                value={currentUrl}
+                ref={linkInputRef}
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+              <button
+                className={`btn ${copyLinkSuccess ? "btn-success" : "btn-primary"}`}
+                type="button"
+                onClick={handleCopyLink}
+              >
+                {copyLinkSuccess ? "Copied!" : "Copy"}
+              </button>
             </div>
           </div>
         )}
@@ -245,32 +243,30 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                       onChange={handleWidthChange}
                       placeholder={widthUnit === "%" ? "e.g. 100" : "e.g. 800"}
                     />
-                    <div className="input-group-append">
-                      <button
-                        className={`btn ${widthUnit === "%" ? "btn-secondary" : "btn-outline-secondary"}`}
-                        type="button"
-                        onClick={() => {
-                          if (widthUnit !== "%") {
-                            setWidthUnit("%");
-                            setIframeWidth("100");
-                          }
-                        }}
-                      >
-                        %
-                      </button>
-                      <button
-                        className={`btn ${widthUnit === "px" ? "btn-secondary" : "btn-outline-secondary"}`}
-                        type="button"
-                        onClick={() => {
-                          if (widthUnit !== "px") {
-                            setWidthUnit("px");
-                            setIframeWidth("1024");
-                          }
-                        }}
-                      >
-                        px
-                      </button>
-                    </div>
+                    <button
+                      className={`btn ${widthUnit === "%" ? "btn-secondary" : "btn-outline-secondary"}`}
+                      type="button"
+                      onClick={() => {
+                        if (widthUnit !== "%") {
+                          setWidthUnit("%");
+                          setIframeWidth("100");
+                        }
+                      }}
+                    >
+                      %
+                    </button>
+                    <button
+                      className={`btn ${widthUnit === "px" ? "btn-secondary" : "btn-outline-secondary"}`}
+                      type="button"
+                      onClick={() => {
+                        if (widthUnit !== "px") {
+                          setWidthUnit("px");
+                          setIframeWidth("1024");
+                        }
+                      }}
+                    >
+                      px
+                    </button>
                   </div>
                   <small className="form-text text-muted">
                     {widthUnit === "%" ? "Percentage of container width" : "Pixels"}
@@ -287,9 +283,7 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
                       onChange={handleHeightChange}
                       placeholder="e.g. 600"
                     />
-                    <div className="input-group-append">
-                      <span className="input-group-text">px</span>
-                    </div>
+                    <span className="input-group-text">px</span>
                   </div>
                 </div>
               </div>
@@ -355,26 +349,24 @@ const ShareModel: React.FC<ShareModelProps> = ({ modelType }) => {
               )}
             </div>
 
-            <div className="form-group mt-5">
+            <div className="mt-5">
               <h5>HTML Embed Code</h5>
               <div className="input-group">
                 <textarea
-                  className="form-control"
+                  className={`form-control ${readOnlyInputClasses}`}
                   rows={3}
                   readOnly
                   value={getIframeCode()}
                   ref={embedTextareaRef}
                   onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                 />
-                <div className="input-group-append align-self-stretch">
-                  <button
-                    className={`btn ${copyEmbedSuccess ? "btn-success" : "btn-primary"} h-100`}
-                    type="button"
-                    onClick={handleCopyEmbed}
-                  >
-                    {copyEmbedSuccess ? "Copied!" : "Copy"}
-                  </button>
-                </div>
+                <button
+                  className={`btn ${copyEmbedSuccess ? "btn-success" : "btn-primary"}`}
+                  type="button"
+                  onClick={handleCopyEmbed}
+                >
+                  {copyEmbedSuccess ? "Copied!" : "Copy"}
+                </button>
               </div>
             </div>
           </div>
