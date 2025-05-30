@@ -332,7 +332,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         border: "1px solid rgb(222, 226, 230)",
       }
       return (
-        <div className="slycat-remote-browser RemoteFileBrowser.tsx">
+        <div className="slycat-remote-browser">
             <label className='fw-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
             {this.props.hostname}:
             </label>
