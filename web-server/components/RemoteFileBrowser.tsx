@@ -257,7 +257,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
         return (
           <tr 
-          className={this.state.selected==i?'selected':''} 
+          className={this.state.selected==i?'table-active':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
           onDoubleClick={()=> this.browseUpByFile(rawFile)}>
@@ -332,7 +332,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         border: "1px solid rgb(222, 226, 230)",
       }
       return (
-        <div className="slycat-remote-browser">
+        <div className="slycat-remote-browser RemoteFileBrowser.tsx">
             <label className='fw-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
             {this.props.hostname}:
             </label>

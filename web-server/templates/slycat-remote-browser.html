@@ -53,7 +53,7 @@
         <tr
           data-bind="
           event:{click : $parent.select, dblclick : $parent.open},
-          css:{directory:type()=='d', file:type()=='f', selected:selected()}
+          css:{directory:type()=='d', file:type()=='f', 'table-active':selected()}
         "
         >
           <td data-bind="html:icon"></td>

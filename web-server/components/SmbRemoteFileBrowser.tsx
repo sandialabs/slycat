@@ -259,7 +259,7 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
         }
         return (
           <tr
-          className={this.state.selected==i?'selected':''} 
+          className={this.state.selected==i?'table-active':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
           onDoubleClick={()=> this.browseUpByFile(rawFile)}>
