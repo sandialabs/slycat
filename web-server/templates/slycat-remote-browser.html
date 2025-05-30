@@ -1,25 +1,31 @@
 <div class="slycat-remote-browser" data-bind="css: persistence_id">
   <form data-bind="submit: browse_path">
     <div>
-      <label class="fw-bold" for="slycat-remote-browser-path"
-        data-bind="text: hostname() + ':'" />
+      <label class="fw-bold" for="slycat-remote-browser-path" data-bind="text: hostname() + ':'" />
     </div>
     <div class="mb-3 row path" data-bind="css: {'is-invalid': path_error}">
       <div class="col-sm-12">
-        <div class="input-group" style="width: calc(100% - 44px); float: left; margin-right: 5px;">
-          <input type="text" class="form-control" id="slycat-remote-browser-path" 
+        <div class="input-group" style="width: calc(100% - 44px); float: left; margin-right: 5px">
+          <input
+            type="text"
+            class="form-control"
+            id="slycat-remote-browser-path"
             data-bind="value: path_input"
-          >
+          />
           <div class="input-group-append">
             <button class="btn btn-secondary" type="submit">Go</button>
           </div>
         </div>
-        <div class="btn-group" role="group" style="float: right;">
-          <button class="btn btn-secondary" type="button" title="Navigate to parent directory"
+        <div class="btn-group" role="group" style="float: right">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            title="Navigate to parent directory"
             data-bind="
             click:up,
             disable:path()=='/'
-          ">
+          "
+          >
             <i class="fa fa-level-up" aria-hidden="true"></i>
           </button>
         </div>
@@ -29,7 +35,11 @@
       </div>
     </div>
   </form>
-  <div class="slycat-remote-browser-files" id="slycat-remote-browser-files" data-bind="updateFeedback: browser_updating">
+  <div
+    class="slycat-remote-browser-files"
+    id="slycat-remote-browser-files"
+    data-bind="updateFeedback: browser_updating"
+  >
     <table class="table table-hover table-sm">
       <thead>
         <tr>
@@ -40,10 +50,12 @@
         </tr>
       </thead>
       <tbody data-bind="foreach: files">
-        <tr data-bind="
+        <tr
+          data-bind="
           event:{click : $parent.select, dblclick : $parent.open},
           css:{directory:type()=='d', file:type()=='f', selected:selected()}
-        ">
+        "
+        >
           <td data-bind="html:icon"></td>
           <td data-bind="text:name"></td>
           <td data-bind="text:size"></td>
@@ -53,14 +65,17 @@
     </table>
   </div>
   <div class="progress" data-bind="visible: progress() != undefined && progress() > 0">
-    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
-      aria-valuemin="0" 
-      aria-valuemax="100" 
+    <div
+      class="progress-bar progress-bar-striped progress-bar-animated"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
       data-bind="
         attr: {'aria-valuenow' : progress},
         style: {'width' : progress() + '%'},
         text: progress_status,
-    ">
+    "
+    >
       Uploading
     </div>
   </div>
