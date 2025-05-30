@@ -275,7 +275,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
         return (
           <tr
-          className={this.state.selected==i?'selected':''} 
+          className={this.state.selected==i?'table-active':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
           onDoubleClick={()=> this.browseUpByFile(rawFile)}>

@@ -5,7 +5,7 @@
 
 // CSS resources
 import "css/slycat-bootstrap.scss";
-import "css/slycat.css";
+import "css/slycat.scss";
 
 import server_root from 'js/slycat-server-root';
 import client from 'js/slycat-web-client';
