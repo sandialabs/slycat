@@ -267,19 +267,17 @@ export default class SlycatRemoteControls extends Component {
           <label className="col-sm-2 col-form-label">Hostname</label>
           <div className="col-sm-9">
             <div className="input-group">
-              <div className="input-group-prepend">
-                <button
-                  className="btn btn-secondary dropdown-toggle"
-                  type="button"
-                  id="dropdownMenuButton"
-                  data-bs-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                />
-                <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  {this.getHostnamesJSX()}
-                </ul>
-              </div>
+              <button
+                className="btn btn-secondary dropdown-toggle"
+                type="button"
+                id="dropdownMenuButton"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              />
+              <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {this.getHostnamesJSX()}
+              </ul>
               <input
                 className="form-control"
                 value={this.state.hostname ? this.state.hostname : ""}

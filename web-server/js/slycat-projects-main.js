@@ -5,7 +5,7 @@
 
 // CSS resources
 import "css/slycat-bootstrap.scss";
-import "css/slycat.css";
+import "css/slycat.scss";
 
 import React from "react";
 import { createRoot } from "react-dom/client";

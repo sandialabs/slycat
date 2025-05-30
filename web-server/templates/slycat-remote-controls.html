@@ -2,20 +2,18 @@
   <label class="col-sm-2 col-form-label" data-bind="css: {'disabled' : !enable()}">Hostname</label>
   <div class="col-sm-10">
     <div class="input-group">
-      <div class="input-group-prepend">
-        <button
-          type="button"
-          class="btn btn-secondary dropdown-toggle"
-          data-bind="css:{disabled:!enable()}"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        ></button>
-        <ul class="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
-          <li>
-            <a class="dropdown-item" data-bind="click:$parent.use_remote($data),text:hostname"></a>
-          </li>
-        </ul>
-      </div>
+      <button
+        type="button"
+        class="btn btn-secondary dropdown-toggle"
+        data-bind="css:{disabled:!enable()}"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      ></button>
+      <ul class="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
+        <li>
+          <a class="dropdown-item" data-bind="click:$parent.use_remote($data),text:hostname"></a>
+        </li>
+      </ul>
       <input class="form-control" type="text" data-bind="enable:enable, textInput:hostname" />
     </div>
   </div>

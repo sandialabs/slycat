@@ -5,7 +5,7 @@
 
 // CSS resources
 import "css/slycat-bootstrap.scss";
-import "css/slycat.css";
+import "css/slycat.scss";
 
 import client from "js/slycat-web-client";
 import ko from "knockout";

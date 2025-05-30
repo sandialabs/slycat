@@ -2,6 +2,8 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
+@use "slycat-bootstrap-custom";
+
 html {
   font-family: sans-serif;
   font-size: 16px;
@@ -232,19 +234,15 @@ slycat-navbar nav .alert pre {
   min-width: 100%;
 }
 
-.slycat-remote-browser tr.selected,
-.slycat-remote-browser tr.selected:hover {
-  background-color: #337ab7 !important;
-  color: white;
+/* Customize bootstrap's hover colors for .table-active selectedrows to make them match the non-hover selected row colors. */
+.slycat-remote-browser .table-hover > tbody > tr.table-active:hover > * {
+  background-color: slycat-bootstrap-custom.$table-active-bg;
+  color: slycat-bootstrap-custom.$table-active-color;
 }
 
 .slycat-remote-browser td:first-child {
   font-size: 120%;
   width: 24px;
-}
-
-.slycat-remote-browser tr:hover {
-  background: #eee;
 }
 
 /* slycat-remote-browser uses flex layout to size itself to available space when displayed with other components  */
@@ -433,12 +431,14 @@ slycat-navbar nav .alert pre {
 .slycat-table-ingestion tbody tr:nth-child(odd) {
   background-color: #f2f2f2;
 }
+
 .slycat-table-ingestion tbody tr.selected {
   background-color: #337ab7;
 }
 .slycat-table-ingestion tbody tr.selected th {
   color: white;
 }
+
 .slycat-table-ingestion tbody tr.disabled th {
   color: #cccccc;
 }
