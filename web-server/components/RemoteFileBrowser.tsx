@@ -257,7 +257,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
         return (
           <tr 
-          className={this.state.selected==i?'selected':''} 
+          className={this.state.selected==i?'table-active':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
           onDoubleClick={()=> this.browseUpByFile(rawFile)}>

@@ -6,7 +6,7 @@
 // Global css resources loaded here
 import "css/slycat-bootstrap.scss";
 import "font-awesome/css/font-awesome.css";
-import "css/slycat.css";
+import "css/slycat.scss";
 
 import server_root from "js/slycat-server-root";
 import api_root from "js/slycat-api-root";

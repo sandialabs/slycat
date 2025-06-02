@@ -5,7 +5,7 @@
 
 // CSS resources
 import 'css/slycat-bootstrap.scss';
-import 'css/slycat.css';
+import 'css/slycat.scss';
 
 import SearchWrapper from 'components/SearchWrapper';
 import { renderTemplates } from 'components/TemplateList';
