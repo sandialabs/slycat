@@ -153,7 +153,6 @@ function constructor(params) {
         // check if there are actual errors or just warnings
         if (errors.length >= 1) {
           component.enable(false);
-          // for (var i = 0; i < errors.length; i++) {
           if (!errors[0].includes('Oops')) {
             error_messages =
               "The errors listed below must be fixed before you can upload a model.\n\n"
