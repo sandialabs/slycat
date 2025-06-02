@@ -277,13 +277,13 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">
+  <button class="btn btn-light me-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back, enable:enable">
     Back
   </button>
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
   <button
     class="btn btn-primary local-browser-continue browser-continue"
-    data-bind="visible:tab() == 1,click:upload_table"
+    data-bind="visible:tab() == 1,click:upload_table,enable:enable"
   >
     <i class="fa fa-spinner fa-pulse"></i> Continue
   </button>
@@ -313,7 +313,7 @@
   </button>
   <button
     class="btn btn-primary remote-browser-continue browser-continue"
-    data-bind="visible:tab() == 3 && ps_type() == 'remote',click:load_table"
+    data-bind="visible:tab() == 3 && ps_type() == 'remote',click:load_table,enable:enable"
   >
     <i class="fa fa-spinner fa-pulse"></i> Continue
   </button>

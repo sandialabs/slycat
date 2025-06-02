@@ -34,6 +34,7 @@ function constructor(params) {
   component.error_messages = ko.observable("");
   component.warning_messages = ko.observable("");
   component.useProjectData = ko.observable(false);
+  component.enable = ko.observable(true);
 
   component.model = mapping.fromJS({
     _id: null,
@@ -151,14 +152,17 @@ function constructor(params) {
 
         // check if there are actual errors or just warnings
         if (errors.length >= 1) {
-          for (var i = 0; i < errors.length; i++) {
+          component.enable(false);
+          // for (var i = 0; i < errors.length; i++) {
+          if (!errors[0].includes('Oops')) {
             error_messages =
-              "The errors listed below must be fixed before you can upload a model.\n"
+              "The errors listed below must be fixed before you can upload a model.\n\n"
           }
+          // }
 
           // display warnings/errors
           for (var i = 0; i < errors.length; i++) {
-            error_messages += "\nError: " + errors[i] + "\n";
+            error_messages += "Error:\n" + errors[i] + "\n";
           }
           component.error_messages(error_messages);
 
