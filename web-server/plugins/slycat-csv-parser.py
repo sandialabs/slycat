@@ -81,8 +81,6 @@ def parse_file(file, model, database):
                 # could not convert something to a float defaulting to string
                 except Exception as e:
                     column_has_floats = False
-                    # cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
-                # break
 
             if not column_has_floats:
                 [str(item) for item in column[1:]]
