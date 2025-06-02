@@ -157,7 +157,6 @@ function constructor(params) {
             error_messages =
               "The errors listed below must be fixed before you can upload a model.\n\n"
           }
-          // }
 
           // display warnings/errors
           for (var i = 0; i < errors.length; i++) {
