@@ -98,8 +98,7 @@ def parse_file(file, model, database):
             if len(data[j]) >= 20:
                 num_rows_to_validate = 19
             else:
-                # num_rows_to_validate = len(data[j]) - 1
-                num_rows_to_validate = 100
+                num_rows_to_validate = len(data[j]) - 1
             for i in range(0, num_rows_to_validate):
                 if isfloat(data[j][i]):
                     data_types.append("<class 'float'>")
