@@ -601,8 +601,8 @@
 .category-filter {
   position: relative;
   display: inline-block;
-  width: 95px;
-  min-width: 95px;
+  width: 115px;
+  min-width: 115px;
   padding-left: 5px;
   margin-right: 20px;
 }
@@ -750,10 +750,9 @@
   overflow-y: auto;
   display: inline-block;
   margin: 20px 4px 20px 20px;
-  /*left: 20px;*/
   position: relative;
-  width: 70px;
-  min-width: 70px;
+  width: 80px;
+  min-width: 80px;
 }
 .auto-width .slycat-category-filter {
   width: auto;
