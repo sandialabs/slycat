@@ -6,8 +6,9 @@ import { CCAWizardDataSelectionTab } from "./wizard-tabs/CCADataWizardSelectionT
 import { CCAWizardNavItems } from "./CCANavItems";
 import { useAppSelector } from "./wizard-store/hooks";
 import { selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
-import { CCALocalBrowserTab } from "./wizard-tabs/CCSLocalBrowserTab";
+import { CCALocalBrowserTab } from "./wizard-tabs/CCALocalBrowserTab";
 import { CCATableIngestion } from "./wizard-tabs/CCATableIngestion";
+import { CCAModelCreation } from "./wizard-tabs/CCAModelCreation";
 
 export const CCAWizardSteps = () => {
   // The `state` arg is correctly typed as `RootState` already
@@ -19,6 +20,7 @@ export const CCAWizardSteps = () => {
         <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB)} />
         <CCALocalBrowserTab hidden={!(tabName === TabNames.CCA_LOCAL_BROWSER_TAB)} />
         <CCATableIngestion hidden={!(tabName === TabNames.CCA_TABLE_INGESTION)} />
+        <CCAModelCreation hidden={!(tabName === TabNames.CCA_FINISH_MODEL)}/>
         <div hidden={true}>
           <form role="form">
             {/* <slycat-remote-controls
@@ -54,13 +56,6 @@ export const CCAWizardSteps = () => {
               ></slycat-remote-browser>
               <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls> */}
           </div>
-        </div>
-        <div hidden={!(tabName === TabNames.CCA_FINISH_MODEL)}>
-          <form data-bind="submit: name_model" id="new-cca-name-model-form" noValidate>
-            {/* <slycat-model-controls
-                params="name:model.name,description:model.description,marking:model.marking"
-              ></slycat-model-controls> */}
-          </form>
         </div>
       </div>
     </div>

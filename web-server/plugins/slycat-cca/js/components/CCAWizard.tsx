@@ -9,7 +9,7 @@ import {
   useHandleClosingCallback,
   useHandleWizardSetup,
 } from "./CCAWizardUtils";
-import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
+import { useAppSelector } from "./wizard-store/hooks";
 import { selectMid, selectPid } from "./wizard-store/reducers/cCAWizardSlice";
 
 interface CCAWizardParams {

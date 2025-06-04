@@ -32,8 +32,7 @@ export const CCAModalContent = (props: React.PropsWithChildren<ModalContentProps
     <div>
       <div className="modal-header">
         <h3 className="modal-title">{title}</h3>
-        <button type="button" className="close" aria-label="Close" onClick={handleCloseModal}>
-          <span aria-hidden="true">&times;</span>
+        <button type="button" className="btn-close" aria-label="Close" data-bs-dismiss="modal" onClick={handleCloseModal}>
         </button>
       </div>
       <div className="modal-body" id="slycat-wizard">
