@@ -23,28 +23,28 @@ class CCAControlsBar extends React.Component {
       <React.Fragment>
         <React.StrictMode>
           <ControlsGroup id='controls' class='btn-group ms-3'>
-            <ControlsDropdown 
-              id='color-dropdown' 
-              label='Point Color' 
+            <ControlsDropdown
+              id='color-dropdown'
+              label='Point Color'
               title='Change Point Color'
-              state_label='color_variable' 
+              state_label='color_variable'
               trigger='color-selection-changed'
               items={this.props.color_variables}
-              selected={this.props.variable_selected} 
-              set_selected={this.props.setVariableSelected} 
+              selected={this.props.variable_selected}
+              set_selected={this.props.setVariableSelected}
               button_style={button_style}
             />
-            <ControlsButtonDownloadDataTable 
-              selection={this.props.selection} 
-              aid={this.props.aid} 
-              mid={this.props.mid} 
-              model_name={this.props.model_name} 
+            <ControlsButtonDownloadDataTable
+              selection={this.props.selection}
+              aid={this.props.aid}
+              mid={this.props.mid}
+              model_name={this.props.model_name}
               metadata={this.props.metadata}
-              indices={this.props.indices} 
+              indices={this.props.indices}
               button_style={button_style} />
           </ControlsGroup>
           <ControlsGroup id='color-switcher' class='btn-group ms-3'>
-            <ControlsDropdownColor 
+            <ControlsDropdownColor
               button_style={button_style}
               colormaps={slycat_color_maps}
               colormap={this.props.colormap}
@@ -54,7 +54,7 @@ class CCAControlsBar extends React.Component {
               title='Change color scheme'
               state_label='color'
               trigger='colormap-changed'
-              single={true} 
+              single={true}
               setColormap={this.props.setColormap}
             />
           </ControlsGroup>
@@ -78,7 +78,7 @@ const mapStateToProps = state => {
 
 export default connect(
   mapStateToProps,
-  { 
+  {
     setVariableSelected,
     setColormap,
   }
