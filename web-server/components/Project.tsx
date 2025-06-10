@@ -45,32 +45,30 @@ const delete_project = (name: string, id: string) => {
 export default class Project extends React.Component<ProjectProps, ProjectState> {
   render() {
     return (
-      <div className="list-group-item list-group-item-action">
-        <a
-          href={server_root + "projects/" + this.props.id}
-          style={{ color: "inherit", textDecoration: "inherit" }}
-        >
-          <div className="h6">
-            <span className="badge text-bg-secondary me-1">project</span> {this.props.name}
-          </div>
-          <p className="mb-2">{this.props.description}</p>
-          <small>
-            <em>
-              Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
-            </em>
+      <div className="card mb-3">
+        <div className="card-body">
+          <span className="float-end">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              name={this.props.id}
+              onClick={() => delete_project(this.props.name, this.props.id)}
+              title="Delete this project"
+            >
+              <span className="fa fa-trash-o" />
+            </button>
+          </span>
+          <a href={server_root + "projects/" + this.props.id} className="text-decoration-none">
+            <h5 className="card-title">{this.props.name}</h5>
+          </a>
+
+          {this.props.description && <p className="card-text">{this.props.description}</p>}
+        </div>
+        <div className="card-footer">
+          <small className="text-body-secondary">
+            Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
           </small>
-        </a>
-        <span className="float-end">
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-danger"
-            name={this.props.id}
-            onClick={() => delete_project(this.props.name, this.props.id)}
-            title="Delete this project"
-          >
-            <span className="fa fa-trash-o" />
-          </button>
-        </span>
+        </div>
       </div>
     );
   }

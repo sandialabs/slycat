@@ -168,7 +168,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       <div>
         <div className="container pb-0">
           <div className="d-flex justify-content-between">
-            <h3 className="px-4 text-capitalize">{this.props.type}</h3>
+            <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
             {this.getSearchField()}
           </div>
         </div>

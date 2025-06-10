@@ -62,11 +62,7 @@ export default class ProjectsList extends React.Component<ProjectsListProps, Pro
 
   render() {
     return this.props.projects.length > 0 ? (
-      <div className="container pt-0">
-        <div className="card">
-          <div className="list-group list-group-flush">{this.getProjectMapping()}</div>
-        </div>
-      </div>
+      <div className="container pt-0">{this.getProjectMapping()}</div>
     ) : null;
   }
 }

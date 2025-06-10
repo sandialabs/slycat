@@ -7,8 +7,12 @@
 $dropdown-item-padding-x: 1.5rem;
 
 // Customize .table-active selected row background and text color
-$table-active-bg: #337ab7;
-$table-active-color: white;
+$table-active-bg: rgb(51, 122, 183);
+$table-active-color: rgb(255, 255, 255);
 
 // Change primary color to sandia blue
 $primary: slycat-bootstrap-variables.$sandia-blue;
+$danger: slycat-bootstrap-variables.$sandia-red;
+
+// Change primary link color
+$link-color: rgb(0 102 204);
