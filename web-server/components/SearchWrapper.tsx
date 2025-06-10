@@ -1,6 +1,6 @@
-import { ModelsList } from 'components/ModelsList';
-import ProjectsList from 'components/ProjectsList';
-import React from 'react';
+import { ModelsList } from "components/ModelsList";
+import ProjectsList from "components/ProjectsList";
+import React from "react";
 
 /**
  * @param items list of item objects
@@ -45,12 +45,12 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     this.state = {
       initialItems: this.props.items,
       items: [],
-      searchQuery: ''
+      searchQuery: "",
     };
   }
 
   public componentDidMount() {
-    this.setState(prevState => ({ items: prevState.initialItems }));
+    this.setState((prevState) => ({ items: prevState.initialItems }));
   }
 
   /**
@@ -72,7 +72,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly filterList = (trimSearchQuery: string): void => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       const updatedList = prevState.initialItems.filter(
         ({ name, description, creator, created }) => {
           return (
@@ -81,7 +81,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
             this.matchStrings(creator, trimSearchQuery) ||
             this.matchStrings(created, trimSearchQuery)
           );
-        }
+        },
       );
       return { items: updatedList, searchQuery: trimSearchQuery };
     });
@@ -96,11 +96,11 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     return this.props.items.length > 0 ? (
       <input
         className="form-control mb-3"
-        style={{ width: '13rem' }}
+        style={{ width: "13rem" }}
         type="search"
         placeholder={`Filter ${this.props.type}`}
         aria-label={`Filter ${this.props.type}`}
-        onChange={e => this.filterList(e.target.value.trim().toLowerCase())}
+        onChange={(e) => this.filterList(e.target.value.trim().toLowerCase())}
       />
     ) : null;
   };
@@ -111,7 +111,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly getList = (): JSX.Element => {
-    return this.props.type === 'models' ? (
+    return this.props.type === "models" ? (
       <ModelsList models={this.state.items} />
     ) : (
       <ProjectsList projects={this.state.items as any} />
@@ -133,25 +133,25 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         </p>,
         <p key={2} className="mb-0">
           Clear it to see all {this.props.type}, or change it to search again.
-        </p>
+        </p>,
       ];
     }
     // When there are no models (i.e., empty project)
-    else if (this.props.items.length === 0 && this.props.type === 'models') {
+    else if (this.props.items.length === 0 && this.props.type === "models") {
       message = [
         <p key={1}>There are no models in this project.</p>,
         <p key={2} className="mb-0">
           You can add a model by using the Create menu above.
-        </p>
+        </p>,
       ];
     }
     // When there are no projects (i.e., empty site)
-    else if (this.props.items.length === 0 && this.props.type === 'projects') {
+    else if (this.props.items.length === 0 && this.props.type === "projects") {
       message = [
         <p key={1}>There are no projects.</p>,
         <p key={2} className="mb-0">
           You can add a project by using the Create menu above.
-        </p>
+        </p>,
       ];
     }
     return message ? (

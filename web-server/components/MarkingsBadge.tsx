@@ -14,10 +14,6 @@ export default class MarkingsBadge extends React.Component<any, any> {
     }
     // badge() function returns HTML, which React escapes, so we need to use
     // dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml
-    return (
-      <div
-        dangerouslySetInnerHTML={{ __html: this.props.recognized_marking.badge }}
-      />
-    );
+    return <div dangerouslySetInnerHTML={{ __html: this.props.recognized_marking.badge }} />;
   }
 }

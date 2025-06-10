@@ -80,7 +80,7 @@ const Model = (props: ModelProps) => {
             {model_names.translate_model_type(props.model_type)}
           </span>
           <small className="text-body-secondary">
-            Created <span>{props.created}</span> 
+            Created <span>{props.created}</span>
             <br />
             by <span>{props.creator}</span>
           </small>

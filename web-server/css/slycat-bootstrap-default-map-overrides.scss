@@ -10,8 +10,7 @@ $custom-colors: (
   "slycat-controls": $slycat-controls,
 );
 $custom-spacers: (
-  25: $spacer * 0.75,
-  // 3/4 spacing in navbar
+  25: $spacer * 0.75, // 3/4 spacing in navbar
 );
 
 // Then we merge the maps with Bootstrap's existing maps

@@ -1,12 +1,11 @@
 <div class="bootstrap-styles" id="slycat-navbar-container">
   <!-- Navigation Bar -->
-  <nav class="navbar navbar-light navbar-expand-sm px-3 py-2" data-bind="css: {'model' : model_id()}">
+  <nav
+    class="navbar navbar-light navbar-expand-sm px-3 py-2"
+    data-bind="css: {'model' : model_id()}"
+  >
     <!-- Branding element. Slycat name visible only on projects listing page.  -->
-    <a
-      class="navbar-brand text-dark fw-bold"
-      data-bind="attr:{href:server_root}"
-      title="Slycat"
-    >
+    <a class="navbar-brand text-dark fw-bold" data-bind="attr:{href:server_root}" title="Slycat">
       <span class="ps-3" data-bind="visible: project().length == 0, text: server_friendly_name"
         >Slycat</span
       >
@@ -28,10 +27,7 @@
           >
             <span class="fa fa-user fs-5"></span>
           </a>
-          <div
-            class="dropdown-menu dropdown-menu-end"
-            aria-labelledby="slycat-personal-tools-user"
-          >
+          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="slycat-personal-tools-user">
             <h6 class="dropdown-header" data-bind="text: user.name">User's Actual Name</h6>
             <h6
               class="dropdown-header"
@@ -59,10 +55,7 @@
           >
             <span class="fa fa-question-circle fs-5"></span>
           </a>
-          <div
-            class="dropdown-menu dropdown-menu-end"
-            aria-labelledby="slycat-personal-tools-help"
-          >
+          <div class="dropdown-menu dropdown-menu-end" aria-labelledby="slycat-personal-tools-help">
             <a class="dropdown-item" data-bind="click:about"
               ><span class="fa fa-fw"></span> About Slycat</a
             >

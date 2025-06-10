@@ -48,7 +48,7 @@ html#slycat-model-page body {
   color: #353535 !important;
 }
 
-.bootstrap-styles .navbar>.container .navbar-brand {
+.bootstrap-styles .navbar > .container .navbar-brand {
   margin-left: 0;
 }
 
@@ -200,16 +200,16 @@ slycat-navbar nav .alert pre {
   padding: 6px 0;
 }
 
-.bootstrap-styles #slycat-wizard .nav:not(.share-model-tabs)>li>a {
+.bootstrap-styles #slycat-wizard .nav:not(.share-model-tabs) > li > a {
   color: #333333;
 }
 
-.bootstrap-styles #slycat-wizard .nav>li>a:hover {
+.bootstrap-styles #slycat-wizard .nav > li > a:hover {
   background-color: transparent;
 }
 
-.bootstrap-styles #slycat-wizard .nav-pills>li.active>a,
-.bootstrap-styles #slycat-wizard .nav-pills>li.active>a:hover {
+.bootstrap-styles #slycat-wizard .nav-pills > li.active > a,
+.bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover {
   color: black;
   background-color: #d7d7d7;
 }
@@ -260,7 +260,7 @@ slycat-navbar nav .alert pre {
 }
 
 /* Customize bootstrap's hover colors for .table-active selectedrows to make them match the non-hover selected row colors. */
-.slycat-remote-browser .table-hover>tbody>tr.table-active:hover>* {
+.slycat-remote-browser .table-hover > tbody > tr.table-active:hover > * {
   background-color: boot-overrides.$table-active-bg;
   color: boot-overrides.$table-active-color;
 }
@@ -294,7 +294,7 @@ slycat-navbar nav .alert pre {
   flex-shrink: 0;
 }
 
-.slycat-remote-browser-flex-layout slycat-parser-controls>.form-group {
+.slycat-remote-browser-flex-layout slycat-parser-controls > .form-group {
   margin-bottom: 0;
 }
 
