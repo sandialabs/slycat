@@ -21,7 +21,7 @@
         <div class="dropdown">
           <a
             id="slycat-personal-tools-user"
-            class="btn btn-sm dropdown-toggle text-secondary"
+            class="btn btn-sm dropdown-toggle slycat-dropdown-toggle-no-arrow text-secondary"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -52,7 +52,7 @@
         <div class="dropdown">
           <a
             id="slycat-personal-tools-help"
-            class="btn btn-sm dropdown-toggle text-secondary"
+            class="btn btn-sm dropdown-toggle slycat-dropdown-toggle-no-arrow text-secondary"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -83,7 +83,7 @@
           <button
             type="button"
             id="slycat-create-wizards"
-            class="btn btn-sm btn-success dropdown-toggle"
+            class="btn btn-sm btn-slycat-navbar dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -128,7 +128,7 @@
           <button
             type="button"
             id="slycat-edit-wizards"
-            class="btn btn-sm btn-warning dropdown-toggle"
+            class="btn btn-sm btn-slycat-navbar dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -173,7 +173,7 @@
           <button
             type="button"
             id="slycat-info-wizards"
-            class="btn btn-sm btn-info dropdown-toggle"
+            class="btn btn-sm btn-slycat-navbar dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -202,7 +202,7 @@
         <div class="btn-group nav-bookmarks">
           <button
             type="button"
-            class="btn btn-sm btn-primary dropdown-toggle"
+            class="btn btn-sm btn-slycat-navbar dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -305,7 +305,7 @@
           <button
             type="button"
             id="slycat-delete-wizards"
-            class="btn btn-sm btn-danger dropdown-toggle"
+            class="btn btn-sm btn-slycat-navbar dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
@@ -349,7 +349,7 @@
 
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb" class="me-auto">
-        <ol class="breadcrumb pe-3 py-25 ps-0" data-bind="css: {'slycat-no-models': model().length == 0}">
+        <ol class="breadcrumb pe-3 ps-0" data-bind="css: {'slycat-no-models': model().length == 0}">
           <!-- ko foreach: project -->
           <li
             class="breadcrumb-item project"

@@ -17,7 +17,7 @@ class CCAControlsBar extends React.Component {
 
   render() {
     // Define default button style
-    const button_style = 'btn-outline-dark';
+    const button_style = 'btn-slycat-controls';
 
     return (
       <React.Fragment>

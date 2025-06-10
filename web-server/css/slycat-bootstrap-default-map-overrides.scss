@@ -1,0 +1,19 @@
+// Slycat Bootstrap default map overrides.
+// More info:
+// https://getbootstrap.com/docs/5.3/customize/sass/#maps-and-loops
+
+// First we create our custom maps
+$custom-colors: (
+  "sandia": $sandia-blue,
+  "slycat-navbar": $slycat-navbar,
+  //   "slycat-controls": $slycat-default-bg,
+  "slycat-controls": $slycat-controls,
+);
+$custom-spacers: (
+  25: $spacer * 0.75,
+  // 3/4 spacing in navbar
+);
+
+// Then we merge the maps with Bootstrap's existing maps
+$theme-colors: map-merge($theme-colors, $custom-colors);
+$spacers: map-merge($spacers, $custom-spacers);

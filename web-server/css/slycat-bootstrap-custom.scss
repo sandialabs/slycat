@@ -1,20 +1,29 @@
-// Bootstrap customizations for Slycat, per https://getbootstrap.com/docs/5.3/customize/overview/
+// Slycat Bootstrap customizations.
+// https://getbootstrap.com/docs/5.3/customize/sass/
 
-// Customizing the spacing variables.
-// Only added 25 for three-quarter spacing in navbar, but had to redeclare all the spacers anyway.
-$spacer: 1rem;
-$spacers: (
-  0: 0,
-  1: $spacer * 0.25,
-  2: $spacer * 0.5,
-  25: $spacer * 0.75,
-  3: $spacer,
-  4: $spacer * 1.5,
-  5: $spacer * 3,
-);
+// Generic Bootstrap variable definitions should go in slycat-bootstrap-variables.scss.
+// Bootstrap default variable overrides should go in slycat-bootstrap-default-overrides.scss.
+// Bootstrap default map overrides should go in slycat-bootstrap-default-map-overrides.scss.
 
-$dropdown-item-padding-x: 1.5rem;
+// Custom button styles for slycat-controls
+.btn-slycat-controls {
+  // --bs-btn-color: var(--bs-dark);
+  // --bs-btn-bg: #{$slycat-controls};
+  // --bs-btn-border-color: var(--bs-dark);
+  // --bs-btn-hover-color: #fff;
+  // --bs-btn-hover-bg: var(--bs-dark);
+  // --bs-btn-hover-border-color: var(--bs-dark);
+  // --bs-btn-focus-shadow-rgb: 33, 37, 41;
+  // --bs-btn-active-color: #fff;
+  // --bs-btn-active-bg: var(--bs-dark);
+  // --bs-btn-active-border-color: var(--bs-dark);
+  // --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  // --bs-btn-disabled-color: var(--bs-dark);
+  // --bs-btn-disabled-bg: transparent;
+  // --bs-btn-disabled-border-color: var(--bs-dark);
+}
 
-// Customize .table-active selected rowbackground and text color
-$table-active-bg: #337ab7;
-$table-active-color: white;
+// Remove the arrow from dropdown toggles.
+.slycat-dropdown-toggle-no-arrow::after {
+  display: none;
+}

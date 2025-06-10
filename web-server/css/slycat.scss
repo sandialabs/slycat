@@ -2,17 +2,19 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-@use "slycat-bootstrap-custom";
+@use "slycat-bootstrap-default-overrides" as boot-overrides;
+@use "slycat-bootstrap-variables" as boot-vars;
+@use "slycat-variables" as vars;
 
 html {
   font-family: sans-serif;
   font-size: 16px;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
 }
 
 body {
   color: #333333;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.42857;
   margin: 0;
@@ -25,7 +27,7 @@ html#slycat-model-page body {
 }
 
 .bootstrap-styles .navbar {
-  background-color: rgb(215, 215, 215);
+  background-color: boot-vars.$slycat-navbar-bg;
   border: 0;
   border-radius: 0;
   margin: 0;
@@ -236,8 +238,8 @@ slycat-navbar nav .alert pre {
 
 /* Customize bootstrap's hover colors for .table-active selectedrows to make them match the non-hover selected row colors. */
 .slycat-remote-browser .table-hover > tbody > tr.table-active:hover > * {
-  background-color: slycat-bootstrap-custom.$table-active-bg;
-  color: slycat-bootstrap-custom.$table-active-color;
+  background-color: boot-overrides.$table-active-bg;
+  color: boot-overrides.$table-active-color;
 }
 
 .slycat-remote-browser td:first-child {
@@ -287,7 +289,7 @@ slycat-navbar nav .alert pre {
 }
 
 .slycat-scrollbar .thumb {
-  background: lightgray;
+  background: rgb(211, 211, 211);
   border-radius: 6px;
   transition: background 0.25s ease-in-out;
 }
@@ -300,21 +302,21 @@ slycat-navbar nav .alert pre {
 
 /* slycat-range-slider component */
 .slycat-range-slider .domain {
-  background: #ddd;
-  border: 1px solid #ccc;
+  background: vars.$range-slider-domain-bg;
+  border: 1px solid vars.$range-slider-domain-border;
   border-radius: 6px;
 }
 
 .slycat-range-slider.invert .domain {
-  background: #aabbff;
-  border: 1px solid #aabbff;
+  background: vars.$range-slider-range-bg;
+  border: 1px solid vars.$range-slider-range-bg;
   border-radius: 6px;
 }
 
 .slycat-range-slider.invert:hover .domain,
 .slycat-range-slider.dragging.invert .domain {
-  background: #7788ff;
-  border-color: #7788ff;
+  background: vars.$range-slider-hover-bg;
+  border-color: vars.$range-slider-hover-bg;
   transition: all 0.25s ease-in-out;
 }
 
@@ -333,23 +335,23 @@ slycat-navbar nav .alert pre {
 }
 
 .slycat-range-slider .range {
-  background: #aabbff;
+  background: vars.$range-slider-range-bg;
 }
 
 .slycat-range-slider.invert .range {
-  background: #ddd;
-  border: 1px solid #ccc;
+  background: vars.$range-slider-domain-bg;
+  border: 1px solid vars.$range-slider-domain-border;
 }
 
 .slycat-range-slider:hover .range,
 .slycat-range-slider.dragging .range {
-  background: #7788ff;
+  background: vars.$range-slider-hover-bg;
   transition: background 0.25s ease-in-out;
 }
 
 .slycat-range-slider.invert:hover .range,
 .slycat-range-slider.dragging.invert .range {
-  background: #ddd;
+  background: vars.$range-slider-domain-bg;
   transition: none;
 }
 
@@ -374,7 +376,7 @@ slycat-navbar nav .alert pre {
 }
 
 .slycat-range-slider .thumb {
-  background: #aabbff;
+  background: vars.$range-slider-range-bg;
   border-radius: 6px;
   transition: background 0.25s ease-in-out;
 }
@@ -382,7 +384,7 @@ slycat-navbar nav .alert pre {
 .slycat-range-slider .thumb:hover,
 .slycat-range-slider.dragging .thumb,
 .slycat-range-slider:hover .thumb {
-  background: #7788ff;
+  background: vars.$range-slider-hover-bg;
 }
 
 .slycat-clickable {
