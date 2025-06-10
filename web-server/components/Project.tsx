@@ -1,7 +1,7 @@
 import server_root from "js/slycat-server-root";
 import * as React from "react";
-import client from "../js/slycat-web-client";
-import * as dialog from "../js/slycat-dialog";
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
 
 interface ProjectProps {
   name: string;

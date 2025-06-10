@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
-import React from 'react';
+import React from "react";
 
-import client from '../js/slycat-web-client.js';
-import Model from './Model';
-import Spinner from './Spinner';
+import client from "js/slycat-web-client.js";
+import Model from "./Model";
+import Spinner from "./Spinner";
 
 /**
  * @param items list of item objects
@@ -25,7 +25,7 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
   public constructor(props: ModelsListProps) {
     super(props);
     this.state = {
-      markings: null
+      markings: null,
     };
   }
 
@@ -57,7 +57,7 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
       return <Spinner />;
     }
     // Render real UI ...
-    const models = this.props.models.map(model => {
+    const models = this.props.models.map((model) => {
       return (
         <Model
           name={model.name}
@@ -66,7 +66,7 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
           description={model.description}
           created={model.created}
           creator={model.creator}
-          model_type={model['model-type']}
+          model_type={model["model-type"]}
           marking={model.marking}
           markings={this.state.markings}
           message={model.message}
@@ -77,10 +77,8 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
 
     if (models.length > 0) {
       return (
-        <div className='container pt-0'>
-          <div className='card'>
-            <div className='list-group list-group-flush'>{models}</div>
-          </div>
+        <div className="container pt-0">
+          <div className="row row-cols-3 g-4">{models}</div>
         </div>
       );
     }

@@ -1,9 +1,9 @@
 import React from "react";
-import server_root from "./../js/slycat-server-root";
-import model_names from "./../js/slycat-model-names";
+import server_root from "js/slycat-server-root";
+import model_names from "js/slycat-model-names";
 import MarkingsBadge from "./MarkingsBadge";
-import client from "../js/slycat-web-client";
-import * as dialog from "../js/slycat-dialog";
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
 
 interface ModelProps {
   markings: any[];
@@ -46,42 +46,46 @@ const Model = (props: ModelProps) => {
   const cssClasses = `list-group-item list-group-item-action 
         ${recognized_marking === undefined ? "list-group-item-warning" : ""}`;
   return (
-    <div className={cssClasses}>
-      <a
-        href={server_root + "models/" + props.id}
-        style={{ color: "inherit", textDecoration: "inherit" }}
-      >
-        <div className="h6">
-          <span className="badge text-bg-secondary me-1">
-            {model_names.translate_model_type(props.model_type) + " model"}
+    <div className="col">
+      <div className="card h-100 rounded-0 shadow-sm">
+        <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
+        <div className="card-body">
+          <span className="float-end ms-3">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              name={props.id}
+              onClick={() => delete_model(props.name, props.id)}
+              title="Delete this model"
+            >
+              <span className="fa fa-trash-o" />
+            </button>
           </span>
-          &nbsp;
-          <strong>{props.name}</strong>
+
+          <a href={server_root + "models/" + props.id} className="text-decoration-none">
+            <h5 className="card-title">{props.name}</h5>
+          </a>
+
+          {props.description && <p className="card-text">{props.description}</p>}
         </div>
+
         {props.result == "failed" && (
           <span className="badge text-bg-danger" title={props.message}>
             Failed
           </span>
         )}
-        <p className="mb-2">{props.description}</p>
-        <small>
-          <em>
-            Created <span>{props.created}</span> by <span>{props.creator}</span>
-          </em>
-        </small>
-      </a>
-      <span className="float-end ms-3">
-        <button
-          type="button"
-          className="btn btn-sm btn-outline-danger"
-          name={props.id}
-          onClick={() => delete_model(props.name, props.id)}
-          title="Delete this model"
-        >
-          <span className="fa fa-trash-o" />
-        </button>
-      </span>
-      <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
+
+        <div className="card-footer">
+          <span className="badge text-bg-primary text-capitalize ms-3 float-end">
+            {model_names.translate_model_type(props.model_type)}
+          </span>
+          <small className="text-body-secondary">
+            Created <span>{props.created}</span> 
+            <br />
+            by <span>{props.creator}</span>
+          </small>
+        </div>
+      </div>
     </div>
   );
 };

@@ -225,7 +225,7 @@ slycat-navbar nav .alert pre {
 .slycat-content {
   position: relative;
   flex: 1;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
   display: flex;
   flex-direction: column;
 }
@@ -537,7 +537,7 @@ label.bottom-margin {
 
 #unrecognized-marking-warning {
   position: absolute;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
   z-index: 3;
 }
 
