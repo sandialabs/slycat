@@ -5,11 +5,12 @@
     data-bind="css: {'model' : model_id()}"
   >
     <!-- Branding element. Slycat name visible only on projects listing page.  -->
-    <a class="navbar-brand text-dark fw-bold" data-bind="attr:{href:server_root}" title="Slycat">
-      <span class="ps-3" data-bind="visible: project().length == 0, text: server_friendly_name"
-        >Slycat</span
-      >
-    </a>
+    <a
+      class="navbar-brand text-dark fw-bold"
+      data-bind="attr:{href:server_root}"
+      title="Slycat"
+    ></a>
+
     <!-- The actual navigation elements. -->
     <div
       class="collapse navbar-collapse d-flex flex-row-reverse flex-nowrap"
@@ -343,6 +344,14 @@
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb" class="me-auto">
         <ol class="breadcrumb pe-3 ps-0" data-bind="css: {'slycat-no-models': model().length == 0}">
+          <li
+            class="breadcrumb-item"
+            data-bind="css: {'active text-dark fw-bold': project().length == 0}"
+          >
+            <a data-bind="attr:{href:server_root}">
+              <span data-bind="text: server_friendly_name">Slycat</span>
+            </a>
+          </li>
           <!-- ko foreach: project -->
           <li
             class="breadcrumb-item project"

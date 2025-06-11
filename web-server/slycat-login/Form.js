@@ -119,7 +119,7 @@ class Form extends Component {
             <label htmlFor="password">{SLYCAT_AUTH_LABELS.password}</label>
           </div>
 
-          <button className="btn btn-lg btn-primary btn-block" id="go" type="submit">
+          <button className="btn btn-lg btn-primary btn-block w-100" id="go" type="submit">
             {SLYCAT_AUTH_LABELS.signIn}
           </button>
         </form>

@@ -12,7 +12,7 @@ $slycat-navbar-bg: rgb(210 210 210);
 
 // Slycat navbar button color
 // $slycat-navbar: $sandia-blue;
-$slycat-navbar: rgb(215, 215, 215);
+$slycat-navbar: $slycat-navbar-bg;
 .btn-slycat-navbar {
   --bs-btn-font-weight: 600;
   --bs-btn-font-size: 1rem;

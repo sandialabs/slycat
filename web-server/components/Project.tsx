@@ -45,7 +45,7 @@ const delete_project = (name: string, id: string) => {
 export default class Project extends React.Component<ProjectProps, ProjectState> {
   render() {
     return (
-      <div className="card mb-3">
+      <div className="card mb-4 shadow-sm">
         <div className="card-body">
           <span className="float-end">
             <button
@@ -66,7 +66,8 @@ export default class Project extends React.Component<ProjectProps, ProjectState>
         </div>
         <div className="card-footer">
           <small className="text-body-secondary">
-            Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
+            Created <span>{new Date(this.props.created).toLocaleString()}</span> by{" "}
+            <span>{this.props.creator}</span>
           </small>
         </div>
       </div>

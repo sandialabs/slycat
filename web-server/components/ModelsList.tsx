@@ -78,7 +78,7 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
     if (models.length > 0) {
       return (
         <div className="container pt-0">
-          <div className="row row-cols-3 g-4">{models}</div>
+          <div className="row row-cols-2 g-5">{models}</div>
         </div>
       );
     }

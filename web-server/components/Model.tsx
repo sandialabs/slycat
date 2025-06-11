@@ -76,11 +76,11 @@ const Model = (props: ModelProps) => {
         )}
 
         <div className="card-footer">
-          <span className="badge text-bg-primary text-capitalize ms-3 float-end">
+          <span className="badge text-bg-primary text-capitalize mt-1 ms-3 float-end">
             {model_names.translate_model_type(props.model_type)}
           </span>
           <small className="text-body-secondary">
-            Created <span>{props.created}</span>
+            Created <span>{new Date(props.created).toLocaleString()}</span>
             <br />
             by <span>{props.creator}</span>
           </small>
