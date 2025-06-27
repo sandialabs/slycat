@@ -238,10 +238,14 @@ module.exports = {
   },
   ignoreWarnings: [
     {
-      // Ignoring warnings about the deprecated SCSS stuff in Bootstrap 4
-      // since we can't upgrade to 5 yet and the warning gets in the way of developing.
+      // Ignoring warnings about deprecated SCSS stuff in Bootstrap 5.
       // Module ends with slycat-bootstrap.scss
       module: /slycat-bootstrap\.scss$/,
+    },
+    {
+      // Ignore Bootstrap deprecation warnings in our custom SCSS files
+      module: /web-server\/css\/.*\.scss$/,
+      message: /Deprecation Warning.*node_modules\/bootstrap\/scss\/_functions\.scss/,
     },
   ],
 };
