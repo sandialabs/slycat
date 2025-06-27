@@ -1,5 +1,7 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
+@use "slycat-variables" as slycat-variables;
+
 /* Absolute positioning SlickGrid container to get it to fit the box completely */
 #timeseries-table-slickgrid {
   position: absolute;
@@ -34,11 +36,11 @@
 }
 .slick-header-column.headerSimId.selected {
   background-color: #888888;
-  color: white;
+  color: slycat-variables.$slycat-text-on-dark;
 }
 .slick-header-column.headerInput.selected {
   background-color: #3ca654;
-  color: white;
+  color: slycat-variables.$slycat-text-on-dark;
 }
 .slick-header {
   background-color: transparent;
@@ -57,25 +59,24 @@
   background-color: #dddddd;
 }
 .headerInput {
-  background-color: #eeffe0;
+  background-color: slycat-variables.$slycat-green-light;
 }
 .rowInput {
-  background-color: #c7e9c0;
+  background-color: slycat-variables.$slycat-green-medium;
 }
 .rowInput.selected {
-  background-color: #3ca654;
-  color: white;
+  background-color: slycat-variables.$slycat-green-dark;
+  color: slycat-variables.$slycat-text-on-dark;
 }
 .headerOutput {
-  background-color: #eeeeff;
+  background-color: slycat-variables.$slycat-lavender-light;
 }
 .rowOutput {
-  /* background-color: #dbd9eb; */
-  background-color: #f0f0f0;
+  background-color: slycat-variables.$slycat-lavender-medium;
 }
 .rowOutput.selected {
-  background-color: #7767b0;
-  color: white;
+  background-color: slycat-variables.$slycat-lavender-dark;
+  color: slycat-variables.$slycat-text-on-dark;
 }
 
 /* Removing zebra striping */
@@ -92,7 +93,7 @@
 
 .slick-cell,
 .slick-header-column {
-  color: #666655;
+  color: slycat-variables.$slycat-text-on-light;
   font-size: small;
 }
 .slick-header-column {
@@ -103,11 +104,10 @@
   height: auto !important;
 }
 .highlightWrapper {
-  color: white;
+  color: slycat-variables.$slycat-text-on-dark;
   padding: 2px 4px 3px 4px;
 }
 .highlightWrapper.light {
-  /*color: #666655;*/
   color: black;
 }
 /* Stripe backgrounds generated using http://www.stripegenerator.com */
@@ -181,12 +181,12 @@
 .slick-row.nullRow .slick-cell,
 .slick-row.nullRow .slick-cell .highlightWrapper {
   background-color: white !important;
-  color: #666655 !important;
+  color: slycat-variables.$slycat-text-on-light !important;
 }
 .slick-row.nullRow .slick-cell.selected,
 .slick-row.nullRow .slick-cell.selected .highlightWrapper {
   background-color: #dddddd !important;
-  color: #666655 !important;
+  color: slycat-variables.$slycat-text-on-light !important;
 }
 .slick-row.hiddenRow .slick-cell,
 .slick-row.hiddenRow .slick-cell .highlightWrapper {

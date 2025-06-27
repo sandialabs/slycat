@@ -11,7 +11,7 @@ import "../css/ui.css";
 import "slickgrid/dist/styles/sass/slick.grid.scss";
 import "slickgrid/dist/styles/sass/slick-default-theme.scss";
 import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
-import "css/slick-slycat-theme.css";
+import "css/slick-slycat-theme.scss";
 
 import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";

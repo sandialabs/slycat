@@ -2,22 +2,91 @@
 // Only use this file to define variables that are used in the Slycat application outside of customizing Bootstrap,
 // like for table, scatterplot, etc.
 
+@use "bootstrap/scss/functions" as bootstrap-functions;
+
 // Range Slider Colors
 $range-slider-domain-bg: rgb(221, 221, 221);
 $range-slider-domain-border: rgb(204, 204, 204);
 $range-slider-range-bg: rgb(170, 187, 255);
 $range-slider-hover-bg: rgb(119, 136, 255);
 
-$slycat-gray-light: #ececec;
-$slycat-gray-medium: #dddddd;
+// Table Begin
 
-$slycat-lavender-light: #eeeeff;
-$slycat-lavender-medium: #dbd9eb;
-$slycat-lavender-dark: #7767b0;
+// Default
+$slycat-gray-light: rgb(236, 236, 236);
+$slycat-gray-medium: rgb(221, 221, 221);
 
-$slycat-green-light: #eeffe0;
-$slycat-green-medium: #c7e9c0;
-$slycat-green-dark: #3ca654;
+$slycat-lavender-light: rgb(238, 238, 255);
+$slycat-lavender-medium: rgb(219, 217, 235);
+$slycat-lavender-dark: rgb(119, 103, 176);
 
-$slycat-text-on-dark: white;
-$slycat-text-on-light: #666655;
+$slycat-green-light: rgb(238, 255, 224);
+$slycat-green-medium: rgb(199, 233, 192);
+$slycat-green-dark: rgb(60, 166, 84);
+
+$slycat-text-on-dark: rgb(255, 255, 255);
+$slycat-text-on-light: rgb(102, 102, 85);
+
+// Lighter
+$lighter-amount: -30%;
+
+$slycat-gray-light: bootstrap-functions.shift-color(rgb(236, 236, 236), $lighter-amount);
+$slycat-gray-medium: bootstrap-functions.shift-color(rgb(221, 221, 221), $lighter-amount);
+
+$slycat-lavender-light: bootstrap-functions.shift-color(rgb(238, 238, 255), $lighter-amount);
+$slycat-lavender-medium: bootstrap-functions.shift-color(rgb(219, 217, 235), $lighter-amount);
+$slycat-lavender-dark: bootstrap-functions.shift-color(rgb(119, 103, 176), $lighter-amount);
+
+$slycat-green-light: bootstrap-functions.shift-color(rgb(238, 255, 224), $lighter-amount);
+$slycat-green-medium: bootstrap-functions.shift-color(rgb(199, 233, 192), $lighter-amount);
+$slycat-green-dark: bootstrap-functions.shift-color(rgb(60, 166, 84), $lighter-amount);
+
+// Headers
+$slycat-table-header-bg: $slycat-gray-light;
+$slycat-table-header-text: $slycat-text-on-light;
+$slycat-table-header-selected-bg: $slycat-gray-light;
+$slycat-table-header-selected-text: $slycat-text-on-light;
+
+// Headers Input
+$slycat-table-header-input-bg: $slycat-green-light;
+$slycat-table-header-input-text: $slycat-text-on-light;
+$slycat-table-header-input-selected-bg: $slycat-green-light;
+$slycat-table-header-input-selected-text: $slycat-text-on-light;
+
+// Headers Output
+$slycat-table-header-output-bg: $slycat-lavender-light;
+$slycat-table-header-output-text: $slycat-text-on-light;
+$slycat-table-header-output-selected-bg: $slycat-lavender-light;
+$slycat-table-header-output-selected-text: $slycat-text-on-light;
+
+// Body
+$slycat-table-bg: transparent;
+$slycat-table-text: $slycat-text-on-dark;
+$slycat-table-selected-bg: $slycat-gray-medium;
+$slycat-table-selected-text: $slycat-text-on-dark;
+
+// Body Inputs
+$slycat-table-input-bg: $slycat-green-light;
+$slycat-table-input-text: $slycat-text-on-dark;
+$slycat-table-input-selected-bg: $slycat-green-dark;
+$slycat-table-input-selected-text: $slycat-text-on-dark;
+
+// Body Output
+$slycat-table-output-bg: $slycat-lavender-light;
+$slycat-table-output-text: $slycat-text-on-dark;
+$slycat-table-output-selected-bg: $slycat-lavender-dark;
+$slycat-table-output-selected-text: $slycat-text-on-dark;
+
+// Body Hidden
+$slycat-table-hidden-bg: transparent;
+$slycat-table-hidden-text: $slycat-text-on-dark;
+$slycat-table-hidden-selected-bg: $slycat-gray-medium;
+$slycat-table-hidden-selected-text: $slycat-text-on-dark;
+
+// Body Null
+$slycat-table-null-bg: white;
+$slycat-table-null-text: $slycat-text-on-light;
+$slycat-table-null-selected-bg: $slycat-gray-medium;
+$slycat-table-null-selected-text: $slycat-text-on-light;
+
+// Table End

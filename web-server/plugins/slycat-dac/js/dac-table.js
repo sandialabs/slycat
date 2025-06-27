@@ -9,7 +9,7 @@ import "jquery-ui/themes/base/all.css";
 import "slickgrid/dist/styles/sass/slick.grid.scss";
 import "slickgrid/dist/styles/sass/slick-default-theme.scss";
 import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
-import "css/slick-slycat-theme.css";
+import "css/slick-slycat-theme.scss";
 import "../css/slick-dac-theme.css";
 
 import selections from "./dac-manage-selections.js";
