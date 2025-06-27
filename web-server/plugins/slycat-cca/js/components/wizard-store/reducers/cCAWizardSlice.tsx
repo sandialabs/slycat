@@ -32,6 +32,8 @@ export interface CCAWizardState {
   attributes: Attribute[];
   scaleInputs: boolean;
   marking: string | undefined;
+  description: string | undefined;
+  name: string | undefined;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -42,6 +44,8 @@ const initialState: CCAWizardState = {
   attributes: [],
   scaleInputs: false,
   marking: undefined,
+  description: undefined,
+  name: undefined,
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -71,6 +75,12 @@ export const cCAWizardSlice = createSlice({
     setMarking: (state, action: PayloadAction<string>) => {
       state.marking = action.payload;
     },
+    setDescription: (state, action: PayloadAction<string>) => {
+      state.description = action.payload;
+    },
+    setName: (state, action: PayloadAction<string>) => {
+      state.name = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -85,7 +95,9 @@ export const {
   setFileUploaded,
   setAttributes,
   setScaleInputs,
-  setMarking
+  setMarking,
+  setDescription,
+  setName,
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -96,5 +108,7 @@ export const selectMid = (state: RootState) => state.cCAWizard.mid;
 export const selectAttributes = (state: RootState) => state.cCAWizard.attributes;
 export const selectScaleInputs = (state: RootState) => state.cCAWizard.scaleInputs;
 export const selectMarking = (state: RootState) => state.cCAWizard.marking;
+export const selectDescription = (state: RootState) => state.cCAWizard.marking;
+export const selectName = (state: RootState) => state.cCAWizard.marking;
 
 export default cCAWizardSlice.reducer;
