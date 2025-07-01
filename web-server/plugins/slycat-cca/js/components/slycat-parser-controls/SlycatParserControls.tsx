@@ -15,7 +15,6 @@ export const SlycatParserControls = (props: {
     ?.filter((parser: { categories: () => string }) => includes(parser.categories(), "table"));
   React.useEffect(() => {
     if (filteredParsers !== undefined && filteredParsers.length > 0) {
-      console.log("reset", filteredParsers[0].type());
       setParser(filteredParsers[0].type());
     }
   }, [filteredParsers.length]);
