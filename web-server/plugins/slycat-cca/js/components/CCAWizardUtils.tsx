@@ -4,13 +4,17 @@
 import * as React from "react";
 import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import { produce } from "immer";
+import server_root from "js/slycat-server-root";
 import {
   Attribute,
   resetCCAWizard,
   selectAttributes,
   selectDataLocation,
+  selectDescription,
   selectFileUploaded,
+  selectMarking,
   selectMid,
+  selectName,
   selectPid,
   selectScaleInputs,
   selectTab,
@@ -35,6 +39,7 @@ export const useCCAWizardFooter = () => {
   const fileUploaded = useAppSelector(selectFileUploaded);
   const dispatch = useAppDispatch();
   const uploadSelection = useUploadSelection();
+  const finishModel = useFinishModel();
 
   /**
    * handle continue operation
@@ -48,6 +53,9 @@ export const useCCAWizardFooter = () => {
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       uploadSelection();
+    }
+    if (tabName === TabNames.CCA_FINISH_MODEL) {
+      finishModel();
     }
   }, [dispatch, uploadSelection, fileUploaded, setTabName, tabName]);
 
@@ -145,7 +153,6 @@ export const useHandleClosingCallback = (
   return React.useCallback(() => {
     setModalOpen(false);
     if (stateMid) {
-      console.log("delete");
       client.delete_model_fetch({ mid: stateMid });
     }
     dispatch(resetCCAWizard());
@@ -250,7 +257,6 @@ export const useHandleLocalFileSubmit = (): [
         progress_status: progressStatusCallback,
         progress_final: 90,
         success: function () {
-          console.log("uploaded");
           setProgress(100);
           setProgressStatus("File upload complete");
           setUploadStatus(true);
@@ -291,7 +297,6 @@ export const useSetUploadStatus = () => {
   const dispatch = useAppDispatch();
   return React.useCallback(
     (status: boolean) => {
-      console.log("dispatching", status);
       dispatch(setFileUploaded(status));
     },
     [dispatch],
@@ -333,6 +338,36 @@ export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
 };
 
 /**
+ * Hook for dealing with submission to the server of the final model values such as name and description
+ * @returns a function for finalizing the cca model
+ */
+export const useFinishModel = () => {
+  const mid = useAppSelector(selectMid);
+  const description = useAppSelector(selectDescription);
+  const name = useAppSelector(selectName);
+  const marking = useAppSelector(selectMarking);
+  return React.useCallback(() => {
+    // update the final model meta data and trigger the post model finish script
+    client.put_model({
+      mid: mid,
+      name: name,
+      description: description,
+      marking: marking,
+      success: () => {
+        client.post_model_finish({
+          mid: mid,
+          success: () => {
+            location.href = server_root + "models/" + mid;
+          },
+        });
+      },
+      // throw up a dialog if we get into an error state
+      error: dialog.ajax_error("Error updating model."),
+    });
+  }, [mid, name, description, marking, server_root]);
+};
+
+/**
  * Hook for dealing with submission to the server of the inputs, outputs, and scale inputs to the server.
  * @returns a function for updating inputs and outputs
  */
@@ -348,9 +383,6 @@ export const useUploadSelection = () => {
     const outputs = attributes
       .filter((attribute) => attribute["Axis Type"] === "Output")
       .map((attribute) => attribute.index);
-    console.log("attributes", attributes);
-    console.log("inputs", inputs);
-    console.log("outputs", outputs);
     if (inputs.length === 0) {
       dialog.dialog({
         message: "The number of inputs must be at least one.",
