@@ -264,7 +264,12 @@ export default class SlycatRemoteControls extends Component {
     return (
       <form>
         <div className="form-group row mb-3">
-          <label className="col-sm-2 col-form-label">Hostname</label>
+          <label className="col-sm-1 col-form-label">Hostname</label>
+          <i
+            className="fa fa-question-circle inline-help col-sm-1"
+            aria-hidden="true"
+            title="Host or HPC system where job will be submitted"
+          ></i>
           <div className="col-sm-9">
             <div className="input-group">
               <button
