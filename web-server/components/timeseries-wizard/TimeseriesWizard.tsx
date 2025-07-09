@@ -226,6 +226,7 @@ export default class TimeseriesWizard extends React.Component<
         {this.state.visibleTab === "5" ?
           <div>
             <HPCParametersTab 
+              hostName={this.state.hostname}
               accountId={this.state.accountId}
               partition={this.state.partition}
               numNodes={this.state.numNodes}
@@ -348,32 +349,34 @@ export default class TimeseriesWizard extends React.Component<
         this.setState({ visibleTab: '1' }, () => {
           client.get_user_config_fetch({ hostname: this.state.hostname })
             .then((results: any) => {
-              if("config" in results && "slurm" in results["config"]){
-                if("timeseries-wizard" in results["config"]){
-                  this.setState({
-                    numNodes: results["config"]["slurm"]["nnodes"] ?? null,
-                    cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
-                    partition: results["config"]["slurm"]["partition"] ?? null,
-                    jobHours: results["config"]["slurm"]["time-hours"] ?? null,
-                    jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
-                    accountId: results["config"]["slurm"]["wcid"] ?? null,
-                    workDir: results["config"]["slurm"]["workdir"] ?? null,
-                    idCol: results["config"]["timeseries-wizard"]["id-column"] ?? null,
-                    delimiter: results["config"]["timeseries-wizard"]["inputs-file-delimiter"] ?? null,
-                    timeseriesColumn: results["config"]["timeseries-wizard"]["timeseries-name"] ?? null
-                  });
-                } else {
-                  this.setState({
-                    numNodes: results["config"]["slurm"]["nnodes"] ?? null,
-                    cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
-                    partition: results["config"]["slurm"]["partition"] ?? null,
-                    jobHours: results["config"]["slurm"]["time-hours"] ?? null,
-                    jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
-                    accountId: results["config"]["slurm"]["wcid"] ?? null,
-                    workDir: results["config"]["slurm"]["workdir"] ?? null
-                  });
-                }
-            }
+              if(results != undefined) {
+                if("config" in results && "slurm" in results["config"]){
+                    if("timeseries-wizard" in results["config"]){
+                      this.setState({
+                        numNodes: results["config"]["slurm"]["nnodes"] ?? null,
+                        cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
+                        partition: results["config"]["slurm"]["partition"] ?? null,
+                        jobHours: results["config"]["slurm"]["time-hours"] ?? null,
+                        jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
+                        accountId: results["config"]["slurm"]["wcid"] ?? null,
+                        workDir: results["config"]["slurm"]["workdir"] ?? null,
+                        idCol: results["config"]["timeseries-wizard"]["id-column"] ?? null,
+                        delimiter: results["config"]["timeseries-wizard"]["inputs-file-delimiter"] ?? null,
+                        timeseriesColumn: results["config"]["timeseries-wizard"]["timeseries-name"] ?? null
+                      });
+                    } else {
+                      this.setState({
+                        numNodes: results["config"]["slurm"]["nnodes"] ?? null,
+                        cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
+                        partition: results["config"]["slurm"]["partition"] ?? null,
+                        jobHours: results["config"]["slurm"]["time-hours"] ?? null,
+                        jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
+                        accountId: results["config"]["slurm"]["wcid"] ?? null,
+                        workDir: results["config"]["slurm"]["workdir"] ?? null
+                      });
+                    }
+                  }
+              }
             });
         });
       }
