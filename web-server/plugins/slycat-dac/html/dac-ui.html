@@ -5,257 +5,425 @@ S. Martin
 4/16/2015
 -->
 
-<div id="dac-model" style="-webkit-flex:1; flex:1">
+<div id="dac-model" style="-webkit-flex: 1; flex: 1">
+  <div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px; display: none">
+    <label>Data is being processed for the model (it is safe to close the browser):</label>
+    <div class="progress" style="margin-bottom: 15px">
+      <div
+        id="dac_processing_progress_bar"
+        class="progress-bar progress-bar-striped progress-bar-animated"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
+    </div>
 
-	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px; display: none">
+    <label
+      >Process Results (to pause error scrolling click on text box, click outside text box to
+      resume):</label
+    >
+    <textarea
+      id="dac_processing_textarea"
+      class="form-control"
+      readonly
+      rows="20"
+      style="resize: vertical"
+    ></textarea>
+  </div>
 
-		<label>Data is being processed for the model (it is safe to close the browser):</label>
-		<div class="progress" style="margin-bottom: 15px">
-			<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-				 aria-valuemin="0"
-				 aria-valuemax="100">
-			</div>
-		</div>
+  <div class="ui-layout-center dac-model-content" id="dac-main-console" style="display: none">
+    <div class="ui-layout-center" id="dac-control-bar-scatter-plot">
+      <div class="ui-layout-north">
+        <!-- MDS Scatter Plot Buttons (above scatter plot)-->
+        <div class="bootstrap-styles">
+          <div
+            class="btn-group btn-group-toggle ms-1 mt-1"
+            data-bs-toggle="buttons"
+            id="dac-scatter-select-buttons"
+          >
+            <input
+              type="radio"
+              name="options"
+              autocomplete="off"
+              value="selection_1"
+              class="btn-check"
+              id="dac-scatter-button-sel-1-input"
+            />
+            <label
+              class="btn btn-outline-secondary btn-sm"
+              id="dac-scatter-button-sel-1"
+              title="Select red group. Use shift to add to group."
+              for="dac-scatter-button-sel-1-input"
+            >
+              <b style="padding: 2px 5px 1px; border: dashed 2px">R</b>
+            </label>
 
-		<label>Process Results (to pause error scrolling click on text box, click outside text box to resume):</label>
-		<textarea id="dac_processing_textarea" class="form-control" readonly rows="20" style="resize:vertical"></textarea>
+            <input
+              type="radio"
+              name="options"
+              autocomplete="off"
+              value="selection_2"
+              class="btn-check"
+              id="dac-scatter-button-sel-2-input"
+            />
+            <label
+              class="btn btn-outline-secondary btn-sm"
+              id="dac-scatter-button-sel-2"
+              title="Select blue group. Use shift to add to group."
+              for="dac-scatter-button-sel-2-input"
+            >
+              <b style="padding: 2px 5px 1px; border: dashed 2px">B</b>
+            </label>
 
-	</div>
+            <input
+              type="radio"
+              name="options"
+              autocomplete="off"
+              value="selection_3"
+              class="btn-check"
+              id="dac-scatter-button-sel-3-input"
+            />
+            <label
+              class="btn btn-outline-secondary btn-sm"
+              id="dac-scatter-button-sel-3"
+              title="Select green group. Use shift to add to group."
+              for="dac-scatter-button-sel-3-input"
+            >
+              <b style="padding: 2px 5px 1px; border: dashed 2px">G</b>
+            </label>
 
-	<div class="ui-layout-center dac-model-content" id="dac-main-console" style="display:none">
+            <input
+              type="radio"
+              name="options"
+              autocomplete="off"
+              value="subset"
+              class="btn-check"
+              id="dac-scatter-button-subset-input"
+            />
+            <label
+              class="btn btn-outline-secondary btn-sm"
+              id="dac-scatter-button-subset"
+              title="Select subset for all analysis. Use shift to exclude subset. Subset symbol turns yellow when viewing a subset."
+              for="dac-scatter-button-subset-input"
+            >
+              <b>&sube;</b>
+            </label>
 
-		<div class="ui-layout-center" id="dac-control-bar-scatter-plot">
+            <input
+              type="radio"
+              name="options"
+              autocomplete="off"
+              value="zoom"
+              class="btn-check"
+              id="dac-scatter-button-zoom-input"
+            />
+            <label
+              class="btn btn-outline-secondary btn-sm"
+              id="dac-scatter-button-zoom"
+              title="Zoom for scatter plot. Magnifying glass turns yellow when zoomed."
+              for="dac-scatter-button-zoom-input"
+            >
+              <i class="fa fa-search"></i>
+            </label>
+          </div>
 
-			<div class="ui-layout-north">
-		
-				<!-- MDS Scatter Plot Buttons (above scatter plot)-->
-				<div class="bootstrap-styles">
-			
-					<div class="btn-group btn-group-toggle ms-1 mt-1" data-bs-toggle="buttons" id="dac-scatter-select-buttons">
-						<label class="btn btn-outline-secondary btn-sm"
-							id="dac-scatter-button-sel-1" 
-							title="Select red group. Use shift to add to group.">
-							<input type="radio" name="options" autocomplete="off"
-								value="selection_1"><b style="padding:2px 5px 1px;border:dashed 2px">R</b></input>
-						</label>
-						<label class="btn btn-outline-secondary btn-sm"
-							id="dac-scatter-button-sel-2"
-							title="Select blue group. Use shift to add to group.">
-							<input type="radio" name="options" autocomplete="off"
-								value="selection_2"><b style="padding:2px 5px 1px;border:dashed 2px">B</b></input>
-						</label>
-						<label class="btn btn-outline-secondary btn-sm"
-							id="dac-scatter-button-sel-3"
-							title="Select green group. Use shift to add to group.">
-							<input type="radio" name="options" autocomplete="off"
-								value="selection_3"><b style="padding:2px 5px 1px;border:dashed 2px">G</b></input>
-						</label>
-						<label class="btn btn-outline-secondary btn-sm"
-							id="dac-scatter-button-subset" 
-							title="Select subset for all analysis. Use shift to exclude subset. Subset symbol turns yellow when viewing a subset.">
-							<input type="radio" name="options" autocomplete="off"
-								value="subset"><b>&sube;</b></input>
-						</label>
-						<label class="btn btn-outline-secondary btn-sm"
-							id="dac-scatter-button-zoom" title="Zoom for scatter plot. Magnifying glass turns yellow when zoomed.">
-							<input type="radio" name="options" autocomplete="off"
-								value="zoom"><i class="fa fa-search"></i></input>
-						</label>
-        			</div>
+          <div class="btn-group mt-1" id="dac-difference-buttons">
+            <button
+              id="dac-previous-three-button"
+              class="btn btn-outline-secondary btn-sm"
+              disabled
+              title="Previous three most different plots."
+            >
+              <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button
+              id="dac-scatter-diff-button"
+              class="btn btn-outline-secondary btn-sm"
+              title="Order variable plots to maximize difference between selections. Button turns yellow when the calculation is out of sync with the selection."
+            >
+              <i class="fa fa-minus"></i>
+            </button>
+            <button
+              id="dac-next-three-button"
+              class="btn btn-outline-secondary btn-sm"
+              disabled
+              title="Next three most different plots."
+            >
+              <i class="fa fa-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
 
-					<div class="btn-group mt-1" id="dac-difference-buttons">
-						<button id="dac-previous-three-button" class="btn btn-outline-secondary btn-sm" disabled
-							   title="Previous three most different plots.">
-							<i class="fa fa-chevron-left" aria-hidden="true"></i>
-						</button>
-						<button id="dac-scatter-diff-button" class="btn btn-outline-secondary btn-sm"
-							title="Order variable plots to maximize difference between selections. Button turns yellow when the calculation is out of sync with the selection."><i class="fa fa-minus"></i>
-						</button>
-						<button id="dac-next-three-button" class="btn btn-outline-secondary btn-sm" disabled
-							   title="Next three most different plots.">
-							<i class="fa fa-chevron-right" aria-hidden="true"></i>
-						</button>
-					</div>
+          <div class="btn-group mt-1">
+            <button
+              id="dac-filter-plots-button"
+              class="btn btn-outline-secondary btn-sm"
+              title="Show only filtered point and plots.  Button turns yellow when plots are filtered."
+            >
+              <i class="fa fa-filter" aria-hidden="true"></i>
+            </button>
+          </div>
 
-					<div class="btn-group mt-1">
-						<button id="dac-filter-plots-button" class="btn btn-outline-secondary btn-sm"
-								title="Show only filtered point and plots.  Button turns yellow when plots are filtered.">
-							<i class="fa fa-filter" aria-hidden="true"></i>
-						</button>
-					</div>
+          <select
+            class="dac-select"
+            title="Color scatter plot by table column."
+            id="dac-scatter-select"
+          ></select>
+        </div>
+      </div>
 
-        			<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
-        					
-				</div>
-			
-			</div>
-				
-			<div class="ui-layout-center" id="dac-mds-pane">
+      <div class="ui-layout-center" id="dac-mds-pane">
+        <!-- Model Loading Indicator -->
+        <div
+          id="dac-model-loading"
+          style="top: 45%; width: 100%; position: absolute; text-align: center"
+        >
+          <i class="spinner-border text-secondary"></i>
+        </div>
 
-				<!-- Model Loading Indicator -->
-				<div id="dac-model-loading" style="
-					top: 45%;
-					width: 100%;
-					position:absolute;
-					text-align:center">
-					<i class="spinner-border text-secondary"></i>
-				</div>
+        <!-- MDS Scatter Plot -->
+        <svg id="dac-mds-scatterplot"></svg>
+        <div id="dac-selector-svg-container"></div>
+      </div>
+    </div>
 
-				<!-- MDS Scatter Plot -->
-				<svg id="dac-mds-scatterplot"></svg>
-				<div id="dac-selector-svg-container"></div>
+    <div class="ui-layout-south" id="dac-datapoints-pane">
+      <!-- MetaData Table --->
+      <div id="dac-datapoints-table"></div>
+    </div>
 
-			</div>
-			
-		</div>
+    <div class="ui-layout-west">
+      <!-- Alpha Sliders -->
+      <div class="ui-layout-center">
+        <ul id="dac-alpha-sliders"></ul>
+      </div>
 
-		<div class="ui-layout-south" id="dac-datapoints-pane">
-		
-			<!-- MetaData Table --->
-			<div id="dac-datapoints-table"></div>
-			
-		</div>
-		
-		<div class="ui-layout-west">
-		
-			<!-- Alpha Sliders -->
-			<div class="ui-layout-center">
-				<ul id="dac-alpha-sliders"></ul>
-			</div>
-			
-			<div class="ui-layout-south">
-		
-				<!-- Alpha Buttons -->			
-				<div class="bootstrap-styles" id="dac-alpha-buttons">
-					<button type="button" class="btn btn-sm btn-outline-secondary"
-							id="dac-download-table-button" title="Download data table.">
-							<i class="fa fa-download"></i>
-					</button>
-					<button type="button" class="btn btn-sm btn-outline-secondary"
-						    id="dac-alpha-zero-button" title="Set all sliders to 0.">
-						0
-					</button>
-					<button type="button" class="btn btn-sm btn-outline-secondary"
-						    id="dac-alpha-one-button" title="Set all sliders to 1.">
-						1
-					</button>
-					<button type="button" class="btn btn-sm btn-outline-secondary"
-							id="dac-alpha-cluster-button"
-							title='Adjust sliders to optimize scatter plot for selected (from "Do Not Color" pulldown) table column.'>
-						<i class="fa fa-sliders"></i>
-					</button>
-				</div>
-			</div>
-			
-		</div>
-		
-	</div>
-	
-	<div class="ui-layout-east dac-model-content" id="dac-plots" style="display:none">
+      <div class="ui-layout-south">
+        <!-- Alpha Buttons -->
+        <div class="bootstrap-styles" id="dac-alpha-buttons">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            id="dac-download-table-button"
+            title="Download data table."
+          >
+            <i class="fa fa-download"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            id="dac-alpha-zero-button"
+            title="Set all sliders to 0."
+          >
+            0
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            id="dac-alpha-one-button"
+            title="Set all sliders to 1."
+          >
+            1
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            id="dac-alpha-cluster-button"
+            title='Adjust sliders to optimize scatter plot for selected (from "Do Not Color" pulldown) table column.'
+          >
+            <i class="fa fa-sliders"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-		<small>
+  <div class="ui-layout-east dac-model-content" id="dac-plots" style="display: none">
+    <small>
+      <!-- Times Series Plot #1 -->
+      <div style="top: 0%" class="dac-plot-controls">
+        <span class="dac-link-download">
+          <!-- Zoom link checkbox -->
+          <label class="dac-link-plots" id="dac-link-label-plot-1" title="Link plots for zooming.">
+            <input id="dac-link-plot-1" type="checkbox" /> Link
+          </label>
 
-		<!-- Times Series Plot #1 -->
-		<div style="top:0%" class="dac-plot-controls">
+          <!-- Plot export button -->
+          <button
+            type="button"
+            class="btn btn-sm btn-link text-muted dac-download-plots"
+            id="dac-download-plot-1"
+            title="Download plot data."
+          >
+            <i class="fa fa-download"></i>
+          </button>
+        </span>
 
-			<span class="dac-link-download">
-			<!-- Zoom link checkbox -->
-			<label class="dac-link-plots" id="dac-link-label-plot-1" title="Link plots for zooming.">
-				<input id="dac-link-plot-1" type="checkbox"> Link
-			</label>
+        <!-- Plot limiter indicator -->
+        <span class="dac-select-plot">
+          <label
+            ><i
+              class="fa fa-exclamation-triangle dac-plots-not-displayed"
+              title="You selected too many plots to display: not every plot in your selection is shown."
+              id="dac-plots-not-displayed-1"
+            ></i
+          ></label>
+          <label
+            ><i
+              class="fa fa-line-chart dac-plots-displayed"
+              title="All selected plots are shown."
+              id="dac-plots-displayed-1"
+            ></i
+          ></label>
 
-			<!-- Plot export button -->
-			<button type="button" class="btn btn-sm btn-link text-muted dac-download-plots"
-							id="dac-download-plot-1" title="Download plot data.">
-							<i class="fa fa-download"></i>
-			</button>
-			</span>
+          <!-- Low resolution indicator -->
+          <label
+            ><i
+              class="fa fa-minus-square dac-low-resolution-plot"
+              aria-hidden="true"
+              title="Plots are low resolution."
+              id="dac-low-resolution-plot-1"
+            ></i
+          ></label>
+          <label
+            ><i
+              class="fa fa-plus-square dac-full-resolution-plot"
+              aria-hidden="true"
+              title="Plots are full resolution."
+              id="dac-full-resolution-plot-1"
+            ></i
+          ></label>
 
-			<!-- Plot limiter indicator -->
-			<span class="dac-select-plot">
-			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
-					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i></label>
-			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
-				id="dac-plots-displayed-1"></i></label>
+          <!-- Variable selector -->
+          <select
+            class="dac-select"
+            id="dac-select-plot-1"
+            title="Variable plotted below."
+          ></select>
+        </span>
 
-			<!-- Low resolution indicator -->
-			<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
-			   title="Plots are low resolution." id="dac-low-resolution-plot-1"></i></label>
-			<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
-					  title="Plots are full resolution." id="dac-full-resolution-plot-1"></i></label>
+        <br />
+        <svg class="dac-plot" id="dac-plot-1"></svg>
+      </div>
 
-			<!-- Variable selector -->
-			<select class="dac-select" id="dac-select-plot-1" title="Variable plotted below."></select>
-			</span>
+      <!-- Times Series Plot #2 -->
+      <div style="top: 33.3%" class="dac-plot-controls">
+        <label class="dac-link-plots" id="dac-link-label-plot-2" title="Link plots for zooming.">
+          <input id="dac-link-plot-2" type="checkbox" /> Link
+        </label>
 
-			<br />
-			<svg class="dac-plot" id="dac-plot-1"></svg>
-		</div>
+        <!-- Plot export button -->
+        <button
+          type="button"
+          class="btn btn-sm btn-link text-muted dac-download-plots"
+          id="dac-download-plot-2"
+          title="Download plot data."
+        >
+          <i class="fa fa-download"></i>
+        </button>
 
+        <span class="dac-select-plot">
+          <label
+            ><i
+              class="fa fa-exclamation-triangle dac-plots-not-displayed"
+              title="You selected too many plots to display: not every plot in your selection is shown."
+              id="dac-plots-not-displayed-2"
+            ></i
+          ></label>
+          <label
+            ><i
+              class="fa fa-line-chart dac-plots-displayed"
+              title="All selected plots are shown."
+              id="dac-plots-displayed-2"
+            ></i
+          ></label>
 
-		<!-- Times Series Plot #2 -->
-		<div style="top:33.3%" class="dac-plot-controls">
-			<label class="dac-link-plots" id="dac-link-label-plot-2" title="Link plots for zooming.">
-				<input id="dac-link-plot-2" type="checkbox"> Link
-			</label>
+          <label
+            ><i
+              class="fa fa-minus-square dac-low-resolution-plot"
+              aria-hidden="true"
+              title="Plots are low resolution."
+              id="dac-low-resolution-plot-2"
+            ></i
+          ></label>
+          <label
+            ><i
+              class="fa fa-plus-square dac-full-resolution-plot"
+              aria-hidden="true"
+              title="Plots are full resolution."
+              id="dac-full-resolution-plot-2"
+            ></i
+          ></label>
 
-			<!-- Plot export button -->
-			<button type="button" class="btn btn-sm btn-link text-muted dac-download-plots"
-							id="dac-download-plot-2" title="Download plot data.">
-							<i class="fa fa-download"></i>
-			</button>
+          <select
+            class="dac-select"
+            id="dac-select-plot-2"
+            title="Variable plotted below."
+          ></select>
+        </span>
 
-			<span class="dac-select-plot">
-			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
-					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i></label>
-			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
-				id="dac-plots-displayed-2"></i></label>
+        <br />
+        <svg class="dac-plot" id="dac-plot-2"></svg>
+      </div>
 
-			<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
-			   title="Plots are low resolution." id="dac-low-resolution-plot-2"></i></label>
-			<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
-			   title="Plots are full resolution." id="dac-full-resolution-plot-2"></i></label>
+      <!-- Times Series Plot #3 -->
+      <div style="top: 66.6%" class="dac-plot-controls">
+        <label class="dac-link-plots" id="dac-link-label-plot-3" title="Link plots for zooming.">
+          <input id="dac-link-plot-3" type="checkbox" /> Link
+        </label>
 
-			<select class="dac-select" id="dac-select-plot-2" title="Variable plotted below."></select>
-			</span>
+        <!-- Plot export button -->
+        <button
+          type="button"
+          class="btn btn-sm btn-link text-muted dac-download-plots"
+          id="dac-download-plot-3"
+          title="Download plot data."
+        >
+          <i class="fa fa-download"></i>
+        </button>
 
-			<br />
-			<svg class="dac-plot" id="dac-plot-2"></svg>
-		</div>
+        <span class="dac-select-plot">
+          <label
+            ><i
+              class="fa fa-exclamation-triangle dac-plots-not-displayed"
+              title="You selected too many plots to display: not every plot in your selection is shown."
+              id="dac-plots-not-displayed-3"
+            ></i
+          ></label>
+          <label
+            ><i
+              class="fa fa-line-chart dac-plots-displayed"
+              title="All selected plots are shown."
+              id="dac-plots-displayed-3"
+            ></i
+          ></label>
 
+          <label
+            ><i
+              class="fa fa-minus-square dac-low-resolution-plot"
+              aria-hidden="true"
+              title="Plots are low resolution."
+              id="dac-low-resolution-plot-3"
+            ></i
+          ></label>
+          <label
+            ><i
+              class="fa fa-plus-square dac-full-resolution-plot"
+              aria-hidden="true"
+              title="Plots are full resolution."
+              id="dac-full-resolution-plot-3"
+            ></i
+          ></label>
 
-		<!-- Times Series Plot #3 -->
-		<div style="top:66.6%" class="dac-plot-controls">
-			<label class="dac-link-plots" id="dac-link-label-plot-3" title="Link plots for zooming.">
-				<input id="dac-link-plot-3" type="checkbox"> Link
-			</label>
+          <select
+            class="dac-select"
+            id="dac-select-plot-3"
+            title="Variable plotted below."
+          ></select>
+        </span>
 
-			<!-- Plot export button -->
-			<button type="button" class="btn btn-sm btn-link text-muted dac-download-plots"
-							id="dac-download-plot-3" title="Download plot data.">
-							<i class="fa fa-download"></i>
-			</button>
-
-			<span class="dac-select-plot">
-			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
-					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i></label>
-			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
-				id="dac-plots-displayed-3"></i></label>
-
-			<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
-					  title="Plots are low resolution." id="dac-low-resolution-plot-3"></i></label>
-			<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
-					  title="Plots are full resolution." id="dac-full-resolution-plot-3"></i></label>
-
-			<select class="dac-select" id="dac-select-plot-3" title="Variable plotted below."></select>
-			</span>
-
-			<br />
-			<svg class="dac-plot" id="dac-plot-3"></svg>
-		</div>
-
-		</small>
-
-	</div>
-
+        <br />
+        <svg class="dac-plot" id="dac-plot-3"></svg>
+      </div>
+    </small>
+  </div>
 </div>
