@@ -1,7 +1,7 @@
 'use strict';
 import * as React from 'react';
 import client from 'js/slycat-web-client';
-import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
+import SlycatSelector, {Option} from 'components/SlycatSelector';
 
 /**
  * @member hostname name of the host we are connecting
@@ -12,6 +12,7 @@ import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
  * @member onSelectParserCallBack called every time a parser is selected
  * returns the parser type (dakota or csv)
  * @member onReauthCallBack called every time we lose connection to the host
+ * @member showSelector optional boolean to control whether selector is shown (defaults to true)
  * @export
  * @interface RemoteFileBrowserProps
  */
@@ -22,6 +23,7 @@ export interface RemoteFileBrowserProps {
   onSelectParserCallBack: Function
   onReauthCallBack: Function
   selectedOption: string
+  showSelector?: boolean
 }
 
 /**
@@ -387,11 +389,12 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
+          {(this.props.showSelector !== false) &&
           <SlycatSelector
             onSelectCallBack={this.props.onSelectParserCallBack}
             label={'Filetype'}
             options={options}
-          />
+          />}
         </div>
     );
     }
