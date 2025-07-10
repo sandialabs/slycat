@@ -6,6 +6,7 @@ import SlycatNumberInput from 'components/SlycatNumberInput.tsx';
 
 interface HPCParametersTabProps {
     accountId: string
+    hostName: string
     partition: string
     numNodes: number
     cores: number
@@ -25,6 +26,12 @@ function HPCParametersTab(props: HPCParametersTabProps) {
 
     return (
     <div>
+        <div className="form-group row mb-3">
+            <label className="col-sm-2 col-form-label">Job Host&nbsp;&nbsp;</label>
+            <div className="col-sm-9">
+                <input className="form-control" value={props.hostName} disabled></input>
+            </div>
+        </div>
         <SlycatTextInput
             id={"account-id"}
             label={"Account ID"}

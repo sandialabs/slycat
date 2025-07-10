@@ -66,12 +66,15 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
     // set up selection buttons (1-2-3 subset zoom)
 
     // activate selection buttons
-    var dac_sel_button_ids = ["#dac-scatter-button-subset",
-                              "#dac-scatter-button-zoom",
-                              "#dac-scatter-button-sel-1",
-                              "#dac-scatter-button-sel-2",
-                              "#dac-scatter-button-sel-3"];
-    $(dac_sel_button_ids[selections.sel_type()+1]).addClass("active");
+    // This needs to be done by adding the "checked" property on the input element
+    // instead of the "active" class on the label element
+    // now that we are using bootstrap 5.
+    var dac_sel_button_input_ids = ["#dac-scatter-button-subset-input",
+                              "#dac-scatter-button-zoom-input",
+                              "#dac-scatter-button-sel-1-input",
+                              "#dac-scatter-button-sel-2-input",
+                              "#dac-scatter-button-sel-3-input"];
+    $(dac_sel_button_input_ids[selections.sel_type()+1]).prop("checked", true);
 
     // set up selection button colors
     $("#dac-scatter-button-sel-1").css("color", sel_color[0]);
