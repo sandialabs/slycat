@@ -1,22 +1,14 @@
 import * as React from "react";
-import ModalContent from "components/ModalContent.tsx";
+import ModalContent from "components/ModalContent";
 import client from "js/slycat-web-client";
-import RemoteLoginTab from "plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab.tsx";
-import HPCParametersTab from "plugins/slycat-timeseries-model/plugin-components/HPCParametersTab.tsx";
-import ModelNamingTab from "plugins/slycat-timeseries-model/plugin-components/ModelNamingTab.tsx";
-import TimeseriesParametersTab from "plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab.tsx";
-import SlycatFormRadioCheckbox from "components/SlycatFormRadioCheckbox.tsx";
-import SlycatNumberInput from "components/SlycatNumberInput.tsx";
-import SlycatTextInput from "components/SlycatTextInput.tsx";
-import SlycatFormDropDown from "components/SlycatFormDropDown.tsx";
-import SlycatTimeInput from "components/SlycatTimeInput.tsx";
-import SlycatRemoteControls from "components/SlycatRemoteControls.jsx";
-import ConnectButton from "components/ConnectButton.tsx";
+import RemoteLoginTab from "plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab";
+import HPCParametersTab from "plugins/slycat-timeseries-model/plugin-components/HPCParametersTab";
+import ModelNamingTab from "plugins/slycat-timeseries-model/plugin-components/ModelNamingTab";
+import TimeseriesParametersTab from "plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab";
+import ConnectButton from "components/ConnectButton";
 import RemoteFileBrowser from "components/RemoteFileBrowser";
-import SlycatSelector from "components/SlycatSelector.tsx";
 import server_root from "js/slycat-server-root";
 import { cloneDeep } from "lodash";
-import markings from "js/slycat-selectable-markings";
 
 /**
  * not used
