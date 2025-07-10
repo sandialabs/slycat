@@ -18,7 +18,7 @@ import parameterImageWizardUI from "../wizard-ui.html";
 import React from "react";
 import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
-import SmbRemoteFileBrowser from "components/SmbRemoteFileBrowser.tsx";
+import RemoteFileBrowser from "components/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import HDF5Browser from "components/HDF5Browser.tsx";
 
@@ -491,11 +491,13 @@ function constructor(params) {
     if (component.remote.session_exists()) {
       component.smb_wizard_browse_root.render(
         <div>
-          <SmbRemoteFileBrowser
+          <RemoteFileBrowser
             onSelectFileCallBack={onSelectTableFile}
             onSelectParserCallBack={onSelectParserCallBack}
             onReauthCallBack={onReauth}
             hostname={component.remote.hostname()}
+            useSMB={true}
+            showSelector={false}
           />
         </div>,
       );
@@ -522,10 +524,12 @@ function constructor(params) {
             const smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
             smb_wizard_browse_root.render(
               <div>
-                <SmbRemoteFileBrowser
+                <RemoteFileBrowser
                   onSelectFileCallBack={onSelectTableFile}
                   onReauthCallBack={onReauth}
                   hostname={component.remote.hostname()}
+                  useSMB={true}
+                  showSelector={false}
                 />
               </div>,
             );
