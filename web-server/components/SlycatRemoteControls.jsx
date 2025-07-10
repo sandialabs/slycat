@@ -211,6 +211,8 @@ export default class SlycatRemoteControls extends Component {
               onChange={(e) => this.onValueChange(e.target.value, "password")}
             />
             <label htmlFor="password">{REMOTE_AUTH_LABELS.password}</label>
+          </div>
+          <div className="mb-3">
             {this.state.showConnectButton ? (
               <ConnectButton
                 loadingData={this.state.loadingData}
