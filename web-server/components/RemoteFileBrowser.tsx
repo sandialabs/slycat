@@ -11,7 +11,9 @@ import SlycatSelector, { Option } from "components/SlycatSelector";
  * @member onSelectParserCallBack called every time a parser is selected
  * returns the parser type (dakota or csv)
  * @member onReauthCallBack called every time we lose connection to the host
+ * @member selectedOption optional string for parser selection (required when showSelector is true)
  * @member showSelector optional boolean to control whether selector is shown (defaults to true)
+ * @member useSMB optional boolean to use SMB browsing instead of regular SSH browsing (defaults to false)
  * @export
  * @interface RemoteFileBrowserProps
  */
@@ -21,8 +23,9 @@ export interface RemoteFileBrowserProps {
   onSelectFileCallBack: Function;
   onSelectParserCallBack: Function;
   onReauthCallBack: Function;
-  selectedOption: string;
+  selectedOption?: string;
   showSelector?: boolean;
+  useSMB?: boolean;
 }
 
 /**
@@ -110,7 +113,13 @@ export default class RemoteFileBrowser extends React.Component<
           path: pathInput,
           pathInput,
         });
-        client.post_remote_browse({
+
+        // Use SMB or regular browse method based on props
+        const browseMethod = this.props.useSMB
+          ? client.post_remote_browse_smb
+          : client.post_remote_browse;
+
+        browseMethod({
           hostname: this.props.hostname,
           path: pathInput,
           success: (results: any) => {
@@ -260,44 +269,35 @@ export default class RemoteFileBrowser extends React.Component<
    * @returns JSX.Element[] with the styled file list
    */
   private getFilesAsJsx = (): JSX.Element[] => {
-    const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
-      return (
-        <tr
-          className={this.state.selected == i ? "table-active" : ""}
-          key={i}
-          onClick={() => this.selectRow(rawFile, i)}
-          onDoubleClick={() => this.browseUpByFile(rawFile)}
-        >
-          <td data-bind-fail="html:icon">
-            {rawFile.mimeType === "application/x-directory" ? (
-              <span className="fa fa-folder"></span>
-            ) : (
-              <span className="fa fa-file-o"></span>
-            )}
-          </td>
-          <td data-bind-fail="text:name">{rawFile.name}</td>
-          <td data-bind-fail="text:size">{rawFile.size}</td>
-          <td data-bind-fail="text:mtime">{rawFile.mtime}</td>
-        </tr>
-      );
-    });
+    const rawFilesJSX = this.state.rawFiles
+      .map((rawFile, i) => {
+        // For SMB, skip files with no mtime
+        if (this.props.useSMB && !rawFile.mtime) {
+          return null;
+        }
+
+        return (
+          <tr
+            className={this.state.selected == i ? "table-active" : ""}
+            key={i}
+            onClick={() => this.selectRow(rawFile, i)}
+            onDoubleClick={() => this.browseUpByFile(rawFile)}
+          >
+            <td data-bind-fail="html:icon">
+              {rawFile.mimeType === "application/x-directory" ? (
+                <span className="fa fa-folder"></span>
+              ) : (
+                <span className="fa fa-file-o"></span>
+              )}
+            </td>
+            <td data-bind-fail="text:name">{rawFile.name}</td>
+            <td data-bind-fail="text:size">{rawFile.size}</td>
+            <td data-bind-fail="text:mtime">{rawFile.mtime}</td>
+          </tr>
+        );
+      })
+      .filter((item): item is JSX.Element => item !== null); // Filter out null items for TypeScript
     return rawFilesJSX;
-    // if(file.mime_type() in component.icon_map)
-    // {
-    //   icon = component.icon_map[file.mime_type()];
-    // }
-    // else if(_.startsWith(file.mime_type(), "text/"))
-    // {
-    //   icon = "<span class='fa fa-file-text-o'></span>";
-    // }
-    // else if(_.startsWith(file.mime_type(), "image/"))
-    // {
-    //   icon = "<span class='fa fa-file-image-o'></span>";
-    // }
-    // else if(_.startsWith(file.mime_type(), "video/"))
-    // {
-    //   icon = "<span class='fa fa-file-video-o'></span>";
-    // }
   };
 
   public async componentDidMount() {
@@ -415,7 +415,7 @@ export default class RemoteFileBrowser extends React.Component<
             Loading...
           </button>
         )}
-        {this.props.showSelector !== false && (
+        {this.props.showSelector !== false && this.props.selectedOption && (
           <SlycatSelector
             onSelectCallBack={this.props.onSelectParserCallBack}
             label={"Filetype"}
