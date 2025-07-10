@@ -16,7 +16,6 @@ import "js/slycat-remote-browser";
 import "js/slycat-table-ingestion";
 import parameterImageWizardUI from "../wizard-ui.html";
 import React from "react";
-import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import RemoteFileBrowser from "components/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
@@ -153,9 +152,9 @@ function constructor(params) {
         // check if there are actual errors or just warnings
         if (errors.length >= 1) {
           component.enable(false);
-          if (!errors[0].includes('Oops')) {
+          if (!errors[0].includes("Oops")) {
             error_messages =
-              "The errors listed below must be fixed before you can upload a model.\n\n"
+              "The errors listed below must be fixed before you can upload a model.\n\n";
           }
 
           // display warnings/errors
@@ -195,10 +194,9 @@ function constructor(params) {
             component.tab(6);
             this.hdf5_input_browse();
           } else {
-            if (component.ps_type() == 'local') {
+            if (component.ps_type() == "local") {
               upload_success(component.browser);
-            }
-            else if (component.ps_type() == 'remote') {
+            } else if (component.ps_type() == "remote") {
               upload_success(component.remote);
             }
             component.tab(4);
@@ -271,47 +269,42 @@ function constructor(params) {
   };
 
   component.select_type = function () {
-
     const selectElementLocal = document.getElementById("slycat-local-browser-file");
     const selectElementRemote = document.getElementById("slycat-remote-browser-files");
     // Local upload - Automatically chooses the parser based on selected file type
     if (selectElementLocal) {
       selectElementLocal.addEventListener("change", (event) => {
         component.file_extension(event.target.files[0]);
-        if (typeof event.target.files[0] !== 'undefined') {
+        if (typeof event.target.files[0] !== "undefined") {
           let file_name = event.target.files[0].name;
-          let file_extension = file_name.split('.')[1];
-          
-          if (file_extension == 'csv') {
-            component.parser('slycat-csv-parser');
-          }
-          else if (file_extension == 'dat') {
-            component.parser('slycat-dakota-parser');
-          }
-          else if (file_extension == 'h5' || file_extension == 'hdf5') {
-            component.parser('slycat-hdf5-parser');
+          let file_extension = file_name.split(".")[1];
+
+          if (file_extension == "csv") {
+            component.parser("slycat-csv-parser");
+          } else if (file_extension == "dat") {
+            component.parser("slycat-dakota-parser");
+          } else if (file_extension == "h5" || file_extension == "hdf5") {
+            component.parser("slycat-hdf5-parser");
           }
         }
       });
     }
     // Remote upload - Automatically chooses the parser based on selected file type
     if (selectElementRemote) {
-      selectElementRemote.addEventListener("click", function() {
-        if ((component.browser.selection().length > 0)) {
-          if (typeof component.browser.selection()[0] !== 'undefined') {
+      selectElementRemote.addEventListener("click", function () {
+        if (component.browser.selection().length > 0) {
+          if (typeof component.browser.selection()[0] !== "undefined") {
             const file_path = component.browser.selection()[0];
-            const split_path = file_path.split('/');
+            const split_path = file_path.split("/");
             const file_name = split_path[split_path.length - 1];
-            const file_extension = file_name.split('.')[1];
+            const file_extension = file_name.split(".")[1];
 
-            if (file_extension == 'csv') {
-              component.parser('slycat-csv-parser');
-            }
-            else if (file_extension == 'dat') {
-              component.parser('slycat-dakota-parser');
-            }
-            else if (file_extension == 'h5' || file_extension == 'hdf5') {
-              component.parser('slycat-hdf5-parser');
+            if (file_extension == "csv") {
+              component.parser("slycat-csv-parser");
+            } else if (file_extension == "dat") {
+              component.parser("slycat-dakota-parser");
+            } else if (file_extension == "h5" || file_extension == "hdf5") {
+              component.parser("slycat-hdf5-parser");
             }
           }
         }
@@ -398,8 +391,8 @@ function constructor(params) {
 
   component.upload_table = function () {
     // cleanup
-    document.getElementById('slycat-local-browser-file').removeAttribute("onchange");
-    document.getElementById('slycat-remote-browser-files').removeAttribute("onchange");
+    document.getElementById("slycat-local-browser-file").removeAttribute("onchange");
+    document.getElementById("slycat-remote-browser-files").removeAttribute("onchange");
 
     // check that a file has been selected
     if (component.browser.selection().length == 0) {
@@ -427,20 +420,21 @@ function constructor(params) {
         component.get_error_messages();
       },
       error: function () {
-        let error_messages = ""
+        let error_messages = "";
 
-        client.get_model_parameter_fetch({
-          mid: component.model._id(),
-          aid: "error-messages",
-        })
-        .then((errors) => {
-          if(errors.length > 0) {
-            for (var i = 0; i < errors.length; i++) {
-              error_messages += errors[i] + "\n"
+        client
+          .get_model_parameter_fetch({
+            mid: component.model._id(),
+            aid: "error-messages",
+          })
+          .then((errors) => {
+            if (errors.length > 0) {
+              for (var i = 0; i < errors.length; i++) {
+                error_messages += errors[i] + "\n";
+              }
+              dialog.ajax_error(error_messages)();
             }
-            dialog.ajax_error(error_messages)();
-          }
-        });
+          });
 
         $(".local-browser-continue").toggleClass("disabled", false);
         component.browser.progress(null);
