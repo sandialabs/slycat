@@ -293,64 +293,71 @@ export default class SmbAuthentication extends React.Component<any, any> {
   getFormInputsJSX = () => {
     return (
       <div>
-        <div className="form-group row mb-3">
-          <label className="col-sm-2 col-form-label">Share Name</label>
-          <div className="col-sm-9">
-            <input
-              disabled={this.props.loadingData}
-              className="form-control"
-              type="text"
-              value={this.state.share ? this.state.share : ""}
-              onChange={(e) => this.onValueChange(e.target.value, "share")}
-            />
-          </div>
+        <div className="form-floating mb-3">
+          <input
+            id="share"
+            placeholder="Share Name"
+            disabled={this.props.loadingData}
+            className="form-control"
+            type="text"
+            value={this.state.share ? this.state.share : ""}
+            onChange={(e) => this.onValueChange(e.target.value, "share")}
+          />
+          <label htmlFor="share">Share Name</label>
         </div>
-        <div className="form-group row mb-3">
-          <label className="col-sm-2 col-form-label">{REMOTE_AUTH_LABELS.username}</label>
-          <div className="col-sm-4">
+
+        <div className="input-group mb-3">
+          <div className="form-floating">
             <input
+              id="username"
+              placeholder="Username"
               disabled={this.props.loadingData}
               className="form-control"
               type="text"
               value={this.state.username ? this.state.username : ""}
               onChange={(e) => this.onValueChange(e.target.value, "username")}
             />
+            <label htmlFor="username">{REMOTE_AUTH_LABELS.username}</label>
           </div>
-          <label className="col-sm-1 col-form-label">@</label>
-          <div className="col-sm-4">
-            <div className="input-group">
-              <button
-                className="btn btn-secondary dropdown-toggle"
-                type="button"
-                id="dropdownMenuButton"
-                data-bs-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              />
-              <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                {this.getDomainsJSX()}
-              </ul>
-              <input
-                className="form-control"
-                value={this.state.domain ? this.state.domain : ""}
-                type="text"
-                onChange={(e) => this.onValueChange(e.target.value, "domain")}
-              />
-            </div>
+
+          <span className="input-group-text">@</span>
+
+          <button
+            className="btn btn-secondary dropdown-toggle"
+            type="button"
+            id="dropdownMenuButton"
+            data-bs-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          />
+          <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            {this.getDomainsJSX()}
+          </ul>
+          <div className="form-floating">
+            <input
+              id="domain"
+              placeholder="Domain"
+              className="form-control"
+              value={this.state.domain ? this.state.domain : ""}
+              type="text"
+              onChange={(e) => this.onValueChange(e.target.value, "domain")}
+            />
+            <label htmlFor="domain">Domain</label>
           </div>
         </div>
+
         {!this.state.session_exists && (
-          <div className="form-group row mb-3">
-            <label className="col-sm-2 col-form-label">{REMOTE_AUTH_LABELS.password}</label>
-            <div className="col-sm-9">
-              <input
-                disabled={this.props.loadingData}
-                className="form-control"
-                type="password"
-                onKeyDown={this.handleKeyDown}
-                onChange={(e) => this.onValueChange(e.target.value, "password")}
-              />
-            </div>
+          <div className="form-floating mb-3">
+            <input
+              id="password"
+              placeholder={REMOTE_AUTH_LABELS.password}
+              disabled={this.props.loadingData}
+              className="form-control"
+              type="password"
+              onKeyDown={this.handleKeyDown}
+              onChange={(e) => this.onValueChange(e.target.value, "password")}
+            />
+            <label htmlFor="password">{REMOTE_AUTH_LABELS.password}</label>
           </div>
         )}
       </div>
@@ -412,27 +419,29 @@ export default class SmbAuthentication extends React.Component<any, any> {
     }
     return (
       <form>
-        <div className="form-group row mb-3">
-          <label className="col-sm-2 col-form-label">Hostname</label>
-          <div className="col-sm-9">
-            <div className="input-group">
-              <button
-                className="btn btn-secondary dropdown-toggle"
-                type="button"
-                id="dropdownMenuButton"
-                data-bs-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              />
-              <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                {this.getHostnamesJSX()}
-              </ul>
+        <div className="mb-3">
+          <div className="input-group">
+            <button
+              className="btn btn-secondary dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            />
+            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              {this.getHostnamesJSX()}
+            </ul>
+            <div className="form-floating">
               <input
+                id="hostname"
+                placeholder="Hostname"
                 className="form-control"
                 value={this.state.hostname ? this.state.hostname : ""}
                 type="text"
                 onChange={(e) => this.onValueChange(e.target.value, "hostname")}
               />
+              <label htmlFor="hostname">Hostname</label>
             </div>
           </div>
         </div>
