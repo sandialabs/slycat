@@ -313,11 +313,9 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
                 setPathInput(e.target.value);
               }}
             />
-            <div className="input-group-append">
-              <button className="btn btn-secondary" onClick={() => browse(pathInput)}>
-                Go
-              </button>
-            </div>
+            <button className="btn btn-secondary" onClick={() => browse(pathInput)}>
+              Go
+            </button>
           </div>
           <div className="btn-group" role="group" style={{ float: "right" }}>
             <button
