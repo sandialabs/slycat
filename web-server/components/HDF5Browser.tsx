@@ -108,7 +108,7 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
         setPathError(false);
         let json_results = JSON.parse(results);
         let files: FileMetaData[] = [];
-        if (pathInput != "/")
+        if (json_results.path != "/")
           files.push({
             type: "",
             name: "..",
