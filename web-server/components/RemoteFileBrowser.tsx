@@ -157,7 +157,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
    * @requires joined paths
    */
   const pathJoin = (left: string, right: string): string => {
-    var new_path = left;
+    let new_path = left;
     if (new_path.slice(-1) != "/") new_path += "/";
     new_path += right;
     return new_path;
