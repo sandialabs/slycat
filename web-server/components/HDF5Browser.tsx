@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import client from "js/slycat-web-client";
 import { Option } from "components/SlycatSelector";
 
@@ -25,32 +26,6 @@ export interface HDF5BrowserProps {
 }
 
 /**
- * @member path path shown in box
- * @member pathInput path to current file when selected
- * @member persistenceId uuid add to get local storage say if there were
- * two of these classes being used
- * @member rawFiles list of the current files meta data we are looking at
- * @member pathError do we have a path error
- * @member browseError do we have a browsing error
- * @member browserUpdating are we in the middle of getting data
- * @member selected id of selected file
- * @export
- * @interface HDF5BrowserState
- */
-export interface HDF5BrowserState {
-  path: string;
-  pathInput: string;
-  persistenceId: string;
-  rawFiles: FileMetaData[];
-  pathError: boolean;
-  browseError: boolean;
-  browserUpdating: boolean;
-  selected: number;
-  pid: string;
-  mid: string;
-}
-
-/**
  * @member type file type
  * @member name filename
  * @member size size of file
@@ -70,54 +45,43 @@ interface FileMetaData {
  * used to create a file browsing window like using 'ls' and 'cd' in a linux terminal
  *
  * @export
- * @class RemoteFileBrowser
- * @extends {React.Component<HDF5BrowserProps, HDF5BrowserState>}
+ * @param props HDF5BrowserProps
  */
-export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5BrowserState> {
-  public constructor(props: HDF5BrowserProps) {
-    super(props);
-    this.state = {
-      path: "//",
-      pathInput: "//",
-      rawFiles: [],
-      pathError: false,
-      browseError: false,
-      persistenceId: props.persistenceId === undefined ? "" : props.persistenceId,
-      browserUpdating: false,
-      selected: -1,
-      pid: props.pid,
-      mid: props.mid,
-    };
-  }
+export default function HDF5Browser(props: HDF5BrowserProps) {
+  const [path, setPath] = useState("//"); // path shown in box
+  const [pathInput, setPathInput] = useState("//"); // path to current file when selected
+  const [rawFiles, setRawFiles] = useState<FileMetaData[]>([]); // list of the current files meta data we are looking at
+  const [pathError, setPathError] = useState(false); // do we have a path error
+  const [browseError, setBrowseError] = useState(false); // do we have a browsing error
+  const [browserUpdating, setBrowserUpdating] = useState(false); // are we in the middle of getting data
+  const [selected, setSelected] = useState(-1); // id of selected file
+
+  const persistenceId = props?.persistenceId ?? ""; // uuid add to get local storage say if there were
 
   /**
    * given a path return all the items in said path (like ls)
    *
    * @param pathInput path to return all ls properties from
-   * @private
-   * @memberof HDF5Browser
    */
-  private browse = (pathInput: string) => {
+  const browse = (pathInput: string) => {
     let first_char = Array.from(pathInput)[0];
     if (first_char != "/") {
       pathInput = "/" + pathInput;
     }
-    this.setState({ pathInput: pathInput });
+    setPathInput(pathInput);
     pathInput = pathInput.replace(/(?!^)\//g, "-");
     client.post_browse_hdf5({
-      hostname: this.props.hostname,
+      hostname: props.hostname,
       path: pathInput,
-      pid: this.props.pid,
-      mid: this.props.mid,
+      pid: props.pid,
+      mid: props.mid,
       success: (results: any) => {
         localStorage.setItem(
-          "slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname,
+          "slycat-remote-browser-path-" + persistenceId + props.hostname,
           pathInput,
         );
-        this.setState({
-          browseError: false,
-          pathError: false,
-        });
+        setBrowseError(false);
+        setPathError(false);
         let json_results = JSON.parse(results);
         let files: FileMetaData[] = [];
         if (pathInput != "/")
@@ -136,19 +100,19 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
             mtime: json_results["mtimes"][i],
             mimeType: json_results["mime-types"][i],
           });
-        this.setState({
-          rawFiles: files,
-          browserUpdating: false,
-        });
+        setRawFiles(files);
+        setBrowserUpdating(false);
       },
       error: (results: any) => {
-        if (this.state.path != this.state.pathInput) {
-          this.setState({ pathError: true, browserUpdating: false });
+        if (path != pathInput) {
+          setPathError(true);
+          setBrowserUpdating(false);
         }
         if (results.status == 400) {
           alert("bad file path");
         }
-        this.setState({ browseError: true, browserUpdating: false });
+        setBrowseError(true);
+        setBrowserUpdating(false);
       },
     });
   };
@@ -157,12 +121,10 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
    * takes a path and returns the directory above it
    *
    * @param path string path
-   * @private
    * @returns new string path one level up
-   * @memberof RemoteFileBrowser
    */
-  private pathDirname = (path: string): string => {
-    var new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
+  const pathDirname = (path: string): string => {
+    let new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
     if (new_path == "") new_path = "//";
     return new_path;
   };
@@ -171,18 +133,16 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
    * takes left path and right path and joins them
    * @param right string path
    * @param left string path
-   * @private
    * @requires joined paths
-   * @memberof RemoteFileBrowser
    */
-  private pathJoin = (left: string, right: string): string => {
-    var new_path = left;
+  const pathJoin = (left: string, right: string): string => {
+    let new_path = left;
     if (new_path.slice(-1) != "/") new_path += "/";
     new_path += right;
     return new_path;
   };
 
-  private browseUpDirectory = (currentPath: string) => {
+  const browseUpDirectory = (currentPath: string) => {
     let split_path = currentPath.split("/");
     let parent_directory = "";
     for (let i = 1; i < split_path.length - 1; i++) {
@@ -191,7 +151,7 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
     if (parent_directory == "/" || parent_directory == "") {
       parent_directory = "//";
     }
-    this.browse(parent_directory);
+    browse(parent_directory);
   };
 
   /**
@@ -199,11 +159,9 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
    *
    * @param file meta data for the file selected to browse up
    * one level from said path
-   * @private
-   * @memberof RemoteFileBrowser
    */
-  private browseUpByFile = (file: FileMetaData) => {
-    this.setState({ selected: -1 });
+  const browseUpByFile = (file: FileMetaData) => {
+    setSelected(-1);
     // If it's a table, need to parse
     if (file.type === "f") {
       // callback
@@ -211,11 +169,11 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
 
     // If the file is our parent directory, move up the hierarchy.
     if (file.name === "..") {
-      this.browse(this.pathDirname(this.state.pathInput));
+      browse(pathDirname(pathInput));
     }
     // If the file is a directory, move down the hierarchy.
     else if (file.type === "d") {
-      let current_path = this.state.pathInput;
+      let current_path = pathInput;
       let new_path = "";
       if (current_path == "//") {
         current_path = current_path.substring(1);
@@ -227,13 +185,13 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
       if (substr == "//") {
         new_path = new_path.substring(1);
       }
-      this.browse(new_path);
+      browse(new_path);
     }
   };
 
-  keyPress = (event: any, pathInput: string) => {
+  const keyPress = (event: any, pathInput: string) => {
     if (event.key == "Enter") {
-      this.browse(pathInput);
+      browse(pathInput);
     }
   };
 
@@ -243,12 +201,10 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
    *
    * @param file an object of FileMetaData
    * @param i index of selected row in the table
-   * @private
-   * @memberof RemoteFileBrowser
    */
-  private selectRow = (file: FileMetaData, i: number) => {
-    let newPath: string = this.state.path;
-    const path_split: string[] = this.state.path.split("/");
+  const selectRow = (file: FileMetaData, i: number) => {
+    let newPath: string = path;
+    const path_split: string[] = path.split("/");
 
     /**
      * If the user types out the full path, including file name,
@@ -257,31 +213,28 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
      */
 
     if (path_split[path_split.length - 1] !== file.name) {
-      newPath = this.pathJoin(this.state.path, file.name);
+      newPath = pathJoin(path, file.name);
     }
 
-    this.setState({ selected: i }, () => {
-      // tell our create what we selected
-      this.props.onSelectFileCallBack(this.state.pathInput + "/" + file.name, file.type, file);
-    });
+    setSelected(i);
+    // tell our create what we selected
+    props.onSelectFileCallBack(pathInput + "/" + file.name, file.type, file);
   };
 
   /**
    * takes a list of file info from the state and converts it
    * to an html
    *
-   * @private
-   * @memberof RemoteFileBrowser
    * @returns JSX.Element[] with the styled file list
    */
-  private getFilesAsJsx = (): JSX.Element[] => {
-    const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
+  const getFilesAsJsx = (): JSX.Element[] => {
+    const rawFilesJSX = rawFiles.map((rawFile, i) => {
       return (
         <tr
-          className={this.state.selected == i ? "table-active" : ""}
+          className={selected == i ? "table-active" : ""}
           key={i}
-          onClick={() => this.selectRow(rawFile, i)}
-          onDoubleClick={() => this.browseUpByFile(rawFile)}
+          onClick={() => selectRow(rawFile, i)}
+          onDoubleClick={() => browseUpByFile(rawFile)}
         >
           <td data-bind-fail="html:icon">
             {rawFile.mimeType === "application/x-directory" ? (
@@ -315,109 +268,102 @@ export default class HDF5Browser extends React.Component<HDF5BrowserProps, HDF5B
     // }
   };
 
-  public async componentDidMount() {
+  useEffect(() => {
     // const path = localStorage.getItem("slycat-remote-browser-path-"
-    //   + this.state.persistenceId
-    //   + this.props.hostname);
-    if (this.state.pathInput != null) {
-      // this.setState({path,pathInput:path});
-      this.browse(this.state.pathInput);
+    //   + persistenceId
+    //   + props.hostname);
+    if (pathInput != null) {
+      // setPath(path);setPathInput(path);
+      browse(pathInput);
     }
-  }
+  }, []); // Empty dependency array means this runs once on mount
 
-  public render() {
-    const options: Option[] = [
-      {
-        text: "Comma separated values (CSV)",
-        value: "slycat-csv-parser",
-      },
-      {
-        text: "Dakota tabular",
-        value: "slycat-dakota-parser",
-      },
-    ];
-    const pathStyle: any = {
-      width: "calc(100% - 44px)",
-      float: "left",
-      marginRight: "5px",
-    };
-    const styleTable: any = {
-      position: "relative",
-      height: window.innerHeight * 0.4 + "px",
-      overflow: "auto",
-      display: "block",
-      border: "1px solid rgb(222, 226, 230)",
-    };
-    return (
-      <div className="slycat-remote-browser">
-        <div className="form-group row path mb-3">
-          <div className="col-sm-12">
-            <div className="input-group" style={pathStyle}>
-              <input
-                type="text"
-                className="form-control"
-                id="slycat-remote-browser-path"
-                value={this.state.pathInput}
-                onKeyPress={() => this.keyPress(event, this.state.pathInput)}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  this.setState({ pathInput: e.target.value });
-                }}
-              />
-              <div className="input-group-append">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => this.browse(this.state.pathInput)}
-                >
-                  Go
-                </button>
-              </div>
-            </div>
-            <div className="btn-group" role="group" style={{ float: "right" }}>
-              <button
-                className="btn btn-secondary"
-                type="button"
-                title="Navigate to parent directory"
-                onClick={() => {
-                  this.browseUpDirectory(this.state.pathInput);
-                }}
-              >
-                <i className="fa fa-level-up" aria-hidden="true"></i>
-              </button>
-            </div>
+  const options: Option[] = [
+    {
+      text: "Comma separated values (CSV)",
+      value: "slycat-csv-parser",
+    },
+    {
+      text: "Dakota tabular",
+      value: "slycat-dakota-parser",
+    },
+  ];
+  const pathStyle: any = {
+    width: "calc(100% - 44px)",
+    float: "left",
+    marginRight: "5px",
+  };
+  const styleTable: any = {
+    position: "relative",
+    height: window.innerHeight * 0.4 + "px",
+    overflow: "auto",
+    display: "block",
+    border: "1px solid rgb(222, 226, 230)",
+  };
+  return (
+    <div className="slycat-remote-browser">
+      <div className="form-group row path mb-3">
+        <div className="col-sm-12">
+          <div className="input-group" style={pathStyle}>
+            <input
+              type="text"
+              className="form-control"
+              id="slycat-remote-browser-path"
+              value={pathInput}
+              onKeyPress={() => keyPress(event, pathInput)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setPathInput(e.target.value);
+              }}
+            />
+            <button className="btn btn-secondary" onClick={() => browse(pathInput)}>
+              Go
+            </button>
           </div>
-          {/* <div className="path alert alert-danger" role="alert">
-                  Oops, that path is not accessible. Please try again.
-                </div> */}
-        </div>
-
-        {!this.state.browserUpdating ? (
-          <div style={styleTable} className="mb-3">
-            <table
-              className="table table-hover table-sm"
-              style={{ borderBottom: "1px solid rgb(222, 226, 230)" }}
+          <div className="btn-group" role="group" style={{ float: "right" }}>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              title="Navigate to parent directory"
+              onClick={() => {
+                browseUpDirectory(pathInput);
+              }}
             >
-              <thead className="thead-light">
-                <tr>
-                  <th></th>
-                  <th>Name</th>
-                  <th>Size</th>
-                  <th>Date Modified</th>
-                </tr>
-              </thead>
-              <tbody>{this.getFilesAsJsx()}</tbody>
-            </table>
+              <i className="fa fa-level-up" aria-hidden="true"></i>
+            </button>
           </div>
-        ) : (
-          <button className="btn btn-primary" type="button" disabled>
-            <span
-              className="spinner-border spinner-border-sm"
-              role="status"
-              aria-hidden="true"
-            ></span>
-            Loading...
-          </button>
-        )}
+        </div>
+        {/* <div className="path alert alert-danger" role="alert">
+                Oops, that path is not accessible. Please try again.
+              </div> */}
       </div>
-    );
-  }
+
+      {!browserUpdating ? (
+        <div style={styleTable} className="mb-3">
+          <table
+            className="table table-hover table-sm"
+            style={{ borderBottom: "1px solid rgb(222, 226, 230)" }}
+          >
+            <thead className="thead-light">
+              <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Date Modified</th>
+              </tr>
+            </thead>
+            <tbody>{getFilesAsJsx()}</tbody>
+          </table>
+        </div>
+      ) : (
+        <button className="btn btn-primary" type="button" disabled>
+          <span
+            className="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          Loading...
+        </button>
+      )}
+    </div>
+  );
 }
