@@ -145,7 +145,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
    * @returns new string path one level up
    */
   const pathDirname = (path: string): string => {
-    var new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
+    let new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
     if (new_path == "") new_path = "/";
     return new_path;
   };
