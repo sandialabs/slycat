@@ -60,7 +60,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
   const [browserUpdating, setBrowserUpdating] = useState(false); // are we in the middle of getting data
   const [selected, setSelected] = useState(-1); // id of selected file
 
-  const persistenceId = props.persistenceId === undefined ? "" : props.persistenceId;
+  const persistenceId = props?.persistenceId ?? "";
 
   /**
    * given a path return all the items in said path (like ls)
