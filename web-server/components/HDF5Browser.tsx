@@ -59,6 +59,30 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
   const persistenceId = props?.persistenceId ?? ""; // uuid add to get local storage say if there were
 
   /**
+   * Convert internal path (with //) to display path (with /) for user interface
+   */
+  const pathToDisplay = (internalPath: string): string => {
+    if (internalPath.startsWith("//")) {
+      return internalPath.substring(1);
+    }
+    return internalPath;
+  };
+
+  /**
+   * Convert user input path (with /) to internal path (with //) for internal logic
+   */
+  const pathFromDisplay = (displayPath: string): string => {
+    if (displayPath === "/" || displayPath === "") {
+      return "//";
+    }
+    // If user enters a path starting with single /, convert to //
+    if (displayPath.startsWith("/") && !displayPath.startsWith("//")) {
+      return "/" + displayPath;
+    }
+    return displayPath;
+  };
+
+  /**
    * given a path return all the items in said path (like ls)
    *
    * @param pathInput path to return all ls properties from
@@ -189,12 +213,6 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
     }
   };
 
-  const keyPress = (event: any, pathInput: string) => {
-    if (event.key == "Enter") {
-      browse(pathInput);
-    }
-  };
-
   /**
    * Given a row id and file info set the selected file and
    * callBack to tell caller Path, file.type, file:FileMetaData
@@ -309,10 +327,16 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
               type="text"
               className="form-control"
               id="slycat-remote-browser-path"
-              value={pathInput}
-              onKeyPress={() => keyPress(event, pathInput)}
+              value={pathToDisplay(pathInput)}
+              onKeyUp={(event) => {
+                if (event.key === "Enter") {
+                  const internalPath = pathFromDisplay((event.target as HTMLInputElement).value);
+                  browse(internalPath);
+                }
+              }}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setPathInput(e.target.value);
+                const internalPath = pathFromDisplay(e.target.value);
+                setPathInput(internalPath);
               }}
             />
             <button className="btn btn-secondary" onClick={() => browse(pathInput)}>
