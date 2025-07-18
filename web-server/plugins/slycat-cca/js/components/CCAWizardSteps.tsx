@@ -9,6 +9,7 @@ import { selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
 import { CCALocalBrowserTab } from "./wizard-tabs/CCALocalBrowserTab";
 import { CCATableIngestion } from "./wizard-tabs/CCATableIngestion";
 import { CCAModelCreation } from "./wizard-tabs/CCAModelCreation";
+import { CCARemoteBrowserTab } from "./wizard-tabs/CCARemoteBrowser";
 
 export const CCAWizardSteps = () => {
   // The `state` arg is correctly typed as `RootState` already
@@ -19,6 +20,7 @@ export const CCAWizardSteps = () => {
       <div className="tab-content">
         <CCAWizardDataSelectionTab hidden={!(tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB)} />
         <CCALocalBrowserTab hidden={!(tabName === TabNames.CCA_LOCAL_BROWSER_TAB)} />
+        <CCARemoteBrowserTab hidden={!(tabName === TabNames.CCA_REMOTE_BROWSER_TAB)} />
         <CCATableIngestion hidden={!(tabName === TabNames.CCA_TABLE_INGESTION)} />
         <CCAModelCreation hidden={!(tabName === TabNames.CCA_FINISH_MODEL)}/>
         <div hidden={true}>

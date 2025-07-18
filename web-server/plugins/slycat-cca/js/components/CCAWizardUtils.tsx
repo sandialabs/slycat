@@ -45,8 +45,13 @@ export const useCCAWizardFooter = () => {
    * handle continue operation
    */
   const handleContinue = React.useCallback(() => {
-    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation) {
+    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "local") {
+      console.log(dataLocation);
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "remote") {
+      console.log(dataLocation);
+      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
@@ -57,13 +62,13 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_FINISH_MODEL) {
       finishModel();
     }
-  }, [dispatch, uploadSelection, fileUploaded, setTabName, tabName]);
+  }, [dispatch, uploadSelection, fileUploaded, setTabName, tabName, dataLocation]);
 
   /**
    * handle back operation
    */
   const handleBack = React.useCallback(() => {
-    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB) {
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB || tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
@@ -94,7 +99,7 @@ export const useCCAWizardFooter = () => {
       onClick={handleContinue}
       disabled={tabName === TabNames.CCA_LOCAL_BROWSER_TAB && !fileUploaded}
     >
-      Continue {fileUploaded.toString()}
+      Continue
     </button>
   );
   return React.useMemo(
