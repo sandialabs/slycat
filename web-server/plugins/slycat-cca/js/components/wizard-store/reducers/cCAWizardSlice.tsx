@@ -1,9 +1,13 @@
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCSLocalBrowserTab",
+  CCA_REMOTE_BROWSER_TAB = "CCSRemoteBrowserTab",
   CCA_TABLE_INGESTION = "CCATableIngestion",
   CCA_FINISH_MODEL = "CCAFinishModel",
 }

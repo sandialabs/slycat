@@ -18,7 +18,9 @@ export const CCAWizardNavItems = () => {
       <CCANavItem
         key={"Upload Table"}
         name={"Upload Table"}
-        active={tabName === TabNames.CCA_LOCAL_BROWSER_TAB}
+        active={
+          tabName === TabNames.CCA_LOCAL_BROWSER_TAB || tabName === TabNames.CCA_REMOTE_BROWSER_TAB
+        }
         hidden={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB}
       />
       <CCANavItem
@@ -27,7 +29,8 @@ export const CCAWizardNavItems = () => {
         active={tabName === TabNames.CCA_TABLE_INGESTION}
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
-          tabName === TabNames.CCA_LOCAL_BROWSER_TAB
+          tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
+          tabName === TabNames.CCA_REMOTE_BROWSER_TAB
         }
       />
       <CCANavItem
