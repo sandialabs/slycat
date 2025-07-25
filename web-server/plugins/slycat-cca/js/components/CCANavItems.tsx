@@ -4,10 +4,11 @@
 import * as React from "react";
 import { CCANavItem } from "./CCANavItem";
 import { useAppSelector } from "./wizard-store/hooks";
-import { selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
+import { selectDataLocation, selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
 
 export const CCAWizardNavItems = () => {
   const tabName = useAppSelector(selectTab);
+  const dataLocation = useAppSelector(selectDataLocation);
   return (
     <ul className="nav nav-pills">
       <CCANavItem
@@ -16,12 +17,22 @@ export const CCAWizardNavItems = () => {
         active={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB}
       />
       <CCANavItem
+        key={"Authentication"}
+        name={"Authentication"}
+        active={tabName === TabNames.CCA_AUTHENTICATION_TAB}
+        hidden={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB || dataLocation !== "remote"}
+      />
+      <CCANavItem
         key={"Upload Table"}
         name={"Upload Table"}
         active={
-          tabName === TabNames.CCA_LOCAL_BROWSER_TAB || tabName === TabNames.CCA_REMOTE_BROWSER_TAB
+          tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
+          tabName === TabNames.CCA_REMOTE_BROWSER_TAB
         }
-        hidden={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB}
+        hidden={
+          tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
+          tabName === TabNames.CCA_AUTHENTICATION_TAB
+        }
       />
       <CCANavItem
         key={"Select Columns"}
