@@ -24,7 +24,7 @@ export default class SlycatRemoteControls extends Component {
       remote_hosts: [],
       hostname: display.hostname ? display.hostname : null,
       username: display.username ? display.username : null,
-      session_exists: null,
+      session_exists: this.props.sessionExists ? this.props.sessionExists : false,
       password: "",
       hostnames: [],
       loadingData: this.props.loadingData,
