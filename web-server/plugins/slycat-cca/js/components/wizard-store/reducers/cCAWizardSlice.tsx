@@ -6,14 +6,21 @@ import { RootState } from "../store";
 
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
-  CCA_LOCAL_BROWSER_TAB = "CCSLocalBrowserTab",
-  CCA_REMOTE_BROWSER_TAB = "CCSRemoteBrowserTab",
+  CCA_LOCAL_BROWSER_TAB = "CCALocalBrowserTab",
+  CCA_AUTHENTICATION_TAB= "CCAAuthenticationTab",
+  CCA_REMOTE_BROWSER_TAB = "CCARemoteBrowserTab",
   CCA_TABLE_INGESTION = "CCATableIngestion",
   CCA_FINISH_MODEL = "CCAFinishModel",
 }
 export enum dataLocationType {
   LOCAL = "local",
   REMOTE = "remote",
+}
+export interface AuthenticationInformation {
+  username: string | undefined;
+  password: string | undefined;
+  hostname: string | undefined;
+  sessionExists: boolean;
 }
 export interface Attribute {
   index: number;
@@ -38,6 +45,7 @@ export interface CCAWizardState {
   marking: string | undefined;
   description: string | undefined;
   name: string | undefined;
+  authInfo: AuthenticationInformation;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -50,6 +58,12 @@ const initialState: CCAWizardState = {
   marking: undefined,
   description: undefined,
   name: undefined,
+  authInfo: {
+    username: undefined,
+    password: undefined,
+    hostname: undefined,
+    sessionExists: false,
+  },
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -85,6 +99,10 @@ export const cCAWizardSlice = createSlice({
     setName: (state, action: PayloadAction<string>) => {
       state.name = action.payload;
     },
+    setAuthInfo: (state, action: PayloadAction<AuthenticationInformation>) => {
+      console.log(action.payload);
+      state.authInfo = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -102,6 +120,7 @@ export const {
   setMarking,
   setDescription,
   setName,
+  setAuthInfo
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -114,5 +133,6 @@ export const selectScaleInputs = (state: RootState) => state.cCAWizard.scaleInpu
 export const selectMarking = (state: RootState) => state.cCAWizard.marking;
 export const selectDescription = (state: RootState) => state.cCAWizard.marking;
 export const selectName = (state: RootState) => state.cCAWizard.marking;
+export const selectAuthInfo = (state: RootState) => state.cCAWizard.authInfo;
 
 export default cCAWizardSlice.reducer;

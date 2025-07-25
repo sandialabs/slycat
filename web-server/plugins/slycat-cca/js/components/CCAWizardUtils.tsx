@@ -9,6 +9,7 @@ import {
   Attribute,
   resetCCAWizard,
   selectAttributes,
+  selectAuthInfo,
   selectDataLocation,
   selectDescription,
   selectFileUploaded,
@@ -19,6 +20,7 @@ import {
   selectScaleInputs,
   selectTab,
   setAttributes,
+  setAuthInfo,
   setFileUploaded,
   setMid,
   setPid,
@@ -28,6 +30,7 @@ import {
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
+import { REMOTE_AUTH_LABELS } from "../../../../utils/ui-labels";
 
 /**
  * A hook for controlling how the back and continue buttons work based on the current redux state
@@ -39,6 +42,7 @@ export const useCCAWizardFooter = () => {
   const fileUploaded = useAppSelector(selectFileUploaded);
   const dispatch = useAppDispatch();
   const uploadSelection = useUploadSelection();
+  const handleAuthentication = useHandleAuthentication();
   const finishModel = useFinishModel();
 
   /**
@@ -51,7 +55,12 @@ export const useCCAWizardFooter = () => {
     }
     if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "remote") {
       console.log(dataLocation);
-      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+      dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
+    }
+    if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
+      console.log(dataLocation);
+      handleAuthentication();
+      // dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
@@ -62,7 +71,15 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_FINISH_MODEL) {
       finishModel();
     }
-  }, [dispatch, uploadSelection, fileUploaded, setTabName, tabName, dataLocation]);
+  }, [
+    dispatch,
+    uploadSelection,
+    handleAuthentication,
+    fileUploaded,
+    setTabName,
+    tabName,
+    dataLocation,
+  ]);
 
   /**
    * handle back operation
@@ -233,7 +250,6 @@ export const useHandleLocalFileSubmit = (): [
 ] => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
-  const dispatch = useAppDispatch();
   const fileUploadSuccess = useFileUploadSuccess();
   const [progress, setProgress] = React.useState<number>(0);
   const [progressStatus, setProgressStatus] = React.useState("");
@@ -370,6 +386,50 @@ export const useFinishModel = () => {
       error: dialog.ajax_error("Error updating model."),
     });
   }, [mid, name, description, marking, server_root]);
+};
+
+export const useHandleAuthentication = () => {
+  const authInfo = useAppSelector(selectAuthInfo);
+  const dispatch = useAppDispatch();
+  return React.useCallback(async () => {
+    // this.setState({ loadingData: true });
+    // this.props.callBack(this.state.sessionExists, true);
+    console.log(authInfo);
+    if (!authInfo.password) {
+      alert(`password is empty`);
+      return;
+    }
+    client
+      .post_remotes_fetch({
+        parameters: {
+          hostname: authInfo.hostname,
+          username: authInfo.username,
+          password: atob(authInfo.password),
+        },
+      })
+      .then(async () => {
+        return await client.get_remotes_fetch(authInfo.hostname).then((json: any) => {
+          if (json.status === false) {
+            alert(`connection could not be established`);
+          } else {
+            console.log("dispatching", { ...authInfo, sessionExists: true })
+            dispatch(setAuthInfo({ ...authInfo, sessionExists: true }));
+          }
+        });
+      })
+      .catch((errorResponse: any) => {
+        if (errorResponse.status == 403) {
+          alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
+        \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
+        } else if (errorResponse.status == 401) {
+          alert(
+            `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
+          );
+        } else {
+          alert(`${errorResponse.statusText}`);
+        }
+      });
+  }, [authInfo]);
 };
 
 /**
