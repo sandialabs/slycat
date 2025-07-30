@@ -316,6 +316,7 @@ export default class TimeseriesWizard extends React.Component<
     } else {
       footerJSX.push(
         <button
+          id="continue-button"
           disabled={isDisabled}
           key={4}
           type="button"
@@ -365,7 +366,6 @@ export default class TimeseriesWizard extends React.Component<
 
   continue = () => {
     if (this.validateFields()) {
-
       if (this.state.visibleTab === '0' && this.state.selectedOption != 'hdf5') {
         this.setState({ visibleTab: '1' }, () => {
           client.get_user_config_fetch({ hostname: this.state.hostname })
