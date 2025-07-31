@@ -4,31 +4,36 @@
 import * as React from "react";
 import { useSetUploadStatus } from "../CCAWizardUtils";
 import RemoteFileBrowser from "components/RemoteFileBrowser";
-import { useAppDispatch } from "../wizard-store/hooks";
+import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
+import { selectAuthInfo } from "../wizard-store/reducers/cCAWizardSlice";
 export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const setUploadStatus = useSetUploadStatus();
   const dispatch = useAppDispatch();
+  const { hostname, sessionExists } = useAppSelector(selectAuthInfo);
   const onSelectTableFile = (newPath: any, type: any, file: any) => {
     console.log(newPath, type, file);
   };
   const onSelectParserCallBack = (parser: string) => {
-    console.log('parser',parser);
+    console.log("parser", parser);
   };
   const onReauth = () => {
     console.log("onReauth");
   };
-  // TODO: add remote browser
   return (
     <div hidden={hidden}>
+      {hostname && sessionExists ? (
         <RemoteFileBrowser
           onSelectFileCallBack={onSelectTableFile}
           onSelectParserCallBack={onSelectParserCallBack}
           onReauthCallBack={onReauth}
-          hostname={"hostname"}
+          hostname={hostname}
           useSMB={false}
           showSelector={false}
         />
+      ) : (
+        <span>Bad connection re-authenticate</span>
+      )}
     </div>
   );
 };

@@ -13,6 +13,7 @@ import {
   selectDataLocation,
   selectDescription,
   selectFileUploaded,
+  selectLoading,
   selectMarking,
   selectMid,
   selectName,
@@ -22,6 +23,7 @@ import {
   setAttributes,
   setAuthInfo,
   setFileUploaded,
+  setLoading,
   setMid,
   setPid,
   setTabName,
@@ -40,6 +42,8 @@ export const useCCAWizardFooter = () => {
   const tabName = useAppSelector(selectTab);
   const dataLocation = useAppSelector(selectDataLocation);
   const fileUploaded = useAppSelector(selectFileUploaded);
+  const loading = useAppSelector(selectLoading);
+  const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
   const uploadSelection = useUploadSelection();
   const handleAuthentication = useHandleAuthentication();
@@ -58,9 +62,11 @@ export const useCCAWizardFooter = () => {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
-      console.log(dataLocation);
-      handleAuthentication();
-      // dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+      if (authInfo?.sessionExists) {
+        dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+      } else {
+        handleAuthentication();
+      }
     }
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
@@ -88,6 +94,12 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB || tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
     }
+    if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
+      dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+    }
+    if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
+      dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
+    }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
@@ -99,29 +111,35 @@ export const useCCAWizardFooter = () => {
   const backButton = (
     <button
       key="back button"
+      disabled={loading}
       style={{
         visibility: tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ? "hidden" : "visible",
       }}
-      className="btn btn-light mr-auto"
+      className="btn btn-light me-auto"
       onClick={handleBack}
     >
       Back
     </button>
   );
 
-  const nextButton = (
+  const nextButton = !loading ? (
     <button
       key="continue"
       className="btn btn-primary"
       onClick={handleContinue}
-      disabled={tabName === TabNames.CCA_LOCAL_BROWSER_TAB && !fileUploaded}
+      disabled={(tabName === TabNames.CCA_LOCAL_BROWSER_TAB && !fileUploaded) || loading}
     >
       Continue
+    </button>
+  ) : (
+    <button className="btn btn-primary" type="button" disabled>
+      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      Loading...
     </button>
   );
   return React.useMemo(
     () => [backButton, nextButton],
-    [fileUploaded, handleContinue, handleBack, tabName, dataLocation, dispatch],
+    [fileUploaded, loading, handleContinue, handleBack, tabName, dataLocation, dispatch],
   );
 };
 
@@ -392,10 +410,10 @@ export const useHandleAuthentication = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
   return React.useCallback(async () => {
-    // this.setState({ loadingData: true });
-    // this.props.callBack(this.state.sessionExists, true);
     console.log(authInfo);
+    dispatch(setLoading(true));
     if (!authInfo.password) {
+      dispatch(setLoading(false));
       alert(`password is empty`);
       return;
     }
@@ -412,12 +430,15 @@ export const useHandleAuthentication = () => {
           if (json.status === false) {
             alert(`connection could not be established`);
           } else {
-            console.log("dispatching", { ...authInfo, sessionExists: true })
+            console.log("dispatching", { ...authInfo, sessionExists: true });
             dispatch(setAuthInfo({ ...authInfo, sessionExists: true }));
           }
+          dispatch(setLoading(false));
+          dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
         });
       })
       .catch((errorResponse: any) => {
+        dispatch(setLoading(false));
         if (errorResponse.status == 403) {
           alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
         \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
