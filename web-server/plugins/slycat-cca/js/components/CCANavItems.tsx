@@ -41,7 +41,8 @@ export const CCAWizardNavItems = () => {
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
           tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
-          tabName === TabNames.CCA_REMOTE_BROWSER_TAB
+          tabName === TabNames.CCA_REMOTE_BROWSER_TAB || 
+          tabName === TabNames.CCA_AUTHENTICATION_TAB
         }
       />
       <CCANavItem

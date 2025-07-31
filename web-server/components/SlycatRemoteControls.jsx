@@ -68,7 +68,14 @@ export default class SlycatRemoteControls extends Component {
       this.setState({ hostnames: json });
     });
   };
-
+  componentDidUpdate() {
+    if (this.props.sessionExists !== this.state.session_exists) {
+      this.setState({ session_exists: this.props.sessionExists });
+    }
+    if (this.props.loadingData !== this.state.loadingData) {
+      this.setState({ loadingData: this.props.loadingData });
+    }
+  }
   async componentDidMount() {
     await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
@@ -153,7 +160,7 @@ export default class SlycatRemoteControls extends Component {
    */
   handleKeyDown = (e) => {
     if (e.key === "Enter") {
-        document.getElementById("connect-button")?.click();
+      document.getElementById("connect-button")?.click();
     }
   };
 
@@ -163,7 +170,7 @@ export default class SlycatRemoteControls extends Component {
     if (elementExists !== null) {
       document.getElementById("continue-button")?.click();
     }
-  }
+  };
 
   /**
    * creates JSX form input if a session does not already exist for the given hostname

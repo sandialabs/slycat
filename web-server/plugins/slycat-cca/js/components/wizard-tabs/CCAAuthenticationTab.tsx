@@ -7,12 +7,14 @@ import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import {
   AuthenticationInformation,
   selectAuthInfo,
+  selectLoading,
   setAuthInfo,
 } from "../wizard-store/reducers/cCAWizardSlice";
 export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const dispatch = useAppDispatch();
   const authInfo = useAppSelector(selectAuthInfo);
+  const loading = useAppSelector(selectLoading);
   const callBack = (
     hostname: string,
     username: string,
@@ -32,7 +34,7 @@ export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
     <div hidden={hidden}>
       <SlycatRemoteControls
         sessionExists={authInfo.sessionExists}
-        loadingData={false}
+        loadingData={loading}
         callBack={callBack}
         showConnectButton={false}
       />
