@@ -260,6 +260,8 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       setPath(storedPath);
       setPathInput(storedPath);
       browse(pathDirname(storedPath));
+    } else {
+      browse("/");
     }
   }, []); // Empty dependency array means this runs once on mount
 

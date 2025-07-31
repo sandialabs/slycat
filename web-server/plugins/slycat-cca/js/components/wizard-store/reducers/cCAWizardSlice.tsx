@@ -45,6 +45,7 @@ export interface CCAWizardState {
   marking: string | undefined;
   description: string | undefined;
   name: string | undefined;
+  loading: boolean;
   authInfo: AuthenticationInformation;
 }
 const initialState: CCAWizardState = {
@@ -58,6 +59,7 @@ const initialState: CCAWizardState = {
   marking: undefined,
   description: undefined,
   name: undefined,
+  loading:false,
   authInfo: {
     username: undefined,
     password: undefined,
@@ -99,8 +101,10 @@ export const cCAWizardSlice = createSlice({
     setName: (state, action: PayloadAction<string>) => {
       state.name = action.payload;
     },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
     setAuthInfo: (state, action: PayloadAction<AuthenticationInformation>) => {
-      console.log(action.payload);
       state.authInfo = action.payload;
     },
     resetCCAWizard: () => initialState,
@@ -120,6 +124,7 @@ export const {
   setMarking,
   setDescription,
   setName,
+  setLoading,
   setAuthInfo
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
@@ -133,6 +138,7 @@ export const selectScaleInputs = (state: RootState) => state.cCAWizard.scaleInpu
 export const selectMarking = (state: RootState) => state.cCAWizard.marking;
 export const selectDescription = (state: RootState) => state.cCAWizard.marking;
 export const selectName = (state: RootState) => state.cCAWizard.marking;
+export const selectLoading = (state: RootState) => state.cCAWizard.loading;
 export const selectAuthInfo = (state: RootState) => state.cCAWizard.authInfo;
 
 export default cCAWizardSlice.reducer;
