@@ -410,7 +410,6 @@ export const useHandleAuthentication = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
   return React.useCallback(async () => {
-    console.log(authInfo);
     dispatch(setLoading(true));
     if (!authInfo.password) {
       dispatch(setLoading(false));
