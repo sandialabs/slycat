@@ -705,8 +705,11 @@ class Session(object):
             return response
         except Exception as e:
             cherrypy.log.error(
-                "Exception reading remote file %s: %s %s" % (path, type(e), str(e))
+                "Exception reading remote file %s: %s, %s" % (path, type(e), str(e))
             )
+            if str(e) == "Socket is closed" or str(e) == "Server connection dropped: ":
+                delete_session(self._sid)
+                raise cherrypy.HTTPError("400 Socket closed")
 
             if str(e) == "Garbage packet received":
                 cherrypy.response.headers["x-slycat-message"] = (
@@ -939,7 +942,9 @@ class Session(object):
             cherrypy.log.error(
                 "Exception reading remote file %s: %s %s" % (path, type(e), str(e))
             )
-
+            if str(e) == "Socket is closed":
+                delete_session(self._sid)
+                raise cherrypy.HTTPError("400 Socket closed")
             if "Garbage packet received" in str(e):
                 cherrypy.response.headers["x-slycat-message"] = (
                     "Remote access failed: %s" % str(e)
