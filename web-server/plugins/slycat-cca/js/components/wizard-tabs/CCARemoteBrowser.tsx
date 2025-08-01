@@ -5,10 +5,12 @@ import * as React from "react";
 import { useSetUploadStatus } from "../CCAWizardUtils";
 import RemoteFileBrowser from "components/RemoteFileBrowser";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
-import { selectAuthInfo } from "../wizard-store/reducers/cCAWizardSlice";
+import { selectAuthInfo, TabNames } from "../wizard-store/reducers/cCAWizardSlice";
+import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const setUploadStatus = useSetUploadStatus();
+  const [parser, setParser] = React.useState<string | undefined>(undefined);
   const dispatch = useAppDispatch();
   const { hostname, sessionExists } = useAppSelector(selectAuthInfo);
   const onSelectTableFile = (newPath: any, type: any, file: any) => {
@@ -18,11 +20,12 @@ export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
     console.log("parser", parser);
   };
   const onReauth = () => {
-    console.log("onReauth");
+    dispatch(setTab(TabNames.CCA_AUTHENTICATION_TAB));
   };
   return (
     <div hidden={hidden}>
       {hostname && sessionExists ? (
+        <>
         <RemoteFileBrowser
           onSelectFileCallBack={onSelectTableFile}
           onSelectParserCallBack={onSelectParserCallBack}
@@ -31,9 +34,14 @@ export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
           useSMB={false}
           showSelector={false}
         />
+        <SlycatParserControls setParser={setParser} />
+        </>
       ) : (
         <span>Bad connection re-authenticate</span>
       )}
     </div>
   );
 };
+function setTab(CCA_AUTHENTICATION_TAB: TabNames): any {
+  throw new Error("Function not implemented.");
+}
