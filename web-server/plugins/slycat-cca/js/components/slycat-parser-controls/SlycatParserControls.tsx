@@ -24,7 +24,7 @@ export const SlycatParserControls = (props: {
       <div className="col-sm-10">
         <select
           id="slycat-model-parser"
-          className="form-control"
+          className="form-select"
           onChange={handleParserChange(setParser)}
         >
           {filteredParsers.map((parser: { type: () => string; label: () => string }) => {
