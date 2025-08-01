@@ -120,8 +120,11 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
               setPathError(true);
               setBrowserUpdating(false);
             }
-            if (results.status == 400) {
+            if (results.status == 400 && results.statusText === "Remote access failed.") {
               alert("bad file path");
+            }
+            if (results.status == 400 && results.statusText === "Socket closed") {
+              props.onReauthCallBack();
             }
             setBrowseError(true);
             setBrowserUpdating(false);
@@ -260,6 +263,8 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       setPath(storedPath);
       setPathInput(storedPath);
       browse(pathDirname(storedPath));
+    } else {
+      browse("/");
     }
   }, []); // Empty dependency array means this runs once on mount
 
