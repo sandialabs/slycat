@@ -139,9 +139,31 @@ module.exports = {
           }
         },
       },
-      // This enables the style and css loaders, which are needed to load CSS files
+      // This enables CSS modules for *.module.css files
+      {
+        test: /\.module\.css$/,
+        use: [ 
+          'style-loader', 
+          {
+            loader: 'css-loader',
+            options: {
+              modules: {
+                mode: 'local',
+                auto: true,
+                exportGlobals: true,
+                localIdentName: '[name]__[local]--[hash:base64:5]',
+                namedExport: false,
+                exportLocalsConvention: 'camelCase',
+              },
+              sourceMap: true,
+            },
+          },
+        ]
+      },
+      // This enables regular CSS loading for non-module CSS files
       {
         test: /\.css$/,
+        exclude: /\.module\.css$/,
         use: [ 
           'style-loader', 
           {
@@ -178,9 +200,42 @@ module.exports = {
           'less-loader' // compiles Less to CSS
         ]
       },
-      // This handles SCSS and SASS files
+      // This handles *.module.scss and *.module.sass files with CSS modules
+      {
+        test: /\.module\.s[ac]ss$/i,
+        use: [
+          // Creates `style` nodes from JS strings
+          {
+            loader: 'style-loader', // inject CSS to page
+          }, 
+          // Translates CSS into CommonJS
+          {
+            loader: 'css-loader', // translates CSS into CommonJS modules
+            options: {
+              modules: {
+                mode: 'local',
+                auto: true,
+                exportGlobals: true,
+                localIdentName: '[name]__[local]--[hash:base64:5]',
+                namedExport: false,
+                exportLocalsConvention: 'camelCase',
+              },
+              sourceMap: true,
+            },
+          },
+          // Compiles Sass to CSS
+          {
+            loader: 'sass-loader', // compiles Sass to CSS
+            options: {
+              sourceMap: true,
+            },
+          },
+        ],
+      },
+      // This handles regular SCSS and SASS files without CSS modules
       {
         test: /\.s[ac]ss$/i,
+        exclude: /\.module\.s[ac]ss$/i,
         use: [
           // Creates `style` nodes from JS strings
           {

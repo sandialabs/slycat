@@ -1,0 +1,29 @@
+// Variables for consistent styling
+$border-color: rgb(222, 226, 230);
+$input-group-gap: 5px;
+$button-width: 44px;
+
+// Path input container styling
+.pathContainer {
+  width: calc(100% - #{$button-width});
+  float: left;
+  margin-right: $input-group-gap;
+}
+
+// File table styling
+.fileTable {
+  position: relative;
+  height: 40vh; // 40% of viewport height - replaces JavaScript calculation
+  overflow: auto;
+  display: block;
+  border: 1px solid $border-color;
+  
+  .table {
+    border-bottom: 1px solid $border-color;
+  }
+}
+
+// Navigation buttons container
+.navButtons {
+  float: right;
+}
