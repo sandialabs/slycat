@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import client from "js/slycat-web-client";
 import SlycatSelector, { Option } from "components/SlycatSelector";
+import styles from "./RemoteFileBrowser.module.scss";
 
 /**
  * @member hostname name of the host we are connecting
@@ -283,18 +284,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       },
     ];
   }
-  const pathStyle: any = {
-    width: "calc(100% - 44px)",
-    float: "left",
-    marginRight: "5px",
-  };
-  const styleTable: any = {
-    position: "relative",
-    height: window.innerHeight * 0.4 + "px",
-    overflow: "auto",
-    display: "block",
-    border: "1px solid rgb(222, 226, 230)",
-  };
+  
   return (
     <div className="slycat-remote-browser">
       <label className="fw-bold justify-content-start mb-2" htmlFor="slycat-remote-browser-path">
@@ -302,7 +292,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       </label>
       <div className="form-group row path mb-3">
         <div className="col-sm-12">
-          <div className="input-group" style={pathStyle}>
+          <div className={`input-group ${styles.pathContainer}`}>
             <input
               type="text"
               className="form-control"
@@ -317,7 +307,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
               Go
             </button>
           </div>
-          <div className="btn-group" role="group" style={{ float: "right" }}>
+          <div className={`btn-group ${styles.navButtons}`} role="group">
             <button
               className="btn btn-secondary"
               type="button"
@@ -336,11 +326,8 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       </div>
 
       {!browserUpdating ? (
-        <div style={styleTable} className="mb-3">
-          <table
-            className="table table-hover table-sm"
-            style={{ borderBottom: "1px solid rgb(222, 226, 230)" }}
-          >
+        <div className={`${styles.fileTable} mb-3`}>
+          <table className={`table table-hover table-sm ${styles.table}`}>
             <thead className="thead-light">
               <tr>
                 <th></th>
