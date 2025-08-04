@@ -1,6 +1,6 @@
 import * as React from "react";
 import styles from "./RemoteFileBrowser.module.scss";
-import { FileMetaData } from "../FileBrowserTypes";
+import { FileMetaData } from "./FileBrowserTypes";
 
 interface FileBrowserTableProps {
   files: FileMetaData[];

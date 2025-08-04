@@ -6,7 +6,7 @@ import {
   BrowseResult,
   HDF5BrowseResult,
   ConnectionResult,
-} from "../FileBrowserTypes";
+} from "./FileBrowserTypes";
 
 /**
  * Hook that abstracts different browse API calls based on browser type
