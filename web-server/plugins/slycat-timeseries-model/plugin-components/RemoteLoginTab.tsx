@@ -38,7 +38,6 @@ function RemoteLoginTab(props: RemoteLoginTabProps) {
       <SlycatRemoteControls
         loadingData={props.loadingData}
         callBack={props.callBack}
-        showConnectButton={false}
       />
     </div>
   );

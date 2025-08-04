@@ -22,7 +22,6 @@ export default class SlycatRemoteControls extends Component {
     const display = this.populateDisplay();
     this.state = {
       remote_hosts: [],
-      showConnectButton: this.props.showConnectButton ? this.props.showConnectButton : false,
       hostname: display.hostname ? display.hostname : null,
       username: display.username ? display.username : null,
       session_exists: null,
@@ -56,23 +55,6 @@ export default class SlycatRemoteControls extends Component {
         },
       );
     });
-  };
-
-  connectButtonCallBack = (sessionExists, loadingData) => {
-    this.setState(
-      {
-        session_exists: sessionExists,
-        loadingData: loadingData,
-      },
-      () => {
-        this.props.callBack(
-          this.state.hostname,
-          this.state.username,
-          this.state.password,
-          this.state.session_exists,
-        );
-      },
-    );
   };
 
   /**
@@ -170,10 +152,18 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   handleKeyDown = (e) => {
-    if (this.state.showConnectButton && e.key === "Enter") {
-      this.connect();
+    if (e.key === "Enter") {
+        document.getElementById("connect-button")?.click();
     }
   };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    let elementExists = document.getElementById("continue-button");
+    if (elementExists !== null) {
+      document.getElementById("continue-button")?.click();
+    }
+  }
 
   /**
    * creates JSX form input if a session does not already exist for the given hostname
@@ -211,17 +201,6 @@ export default class SlycatRemoteControls extends Component {
               onChange={(e) => this.onValueChange(e.target.value, "password")}
             />
             <label htmlFor="password">{REMOTE_AUTH_LABELS.password}</label>
-          </div>
-          <div className="mb-3">
-            {this.state.showConnectButton ? (
-              <ConnectButton
-                loadingData={this.state.loadingData}
-                hostname={this.state.hostname}
-                username={this.state.username}
-                password={this.state.password}
-                callBack={this.connectButtonCallBack}
-              />
-            ) : null}
           </div>
         </div>
       );
@@ -262,7 +241,7 @@ export default class SlycatRemoteControls extends Component {
       return <div />;
     }
     return (
-      <form>
+      <form id="authentication-form" onSubmit={this.handleSubmit}>
         <div className="mb-3">
           <div className="input-group">
             <button

@@ -78,7 +78,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
           loadingData: false,
         },
         () => {
-          this.props.callBack(this.state.sessionExists, this.state.loadingData);
+          this.props.callBack(this.state.sessionExists, false);
         },
       );
     });
@@ -117,7 +117,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
           alert(`${errorResponse.statusText}`);
         }
         this.setState({ loadingData: false }, () => {
-          this.props.callBack(this.state.sessionExists, this.state.loadingData);
+          this.props.callBack(this.state.sessionExists, false);
         });
       });
   };
@@ -125,6 +125,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
   public render() {
     return (
       <button
+        id="connect-button"
         disabled={this.state.loadingData}
         type="button"
         className="btn btn-primary float-end"
