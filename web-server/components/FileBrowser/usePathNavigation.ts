@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { BrowserType } from "../FileBrowserTypes";
+import { BrowserType } from "./FileBrowserTypes";
 
 /**
  * Hook that handles path navigation and manipulation for different browser types

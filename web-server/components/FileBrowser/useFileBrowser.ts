@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { FileMetaData, FileBrowserConfig } from "../FileBrowserTypes";
+import { FileMetaData, FileBrowserConfig } from "./FileBrowserTypes";
 
 /**
  * Return type for useFileBrowser hook
