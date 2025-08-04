@@ -1,5 +1,5 @@
 import * as React from "react";
-import styles from "./RemoteFileBrowser.module.scss";
+import styles from "./FileBrowser.module.scss";
 
 interface FileBrowserPathInputProps {
   hostname?: string;
