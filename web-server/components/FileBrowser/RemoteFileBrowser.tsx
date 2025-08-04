@@ -3,10 +3,10 @@ import { useEffect, useCallback } from "react";
 import SlycatSelector, { Option } from "components/SlycatSelector";
 import FileBrowserPathInput from "./FileBrowserPathInput";
 import FileBrowserTable from "./FileBrowserTable";
-import { useFileBrowser } from "./hooks/useFileBrowser";
-import { useBrowseAPI } from "./hooks/useBrowseAPI";
-import { usePathNavigation } from "./hooks/usePathNavigation";
-import { FileMetaData } from "./FileBrowserTypes";
+import { useFileBrowser } from "../hooks/useFileBrowser";
+import { useBrowseAPI } from "../hooks/useBrowseAPI";
+import { usePathNavigation } from "../hooks/usePathNavigation";
+import { FileMetaData } from "../FileBrowserTypes";
 
 /**
  * @member hostname name of the host we are connecting
