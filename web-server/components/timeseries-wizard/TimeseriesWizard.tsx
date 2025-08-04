@@ -6,7 +6,7 @@ import HPCParametersTab from "plugins/slycat-timeseries-model/plugin-components/
 import ModelNamingTab from "plugins/slycat-timeseries-model/plugin-components/ModelNamingTab";
 import TimeseriesParametersTab from "plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab";
 import ConnectButton from "components/ConnectButton";
-import RemoteFileBrowser from "components/RemoteFileBrowser";
+import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import server_root from "js/slycat-server-root";
 import { cloneDeep } from "lodash";
 
