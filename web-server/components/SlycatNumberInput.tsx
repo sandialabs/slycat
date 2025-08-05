@@ -45,20 +45,23 @@ export default class SlycatNumberInput extends React.Component<
   };
 
   public render() {
+    const inputId = this.props.id || `number-input-${Math.random().toString(36).substr(2, 9)}`;
+    
     return (
-      <div className="form-group row mb-3">
-        <label className="col-sm-2 col-form-label">{this.props.label}</label>
-        <div className="col-sm-9">
-          <input
-            id={this.props.id}
-            className="form-control"
-            type="number"
-            min={1}
-            value={this.state.value}
-            onChange={(e) => this.onValueChange(e.target.value)}
-          />
+      <div className="form-floating mb-3">
+        <input
+          id={inputId}
+          className={`form-control ${this.props.warning ? 'is-invalid' : ''}`}
+          type="number"
+          min={1}
+          value={this.state.value}
+          onChange={(e) => this.onValueChange(e.target.value)}
+          placeholder={this.props.label}
+        />
+        <label htmlFor={inputId}>{this.props.label}</label>
+        {this.props.warning && (
           <div className="invalid-feedback">{this.props.warning}</div>
-        </div>
+        )}
       </div>
     );
   }
