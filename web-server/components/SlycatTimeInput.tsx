@@ -55,28 +55,41 @@ export default class SlycatTimeInput extends React.Component<
   };
 
   public render() {
+    const hoursId = `hours-${Math.random().toString(36).substr(2, 9)}`;
+    const minutesId = `minutes-${Math.random().toString(36).substr(2, 9)}`;
+
     return (
-      <div className="form-group row mb-3">
-        <label className="col-sm-2 col-form-label">{this.props.label}</label>
-        <div className="col-sm-2">
-          <input
-            className="form-control"
-            type="number"
-            min={0}
-            value={this.state.hours}
-            onChange={(e) => this.onHourChange(e.target.value)}
-          />
-          Hours
-        </div>
-        <div className="col-sm-2">
-          <input
-            className="form-control"
-            type="number"
-            min={0}
-            value={this.state.minutes}
-            onChange={(e) => this.onMinuteChange(e.target.value)}
-          />
-          Minutes
+      <div className="mb-3">
+        <div className="mb-2">{this.props.label}</div>
+        <div className="row g-2">
+          <div className="col">
+            <div className="form-floating">
+              <input
+                id={hoursId}
+                className="form-control"
+                type="number"
+                min={0}
+                value={this.state.hours}
+                onChange={(e) => this.onHourChange(e.target.value)}
+                placeholder="Hours"
+              />
+              <label htmlFor={hoursId}>Hours</label>
+            </div>
+          </div>
+          <div className="col">
+            <div className="form-floating">
+              <input
+                id={minutesId}
+                className="form-control"
+                type="number"
+                min={0}
+                value={this.state.minutes}
+                onChange={(e) => this.onMinuteChange(e.target.value)}
+                placeholder="Minutes"
+              />
+              <label htmlFor={minutesId}>Minutes</label>
+            </div>
+          </div>
         </div>
       </div>
     );
