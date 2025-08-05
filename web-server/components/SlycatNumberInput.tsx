@@ -1,63 +1,65 @@
-'use strict';
-import * as React from 'react';
+import * as React from "react";
 
 /**
  */
 export interface SlycatNumberInputProps {
-  value: number
-  style?: any
-  label: string
-  callBack: Function
-  id?: string
-  warning?: string
+  value: number;
+  style?: any;
+  label: string;
+  callBack: Function;
+  id?: string;
+  warning?: string;
 }
 
 /**
  * not used
  */
 export interface SlycatNumberInputState {
-  value: number
+  value: number;
 }
 /**
  * class that creates a a form with checkboxes
  * some other process
  */
-export default class SlycatNumberInput extends React.Component<SlycatNumberInputProps, SlycatNumberInputState> {
+export default class SlycatNumberInput extends React.Component<
+  SlycatNumberInputProps,
+  SlycatNumberInputState
+> {
   /**
    * not used
    */
-  public constructor(props:SlycatNumberInputProps) {
-    super(props)
+  public constructor(props: SlycatNumberInputProps) {
+    super(props);
     this.state = {
-      value: props.value
-    }
+      value: props.value,
+    };
   }
 
-  onValueChange = (value:number) => {
+  onValueChange = (value: number) => {
     // localStorage.setItem("slycat-remote-controls-username", value);
-    if(value === '') {
+    if (value === "") {
       value = 1;
     }
-    this.setState({value: value});
+    this.setState({ value: value });
     this.props.callBack(value);
   };
 
-  public render () {
+  public render() {
     return (
-    <div className='form-group row mb-3'>
-        <label className='col-sm-2 col-form-label'>{this.props.label}</label>
-        <div className='col-sm-9'>
+      <div className="form-group row mb-3">
+        <label className="col-sm-2 col-form-label">{this.props.label}</label>
+        <div className="col-sm-9">
           <input
             id={this.props.id}
-            className='form-control' type='number' min={1}
+            className="form-control"
+            type="number"
+            min={1}
             value={this.state.value}
-            onChange={(e)=>this.onValueChange(e.target.value)}
+            onChange={(e) => this.onValueChange(e.target.value)}
           />
-          <div className="invalid-feedback">
-            {this.props.warning}
-          </div>
+          <div className="invalid-feedback">{this.props.warning}</div>
         </div>
-    </div>
+      </div>
     );
   }
 }
