@@ -24,11 +24,15 @@ interface HPCParametersTabProps {
 function HPCParametersTab(props: HPCParametersTabProps) {
   return (
     <div>
-      <div className="form-group row mb-3">
-        <label className="col-sm-2 col-form-label">Job Host&nbsp;&nbsp;</label>
-        <div className="col-sm-9">
-          <input className="form-control" value={props.hostName} disabled></input>
-        </div>
+      <div className="form-floating mb-3">
+        <input 
+          id="job-host"
+          className="form-control" 
+          value={props.hostName} 
+          disabled
+          placeholder="Job Host"
+        />
+        <label htmlFor="job-host">Job Host</label>
       </div>
       <SlycatTextInput
         id={"account-id"}
