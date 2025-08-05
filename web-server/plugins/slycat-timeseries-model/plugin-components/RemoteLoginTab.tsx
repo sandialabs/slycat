@@ -1,6 +1,6 @@
 import * as React from "react";
-import SlycatFormRadioCheckbox from "components/SlycatFormRadioCheckbox.tsx";
-import SlycatRemoteControls from "components/SlycatRemoteControls.jsx";
+import SlycatFormRadioCheckbox from "components/SlycatFormRadioCheckbox";
+import SlycatRemoteControls from "components/SlycatRemoteControls";
 
 interface RemoteLoginTabProps {
   checked: string;
@@ -35,10 +35,7 @@ function RemoteLoginTab(props: RemoteLoginTabProps) {
       <div className="alert alert-primary" role="alert">
         This Host or HPC system is also where your job will be submitted.
       </div>
-      <SlycatRemoteControls
-        loadingData={props.loadingData}
-        callBack={props.callBack}
-      />
+      <SlycatRemoteControls loadingData={props.loadingData} callBack={props.callBack} />
     </div>
   );
 }
