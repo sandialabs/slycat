@@ -45,7 +45,6 @@ export default class SlycatNumberInput extends React.Component<
 
   public render() {
     const inputId = this.props.id || `number-input-${Math.random().toString(36).substr(2, 9)}`;
-
     return (
       <div className="form-floating mb-3">
         <input
