@@ -56,27 +56,29 @@ export default class SlycatSelector extends React.Component<
   };
 
   public render() {
+    const selectId = `select-${Math.random().toString(36).substr(2, 9)}`;
+    
     return (
-      <div className="form-group row">
-        <label className="col-sm-2 col-form-label">{this.props.label}</label>
-        <div className="col-sm-9">
-          {this.props.disabled === true ? (
-            <select
-              className="form-control"
-              onChange={(e) => this.props.onSelectCallBack(e.target.value)}
-              disabled
-            >
-              {this.getOptions()}
-            </select>
-          ) : (
-            <select
-              className="form-control"
-              onChange={(e) => this.props.onSelectCallBack(e.target.value)}
-            >
-              {this.getOptions()}
-            </select>
-          )}
-        </div>
+      <div className="form-floating mb-3">
+        {this.props.disabled === true ? (
+          <select
+            id={selectId}
+            className="form-select"
+            onChange={(e) => this.props.onSelectCallBack(e.target.value)}
+            disabled
+          >
+            {this.getOptions()}
+          </select>
+        ) : (
+          <select
+            id={selectId}
+            className="form-select"
+            onChange={(e) => this.props.onSelectCallBack(e.target.value)}
+          >
+            {this.getOptions()}
+          </select>
+        )}
+        <label htmlFor={selectId}>{this.props.label}</label>
       </div>
     );
   }
