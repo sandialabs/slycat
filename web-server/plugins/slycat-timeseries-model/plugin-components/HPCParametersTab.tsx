@@ -25,10 +25,10 @@ function HPCParametersTab(props: HPCParametersTabProps) {
   return (
     <div>
       <div className="form-floating mb-3">
-        <input 
+        <input
           id="job-host"
-          className="form-control" 
-          value={props.hostName} 
+          className="form-control"
+          value={props.hostName}
           disabled
           placeholder="Job Host"
         />
