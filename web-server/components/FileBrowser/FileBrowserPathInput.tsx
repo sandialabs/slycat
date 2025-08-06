@@ -53,9 +53,6 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               Go
             </button>
           </div>
-          {props.hasError && props.errorMessage && (
-            <div className="invalid-feedback d-block">{props.errorMessage}</div>
-          )}
           <div className={`btn-group ${styles.navButtons}`} role="group">
             <button
               className="btn btn-secondary"
@@ -67,6 +64,9 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               <i className="fa fa-level-up" aria-hidden="true"></i>
             </button>
           </div>
+          {props.hasError && props.errorMessage && (
+            <div className="invalid-feedback d-block">{props.errorMessage}</div>
+          )}
         </div>
       </div>
     </div>
