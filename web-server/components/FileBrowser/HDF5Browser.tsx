@@ -175,6 +175,7 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
         disabled={fileBrowser.browserUpdating}
         hasError={fileBrowser.pathError}
         errorMessage={fileBrowser.pathErrorMessage}
+        isAtRoot={fileBrowser.isAtRoot(true)}
       />
 
       <FileBrowserTable
