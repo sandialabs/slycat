@@ -54,9 +54,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
             </button>
           </div>
           {props.hasError && props.errorMessage && (
-            <div className="invalid-feedback d-block">
-              {props.errorMessage}
-            </div>
+            <div className="invalid-feedback d-block">{props.errorMessage}</div>
           )}
           <div className={`btn-group ${styles.navButtons}`} role="group">
             <button
