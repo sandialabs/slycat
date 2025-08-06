@@ -8,6 +8,8 @@ interface FileBrowserPathInputProps {
   onPathChange: (path: string) => void;
   onNavigateUp: () => void;
   disabled?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 /**
@@ -40,7 +42,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
           <div className={`input-group ${styles.pathContainer}`}>
             <input
               type="text"
-              className="form-control"
+              className={`form-control ${props.hasError ? "is-invalid" : ""}`}
               id="slycat-remote-browser-path"
               value={props.pathInput}
               onKeyPress={handleKeyPress}
@@ -51,6 +53,11 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               Go
             </button>
           </div>
+          {props.hasError && props.errorMessage && (
+            <div className="invalid-feedback d-block">
+              {props.errorMessage}
+            </div>
+          )}
           <div className={`btn-group ${styles.navButtons}`} role="group">
             <button
               className="btn btn-secondary"

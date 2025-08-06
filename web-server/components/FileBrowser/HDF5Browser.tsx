@@ -71,11 +71,11 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
           const files = fileBrowser.createFileList(results, pathInput, true);
           fileBrowser.completeBrowsing(files, pathInput);
         } catch (error: any) {
-          fileBrowser.handleBrowseError(fileBrowser.path, pathInput, error.status);
+          fileBrowser.handleBrowseError(fileBrowser.path, pathInput, error);
         }
       } catch (error) {
         console.error("Browse failed:", error);
-        fileBrowser.handleBrowseError(fileBrowser.path, pathInput);
+        fileBrowser.handleBrowseError(fileBrowser.path, pathInput, error);
       }
     },
     [browseAPI, fileBrowser, pathNav, props.hostname, props.pid, props.mid],
@@ -173,6 +173,8 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
         onPathChange={handlePathChange}
         onNavigateUp={handleNavigateUp}
         disabled={fileBrowser.browserUpdating}
+        hasError={fileBrowser.pathError}
+        errorMessage={fileBrowser.pathErrorMessage}
       />
 
       <FileBrowserTable
