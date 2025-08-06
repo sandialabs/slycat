@@ -14,15 +14,6 @@ interface FileBrowserTableProps {
  * Shared file table component for file browsers
  */
 export default function FileBrowserTable(props: FileBrowserTableProps) {
-  if (props.loading) {
-    return (
-      <button className="btn btn-primary" type="button" disabled>
-        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        Loading...
-      </button>
-    );
-  }
-
   const fileRows = props.files.map((file, i) => (
     <tr
       className={props.selected === i ? "table-active" : ""}
@@ -45,17 +36,26 @@ export default function FileBrowserTable(props: FileBrowserTableProps) {
 
   return (
     <div className={`${styles.fileTable} mb-3`}>
-      <table className={`table table-hover table-sm ${styles.table}`}>
-        <thead className="thead-light">
-          <tr>
-            <th></th>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Date Modified</th>
-          </tr>
-        </thead>
-        <tbody>{fileRows}</tbody>
-      </table>
+      {props.loading ? (
+        <div className="d-flex justify-content-center align-items-center p-4">
+          <button className="btn btn-primary" type="button" disabled>
+            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading...
+          </button>
+        </div>
+      ) : (
+        <table className={`table table-hover table-sm ${styles.table}`}>
+          <thead className="thead-light">
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Size</th>
+              <th>Date Modified</th>
+            </tr>
+          </thead>
+          <tbody>{fileRows}</tbody>
+        </table>
+      )}
     </div>
   );
 }
