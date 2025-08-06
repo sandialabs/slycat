@@ -10,6 +10,7 @@ interface UseFileBrowserReturn {
   pathInput: string;
   rawFiles: FileMetaData[];
   pathError: boolean;
+  pathErrorMessage: string;
   browseError: boolean;
   browserUpdating: boolean;
   selected: number;
@@ -23,7 +24,7 @@ interface UseFileBrowserReturn {
   clearErrors: () => void;
   startBrowsing: () => void;
   completeBrowsing: (files: FileMetaData[], newPath: string) => void;
-  handleBrowseError: (currentPath: string, targetPath: string, status?: number) => void;
+  handleBrowseError: (currentPath: string, targetPath: string, error: any) => void;
   selectRow: (file: FileMetaData, index: number, fullPath: string) => void;
   createFileList: (results: any, currentPath: string, isHDF5?: boolean) => FileMetaData[];
   getFilteredFiles: (filterFn?: (file: FileMetaData) => boolean) => FileMetaData[];
@@ -38,6 +39,7 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
   const [pathInput, setPathInput] = useState(config.defaultPath);
   const [rawFiles, setRawFiles] = useState<FileMetaData[]>([]);
   const [pathError, setPathError] = useState(false);
+  const [pathErrorMessage, setPathErrorMessage] = useState("");
   const [browseError, setBrowseError] = useState(false);
   const [browserUpdating, setBrowserUpdating] = useState(false);
   const [selected, setSelected] = useState(-1);
@@ -49,6 +51,7 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
    */
   const clearErrors = useCallback(() => {
     setPathError(false);
+    setPathErrorMessage("");
     setBrowseError(false);
   }, []);
 
@@ -85,12 +88,14 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
    * Handles browse errors
    */
   const handleBrowseError = useCallback(
-    (currentPath: string, targetPath: string, status?: number) => {
+    (currentPath: string, targetPath: string, error: any) => {
       if (currentPath !== targetPath) {
         setPathError(true);
-      }
-      if (status === 400) {
-        alert("bad file path");
+        if (error.status === 400) {
+          setPathErrorMessage("Invalid file path. Please check the path and try again.");
+        } else {
+          setPathErrorMessage("An error occurred while browsing. Please try again.");
+        }
       }
       setBrowseError(true);
       setBrowserUpdating(false);
@@ -169,6 +174,7 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
     pathInput,
     rawFiles,
     pathError,
+    pathErrorMessage,
     browseError,
     browserUpdating,
     selected,

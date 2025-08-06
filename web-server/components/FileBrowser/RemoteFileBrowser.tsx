@@ -78,7 +78,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
             const files = fileBrowser.createFileList(results, normalizedPath, false);
             fileBrowser.completeBrowsing(files, normalizedPath);
           } catch (error: any) {
-            fileBrowser.handleBrowseError(fileBrowser.path, normalizedPath, error.status);
+            fileBrowser.handleBrowseError(fileBrowser.path, normalizedPath, error);
           }
         } else {
           // No session, trigger reauth callback
@@ -175,6 +175,8 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         onPathChange={fileBrowser.setPathInput}
         onNavigateUp={handleNavigateUp}
         disabled={fileBrowser.browserUpdating}
+        hasError={fileBrowser.pathError}
+        errorMessage={fileBrowser.pathErrorMessage}
       />
 
       <FileBrowserTable
