@@ -177,6 +177,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         disabled={fileBrowser.browserUpdating}
         hasError={fileBrowser.pathError}
         errorMessage={fileBrowser.pathErrorMessage}
+        isAtRoot={fileBrowser.isAtRoot(false)}
       />
 
       <FileBrowserTable

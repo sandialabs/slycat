@@ -29,6 +29,7 @@ interface UseFileBrowserReturn {
   createFileList: (results: any, currentPath: string, isHDF5?: boolean) => FileMetaData[];
   getFilteredFiles: (filterFn?: (file: FileMetaData) => boolean) => FileMetaData[];
   loadStoredPath: () => string | null;
+  isAtRoot: (isHDF5?: boolean) => boolean;
 }
 
 /**
@@ -165,6 +166,13 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
     return localStorage.getItem("slycat-remote-browser-path-" + persistenceId + config.hostname);
   }, [persistenceId, config.hostname]);
 
+  /**
+   * Determines if current path is at root
+   */
+  const isAtRoot = useCallback((isHDF5 = false): boolean => {
+    return isHDF5 ? path === "//" : path === "/";
+  }, [path]);
+
   return {
     // State
     path,
@@ -190,5 +198,6 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
     createFileList,
     getFilteredFiles,
     loadStoredPath,
+    isAtRoot,
   };
 }

@@ -10,6 +10,7 @@ interface FileBrowserPathInputProps {
   disabled?: boolean;
   hasError?: boolean;
   errorMessage?: string;
+  isAtRoot?: boolean;
 }
 
 /**
@@ -26,7 +27,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
     props.onPathChange(e.target.value);
   };
 
-  const handleGoClick = () => {
+    const handleGoClick = () => {
     props.onBrowse(props.pathInput);
   };
 
@@ -59,7 +60,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               type="button"
               title="Navigate to parent directory"
               onClick={props.onNavigateUp}
-              disabled={props.disabled}
+              disabled={props.disabled || props.isAtRoot}
             >
               <i className="fa fa-level-up" aria-hidden="true"></i>
             </button>
