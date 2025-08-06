@@ -87,21 +87,18 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
   /**
    * Handles browse errors
    */
-  const handleBrowseError = useCallback(
-    (currentPath: string, targetPath: string, error: any) => {
-      if (currentPath !== targetPath) {
-        setPathError(true);
-        if (error.status === 400) {
-          setPathErrorMessage("Invalid file path. Please check the path and try again.");
-        } else {
-          setPathErrorMessage("An error occurred while browsing. Please try again.");
-        }
+  const handleBrowseError = useCallback((currentPath: string, targetPath: string, error: any) => {
+    if (currentPath !== targetPath) {
+      setPathError(true);
+      if (error.status === 400 || error.status === 500) {
+        setPathErrorMessage("Invalid path. Please check the path and try again.");
+      } else {
+        setPathErrorMessage("An error occurred while browsing. Please try again.");
       }
-      setBrowseError(true);
-      setBrowserUpdating(false);
-    },
-    [],
-  );
+    }
+    setBrowseError(true);
+    setBrowserUpdating(false);
+  }, []);
 
   /**
    * Select a file row and call the callback
