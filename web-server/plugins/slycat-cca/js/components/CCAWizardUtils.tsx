@@ -17,7 +17,11 @@ import {
   selectMarking,
   selectMid,
   selectName,
+  selectParser,
   selectPid,
+  selectProgress,
+  selectProgressStatus,
+  selectRemotePath,
   selectScaleInputs,
   selectTab,
   setAttributes,
@@ -26,6 +30,8 @@ import {
   setLoading,
   setMid,
   setPid,
+  setProgress,
+  setProgressStatus,
   setTabName,
   TabNames,
 } from "./wizard-store/reducers/cCAWizardSlice";
@@ -46,6 +52,7 @@ export const useCCAWizardFooter = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
   const uploadSelection = useUploadSelection();
+  const uploadHandleRemoteFileSubmit = useHandleRemoteFileSubmit();
   const handleAuthentication = useHandleAuthentication();
   const finishModel = useFinishModel();
 
@@ -54,11 +61,9 @@ export const useCCAWizardFooter = () => {
    */
   const handleContinue = React.useCallback(() => {
     if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "local") {
-      console.log(dataLocation);
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "remote") {
-      console.log(dataLocation);
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
@@ -67,6 +72,9 @@ export const useCCAWizardFooter = () => {
       } else {
         handleAuthentication();
       }
+    }
+    if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
+      uploadHandleRemoteFileSubmit();
     }
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
@@ -81,6 +89,7 @@ export const useCCAWizardFooter = () => {
     dispatch,
     uploadSelection,
     handleAuthentication,
+    uploadHandleRemoteFileSubmit,
     fileUploaded,
     setTabName,
     tabName,
@@ -100,8 +109,11 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION) {
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "local") {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "remote") {
+      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_FINISH_MODEL) {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
@@ -132,7 +144,7 @@ export const useCCAWizardFooter = () => {
       Continue
     </button>
   ) : (
-    <button className="btn btn-primary" type="button" disabled>
+    <button className="btn btn-primary" type="button" key="loading" disabled>
       <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
       Loading...
     </button>
@@ -249,6 +261,7 @@ const useFileUploadSuccess = () => {
             },
           );
           dispatch(setAttributes(attributes ?? []));
+          dispatch(setLoading(false));
           setUploadStatus(true);
           dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
         },
@@ -259,32 +272,115 @@ const useFileUploadSuccess = () => {
 };
 
 /**
+ * Sets up a stable function for handling remote file uploads, including setting loading status, progress bar, and switching to the next tab.
+ * @returns a stable function for handling remote file upload
+ */
+export const useHandleRemoteFileSubmit = () => {
+  const mid = useAppSelector(selectMid);
+  const pid = useAppSelector(selectPid);
+  const fileDescriptor = useAppSelector(selectRemotePath);
+  const parser = useAppSelector(selectParser);
+  const { hostname } = useAppSelector(selectAuthInfo);
+  const dispatch = useAppDispatch();
+  const progress = useAppSelector(selectProgress);
+  const progressStatus = useAppSelector(selectProgressStatus);
+  const fileUploadSuccess = useFileUploadSuccess();
+  return React.useCallback(() => {
+    dispatch(setLoading(true));
+    console.log(fileDescriptor);
+    if (!fileDescriptor?.path) {
+      dialog.ajax_error(`no file selected`)();
+      dispatch(setLoading(false));
+      return;
+    }
+    if (fileDescriptor.type !== "f") {
+      dialog.ajax_error(
+        `Did you choose the correct file and filetype?  selected file: ${fileDescriptor?.path} is not a file `,
+      )();
+      dispatch(setLoading(false));
+      return;
+    }
+    client
+      .get_remote_file_fetch({ hostname: hostname, path: fileDescriptor?.path })
+      .then((response: any) => {
+        return response.text();
+      })
+      .then((file) => {
+        const progressCallback = (input?: number) => {
+          if (!input) {
+            return progress;
+          }
+          dispatch(setProgress(input));
+        };
+        const progressStatusCallback = (input?: string) => {
+          if (!input) {
+            return progressStatus;
+          }
+          dispatch(setProgressStatus(input));
+        };
+        const fileObject = {
+          pid,
+          mid,
+          file,
+          parser,
+          hostname,
+          paths: fileDescriptor.path,
+          aids: [["data-table"], fileDescriptor.path.split("/").at(-1)],
+          progress: progressCallback,
+          progress_status: progressStatusCallback,
+          progress_final: 90,
+          success: function () {
+            setProgress(100);
+            setProgressStatus("File upload complete");
+            dispatch(setLoading(false));
+            dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+            // setUploadStatus(true);
+            fileUploadSuccess(setProgress, setProgressStatus, (status) => console.log(status));
+          },
+          error: function () {
+            // setUploadStatus(false);
+            dispatch(setLoading(false));
+            dialog.ajax_error(
+              "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
+            )();
+            dispatch(setProgress(0));
+            dispatch(setProgressStatus(""));
+          },
+        };
+        fileUploader.uploadFile(fileObject);
+      });
+  }, [mid, pid, hostname, fileDescriptor, fileUploadSuccess, parser, dispatch]);
+};
+
+/**
  * handle local file submission
  */
 export const useHandleLocalFileSubmit = (): [
   (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => void,
   number,
-  string,
+  string | undefined,
 ] => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
+  const progress = useAppSelector(selectProgress);
+  const progressStatus = useAppSelector(selectProgressStatus);
+  const dispatch = useAppDispatch();
   const fileUploadSuccess = useFileUploadSuccess();
-  const [progress, setProgress] = React.useState<number>(0);
-  const [progressStatus, setProgressStatus] = React.useState("");
   const handleSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
       const progressCallback = (input?: number) => {
         if (!input) {
           return progress;
         }
-        setProgress(input);
+        dispatch(setProgress(input));
       };
       const progressStatusCallback = (input?: string) => {
         if (!input) {
           return progressStatus;
         }
-        setProgressStatus(input);
+        dispatch(setProgressStatus(input));
       };
+      dispatch(setLoading(true));
       const fileObject = {
         pid,
         mid,
@@ -296,19 +392,19 @@ export const useHandleLocalFileSubmit = (): [
         progress_status: progressStatusCallback,
         progress_final: 90,
         success: function () {
-          setProgress(100);
-          setProgressStatus("File upload complete");
+          dispatch(setProgress(100));
+          dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
           fileUploadSuccess(setProgress, setProgressStatus, setUploadStatus);
         },
         error: function () {
           setUploadStatus(false);
+          dispatch(setLoading(false));
           dialog.ajax_error(
             "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
           )();
-          // TODO: toggle disabled for continue
-          setProgress(0);
-          setProgressStatus("");
+          dispatch(setProgress(0));
+          dispatch(setProgressStatus(""));
         },
       };
       fileUploader.uploadFile(fileObject);
@@ -323,7 +419,7 @@ export const useHandleLocalFileSubmit = (): [
  * Returns a function that sets the callback "setParser" value to the selected parser
  */
 export const handleParserChange = (
-  setParser: React.Dispatch<React.SetStateAction<string | undefined>>,
+  setParser: (parser: string) => void | React.Dispatch<React.SetStateAction<string | undefined>>,
 ) =>
   React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {

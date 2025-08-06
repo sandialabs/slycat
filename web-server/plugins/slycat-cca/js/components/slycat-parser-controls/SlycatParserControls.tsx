@@ -7,7 +7,7 @@ import { includes } from "lodash";
 import { handleParserChange } from "../CCAWizardUtils";
 
 export const SlycatParserControls = (props: {
-  setParser: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setParser: (parser: string) => void | React.Dispatch<React.SetStateAction<string | undefined>>;
 }) => {
   const { setParser } = props;
   const filteredParsers: [{ type: () => string; label: () => string }] = parsers

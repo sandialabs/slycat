@@ -550,6 +550,7 @@ function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject, u
  */
 function deleteUpload(pid, mid, uid, fileObject, progress_increment_applied) {
   if (fileObject.progress_status) {
+    fileObject.progress(80);
     fileObject.progress_status("Parsing...");
   }
   client.delete_upload({

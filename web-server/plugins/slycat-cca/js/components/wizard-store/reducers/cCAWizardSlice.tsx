@@ -7,7 +7,7 @@ import { RootState } from "../store";
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCALocalBrowserTab",
-  CCA_AUTHENTICATION_TAB= "CCAAuthenticationTab",
+  CCA_AUTHENTICATION_TAB = "CCAAuthenticationTab",
   CCA_REMOTE_BROWSER_TAB = "CCARemoteBrowserTab",
   CCA_TABLE_INGESTION = "CCATableIngestion",
   CCA_FINISH_MODEL = "CCAFinishModel",
@@ -15,6 +15,10 @@ export enum TabNames {
 export enum dataLocationType {
   LOCAL = "local",
   REMOTE = "remote",
+}
+export interface FileDescriptor {
+  type: string;
+  path: string;
 }
 export interface AuthenticationInformation {
   username: string | undefined;
@@ -34,6 +38,7 @@ export interface Attribute {
   lastSelected: boolean;
   tooltip: string;
 }
+
 export interface CCAWizardState {
   tab: TabNames;
   dataLocation: dataLocationType;
@@ -47,6 +52,10 @@ export interface CCAWizardState {
   name: string | undefined;
   loading: boolean;
   authInfo: AuthenticationInformation;
+  remotePath: FileDescriptor | undefined;
+  progress: number;
+  progressStatus: string | undefined;
+  parser: string | undefined;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -59,18 +68,34 @@ const initialState: CCAWizardState = {
   marking: undefined,
   description: undefined,
   name: undefined,
-  loading:false,
+  loading: false,
   authInfo: {
     username: undefined,
     password: undefined,
     hostname: undefined,
     sessionExists: false,
   },
+  remotePath: undefined,
+  progress: 0,
+  progressStatus: undefined,
+  parser: undefined,
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
   initialState,
   reducers: {
+    setRemotePath: (state, action: PayloadAction<FileDescriptor>) => {
+      state.remotePath = action.payload;
+    },
+    setParser: (state, action: PayloadAction<string>) => {
+      state.parser = action.payload;
+    },
+    setProgressStatus: (state, action: PayloadAction<string>) => {
+      state.progressStatus = action.payload;
+    },
+    setProgress: (state, action: PayloadAction<number>) => {
+      state.progress = action.payload;
+    },
     setTabName: (state, action: PayloadAction<TabNames>) => {
       state.tab = action.payload;
     },
@@ -113,6 +138,10 @@ export const cCAWizardSlice = createSlice({
 
 // Action creators are generated for each case reducer function
 export const {
+  setRemotePath,
+  setParser,
+  setProgressStatus,
+  setProgress,
   setTabName,
   setDataLocation,
   setMid,
@@ -125,7 +154,7 @@ export const {
   setDescription,
   setName,
   setLoading,
-  setAuthInfo
+  setAuthInfo,
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -140,5 +169,9 @@ export const selectDescription = (state: RootState) => state.cCAWizard.marking;
 export const selectName = (state: RootState) => state.cCAWizard.marking;
 export const selectLoading = (state: RootState) => state.cCAWizard.loading;
 export const selectAuthInfo = (state: RootState) => state.cCAWizard.authInfo;
+export const selectParser = (state: RootState) => state.cCAWizard.parser;
+export const selectProgressStatus = (state: RootState) => state.cCAWizard.progressStatus;
+export const selectProgress = (state: RootState) => state.cCAWizard.progress;
+export const selectRemotePath = (state: RootState) => state.cCAWizard.remotePath;
 
 export default cCAWizardSlice.reducer;
