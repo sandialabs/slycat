@@ -112,7 +112,7 @@ export function ajax_error(message)
   {
     dialog(
     {
-      message: message + " " + reason_phrase
+      message: message + " " + (reason_phrase ?? '')
     });
   }
 }
