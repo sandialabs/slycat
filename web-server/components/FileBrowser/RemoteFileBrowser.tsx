@@ -27,7 +27,7 @@ export interface RemoteFileBrowserProps {
   hostname: string;
   persistenceId?: string;
   onSelectFileCallBack: Function;
-  onSelectParserCallBack: Function;
+  onSelectParserCallBack?: Function;
   onReauthCallBack: Function;
   selectedOption?: string;
   showSelector?: boolean;
@@ -184,7 +184,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         onDoubleClick={handleFileNavigation}
       />
 
-      {props.showSelector !== false && props.selectedOption && (
+      {props.showSelector !== false && props.onSelectParserCallBack && props.selectedOption && (
         <SlycatSelector
           onSelectCallBack={props.onSelectParserCallBack}
           label={"Filetype"}
