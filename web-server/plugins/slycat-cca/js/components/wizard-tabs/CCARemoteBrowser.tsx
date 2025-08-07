@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
-import RemoteFileBrowser from "components/RemoteFileBrowser";
+import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import {
   selectAuthInfo,
