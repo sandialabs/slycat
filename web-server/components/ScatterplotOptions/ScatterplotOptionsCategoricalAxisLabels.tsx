@@ -61,19 +61,24 @@ const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
           </label>
         </div>
       </div>
-      <div
-        className={`${styles.slycatPlotCategoricalAxisLabelSpacing} row g-4 align-items-baseline mt-1`}
-      >
+
+      <table className={`table table-borderless mt-4 ms-3 w-auto`} role="grid">
         <thead>
           <tr>
             <td className={`pb-0 pe-3 ${disabled_class}`} />
-            <th className={`pb-0 pe-3 ${disabled_class}`} scope="col">Horizontal</th>
-            <th className={`pb-0 pe-3 ${disabled_class}`} scope="col">Vertical</th>
+            <th className={`pb-0 pe-3 ${disabled_class}`} scope="col">
+              Horizontal
+            </th>
+            <th className={`pb-0 pe-3 ${disabled_class}`} scope="col">
+              Vertical
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr className="align-middle">
-            <th className={`pe-5 ${disabled_class}`} scope="row">Categorical Axis Label Spacing</th>
+            <th className={`pe-5 ${disabled_class}`} scope="row">
+              Categorical Axis Label Spacing
+            </th>
             <td className="pe-3">
               <SlycatNumberInputWithReset
                 name={"horizontal_spacing"}
