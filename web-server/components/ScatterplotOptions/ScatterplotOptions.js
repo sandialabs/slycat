@@ -9,7 +9,7 @@ import {
 } from "plugins/slycat-parameter-image/js/actions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
-import styles from "css/slycat-scatterplot-options.module.scss";
+import styles from "./slycat-scatterplot-options.module.scss";
 import ScatterplotOptionsGrid from "./ScatterplotOptionsGrid";
 import ScatterplotOptionsCategoricalAxisLabels from "./ScatterplotOptionsCategoricalAxisLabels";
 

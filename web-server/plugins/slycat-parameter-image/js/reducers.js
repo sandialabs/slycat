@@ -57,7 +57,7 @@ import {
   MIN_SELECTED_BORDER_SIZE,
   MAX_SELECTED_BORDER_SIZE,
   MIN_MARGIN,
-} from "components/ScatterplotOptions";
+} from "components/ScatterplotOptions/ScatterplotOptions";
 
 import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
 import { AnimationActionLoopStyles } from "three";

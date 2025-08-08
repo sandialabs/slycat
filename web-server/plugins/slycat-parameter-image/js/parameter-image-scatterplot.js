@@ -55,7 +55,7 @@ import {
 import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
-} from "components/ScatterplotOptionsCategoricalAxisLabels";
+} from "components/ScatterplotOptions/ScatterplotOptionsCategoricalAxisLabels";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
