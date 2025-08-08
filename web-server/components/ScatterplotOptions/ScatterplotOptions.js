@@ -176,84 +176,6 @@ class ScatterplotOptions extends React.PureComponent {
               title_reset="Reset size of bottom plot margin to default"
             />
           </div>
-          <table className={`table table-borderless text-center mt-4 ms-3 w-auto`} role="grid">
-            <tbody>
-              <tr>
-                <td className={`pb-0 pe-3`} />
-                <th className={`pb-0 pe-3`} scope="col">
-                  Top
-                </th>
-                <td className={`pb-0 pe-3`} />
-              </tr>
-              <tr>
-                <td className={`pb-0 pe-3`} />
-                <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInputWithReset
-                    name={"top"}
-                    value={this.props.scatterplot_margin_top}
-                    default_value={DEFAULT_SCATTERPLOT_MARGIN_TOP}
-                    min_value={MIN_MARGIN}
-                    step={MARGIN_STEP}
-                    handle_change={this.handleMarginChange}
-                    title_reset="Reset size of top plot margin to default"
-                  />
-                </td>
-                <td className={`pb-0 pe-3`} />
-              </tr>
-              <tr>
-                <th className={`pb-0 pe-3`}>Left</th>
-                <td className={`pb-0 pe-3`} />
-                <th className={`pb-0 pe-3`}>Right</th>
-              </tr>
-              <tr>
-                <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInputWithReset
-                    name={"left"}
-                    value={this.props.scatterplot_margin_left}
-                    default_value={DEFAULT_SCATTERPLOT_MARGIN_LEFT}
-                    min_value={MIN_MARGIN}
-                    step={MARGIN_STEP}
-                    handle_change={this.handleMarginChange}
-                    title_reset="Reset size of left plot margin to default"
-                  />
-                </td>
-                <td className={`pb-0 pe-3`}></td>
-                <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInputWithReset
-                    name={"right"}
-                    value={this.props.scatterplot_margin_right}
-                    default_value={DEFAULT_SCATTERPLOT_MARGIN_RIGHT}
-                    min_value={MIN_MARGIN}
-                    step={MARGIN_STEP}
-                    handle_change={this.handleMarginChange}
-                    title_reset="Reset size of right plot margin to default"
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className={`pb-0 pe-3`} />
-                <th className={`pb-0 pe-3`} scope="col">
-                  Bottom
-                </th>
-                <td className={`pb-0 pe-3`} />
-              </tr>
-              <tr>
-                <td className={`pb-0 pe-3`} />
-                <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInputWithReset
-                    name={"bottom"}
-                    value={this.props.scatterplot_margin_bottom}
-                    default_value={DEFAULT_SCATTERPLOT_MARGIN_BOTTOM}
-                    min_value={MIN_MARGIN}
-                    step={MARGIN_STEP}
-                    handle_change={this.handleMarginChange}
-                    title_reset="Reset size of bottom plot margin to default"
-                  />
-                </td>
-                <td className={`pb-0 pe-3`} />
-              </tr>
-            </tbody>
-          </table>
         </div>
         <hr className="mt-4 mb-4" />
         <ScatterplotOptionsGrid />
@@ -266,8 +188,6 @@ class ScatterplotOptions extends React.PureComponent {
     );
   }
 }
-
- 
 
 const mapStateToProps = (state) => {
   return {
