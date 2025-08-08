@@ -9,7 +9,7 @@ import {
 } from "plugins/slycat-parameter-image/js/actions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
-import "css/slycat-scatterplot-options.scss";
+import styles from "css/slycat-scatterplot-options.module.scss";
 import ScatterplotOptionsGrid from "./ScatterplotOptionsGrid";
 import ScatterplotOptionsCategoricalAxisLabels from "./ScatterplotOptionsCategoricalAxisLabels";
 
@@ -50,16 +50,14 @@ class ScatterplotOptions extends React.PureComponent {
   }
 
   handleMarginChange = (event) => {
-    // console.debug(`handleMarginChange, event is %o`, event);
     this.props.setScatterplotMargin({
       [event.currentTarget.name]: event.currentTarget.value,
     });
   };
 
   render() {
-    // console.log('ScatterplotOptions render');
     return (
-      <div className={`slycat-scatterplot-options ${this.props.uniqueID}`}>
+      <div className={`${styles.slycatScatterplotOptions} ${this.props.uniqueID}`}>
         <table className={`table table-borderless mt-4 w-auto`} role="grid">
           <thead>
             <tr>
@@ -227,12 +225,14 @@ class ScatterplotOptions extends React.PureComponent {
 export class SlycatNumberInputWithReset extends React.Component {
   render() {
     return (
-      <div className="input-group input-group-sm w-auto d-inline-flex slycat-component-SlycatNumberInput">
+      <div
+        className={`input-group input-group-sm w-auto d-inline-flex ${styles.slycatComponentSlycatNumberInputWithReset}`}
+      >
         <input
           type="number"
           name={this.props.name}
           className={`form-control form-control-sm 
-            ${this.props.value != this.props.default_value ? "edited" : ""}`}
+            ${this.props.value != this.props.default_value ? styles.edited : ""}`}
           min={this.props.min}
           max={this.props.max}
           step={this.props.step}
@@ -243,7 +243,7 @@ export class SlycatNumberInputWithReset extends React.Component {
         <button
           className="btn btn-outline-secondary"
           type="button"
-          name={`${this.props.name}_reset`}
+          name={`${this.props.name}`}
           title={this.props.title_reset}
           value={this.props.default_value}
           disabled={this.props.disabled || this.props.value == this.props.default_value}
