@@ -76,7 +76,7 @@ class ScatterplotOptions extends React.PureComponent {
             <tr className="align-middle">
               <th className={`ps-0 pe-5`}>Unselected Points</th>
               <td className="pe-3">
-                <SlycatNumberInput
+                <SlycatNumberInputWithReset
                   value={this.props.unselected_point_size}
                   default_value={DEFAULT_UNSELECTED_POINT_SIZE}
                   min_value={MIN_UNSELECTED_POINT_SIZE}
@@ -87,7 +87,7 @@ class ScatterplotOptions extends React.PureComponent {
                 />
               </td>
               <td className="pe-3">
-                <SlycatNumberInput
+                <SlycatNumberInputWithReset
                   value={this.props.unselected_border_size}
                   default_value={DEFAULT_UNSELECTED_BORDER_SIZE}
                   min_value={MIN_UNSELECTED_BORDER_SIZE}
@@ -101,7 +101,7 @@ class ScatterplotOptions extends React.PureComponent {
             <tr className="align-middle">
               <th className={`ps-0 pe-5`}>Selected Points</th>
               <td className="pe-3">
-                <SlycatNumberInput
+                <SlycatNumberInputWithReset
                   value={this.props.selected_point_size}
                   default_value={DEFAULT_SELECTED_POINT_SIZE}
                   min_value={MIN_SELECTED_POINT_SIZE}
@@ -112,7 +112,7 @@ class ScatterplotOptions extends React.PureComponent {
                 />
               </td>
               <td className="pe-3">
-                <SlycatNumberInput
+                <SlycatNumberInputWithReset
                   value={this.props.selected_border_size}
                   default_value={DEFAULT_SELECTED_BORDER_SIZE}
                   min_value={MIN_SELECTED_BORDER_SIZE}
@@ -142,7 +142,7 @@ class ScatterplotOptions extends React.PureComponent {
               <tr>
                 <td className={`pb-0 pe-3`} />
                 <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInput
+                  <SlycatNumberInputWithReset
                     name={"top"}
                     value={this.props.scatterplot_margin_top}
                     default_value={DEFAULT_SCATTERPLOT_MARGIN_TOP}
@@ -161,7 +161,7 @@ class ScatterplotOptions extends React.PureComponent {
               </tr>
               <tr>
                 <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInput
+                  <SlycatNumberInputWithReset
                     name={"left"}
                     value={this.props.scatterplot_margin_left}
                     default_value={DEFAULT_SCATTERPLOT_MARGIN_LEFT}
@@ -173,7 +173,7 @@ class ScatterplotOptions extends React.PureComponent {
                 </td>
                 <td className={`pb-0 pe-3`}></td>
                 <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInput
+                  <SlycatNumberInputWithReset
                     name={"right"}
                     value={this.props.scatterplot_margin_right}
                     default_value={DEFAULT_SCATTERPLOT_MARGIN_RIGHT}
@@ -194,7 +194,7 @@ class ScatterplotOptions extends React.PureComponent {
               <tr>
                 <td className={`pb-0 pe-3`} />
                 <td className={`pb-0 pe-3`}>
-                  <SlycatNumberInput
+                  <SlycatNumberInputWithReset
                     name={"bottom"}
                     value={this.props.scatterplot_margin_bottom}
                     default_value={DEFAULT_SCATTERPLOT_MARGIN_BOTTOM}
@@ -224,7 +224,7 @@ class ScatterplotOptions extends React.PureComponent {
   }
 }
 
-export class SlycatNumberInput extends React.Component {
+export class SlycatNumberInputWithReset extends React.Component {
   render() {
     return (
       <div className="input-group input-group-sm w-auto d-inline-flex slycat-component-SlycatNumberInput">
@@ -243,7 +243,7 @@ export class SlycatNumberInput extends React.Component {
         <button
           className="btn btn-outline-secondary"
           type="button"
-          name={this.props.name}
+          name={`${this.props.name}_reset`}
           title={this.props.title_reset}
           value={this.props.default_value}
           disabled={this.props.disabled || this.props.value == this.props.default_value}

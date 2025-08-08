@@ -16,7 +16,7 @@ import {
   MAX_VERTICAL_SPACING,
   VERTICAL_SPACING_STEP,
 } from "plugins/slycat-parameter-image/js/scatterplotSlice";
-import { SlycatNumberInput } from "./ScatterplotOptions";
+import { SlycatNumberInputWithReset } from "./ScatterplotOptions";
 
 export const CATEGORICAL_AXIS_LABELS_WARNING =
   "Hide Some Categorical Axis Labels To Increase Readability";
@@ -77,7 +77,8 @@ const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
           <tr className="align-middle">
             <th className={`pe-5 ${disabled_class}`} scope="row">Categorical Axis Label Spacing</th>
             <td className="pe-3">
-              <SlycatNumberInput
+              <SlycatNumberInputWithReset
+                name={"horizontal_spacing"}
                 value={horizontal_spacing}
                 default_value={DEFAULT_HORIZONTAL_SPACING}
                 min_value={MIN_HORIZONTAL_SPACING}
@@ -89,7 +90,8 @@ const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
               />
             </td>
             <td className="pe-3">
-              <SlycatNumberInput
+              <SlycatNumberInputWithReset
+                name={"vertical_spacing"}
                 value={vertical_spacing}
                 default_value={DEFAULT_VERTICAL_SPACING}
                 min_value={MIN_VERTICAL_SPACING}
