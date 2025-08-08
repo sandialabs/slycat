@@ -17,9 +17,9 @@ import "js/slycat-table-ingestion";
 import parameterImageWizardUI from "../wizard-ui.html";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import RemoteFileBrowser from "components/RemoteFileBrowser";
+import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
-import HDF5Browser from "components/HDF5Browser.tsx";
+import HDF5Browser from "components/FileBrowser/HDF5Browser";
 
 function constructor(params) {
   var component = {};

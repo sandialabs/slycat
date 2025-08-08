@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import RemoteFileBrowser from "components/RemoteFileBrowser.tsx";
+import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import ProgressBar from "components/ProgressBar.tsx";
 import ModalLarge from "components/ModalLarge.tsx";
 import ControlsButton from "components/ControlsButton";
