@@ -7,7 +7,9 @@ import {
   setSelectedBorderSize,
   setScatterplotMargin,
 } from "plugins/slycat-parameter-image/js/actions";
-import styles from "./slycat-scatterplot-options.module.scss";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUndo } from "@fortawesome/free-solid-svg-icons";
+import styles from "css/slycat-scatterplot-options.module.scss";
 import ScatterplotOptionsGrid from "./ScatterplotOptionsGrid";
 import ScatterplotOptionsSyncScaling from "./ScatterplotOptionsSyncScaling";
 import ScatterplotOptionsCategoricalAxisLabels from "./ScatterplotOptionsCategoricalAxisLabels";
@@ -270,12 +272,14 @@ class ScatterplotOptions extends React.PureComponent {
 export class SlycatNumberInputWithReset extends React.Component {
   render() {
     return (
-      <div className="input-group input-group-sm w-auto d-inline-flex slycat-component-SlycatNumberInput">
+      <div
+        className={`input-group input-group-sm w-auto d-inline-flex ${styles.slycatComponentSlycatNumberInputWithReset}`}
+      >
         <input
           type="number"
           name={this.props.name}
           className={`form-control form-control-sm 
-            ${this.props.value != this.props.default_value ? "edited" : ""}`}
+            ${this.props.value != this.props.default_value ? styles.edited : ""}`}
           min={this.props.min}
           max={this.props.max}
           step={this.props.step}
@@ -286,7 +290,7 @@ export class SlycatNumberInputWithReset extends React.Component {
         <button
           className="btn btn-outline-secondary"
           type="button"
-          name={`${this.props.name}_reset`}
+          name={`${this.props.name}`}
           title={this.props.title_reset}
           value={this.props.default_value}
           disabled={this.props.disabled || this.props.value == this.props.default_value}
