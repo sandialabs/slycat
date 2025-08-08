@@ -3,7 +3,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import styles from "./slycat-scatterplot-options.module.scss";
 
-export const SlycatNumberInputWithReset = (props) => {
+export type SlycatNumberInputWithResetProps = {
+  name?: string;
+  value: number;
+  default_value: number;
+  min_value?: number;
+  max_value?: number;
+  step?: number;
+  handle_change: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  title_reset: string;
+};
+
+export const SlycatNumberInputWithReset: React.FC<SlycatNumberInputWithResetProps> = (props) => {
   return (
     <div
       className={`input-group input-group-sm w-auto d-inline-flex ${styles.slycatComponentSlycatNumberInputWithReset}`}
@@ -12,7 +24,7 @@ export const SlycatNumberInputWithReset = (props) => {
         type="number"
         name={props.name}
         className={`form-control form-control-sm 
-          ${props.value != props.default_value ? styles.edited : ""}`}
+            ${props.value !== props.default_value ? styles.edited : ""}`}
         min={props.min_value}
         max={props.max_value}
         step={props.step}
@@ -23,10 +35,10 @@ export const SlycatNumberInputWithReset = (props) => {
       <button
         className="btn btn-outline-secondary"
         type="button"
-        name={`${props.name}`}
+        name={`${props.name ?? ""}`}
         title={props.title_reset}
         value={props.default_value}
-        disabled={props.disabled || props.value == props.default_value}
+        disabled={!!props.disabled || props.value === props.default_value}
         onClick={props.handle_change}
       >
         <FontAwesomeIcon icon={faUndo} />
@@ -34,3 +46,5 @@ export const SlycatNumberInputWithReset = (props) => {
     </div>
   );
 };
+
+
