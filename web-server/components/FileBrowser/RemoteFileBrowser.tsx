@@ -159,10 +159,6 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         text: "Comma separated values (CSV)",
         value: "slycat-csv-parser",
       },
-      {
-        text: "Dakota tabular",
-        value: "slycat-dakota-parser",
-      },
     ];
   }
 

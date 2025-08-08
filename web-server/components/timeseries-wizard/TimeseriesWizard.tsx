@@ -520,7 +520,7 @@ export default class TimeseriesWizard extends React.Component<
       this.setState({ selectedTablePath: selectedPath });
       this.setState({ inputDirectory: inputDirectory });
     }
-    if (this.state.selectedOption === "csv") {
+    if (selectedPathType === "f" && this.state.selectedOption === "csv") {
       client
         .get_time_series_names_fetch({
           hostname: this.state.hostname,
