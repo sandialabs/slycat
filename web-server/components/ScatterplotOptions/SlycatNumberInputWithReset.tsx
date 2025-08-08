@@ -10,7 +10,9 @@ export type SlycatNumberInputWithResetProps = {
   min_value?: number;
   max_value?: number;
   step?: number;
-  handle_change: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handle_change: React.EventHandler<
+    React.SyntheticEvent<HTMLInputElement | HTMLButtonElement>
+  >;
   disabled?: boolean;
   title_reset: string;
 };
@@ -24,7 +26,7 @@ export const SlycatNumberInputWithReset: React.FC<SlycatNumberInputWithResetProp
         type="number"
         name={props.name}
         className={`form-control form-control-sm 
-            ${props.value !== props.default_value ? styles.edited : ""}`}
+          ${props.value !== props.default_value ? styles.edited : ""}`}
         min={props.min_value}
         max={props.max_value}
         step={props.step}
