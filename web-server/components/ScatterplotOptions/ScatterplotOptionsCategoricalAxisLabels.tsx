@@ -17,6 +17,7 @@ import {
   VERTICAL_SPACING_STEP,
 } from "plugins/slycat-parameter-image/js/scatterplotSlice";
 import { SlycatNumberInputWithReset } from "./SlycatNumberInputWithReset";
+import styles from "./slycat-scatterplot-options.module.scss";
 
 export const CATEGORICAL_AXIS_LABELS_WARNING =
   "Hide Some Categorical Axis Labels To Increase Readability";
@@ -61,53 +62,43 @@ const ScatterplotOptionsCategoricalAxisLabels: React.FC = () => {
           </label>
         </div>
       </div>
-
-      <table className={`table table-borderless mt-4 ms-3 w-auto`} role="grid">
-        <thead>
-          <tr>
-            <td className={`pb-0 pe-3 ${disabled_class}`} />
-            <th className={`pb-0 pe-3 ${disabled_class}`} scope="col">
-              Horizontal
-            </th>
-            <th className={`pb-0 pe-3 ${disabled_class}`} scope="col">
-              Vertical
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="align-middle">
-            <th className={`pe-5 ${disabled_class}`} scope="row">
-              Categorical Axis Label Spacing
-            </th>
-            <td className="pe-3">
-              <SlycatNumberInputWithReset
-                name={"horizontal_spacing"}
-                value={horizontal_spacing}
-                default_value={DEFAULT_HORIZONTAL_SPACING}
-                min_value={MIN_HORIZONTAL_SPACING}
-                max_value={MAX_HORIZONTAL_SPACING}
-                step={HORIZONTAL_SPACING_STEP}
-                handle_change={handleHorizontalSpacingChange}
-                title_reset="Reset spacing of horizontal labels to default"
-                disabled={!select_hide_labels}
-              />
-            </td>
-            <td className="pe-3">
-              <SlycatNumberInputWithReset
-                name={"vertical_spacing"}
-                value={vertical_spacing}
-                default_value={DEFAULT_VERTICAL_SPACING}
-                min_value={MIN_VERTICAL_SPACING}
-                max_value={MAX_VERTICAL_SPACING}
-                step={VERTICAL_SPACING_STEP}
-                handle_change={handleVerticalSpacingChange}
-                title_reset="Reset border width of vertical labels to default"
-                disabled={!select_hide_labels}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div
+        className={`${styles.slycatPlotCategoricalAxisLabelSpacing} row g-4 align-items-baseline mt-1`}
+      >
+        <div className="col-auto">
+          <label className={`form-label ms-4 ${disabled_class}`}>
+            Categorical Axis Label Spacing
+          </label>
+        </div>
+        <div className="col-auto">
+          <SlycatNumberInputWithReset
+            name={"horizontal_spacing"}
+            label="Horizontal"
+            value={horizontal_spacing}
+            default_value={DEFAULT_HORIZONTAL_SPACING}
+            min_value={MIN_HORIZONTAL_SPACING}
+            max_value={MAX_HORIZONTAL_SPACING}
+            step={HORIZONTAL_SPACING_STEP}
+            handle_change={handleHorizontalSpacingChange}
+            title_reset="Reset spacing of horizontal labels to default"
+            disabled={!select_hide_labels}
+          />
+        </div>
+        <div className="col-auto">
+          <SlycatNumberInputWithReset
+            name={"vertical_spacing"}
+            label="Vertical"
+            value={vertical_spacing}
+            default_value={DEFAULT_VERTICAL_SPACING}
+            min_value={MIN_VERTICAL_SPACING}
+            max_value={MAX_VERTICAL_SPACING}
+            step={VERTICAL_SPACING_STEP}
+            handle_change={handleVerticalSpacingChange}
+            title_reset="Reset border width of vertical labels to default"
+            disabled={!select_hide_labels}
+          />
+        </div>
+      </div>
     </>
   );
 };
