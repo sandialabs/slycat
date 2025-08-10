@@ -9,6 +9,7 @@ import {
 } from "plugins/slycat-parameter-image/js/actions";
 import styles from "./slycat-scatterplot-options.module.scss";
 import ScatterplotOptionsGrid from "./ScatterplotOptionsGrid";
+import ScatterplotOptionsSyncScaling from "./ScatterplotOptionsSyncScaling";
 import ScatterplotOptionsCategoricalAxisLabels from "./ScatterplotOptionsCategoricalAxisLabels";
 import { SlycatNumberInputWithReset } from "./SlycatNumberInputWithReset";
 
@@ -177,11 +178,8 @@ class ScatterplotOptions extends React.PureComponent {
           </div>
         </div>
         <hr className="mt-4 mb-4" />
-        <div className="slycat-scatterplot-grid">
-          <div className="form-inline">
-            <ScatterplotOptionsGrid />
-          </div>
-        </div>
+        <ScatterplotOptionsGrid />
+        <ScatterplotOptionsSyncScaling />
         <hr className="mt-4 mb-4" />
         <div className="slycat-scatterplot-categorical-axis-labels">
           <ScatterplotOptionsCategoricalAxisLabels />
