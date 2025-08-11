@@ -11,7 +11,6 @@ import { FileMetaData } from "./FileBrowserTypes";
 /**
  * @member hostname name of the host we are connecting
  * (assumes we have a connection already to the host)
- * @member persistenceId uuid for local storage
  * @member onSelectFileCallBack called every time a file is selected
  * returns the files info (path, file.type, file:FileMetaData)
  * @member onSelectParserCallBack called every time a parser is selected
@@ -22,7 +21,6 @@ import { FileMetaData } from "./FileBrowserTypes";
  */
 export interface HDF5BrowserProps {
   hostname: string;
-  persistenceId?: string;
   onSelectFileCallBack: Function;
   onSelectParserCallBack: Function;
   onReauthCallBack: Function;
@@ -42,7 +40,6 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
     type: "hdf5",
     defaultPath: "//",
     hostname: props.hostname,
-    persistenceId: props.persistenceId,
   });
 
   const browseAPI = useBrowseAPI("hdf5");

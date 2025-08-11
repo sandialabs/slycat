@@ -28,7 +28,6 @@ export type BrowserType = "remote" | "hdf5";
  */
 export interface BaseFileBrowserProps {
   hostname: string;
-  persistenceId?: string;
   onSelectFileCallBack: Function;
   onSelectParserCallBack: Function;
   onReauthCallBack: Function;
@@ -41,7 +40,7 @@ export interface FileBrowserConfig {
   type: BrowserType;
   defaultPath: string;
   hostname: string;
-  persistenceId?: string;
+  protocol?: string;
 }
 
 /**

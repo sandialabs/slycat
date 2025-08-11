@@ -11,7 +11,6 @@ import { FileMetaData } from "./FileBrowserTypes";
 /**
  * @member hostname name of the host we are connecting
  * (assumes we have a connection already to the host)
- * @member persistenceId uuid for local storage
  * @member onSelectFileCallBack called every time a file is selected
  * returns the files info (path, file.type, file:FileMetaData)
  * @member onSelectParserCallBack called every time a parser is selected
@@ -25,7 +24,6 @@ import { FileMetaData } from "./FileBrowserTypes";
  */
 export interface RemoteFileBrowserProps {
   hostname: string;
-  persistenceId?: string;
   onSelectFileCallBack: Function;
   onSelectParserCallBack: Function;
   onReauthCallBack: Function;
@@ -46,7 +44,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
     type: "remote",
     defaultPath: "/",
     hostname: props.hostname,
-    persistenceId: props.persistenceId,
+    protocol: props.useSMB ? "smb" : "ssh",
   });
 
   const browseAPI = useBrowseAPI("remote");
@@ -140,7 +138,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
   useEffect(() => {
     const storedPath = fileBrowser.loadStoredPath();
     if (storedPath != null) {
-      browse(pathNav.pathDirname(storedPath));
+      browse(storedPath);
     }
   }, []); // Empty dependency array means this runs once on mount
 
