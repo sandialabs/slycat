@@ -1,16 +1,15 @@
-'use strict';
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * @param {onSelectCallBack} callback when selected
  * @param {options} option list
  * @param {label} label for the dropdown
  */
-export interface SlycatSelectorProps { 
-  onSelectCallBack: Function
-  options: Option[]
-  label: string
-  disabled?: boolean
+export interface SlycatSelectorProps {
+  onSelectCallBack: Function;
+  options: Option[];
+  label: string;
+  disabled?: boolean;
 }
 
 /**
@@ -19,24 +18,26 @@ export interface SlycatSelectorProps {
  * @interface option
  */
 export interface Option {
-  text: string
-  value: string
+  text: string;
+  value: string;
 }
 
 /**
  * not used
  */
-export interface SlycatSelectorState {
-}
+export interface SlycatSelectorState {}
 /**
  * class that creates a dropdown with values given in options prop
  */
-export default class SlycatSelector extends React.Component<SlycatSelectorProps, SlycatSelectorState> {
+export default class SlycatSelector extends React.Component<
+  SlycatSelectorProps,
+  SlycatSelectorState
+> {
   /**
    * not used
    */
   public constructor(props: SlycatSelectorProps) {
-    super(props)
+    super(props);
     this.state = {};
   }
 
@@ -45,28 +46,40 @@ export default class SlycatSelector extends React.Component<SlycatSelectorProps,
    *
    * @memberof SlycatSelector
    */
-  getOptions = (): JSX.Element[]=> {
-    const jsxOptions = this.props.options.map((option, i) => <option key={i} value={option.value}>{option.text}</option>);
+  getOptions = (): JSX.Element[] => {
+    const jsxOptions = this.props.options.map((option, i) => (
+      <option key={i} value={option.value}>
+        {option.text}
+      </option>
+    ));
     return jsxOptions;
-  }
+  };
 
-  public render () {
+  public render() {
+    const selectId = `select-${Math.random().toString(36).substr(2, 9)}`;
+    
     return (
-      <div className="form-group row">
-        <label className="col-sm-2 col-form-label">
-          {this.props.label}
-        </label>
-        <div className='col-sm-9'>
-          {this.props.disabled === true ?          
-          <select className="form-control" onChange={(e)=>this.props.onSelectCallBack(e.target.value)} disabled>
+      <div className="form-floating mb-3">
+        {this.props.disabled === true ? (
+          <select
+            id={selectId}
+            className="form-select"
+            onChange={(e) => this.props.onSelectCallBack(e.target.value)}
+            disabled
+          >
             {this.getOptions()}
           </select>
-          :
-          <select className="form-control" onChange={(e)=>this.props.onSelectCallBack(e.target.value)} >
-          {this.getOptions()}
-        </select> }          
-        </div>
+        ) : (
+          <select
+            id={selectId}
+            className="form-select"
+            onChange={(e) => this.props.onSelectCallBack(e.target.value)}
+          >
+            {this.getOptions()}
+          </select>
+        )}
+        <label htmlFor={selectId}>{this.props.label}</label>
       </div>
-    )
+    );
   }
 }

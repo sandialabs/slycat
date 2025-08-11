@@ -2,9 +2,13 @@
 
 <div class="modal-header">
   <h3 class="modal-title">Remapped Wizard</h3>
-  <button type="button" class="btn-close" data-bind="click: tab() != 2 ? cancel : false" data-bs-dismiss="modal" aria-label="Close">
-    
-  </button>
+  <button
+    type="button"
+    class="btn-close"
+    data-bind="click: tab() != 2 ? cancel : false"
+    data-bs-dismiss="modal"
+    aria-label="Close"
+  ></button>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
@@ -16,7 +20,9 @@
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
       <form data-bind="submit: create_model" id="remap-wizard-name-model-form" novalidate>
-        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+        <slycat-model-controls
+          params="name:model.name,description:model.description,marking:model.marking"
+        ></slycat-model-controls>
       </form>
     </div>
     <div data-bind="visible:tab() == 1">
@@ -28,12 +34,17 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary" 
+  <button
+    class="btn btn-primary"
     data-bind="
       visible:tab() == 0,
       click: function(data, event) { create_model(document.getElementById('remap-wizard-name-model-form'), data, event) }
     "
-  >Continue</button>
+  >
+    Continue
+  </button>
   <button class="btn btn-primary" data-bind="visible:tab() == 1,click: finish">Finish</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 2,click: go_to_model">Go To Model</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 2,click: go_to_model">
+    Go To Model
+  </button>
 </div>

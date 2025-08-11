@@ -22,7 +22,6 @@ export default class SlycatRemoteControls extends Component {
     const display = this.populateDisplay();
     this.state = {
       remote_hosts: [],
-      showConnectButton: this.props.showConnectButton ? this.props.showConnectButton : false,
       hostname: display.hostname ? display.hostname : null,
       username: display.username ? display.username : null,
       session_exists: null,
@@ -56,23 +55,6 @@ export default class SlycatRemoteControls extends Component {
         },
       );
     });
-  };
-
-  connectButtonCallBack = (sessionExists, loadingData) => {
-    this.setState(
-      {
-        session_exists: sessionExists,
-        loadingData: loadingData,
-      },
-      () => {
-        this.props.callBack(
-          this.state.hostname,
-          this.state.username,
-          this.state.password,
-          this.state.session_exists,
-        );
-      },
-    );
   };
 
   /**
@@ -170,10 +152,18 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   handleKeyDown = (e) => {
-    if (this.state.showConnectButton && e.key === "Enter") {
-      this.connect();
+    if (e.key === "Enter") {
+        document.getElementById("connect-button")?.click();
     }
   };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    let elementExists = document.getElementById("continue-button");
+    if (elementExists !== null) {
+      document.getElementById("continue-button")?.click();
+    }
+  }
 
   /**
    * creates JSX form input if a session does not already exist for the given hostname
@@ -184,44 +174,33 @@ export default class SlycatRemoteControls extends Component {
     if (!this.state.session_exists) {
       return (
         <div>
-          <div className="form-group row mb-3">
-            <label className="col-sm-2 col-form-label">{REMOTE_AUTH_LABELS.username}</label>
-            <div className="col-sm-9">
-              <input
-                disabled={
-                  this.state.showConnectButton ? this.state.loadingData : this.props.loadingData
-                }
-                className="form-control"
-                type="text"
-                value={this.state.username ? this.state.username : ""}
-                onChange={(e) => this.onValueChange(e.target.value, "username")}
-              />
-            </div>
+          <div className="form-floating mb-3">
+            <input
+              id="username"
+              placeholder={REMOTE_AUTH_LABELS.username}
+              disabled={
+                this.state.showConnectButton ? this.state.loadingData : this.props.loadingData
+              }
+              className="form-control"
+              type="text"
+              value={this.state.username ? this.state.username : ""}
+              onChange={(e) => this.onValueChange(e.target.value, "username")}
+            />
+            <label htmlFor="username">{REMOTE_AUTH_LABELS.username}</label>
           </div>
-          <div className="form-group row mb-3" data-bind-old="visible: !session_exists()">
-            <label className="col-sm-2 col-form-label">{REMOTE_AUTH_LABELS.password}</label>
-            <div className="col-sm-9">
-              <input
-                disabled={
-                  this.state.showConnectButton ? this.state.loadingData : this.props.loadingData
-                }
-                className="form-control"
-                type="password"
-                onKeyDown={this.handleKeyDown}
-                onChange={(e) => this.onValueChange(e.target.value, "password")}
-              />
-            </div>
-            {this.state.showConnectButton ? (
-              <div className="col">
-                <ConnectButton
-                  loadingData={this.state.loadingData}
-                  hostname={this.state.hostname}
-                  username={this.state.username}
-                  password={this.state.password}
-                  callBack={this.connectButtonCallBack}
-                />
-              </div>
-            ) : null}
+          <div className="form-floating mb-3" data-bind-old="visible: !session_exists()">
+            <input
+              id="password"
+              placeholder={REMOTE_AUTH_LABELS.password}
+              disabled={
+                this.state.showConnectButton ? this.state.loadingData : this.props.loadingData
+              }
+              className="form-control"
+              type="password"
+              onKeyDown={this.handleKeyDown}
+              onChange={(e) => this.onValueChange(e.target.value, "password")}
+            />
+            <label htmlFor="password">{REMOTE_AUTH_LABELS.password}</label>
           </div>
         </div>
       );
@@ -262,28 +241,32 @@ export default class SlycatRemoteControls extends Component {
       return <div />;
     }
     return (
-      <form>
-        <div className="form-group row mb-3">
-          <label className="col-sm-2 col-form-label">Hostname</label>
-          <div className="col-sm-9">
-            <div className="input-group">
-              <button
-                className="btn btn-secondary dropdown-toggle"
-                type="button"
-                id="dropdownMenuButton"
-                data-bs-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              />
-              <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                {this.getHostnamesJSX()}
-              </ul>
+      <form id="authentication-form" onSubmit={this.handleSubmit}>
+        <div className="mb-3">
+          <div className="input-group">
+            <button
+              className="btn btn-secondary dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            />
+            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              {this.getHostnamesJSX()}
+            </ul>
+            <div className="form-floating">
               <input
+                id="hostname"
+                placeholder="Hostname"
                 className="form-control"
                 value={this.state.hostname ? this.state.hostname : ""}
                 type="text"
                 onChange={(e) => this.onValueChange(e.target.value, "hostname")}
               />
+              <label className="form-label" htmlFor="hostname">
+                Hostname
+              </label>
             </div>
           </div>
         </div>

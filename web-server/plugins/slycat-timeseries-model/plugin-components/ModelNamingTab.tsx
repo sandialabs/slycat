@@ -1,6 +1,6 @@
-import SlycatSelector from 'components/SlycatSelector.tsx';
-import SlycatTextInput from 'components/SlycatTextInput.tsx';
-import * as React from 'react';
+import SlycatSelector from "components/SlycatSelector";
+import SlycatTextInput from "components/SlycatTextInput";
+import * as React from "react";
 
 interface ModelNamingTabProps {
   nameCallback: Function;
