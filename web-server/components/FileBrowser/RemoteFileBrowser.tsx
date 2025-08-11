@@ -139,6 +139,9 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
     const storedPath = fileBrowser.loadStoredPath();
     if (storedPath != null) {
       browse(storedPath);
+    } else if (fileBrowser.pathInput != null) {
+      // Fall back to default path when nothing is stored
+      browse(fileBrowser.pathInput);
     }
   }, []); // Empty dependency array means this runs once on mount
 
