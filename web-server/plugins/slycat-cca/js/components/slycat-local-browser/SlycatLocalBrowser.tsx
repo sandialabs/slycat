@@ -5,7 +5,7 @@ import * as React from "react";
 import { useHandleLocalFileSubmit } from "../CCAWizardUtils";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
-import { selectParser, setParser } from "../wizard-store/reducers/cCAWizardSlice";
+import { selectParser, setParser } from "../wizard-store/reducers/CCAWizardSlice";
 
 export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) => void }) => {
   const { setUploadStatus } = props;

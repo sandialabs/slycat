@@ -4,7 +4,7 @@
 import * as React from "react";
 import { CCANavItem } from "./CCANavItem";
 import { useAppSelector } from "./wizard-store/hooks";
-import { selectDataLocation, selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
+import { selectDataLocation, selectTab, TabNames } from "./wizard-store/reducers/CCAWizardSlice";
 
 export const CCAWizardNavItems = () => {
   const tabName = useAppSelector(selectTab);

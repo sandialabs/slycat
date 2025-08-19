@@ -14,7 +14,7 @@ import {
   selectLoading,
   selectProgress,
   selectProgressStatus,
-} from "../wizard-store/reducers/cCAWizardSlice";
+} from "../wizard-store/reducers/CCAWizardSlice";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;

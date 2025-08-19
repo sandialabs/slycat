@@ -4,7 +4,7 @@
 import * as React from "react";
 import selectable_markings from "js/slycat-selectable-markings";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
-import { selectMarking, setDescription, setMarking, setName } from "../wizard-store/reducers/cCAWizardSlice";
+import { selectMarking, setDescription, setMarking, setName } from "../wizard-store/reducers/CCAWizardSlice";
 
 export const CCAModelCreation = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;

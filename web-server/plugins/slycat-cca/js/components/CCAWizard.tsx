@@ -10,7 +10,7 @@ import {
   useHandleWizardSetup,
 } from "./CCAWizardUtils";
 import { useAppSelector } from "./wizard-store/hooks";
-import { selectMid, selectPid } from "./wizard-store/reducers/cCAWizardSlice";
+import { selectMid, selectPid } from "./wizard-store/reducers/CCAWizardSlice";
 
 interface CCAWizardParams {
   pid: string;

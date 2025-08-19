@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import cCAWizardReducer from './reducers/cCAWizardSlice'
+import cCAWizardReducer from './reducers/CCAWizardSlice'
 const globalWindow = (window as any);
 export const cCAWizardStore = configureStore({
   reducer: {
