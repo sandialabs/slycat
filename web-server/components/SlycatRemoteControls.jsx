@@ -22,8 +22,8 @@ export default class SlycatRemoteControls extends Component {
     const display = this.populateDisplay();
     this.state = {
       remote_hosts: [],
-      hostname: display.hostname ? display.hostname : null,
-      username: display.username ? display.username : null,
+      hostname: display.hostname ? display.hostname : '',
+      username: display.username ? display.username : '',
       session_exists: this.props.sessionExists ? this.props.sessionExists : false,
       password: "",
       hostnames: [],
@@ -91,12 +91,12 @@ export default class SlycatRemoteControls extends Component {
     if (localStorage.getItem("slycat-remote-controls-hostname")) {
       display.hostname = localStorage.getItem("slycat-remote-controls-hostname")
         ? localStorage.getItem("slycat-remote-controls-hostname")
-        : null;
+        : undefined;
     }
     if (localStorage.getItem("slycat-remote-controls-username")) {
       display.username = localStorage.getItem("slycat-remote-controls-username")
         ? localStorage.getItem("slycat-remote-controls-username")
-        : null;
+        : undefined;
     }
     return display;
   };
@@ -143,10 +143,10 @@ export default class SlycatRemoteControls extends Component {
     const state = {
       remote_hosts: [],
       enable: true,
-      hostname: display.hostname ? display.hostname : null,
-      username: display.username ? display.username : null,
+      hostname: display.hostname ? display.hostname : '',
+      username: display.username ? display.username : '',
       session_exists: false,
-      password: null,
+      password: '',
       initialLoad: false,
     };
     this.setState(state);
