@@ -4,7 +4,7 @@
 import * as React from "react";
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
-import { selectAttributes } from "../wizard-store/reducers/cCAWizardSlice";
+import { selectAttributes } from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleTableIngestionOnChange } from "../CCAWizardUtils";
 
 export const CCATableIngestion = (props: { hidden?: boolean }) => {
@@ -34,7 +34,7 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
         <div className="form-group mt-3">
           <div className="form-check pl-1">
             <label>
-              <input type="checkbox" data-bind="checked: scale_inputs" /> Scale to unit variance
+              <input type="checkbox" /> Scale to unit variance
             </label>
           </div>
         </div>

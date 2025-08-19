@@ -34,11 +34,11 @@ import {
   setProgressStatus,
   setTabName,
   TabNames,
-} from "./wizard-store/reducers/cCAWizardSlice";
+} from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
-import { REMOTE_AUTH_LABELS } from "../../../../utils/ui-labels";
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 /**
  * A hook for controlling how the back and continue buttons work based on the current redux state

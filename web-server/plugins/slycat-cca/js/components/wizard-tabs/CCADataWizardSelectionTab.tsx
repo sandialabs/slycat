@@ -7,7 +7,7 @@ import {
   dataLocationType,
   selectDataLocation,
   setDataLocation,
-} from "../wizard-store/reducers/cCAWizardSlice";
+} from "../wizard-store/reducers/CCAWizardSlice";
 
 export const CCAWizardDataSelectionTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;

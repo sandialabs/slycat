@@ -5,7 +5,7 @@ import * as React from "react";
 import { CCAWizardDataSelectionTab } from "./wizard-tabs/CCADataWizardSelectionTab";
 import { CCAWizardNavItems } from "./CCANavItems";
 import { useAppSelector } from "./wizard-store/hooks";
-import { selectTab, TabNames } from "./wizard-store/reducers/cCAWizardSlice";
+import { selectTab, TabNames } from "./wizard-store/reducers/CCAWizardSlice";
 import { CCALocalBrowserTab } from "./wizard-tabs/CCALocalBrowserTab";
 import { CCATableIngestion } from "./wizard-tabs/CCATableIngestion";
 import { CCAModelCreation } from "./wizard-tabs/CCAModelCreation";

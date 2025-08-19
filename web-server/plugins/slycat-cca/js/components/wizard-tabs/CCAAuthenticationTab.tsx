@@ -12,7 +12,7 @@ import {
   setAuthInfo,
   setTabName,
   TabNames,
-} from "../wizard-store/reducers/cCAWizardSlice";
+} from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleAuthentication } from "../CCAWizardUtils";
 export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
