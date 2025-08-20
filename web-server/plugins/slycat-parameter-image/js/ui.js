@@ -84,7 +84,7 @@ import {
   DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
   DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
   DEFAULT_SCATTERPLOT_MARGIN_LEFT,
-} from "components/ScatterplotOptions";
+} from "components/ScatterplotOptions/ScatterplotOptions";
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";

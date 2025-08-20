@@ -1,0 +1,22 @@
+.slycat-scatterplot-options {
+  // label[for="unselected-border-size"] {
+  //   margin-left: 20px;
+  // }
+  .slycat-component-SlycatNumberInputWithReset {
+    input {
+      width: 90px;
+    }
+    input.edited {
+      font-weight: bold;
+      color: black;
+    }
+  }
+  .slycatPlotCategoricalAxisLabelSpacing {
+    input {
+      width: 110px;
+    }
+  }
+  .form-check-input {
+    margin-right: 0.6em;
+  }
+}
