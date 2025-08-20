@@ -17,12 +17,16 @@ const ScatterplotOptionsSyncScaling: React.FC = () => {
         type="checkbox"
         value=""
         id="syncScalingOption"
+        aria-describedby="syncScalingOptionHelp"
         checked={!!sync_scaling}
         onChange={handleChange}
       />
       <label className="form-check-label" htmlFor="syncScalingOption">
-        Sync Scaling
+        Sync Media Size
       </label>
+      <div id="syncScalingOptionHelp" className="form-text">
+        Synchronize resizing of all pinned media.
+      </div>
     </div>
   );
 };
