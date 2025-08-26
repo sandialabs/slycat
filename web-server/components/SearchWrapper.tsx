@@ -1,5 +1,5 @@
 import { ModelsList } from "components/ModelsList";
-import ProjectsList from "components/ProjectsList";
+import ProjectsList from "components/Project/ProjectsList";
 import React from "react";
 
 /**

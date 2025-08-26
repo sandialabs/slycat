@@ -1,4 +1,4 @@
-import Project from "components/Project";
+import Project from "components/Project/Project";
 import * as React from "react";
 
 /**
