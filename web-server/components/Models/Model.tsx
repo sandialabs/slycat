@@ -4,6 +4,7 @@ import model_names from "js/slycat-model-names";
 import MarkingsBadge from "components//MarkingsBadge";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
+import styles from "./Models.module.scss";
 
 interface ModelProps {
   markings: any[];
@@ -21,7 +22,8 @@ interface ModelProps {
 /**
  * Delete a model, with a modal warning, given the name and model ID.
  */
-const delete_model = (name: string, id: string) => {
+const delete_model = (name: string, id: string, e: React.MouseEvent) => {
+  e.stopPropagation();
   dialog.dialog({
     title: "Delete Model?",
     message: `The model "${name}" will be deleted immediately. This action cannot be undone.`,
@@ -41,48 +43,70 @@ const delete_model = (name: string, id: string) => {
  * @param props a model json meta data
  * @returns JSX model for the model list
  */
-const Model = (props: ModelProps) => {
-  let recognized_marking = props.markings.find((obj) => obj.type == props.marking);
-  const cssClasses = `list-group-item list-group-item-action 
-        ${recognized_marking === undefined ? "list-group-item-warning" : ""}`;
+const Model: React.FC<ModelProps> = ({
+  markings,
+  marking,
+  id,
+  model_type,
+  name,
+  result,
+  message,
+  description,
+  created,
+  creator,
+}) => {
+  const recognized_marking = markings.find((obj) => obj.type == marking);
+  const model_href = server_root + "models/" + id;
+
+  const navigateToModel = () => {
+    window.location.assign(model_href);
+  };
+
   return (
     <div className="col">
-      <div className="card h-100 rounded-0 shadow-sm">
-        <MarkingsBadge marking={props.marking} recognized_marking={recognized_marking} />
+      <div
+        className={`card h-100 rounded-0 shadow-sm ${styles.cursorPointer}`}
+        onClick={navigateToModel}
+      >
+        <MarkingsBadge marking={marking} recognized_marking={recognized_marking} />
         <div className="card-body">
           <span className="float-end ms-3">
             <button
               type="button"
               className="btn btn-sm btn-outline-danger"
-              name={props.id}
-              onClick={() => delete_model(props.name, props.id)}
+              name={id}
+              onClick={(e) => delete_model(name, id, e)}
               title="Delete this model"
             >
               <span className="fa fa-trash-o" />
             </button>
           </span>
 
-          <a href={server_root + "models/" + props.id} className="text-decoration-none">
-            <h5 className="card-title">{props.name}</h5>
+          <a
+            href={model_href}
+            className="text-decoration-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h5 className="card-title">{name}</h5>
           </a>
 
-          {props.description && <p className="card-text">{props.description}</p>}
+          {description && <p className="card-text">{description}</p>}
         </div>
 
-        {props.result == "failed" && (
-          <span className="badge text-bg-danger" title={props.message}>
+        {result == "failed" && (
+          <span className="badge text-bg-danger" title={message}>
             Failed
           </span>
         )}
 
         <div className="card-footer">
           <span className="badge text-bg-primary text-capitalize mt-1 ms-3 float-end">
-            {model_names.translate_model_type(props.model_type)}
+            {model_names.translate_model_type(model_type)}
           </span>
           <small className="text-body-secondary">
-            Created <span>{new Date(props.created).toLocaleString()}</span>
+            Created <span>{new Date(created).toLocaleString()}</span>
             <br />
-            by <span>{props.creator}</span>
+            by <span>{creator}</span>
           </small>
         </div>
       </div>
