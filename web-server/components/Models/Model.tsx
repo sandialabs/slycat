@@ -1,7 +1,7 @@
 import React from "react";
 import server_root from "js/slycat-server-root";
 import model_names from "js/slycat-model-names";
-import MarkingsBadge from "./MarkingsBadge";
+import MarkingsBadge from "components//MarkingsBadge";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 

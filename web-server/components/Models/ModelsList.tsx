@@ -3,7 +3,7 @@ import React from "react";
 
 import client from "js/slycat-web-client.js";
 import Model from "./Model";
-import Spinner from "./Spinner";
+import Spinner from "../Spinner";
 
 /**
  * @param items list of item objects
