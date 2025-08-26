@@ -25,7 +25,7 @@ function NoteManager(model_id, bookmarker, bookmark) {
     self.id_counter = 0;
   }
 
-  self.button = $("<button class='btn btn-sm btn-outline-dark' title='Add Note'> \
+  self.button = $("<button class='btn btn-sm btn-slycat-controls' title='Add Note'> \
                      <span class='fa fa-comment-o' aria-hidden='true'></span> \
                    </button>")
                 .prependTo($('#controls #add-note'))
