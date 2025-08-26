@@ -32,7 +32,7 @@ export const Controls: React.FC<Props> = (props) => {
   const currentVIndex = useAppSelector(selectCurrentVIndex);
 
   // Define default button style
-  const button_style = "btn-outline-dark";
+  const button_style = "btn-slycat-controls";
 
   const handleSetColormap = (colormap: string) => {
     dispatch(setColormap(colormap));
