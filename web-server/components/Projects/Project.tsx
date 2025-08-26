@@ -58,7 +58,11 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
             <span className="fa fa-trash-o" />
           </button>
         </span>
-        <a href={project_href} className="text-decoration-none" onClick={(e) => e.stopPropagation()}>
+        <a
+          href={project_href}
+          className="text-decoration-none"
+          onClick={(e) => e.stopPropagation()}
+        >
           <h5 className="card-title">{name}</h5>
         </a>
 
@@ -66,8 +70,7 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
       </div>
       <div className="card-footer">
         <small className="text-body-secondary">
-          Created <span>{new Date(created).toLocaleString()}</span> by{" "}
-          <span>{creator}</span>
+          Created <span>{new Date(created).toLocaleString()}</span> by <span>{creator}</span>
         </small>
       </div>
     </div>
