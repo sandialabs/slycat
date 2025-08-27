@@ -6,21 +6,25 @@
 // Bootstrap default map overrides should go in slycat-bootstrap-default-map-overrides.scss.
 
 // Custom button styles for slycat-controls
+// Leaving some unassinged because the default values are good,
+// but keeping them here comment out in case we want to customize later.
 .btn-slycat-controls {
   // --bs-btn-color: var(--bs-dark);
+  --bs-btn-color: #{$slycat-controls-color};
   // --bs-btn-bg: #{$slycat-controls};
-  // --bs-btn-border-color: var(--bs-dark);
+  --bs-btn-border-color: #{$slycat-controls-border-color};
   // --bs-btn-hover-color: #fff;
-  // --bs-btn-hover-bg: var(--bs-dark);
-  // --bs-btn-hover-border-color: var(--bs-dark);
+  --bs-btn-hover-bg: #{$slycat-controls-hover-bg};
+  // --bs-btn-hover-border-color: #{$slycat-controls-border-color};
+  --bs-btn-hover-border-color: var(--bs-border-color-translucent);
   // --bs-btn-focus-shadow-rgb: 33, 37, 41;
-  // --bs-btn-active-color: #fff;
-  // --bs-btn-active-bg: var(--bs-dark);
-  // --bs-btn-active-border-color: var(--bs-dark);
+  --bs-btn-active-color: #{$slycat-controls-active-color};
+  --bs-btn-active-bg: #{$slycat-controls-active-bg};
+  --bs-btn-active-border-color: #{$slycat-controls-active-bg};
   // --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  // --bs-btn-disabled-color: var(--bs-dark);
+  --bs-btn-disabled-color: #{$slycat-controls-disabled-color};
   // --bs-btn-disabled-bg: transparent;
-  // --bs-btn-disabled-border-color: var(--bs-dark);
+  --bs-btn-disabled-border-color: #{$slycat-controls-border-color};
 }
 
 // Remove the arrow from dropdown toggles.

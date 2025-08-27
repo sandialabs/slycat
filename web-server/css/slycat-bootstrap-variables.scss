@@ -11,15 +11,20 @@ $sandia-red: rgb(129, 6, 46);
 $slycat-navbar-bg: rgb(210 210 210);
 
 // Slycat navbar button color
-// $slycat-navbar: $sandia-blue;
 $slycat-navbar: $slycat-navbar-bg;
 .btn-slycat-navbar {
   --bs-btn-font-weight: 600;
   --bs-btn-font-size: 1rem;
 }
 
-// Slycat controls button color (slight gray background for controls)
-$slycat-controls: rgb(237, 237, 237); // Light gray background
+// Slycat controls button styling
+$slycat-controls: rgb(255, 255, 255); // White background
+$slycat-controls-color: rgb(50, 57, 64);
+$slycat-controls-border-color: rgba(0, 0, 0, 0.176);
+$slycat-controls-hover-bg: rgb(248, 249, 250);
+$slycat-controls-active-color: rgb(255, 255, 255);
+$slycat-controls-active-bg: $sandia-blue;
+$slycat-controls-disabled-color: shift-color($slycat-controls-color, -40%);
 
 // Slycat default background color
 $slycat-default-bg: rgb(229 232 236);
