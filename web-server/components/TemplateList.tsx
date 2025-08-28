@@ -49,8 +49,8 @@ class Template extends React.Component<TemplateProps> {
   public render() {
     return (
       <div className="list-group-item list-group-item-action">
-        <span className="badge text-bg-secondary me-1">
-          {`${model_names.translate_model_type(this.props.model_type)} model`}
+        <span className="badge rounded-pill text-bg-primary text-capitalize me-1">
+          {`${model_names.translate_model_type(this.props.model_type)}`}
         </span>
         &nbsp;
         <strong>{this.props.name} </strong>

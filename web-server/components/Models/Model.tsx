@@ -94,13 +94,13 @@ const Model: React.FC<ModelProps> = ({
         </div>
 
         {result == "failed" && (
-          <span className="badge text-bg-danger" title={message}>
+          <span className="badge rounded-pill text-bg-danger" title={message}>
             Failed
           </span>
         )}
 
         <div className="card-footer">
-          <span className="badge text-bg-primary text-capitalize mt-1 ms-3 float-end">
+          <span className="badge rounded-pill text-bg-primary text-capitalize mt-1 ms-3 float-end">
             {model_names.translate_model_type(model_type)}
           </span>
           <small className="text-body-secondary">
