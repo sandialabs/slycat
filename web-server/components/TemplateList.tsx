@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-classes-per-file */
-import React from 'react';
-import { createRoot } from 'react-dom/client';
+import React from "react";
+import { createRoot } from "react-dom/client";
 
-import * as dialog from '../js/slycat-dialog';
-import model_names from '../js/slycat-model-names';
-import client from '../js/slycat-web-client';
+import * as dialog from "../js/slycat-dialog";
+import model_names from "../js/slycat-model-names";
+import client from "../js/slycat-web-client";
 
 export interface TemplateProps {
   id: string;
@@ -27,22 +27,22 @@ class Template extends React.Component<TemplateProps> {
     const templateId = this.props.id;
     const projectId = this.props.project;
     dialog.dialog({
-      title: 'Delete Template?',
+      title: "Delete Template?",
       message: `The template "${this.props.name}" will be deleted immediately and there is no undo.  This will not affect any existing models.`,
       buttons: [
-        { className: 'btn-light', label: 'Cancel' },
-        { className: 'btn-danger', label: 'OK' }
+        { className: "btn-light", label: "Cancel" },
+        { className: "btn-danger", label: "OK" },
       ],
       callback(button: any) {
-        if (button?.label !== 'OK') return;
+        if (button?.label !== "OK") return;
         client.delete_reference({
           rid: templateId,
           success() {
             renderTemplates(projectId);
           },
-          error: dialog.ajax_error("Couldn't delete template.")
+          error: dialog.ajax_error("Couldn't delete template."),
         });
-      }
+      },
     });
   }
 
@@ -95,10 +95,10 @@ const renderTemplates = (project_id: string) => {
     success(result: any) {
       const templatesListJSX = <TemplatesList templates={result} />;
       const slycatTemplatesRoot = createRoot(
-        document.getElementById('slycat-templates') as HTMLElement
+        document.getElementById("slycat-templates") as HTMLElement,
       );
       slycatTemplatesRoot.render(templatesListJSX);
-    }
+    },
   });
 };
 class TemplatesList extends React.Component<TemplatesListProps> {
@@ -115,7 +115,7 @@ class TemplatesList extends React.Component<TemplatesListProps> {
             id={reference._id}
             created={reference.created}
             creator={reference.creator}
-            model_type={reference['model-type']}
+            model_type={reference["model-type"]}
             project={reference.project}
           />
         );
