@@ -131,14 +131,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
         className="btn btn-primary float-end"
         onClick={this.connect}
       >
-        {this.state.loadingData ? (
-          <span
-            className="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-        ) : null}
-        {this.state.loadingData ? "Loading..." : this.state.text}
+        {this.state.text}
       </button>
     );
   }
