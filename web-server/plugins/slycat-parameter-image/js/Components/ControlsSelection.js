@@ -290,7 +290,7 @@ const ControlsSelection = (props) => {
                 onChange={props.toggle_sync_scaling}
               />
               <label className="form-check-label" htmlFor="syncScaling">
-                Sync Scaling
+                Sync Media Size
               </label>
             </div>
           </React.Fragment>
