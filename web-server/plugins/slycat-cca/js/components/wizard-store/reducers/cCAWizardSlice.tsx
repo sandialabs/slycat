@@ -7,6 +7,8 @@ import { RootState } from "../store";
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCALocalBrowserTab",
+  CCA_HDF5_INPUT_SELECTION_TAB = "CCAHDF5InputSelectionTab",
+  CCA_HDF5_OUTPUT_SELECTION_TAB = "CCAHDF5OutputSelectionTab",
   CCA_AUTHENTICATION_TAB = "CCAAuthenticationTab",
   CCA_REMOTE_BROWSER_TAB = "CCARemoteBrowserTab",
   CCA_TABLE_INGESTION = "CCATableIngestion",
@@ -56,6 +58,9 @@ export interface CCAWizardState {
   progress: number;
   progressStatus: string | undefined;
   parser: string | undefined;
+  hdf5InputTable: string | undefined;
+  hdf5OutputTable: string | undefined;
+  fileName: string | undefined;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -79,6 +84,9 @@ const initialState: CCAWizardState = {
   progress: 0,
   progressStatus: undefined,
   parser: undefined,
+  hdf5InputTable: undefined,
+  hdf5OutputTable: undefined,
+  fileName: undefined,
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -132,6 +140,15 @@ export const cCAWizardSlice = createSlice({
     setAuthInfo: (state, action: PayloadAction<AuthenticationInformation>) => {
       state.authInfo = action.payload;
     },
+    setHdf5InputTable: (state, action: PayloadAction<string>) => {
+      state.hdf5InputTable = action.payload;
+    },
+    setHdf5OutputTable: (state, action: PayloadAction<string>) => {
+      state.hdf5OutputTable = action.payload;
+    },
+    setFileName: (state, action: PayloadAction<string>) => {
+      state.fileName = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -155,6 +172,9 @@ export const {
   setName,
   setLoading,
   setAuthInfo,
+  setHdf5InputTable,
+  setHdf5OutputTable,
+  setFileName,
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -173,5 +193,6 @@ export const selectParser = (state: RootState) => state.cCAWizard.parser;
 export const selectProgressStatus = (state: RootState) => state.cCAWizard.progressStatus;
 export const selectProgress = (state: RootState) => state.cCAWizard.progress;
 export const selectRemotePath = (state: RootState) => state.cCAWizard.remotePath;
+export const selectFileName = (state: RootState) => state.cCAWizard.fileName;
 
 export default cCAWizardSlice.reducer;
