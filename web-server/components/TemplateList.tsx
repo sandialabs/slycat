@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable max-classes-per-file */
 import React from "react";
 import { createRoot } from "react-dom/client";
 
@@ -16,19 +15,13 @@ export interface TemplateProps {
   creator: string;
   model_type: string;
 }
-class Template extends React.Component<TemplateProps> {
-  public constructor(props: TemplateProps) {
-    super(props);
-    // This binding is necessary to make `this` work in the callback
-    this.delete_template = this.delete_template.bind(this);
-  }
-
-  private delete_template() {
-    const templateId = this.props.id;
-    const projectId = this.props.project;
+const Template: React.FC<TemplateProps> = (props) => {
+  const delete_template = () => {
+    const templateId = props.id;
+    const projectId = props.project;
     dialog.dialog({
       title: "Delete Template?",
-      message: `The template "${this.props.name}" will be deleted immediately and there is no undo.  This will not affect any existing models.`,
+      message: `The template "${props.name}" will be deleted immediately and there is no undo.  This will not affect any existing models.`,
       buttons: [
         { className: "btn-light", label: "Cancel" },
         { className: "btn-danger", label: "OK" },
@@ -44,37 +37,35 @@ class Template extends React.Component<TemplateProps> {
         });
       },
     });
-  }
+  };
 
-  public render() {
-    return (
-      <div className="list-group-item list-group-item-action">
-        <span className="badge rounded-pill text-bg-primary text-capitalize me-1">
-          {`${model_names.translate_model_type(this.props.model_type)}`}
-        </span>
-        &nbsp;
-        <strong>{this.props.name} </strong>
-        <small>
-          <em>
-            Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
-          </em>
-        </small>
-        <span className="float-end">
-          {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-danger"
-            name={this.props.id}
-            onClick={() => this.delete_template()}
-            title="Delete this template"
-          >
-            <span className="fa fa-trash-o" />
-          </button>
-        </span>
-      </div>
-    );
-  }
-}
+  return (
+    <div className="list-group-item list-group-item-action">
+      <span className="badge rounded-pill text-bg-primary text-capitalize me-1">
+        {`${model_names.translate_model_type(props.model_type)}`}
+      </span>
+      &nbsp;
+      <strong>{props.name} </strong>
+      <small>
+        <em>
+          Created <span>{props.created}</span> by <span>{props.creator}</span>
+        </em>
+      </small>
+      <span className="float-end">
+        {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-danger"
+          name={props.id}
+          onClick={() => delete_template()}
+          title="Delete this template"
+        >
+          <span className="fa fa-trash-o" />
+        </button>
+      </span>
+    </div>
+  );
+};
 
 /**
  * @param items list of item objects
@@ -101,38 +92,36 @@ const renderTemplates = (project_id: string) => {
     },
   });
 };
-class TemplatesList extends React.Component<TemplatesListProps> {
-  public render() {
-    const templates = this.props.templates
-      .filter((reference: any) => {
-        return reference.bid && !reference.mid;
-      })
-      .map((reference: any) => {
-        return (
-          <Template
-            name={reference.name}
-            key={reference._id}
-            id={reference._id}
-            created={reference.created}
-            creator={reference.creator}
-            model_type={reference["model-type"]}
-            project={reference.project}
-          />
-        );
-      });
-
-    if (templates.length > 0) {
+const TemplatesList: React.FC<TemplatesListProps> = (props) => {
+  const templates = props.templates
+    .filter((reference: any) => {
+      return reference.bid && !reference.mid;
+    })
+    .map((reference: any) => {
       return (
-        <div className="container">
-          <h3 className="pl-4">Templates</h3>
-          <div className="card">
-            <div className="list-group list-group-flush">{templates}</div>
-          </div>
-        </div>
+        <Template
+          name={reference.name}
+          key={reference._id}
+          id={reference._id}
+          created={reference.created}
+          creator={reference.creator}
+          model_type={reference["model-type"]}
+          project={reference.project}
+        />
       );
-    }
-    return null;
+    });
+
+  if (templates.length > 0) {
+    return (
+      <div className="container">
+        <h3 className="pl-4">Templates</h3>
+        <div className="card">
+          <div className="list-group list-group-flush">{templates}</div>
+        </div>
+      </div>
+    );
   }
-}
+  return null;
+};
 
 export { renderTemplates, TemplatesList };
