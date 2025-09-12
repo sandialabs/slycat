@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable no-underscore-dangle */
 import React from "react";
 import { createRoot } from "react-dom/client";
-
 import * as dialog from "../js/slycat-dialog";
-import model_names from "../js/slycat-model-names";
 import client from "../js/slycat-web-client";
+import ModelTypeBadge from "./Models/ModelTypeBadge";
 
 export interface TemplateProps {
   id: string;
@@ -40,19 +37,17 @@ const Template: React.FC<TemplateProps> = (props) => {
   };
 
   return (
-    <div className="list-group-item list-group-item-action">
-      <span className="badge rounded-pill text-bg-primary text-capitalize me-1">
-        {`${model_names.translate_model_type(props.model_type)}`}
-      </span>
-      &nbsp;
-      <strong>{props.name} </strong>
-      <small>
-        <em>
-          Created <span>{props.created}</span> by <span>{props.creator}</span>
-        </em>
-      </small>
-      <span className="float-end">
-        {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
+    <div className="list-group-item py-3">
+      <div className="d-flex flex-row align-items-baseline mb-1">
+        <strong className="flex-fill">{props.name}</strong>
+        <ModelTypeBadge modelType={props.model_type} className="ms-4 me-3" />
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-warning me-1"
+          data-bind="click: $parent.edit_template"
+        >
+          <span className="fa fa-pencil"></span>
+        </button>
         <button
           type="button"
           className="btn btn-sm btn-outline-danger"
@@ -62,7 +57,12 @@ const Template: React.FC<TemplateProps> = (props) => {
         >
           <span className="fa fa-trash-o" />
         </button>
-      </span>
+      </div>
+      <div className="d-flex flex-row mt-0 align-items-baseline">
+        <small className="fst-italic text-body-secondary flex-fill">
+          Created <span>{props.created}</span> by <span>{props.creator}</span>
+        </small>
+      </div>
     </div>
   );
 };
@@ -114,7 +114,7 @@ const TemplatesList: React.FC<TemplatesListProps> = (props) => {
   if (templates.length > 0) {
     return (
       <div className="container">
-        <h3 className="pl-4">Templates</h3>
+        <h3 className="mb-5">Templates</h3>
         <div className="card">
           <div className="list-group list-group-flush">{templates}</div>
         </div>

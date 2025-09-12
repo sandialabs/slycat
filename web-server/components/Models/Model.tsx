@@ -1,10 +1,10 @@
 import React from "react";
 import server_root from "js/slycat-server-root";
-import model_names from "js/slycat-model-names";
 import MarkingsBadge from "components//MarkingsBadge";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import styles from "./Models.module.scss";
+import ModelTypeBadge from "./ModelTypeBadge";
 
 interface ModelProps {
   markings: any[];
@@ -70,18 +70,7 @@ const Model: React.FC<ModelProps> = ({
       >
         <MarkingsBadge marking={marking} recognized_marking={recognized_marking} />
         <div className="card-body">
-          <span className="float-end ms-3">
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-danger"
-              name={id}
-              onClick={(e) => delete_model(name, id, e)}
-              title="Delete this model"
-            >
-              <span className="fa fa-trash-o" />
-            </button>
-          </span>
-
+          <ModelTypeBadge modelType={model_type} className="mt-1 mb-2 ms-3 float-end" />
           <a
             href={model_href}
             className="text-decoration-none"
@@ -99,15 +88,23 @@ const Model: React.FC<ModelProps> = ({
           </span>
         )}
 
-        <div className="card-footer">
-          <span className="badge rounded-pill text-bg-primary text-capitalize mt-1 ms-3 float-end">
-            {model_names.translate_model_type(model_type)}
-          </span>
-          <small className="text-body-secondary">
+        <div className="card-footer d-flex flex-row align-items-center">
+          <small className="fst-italic text-body-secondary flex-fill">
             Created <span>{new Date(created).toLocaleString()}</span>
             <br />
             by <span>{creator}</span>
           </small>
+          <span>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              name={id}
+              onClick={(e) => delete_model(name, id, e)}
+              title="Delete this model"
+            >
+              <span className="fa fa-trash-o" />
+            </button>
+          </span>
         </div>
       </div>
     </div>

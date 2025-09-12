@@ -47,17 +47,6 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
   return (
     <div className={`card mb-4 shadow-sm ${styles.cursorPointer}`} onClick={navigateToProject}>
       <div className="card-body">
-        <span className="float-end">
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-danger"
-            name={id}
-            onClick={(e) => delete_project(name, id, e)}
-            title="Delete this project"
-          >
-            <span className="fa fa-trash-o" />
-          </button>
-        </span>
         <a
           href={project_href}
           className="text-decoration-none"
@@ -68,10 +57,21 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
 
         {description && <p className="card-text">{description}</p>}
       </div>
-      <div className="card-footer">
-        <small className="text-body-secondary">
+      <div className="card-footer d-flex flex-row align-items-baseline">
+        <small className="fst-italic text-body-secondary flex-fill">
           Created <span>{new Date(created).toLocaleString()}</span> by <span>{creator}</span>
         </small>
+        <span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-danger"
+            name={id}
+            onClick={(e) => delete_project(name, id, e)}
+            title="Delete this project"
+          >
+            <span className="fa fa-trash-o" />
+          </button>
+        </span>
       </div>
     </div>
   );
