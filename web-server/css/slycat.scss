@@ -80,41 +80,6 @@ html#slycat-model-page body {
   border-radius: 3px;
 }
 
-.nav-bookmarks ul.dropdown-menu {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.nav-bookmarks .bookmark-new {
-  font-weight: bold !important;
-}
-
-.nav-bookmarks .bookmark-new .fa {
-  margin-right: 3px;
-}
-
-.nav-bookmarks .bookmark-link {
-  position: relative;
-  padding-right: 95px !important;
-}
-
-.nav-bookmarks .bookmark-delete,
-.nav-bookmarks .bookmark-edit {
-  /*position: absolute;*/
-  padding: 0.15rem 0.4rem;
-  font-size: 0.775rem;
-  line-height: 1.4;
-}
-
-/*
-.nav-bookmarks .bookmark-delete {
-  right: 20px;
-}
-.nav-bookmarks .bookmark-edit {
-  right: 49px;
-}
-*/
-
 .bootstrap-styles .modal .jumbotron {
   padding: 48px;
 }
@@ -541,12 +506,12 @@ label.bottom-margin {
   z-index: 3;
 }
 
-/* Needed to make bookmarks dropdown scrollable when it becomes too long */
+/* Needed to make bookmarks dropdown scrollable when it becomes too long or wide. */
 .dropdown-menu-bookmarks {
   overflow-y: auto;
   overflow-x: auto;
   max-height: 80vh;
-  max-width: 70vw;
+  max-width: 80vw;
 }
 
 .slycat-big-scrolling-alert {

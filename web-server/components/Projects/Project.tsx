@@ -63,7 +63,7 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
           className="text-decoration-none"
           onClick={(e) => e.stopPropagation()}
         >
-          <h5 className="card-title">{name}</h5>
+          <h4 className="card-title">{name}</h4>
         </a>
 
         {description && <p className="card-text">{description}</p>}

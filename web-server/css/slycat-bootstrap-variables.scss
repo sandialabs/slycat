@@ -4,18 +4,14 @@
 // like for table, scatterplot, etc. Those should go in slycat-variables.scss.
 
 // Sandia blue button color
-$sandia-blue: rgb(0, 121, 146);
+$sandia-blue: rgb(0, 100, 144);
+$sandia-light-blue: rgb(230, 241, 246);
+$sandia-medium-blue: rgb(153, 200, 221);
+$sandia-dark-blue: rgb(0, 100, 144);
 $sandia-red: rgb(129, 6, 46);
 
 // Slycat navbar background color
 $slycat-navbar-bg: rgb(210 210 210);
-
-// Slycat navbar button color
-$slycat-navbar: $slycat-navbar-bg;
-.btn-slycat-navbar {
-  --bs-btn-font-weight: 600;
-  --bs-btn-font-size: 1rem;
-}
 
 // Slycat controls button styling
 $slycat-controls: rgb(255, 255, 255); // White background

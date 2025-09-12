@@ -1,0 +1,35 @@
+<li data-bind="attr: {class: ' ' + classNames}">
+  <a data-bind="attr: {href: uri}" class="text-decoration-none">
+    <div class="d-flex flex-row align-items-center">
+      <h5 class="d-inline-block text-truncate flex-fill mb-1 link-secondary" data-bind="text: model_name">
+        [Model Name]
+      </h5>
+
+      <span
+        class="badge rounded-pill text-bg-primary text-capitalize ms-4"
+        data-bind="visible: model_type, text: model_names.translate_model_type(model_type)"
+        >[Model Type Badge]</span
+      >
+    </div>
+    <div class="d-flex flex-row align-items-center">
+      <span
+        class="bookmark-link project-bookmark fw-bold link-dark d-inline-block text-truncate flex-fill"
+        data-bind="text: name"
+      >
+      </span>
+      <!-- ko if: showControls -->
+      <button type="button" class="btn btn-sm btn-warning" data-bind="click: onEdit">
+        <span class="fa fa-pencil"></span>
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-danger bookmark-delete"
+        title="Delete bookmark"
+        data-bind="click: onDelete"
+      >
+        <span class="fa fa-trash-o"></span>
+      </button>
+      <!-- /ko -->
+    </div>
+  </a>
+</li>
