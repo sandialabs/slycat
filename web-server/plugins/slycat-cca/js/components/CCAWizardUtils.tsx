@@ -37,6 +37,7 @@ import {
   setHdf5InputTable,
   setHdf5OutputTable,
   setFileName,
+  setParser,
   TabNames,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
@@ -119,14 +120,26 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "local") {
+      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "remote") {
+      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
+      dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
+    }
     if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "local") {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "remote") {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_FINISH_MODEL) {
+    if (tabName === TabNames.CCA_FINISH_MODEL && parser !== "slycat-hdf5-parser") {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+    }
+    if (tabName === TabNames.CCA_FINISH_MODEL && parser === "slycat-hdf5-parser") {
+      dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
     }
   }, [dispatch, setTabName, tabName]);
 
@@ -208,7 +221,7 @@ export const selectTableFile = () => {
   const mid = useAppSelector(selectMid);
   const fileName = useAppSelector(selectFileName);
   const scaleInputs = useAppSelector(selectScaleInputs);
-
+  
   return React.useCallback((fullPath:string, fileType:string, file:object) => {
     if (fileType === "f") {
       if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
@@ -303,16 +316,18 @@ export const useHandleClosingCallback = (
 const useFileUploadSuccess = () => {
   const mid = useAppSelector(selectMid);
   const parser = useAppSelector(selectParser);
+  
   const dispatch = useAppDispatch();
   return React.useCallback(
     (
+      autoParser: string | undefined,
       setProgress: (status: number) => void,
       setProgressStatus: (status: string) => void,
       setUploadStatus: (status: boolean) => void,
     ) => {
       setProgress(95);
       setProgressStatus("Finishing...");
-      if (parser === 'slycat-hdf5-parser') {
+      if (autoParser === 'slycat-hdf5-parser') {
         dispatch(setLoading(false));
         setUploadStatus(true);
         dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
@@ -456,10 +471,29 @@ export const useHandleLocalFileSubmit = (): [
   const pid = useAppSelector(selectPid);
   const progress = useAppSelector(selectProgress);
   const progressStatus = useAppSelector(selectProgressStatus);
+  const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
   const fileUploadSuccess = useFileUploadSuccess();
   const handleSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
+      
+      let fileExtension = file.name.split(".")[1];
+      let autoParser: string | undefined = '';
+
+      if (fileExtension == "csv") {
+        autoParser = 'slycat-csv-parser';
+        dispatch(setParser('slycat-csv-parser'));
+      } else if (fileExtension == "dat") {
+        autoParser = 'slycat-dakota-parser';
+        dispatch(setParser('slycat-dakota-parser'));
+      } else if (fileExtension == "h5" || fileExtension == "hdf5") {
+        autoParser = 'slycat-hdf5-parser';
+        dispatch(setParser('slycat-hdf5-parser'));
+      }
+      else {
+        autoParser = parser;
+      }
+
       dispatch(setFileName(file?.name));
       const progressCallback = (input?: number) => {
         if (!input) {
@@ -467,20 +501,21 @@ export const useHandleLocalFileSubmit = (): [
         }
         dispatch(setProgress(input));
       };
+
       const progressStatusCallback = (input?: string) => {
         if (!input) {
           return progressStatus;
         }
         dispatch(setProgressStatus(input));
       };
+
       dispatch(setLoading(true));
       const fileObject = {
         pid,
         mid,
         file: file,
-        parser: parser,
+        parser: autoParser,
         aids: [["data-table"], file?.name],
-        // parser: component.parser(),
         progress: progressCallback,
         progress_status: progressStatusCallback,
         progress_final: 90,
@@ -488,7 +523,7 @@ export const useHandleLocalFileSubmit = (): [
           dispatch(setProgress(100));
           dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
-          fileUploadSuccess(setProgress, setProgressStatus, setUploadStatus);
+          fileUploadSuccess(autoParser, setProgress, setProgressStatus, setUploadStatus);
         },
         error: function () {
           setUploadStatus(false);
