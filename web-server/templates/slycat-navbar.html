@@ -274,24 +274,24 @@
 
               <!-- ko if: model_id() -->
               <li>
-                <div class="accordion accordion-flush mt-3">
+                <div class="accordion accordion-flush mt-3" id="project-bookmarks-accordion">
                   <div class="accordion-item">
                     <h2 class="accordion-header">
                       <button
                         class="accordion-button collapsed fs-5 fw-medium text-nowrap pe-4 border-top border-bottom"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#collapseOne"
+                        data-bs-target="#project-bookmarks"
                         aria-expanded="false"
-                        aria-controls="collapseOne"
+                        aria-controls="project-bookmarks"
                       >
                         <span class="me-4">Bookmarks to Other Models</span>
                       </button>
                     </h2>
                     <div
-                      id="collapseOne"
+                      id="project-bookmarks"
                       class="accordion-collapse collapse"
-                      data-bs-parent="#accordionExample"
+                      data-bs-parent="#project-bookmarks-accordion"
                     >
                       <div class="accordion-body p-0">
                         <ul class="list-group list-group-flush">

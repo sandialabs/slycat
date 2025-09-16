@@ -1,5 +1,4 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
+import React, { useState, useEffect } from "react";
 import * as dialog from "../js/slycat-dialog";
 import client from "../js/slycat-web-client";
 import ModelTypeBadge from "./Models/ModelTypeBadge";
@@ -11,6 +10,7 @@ export interface TemplateProps {
   created: string;
   creator: string;
   model_type: string;
+  onRefresh: () => void;
 }
 const Template: React.FC<TemplateProps> = (props) => {
   const delete_template = () => {
@@ -28,9 +28,35 @@ const Template: React.FC<TemplateProps> = (props) => {
         client.delete_reference({
           rid: templateId,
           success() {
-            renderTemplates(projectId);
+            props.onRefresh();
           },
           error: dialog.ajax_error("Couldn't delete template."),
+        });
+      },
+    });
+  };
+
+  const edit_template = () => {
+    console.log("Edit template");
+    const templateId = props.id;
+    const projectId = props.project;
+    dialog.prompt({
+      title: "Edit Template",
+      value: props.name,
+      buttons: [
+        { className: "btn-light", label: "Cancel" },
+        { className: "btn-danger", label: "OK" },
+      ],
+      callback: (button: any, valueIn: any) => {
+        if (button?.label !== "OK") return;
+        console.debug("Edit template", templateId, props.name);
+        client.put_reference({
+          rid: templateId,
+          name: valueIn(),
+          success: () => {
+            props.onRefresh();
+          },
+          error: dialog.ajax_error("Couldn't edit template."),
         });
       },
     });
@@ -44,7 +70,9 @@ const Template: React.FC<TemplateProps> = (props) => {
         <button
           type="button"
           className="btn btn-sm btn-outline-warning me-1"
-          data-bind="click: $parent.edit_template"
+          name={props.id}
+          onClick={() => edit_template()}
+          title="Edit this template"
         >
           <span className="fa fa-pencil"></span>
         </button>
@@ -68,32 +96,32 @@ const Template: React.FC<TemplateProps> = (props) => {
 };
 
 /**
- * @param items list of item objects
- * @param type string type
+ * @param projectId string project id
  */
 export interface TemplatesListProps {
-  templates: any;
+  projectId: string;
 }
 
-/**
- *
- * @param project_id string project id
- */
-const renderTemplates = (project_id: string) => {
-  // Create a React TemplatesList component after getting the list of templates in this project
-  client.get_project_references({
-    pid: project_id,
-    success(result: any) {
-      const templatesListJSX = <TemplatesList templates={result} />;
-      const slycatTemplatesRoot = createRoot(
-        document.getElementById("slycat-templates") as HTMLElement,
-      );
-      slycatTemplatesRoot.render(templatesListJSX);
-    },
-  });
-};
 const TemplatesList: React.FC<TemplatesListProps> = (props) => {
-  const templates = props.templates
+  const [templates, setTemplates] = useState<any[]>([]);
+
+  const fetchTemplates = () => {
+    client.get_project_references({
+      pid: props.projectId,
+      success(result: any) {
+        setTemplates(result);
+      },
+      error() {
+        console.log('Unable to retrieve project templates.');
+      },
+    });
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [props.projectId]);
+
+  const templateElements = templates
     .filter((reference: any) => {
       return reference.bid && !reference.mid;
     })
@@ -107,16 +135,38 @@ const TemplatesList: React.FC<TemplatesListProps> = (props) => {
           creator={reference.creator}
           model_type={reference["model-type"]}
           project={reference.project}
+          onRefresh={fetchTemplates}
         />
       );
     });
 
-  if (templates.length > 0) {
+  if (templateElements.length > 0) {
     return (
       <div className="container">
-        <h3 className="mb-5">Templates</h3>
-        <div className="card">
-          <div className="list-group list-group-flush">{templates}</div>
+        <div className="accordion" id="templates-accordion">
+          <div className="accordion-item">
+            <h2 className="accordion-header">
+              <button
+                className="accordion-button collapsed fs-3 fw-medium"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#templates"
+                aria-expanded="false"
+                aria-controls="templates"
+              >
+                Templates
+              </button>
+            </h2>
+            <div
+              id="templates"
+              className="accordion-collapse collapse"
+              data-bs-parent="#templates-accordion"
+            >
+              <div className="accordion-body p-0">
+                <div className="list-group list-group-flush">{templateElements}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -124,4 +174,4 @@ const TemplatesList: React.FC<TemplatesListProps> = (props) => {
   return null;
 };
 
-export { renderTemplates, TemplatesList };
+export { TemplatesList };
