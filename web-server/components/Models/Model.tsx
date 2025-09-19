@@ -102,7 +102,7 @@ const Model: React.FC<ModelProps> = ({
               onClick={(e) => delete_model(name, id, e)}
               title="Delete this model"
             >
-              <span className="fa fa-trash-o" />
+              <i className="fa-regular fa-trash-can"></i>
             </button>
           </span>
         </div>

@@ -69,7 +69,7 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
             onClick={(e) => delete_project(name, id, e)}
             title="Delete this project"
           >
-            <span className="fa fa-trash-o" />
+            <i className="fa-regular fa-trash-can"></i>
           </button>
         </span>
       </div>

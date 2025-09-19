@@ -1,7 +1,10 @@
 <li data-bind="attr: {class: ' ' + classNames}">
   <a data-bind="attr: {href: uri}" class="text-decoration-none">
     <div class="d-flex flex-row align-items-center">
-      <h5 class="d-inline-block text-truncate flex-fill mb-1 link-secondary" data-bind="text: model_name">
+      <h5
+        class="d-inline-block text-truncate flex-fill mb-1 link-secondary"
+        data-bind="text: model_name"
+      >
         [Model Name]
       </h5>
 
@@ -19,7 +22,7 @@
       </span>
       <!-- ko if: showControls -->
       <button type="button" class="btn btn-sm btn-warning" data-bind="click: onEdit">
-        <span class="fa fa-pencil"></span>
+        <i class="fa-solid fa-pencil"></i>
       </button>
       <button
         type="button"
@@ -27,7 +30,7 @@
         title="Delete bookmark"
         data-bind="click: onDelete"
       >
-        <span class="fa fa-trash-o"></span>
+        <i class="fa-regular fa-trash-can"></i>
       </button>
       <!-- /ko -->
     </div>

@@ -74,7 +74,7 @@ const Template: React.FC<TemplateProps> = (props) => {
           onClick={() => edit_template()}
           title="Edit this template"
         >
-          <span className="fa fa-pencil"></span>
+          <i className="fa-solid fa-pencil"></i>
         </button>
         <button
           type="button"
@@ -83,7 +83,7 @@ const Template: React.FC<TemplateProps> = (props) => {
           onClick={() => delete_template()}
           title="Delete this template"
         >
-          <span className="fa fa-trash-o" />
+          <i className="fa-regular fa-trash-can"></i>
         </button>
       </div>
       <div className="d-flex flex-row mt-0 align-items-baseline">
