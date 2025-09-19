@@ -212,23 +212,39 @@
               Bookmarks
             </a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-bookmarks pb-0 pt-0">
-              <!-- ko foreach: model_bookmark_wizards -->
-              <li class="mb-2 border-bottom">
+              <!-- ko if: model_id() -->
+              <li class="border-bottom px-4 py-3 mb-3 fs-7 d-flex flex-row">
+                <h2 class="m-0 fs-5 text-secondary text-nowrap flex-fill">
+                  Bookmarks to This Model
+                </h2>
+                <!-- ko foreach: model_bookmark_wizards -->
                 <a
-                  class="dropdown-item bookmark-new pt-3 text-primary"
+                  class="icon-link text-nowrap fw-bold"
+                  href="#"
                   data-bind="click: $parent.run_wizard"
                 >
-                  <h2 class="fs-5">
-                    <span class="fa fa-plus me-1 fs-6"></span>
-                    <span data-bind="text: label">[Model Bookmark Wizard Name]</span>
-                  </h2>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 640 640"
+                    class="bi"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"
+                    />
+                  </svg>
+                  <span data-bind="text: label">[Model Bookmark Wizard Name]</span>
                 </a>
+                <!-- /ko -->
               </li>
               <!-- /ko -->
 
               <!-- Start of model bookmarks listing. -->
               <!-- ko foreach: saved_model_bookmarks -->
-              <li class="dropdown-item">
+              <li
+                class="dropdown-item ps-5 pe-5"
+                data-bind="css: { 'mb-3': $index() === $parent.saved_model_bookmarks().length - 1 }"
+              >
                 <div class="d-flex flex-row align-items-center">
                   <!-- Bookmark link -->
                   <a
@@ -242,18 +258,18 @@
                   <!-- ko if: $parent.relation() === 'writer' || $parent.relation() === 'administrator' -->
                   <button
                     type="button"
-                    class="btn btn-sm btn-warning bookmark-edit ms-4"
+                    class="btn btn-sm btn-outline-warning bookmark-edit ms-4"
                     data-bind="click: $parent.edit_saved_bookmark"
                   >
-                    <span class="fa fa-pencil"></span>
+                    <i class="fa-solid fa-pencil"></i>
                   </button>
                   <button
                     type="button"
-                    class="btn btn-sm btn-danger bookmark-delete ms-1"
+                    class="btn btn-sm btn-outline-danger bookmark-delete ms-1"
                     title="Delete bookmark"
                     data-bind="click: $parent.delete_saved_bookmark"
                   >
-                    <span class="fa fa-trash-o"></span>
+                    <i class="fa-regular fa-trash-can"></i>
                   </button>
                   <!-- Metadata that we are no longer using. Leaving it here in case we want to add it later. -->
                   <!-- <small>
@@ -285,7 +301,7 @@
                         aria-expanded="false"
                         aria-controls="project-bookmarks"
                       >
-                        <span class="me-4">Bookmarks to Other Models</span>
+                        <span class="me-4">Bookmarks to Other Models In This Project</span>
                       </button>
                     </h2>
                     <div
@@ -307,7 +323,7 @@
                               onDelete: $parent.delete_saved_bookmark,
                               showControls: $parent.relation() === 'writer' || $parent.relation() === 'administrator',
                               showControls: false,
-                              classNames: 'list-group-item list-group-item-action border border-0 border-bottom'
+                              classNames: 'list-group-item list-group-item-action border border-0 border-bottom ps-5 pe-5 pb-3'
                             "
                           ></slycat-bookmark-item>
                           <!-- /ko -->
