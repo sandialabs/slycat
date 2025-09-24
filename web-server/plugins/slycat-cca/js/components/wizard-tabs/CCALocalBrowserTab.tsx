@@ -3,14 +3,19 @@
  retains certain rights in this software. */
 import * as React from "react";
 import { SlycatLocalBrowser } from "../slycat-local-browser/SlycatLocalBrowser";
-import { useSetUploadStatus } from "../CCAWizardUtils";
+import { useAppDispatch } from "../wizard-store/hooks";
+import { setLocalFileSelected } from "../wizard-store/reducers/CCAWizardSlice";
 
 export const CCALocalBrowserTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
-  const setUploadStatus = useSetUploadStatus();
+  const dispatch = useAppDispatch();
+  const localFileSelected = React.useCallback((fileSelected: boolean) => {
+    dispatch(setLocalFileSelected(fileSelected));
+  }, [dispatch]);
+
   return (
     <div hidden={hidden}>
-      <SlycatLocalBrowser setUploadStatus={setUploadStatus} />
+      <SlycatLocalBrowser callBack={localFileSelected} />
     </div>
   );
 };

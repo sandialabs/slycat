@@ -12,8 +12,8 @@ import {
   selectAuthInfo,
   selectDataLocation,
   selectDescription,
-  selectFileUploaded,
   selectLoading,
+  selectLocalFileSelected,
   selectMarking,
   selectMid,
   selectName,
@@ -47,14 +47,17 @@ import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 export const useCCAWizardFooter = () => {
   const tabName = useAppSelector(selectTab);
   const dataLocation = useAppSelector(selectDataLocation);
-  const fileUploaded = useAppSelector(selectFileUploaded);
   const loading = useAppSelector(selectLoading);
   const authInfo = useAppSelector(selectAuthInfo);
+  const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
   const uploadSelection = useUploadSelection();
   const uploadHandleRemoteFileSubmit = useHandleRemoteFileSubmit();
   const handleAuthentication = useHandleAuthentication();
   const finishModel = useFinishModel();
+  const [handleLocalFileSubmit, ,] = useHandleLocalFileSubmit();
+  const setUploadStatus = useSetUploadStatus();
+  const localFileSelected = useAppSelector(selectLocalFileSelected);
 
   /**
    * handle continue operation
@@ -76,8 +79,13 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       uploadHandleRemoteFileSubmit();
     }
-    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && fileUploaded) {
-      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && localFileSelected) {
+      const fileSelector = (
+        document.getElementById("slycat-local-browser-file") as never as HTMLInputElement
+      )?.files;
+      if (fileSelector?.length && fileSelector.length > 0) {
+        handleLocalFileSubmit(fileSelector[0], parser, setUploadStatus);
+      }
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       uploadSelection();
@@ -86,14 +94,18 @@ export const useCCAWizardFooter = () => {
       finishModel();
     }
   }, [
-    dispatch,
-    uploadSelection,
-    handleAuthentication,
-    uploadHandleRemoteFileSubmit,
-    fileUploaded,
-    setTabName,
     tabName,
     dataLocation,
+    localFileSelected,
+    dispatch,
+    authInfo?.sessionExists,
+    handleAuthentication,
+    uploadHandleRemoteFileSubmit,
+    handleLocalFileSubmit,
+    parser,
+    setUploadStatus,
+    uploadSelection,
+    finishModel,
   ]);
 
   /**
@@ -118,7 +130,7 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_FINISH_MODEL) {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
     }
-  }, [dispatch, setTabName, tabName]);
+  }, [dataLocation, dispatch, tabName]);
 
   const backButton = (
     <button
@@ -133,13 +145,12 @@ export const useCCAWizardFooter = () => {
       Back
     </button>
   );
-
   const nextButton = !loading ? (
     <button
       key="continue"
       className="btn btn-primary"
       onClick={handleContinue}
-      disabled={(tabName === TabNames.CCA_LOCAL_BROWSER_TAB && !fileUploaded) || loading}
+      disabled={loading || (!localFileSelected && tabName === TabNames.CCA_LOCAL_BROWSER_TAB)}
     >
       Continue
     </button>
@@ -149,10 +160,7 @@ export const useCCAWizardFooter = () => {
       Loading...
     </button>
   );
-  return React.useMemo(
-    () => [backButton, nextButton],
-    [fileUploaded, loading, handleContinue, handleBack, tabName, dataLocation, dispatch],
-  );
+  return [backButton, nextButton];
 };
 
 /**
@@ -188,7 +196,7 @@ export const useHandleWizardSetup = (
           dispatch(setMid(result.id));
         });
     }
-  }, [pid, statePid, stateMid, marking]);
+  }, [statePid, stateMid, dispatch, pid, marking]);
 };
 
 /**
@@ -208,7 +216,7 @@ export const useHandleClosingCallback = (
       client.delete_model_fetch({ mid: stateMid });
     }
     dispatch(resetCCAWizard());
-  }, [stateMid, setModalOpen]);
+  }, [setModalOpen, stateMid, dispatch]);
 };
 
 /**
@@ -349,7 +357,17 @@ export const useHandleRemoteFileSubmit = () => {
         };
         fileUploader.uploadFile(fileObject);
       });
-  }, [mid, pid, hostname, fileDescriptor, fileUploadSuccess, parser, dispatch]);
+  }, [
+    dispatch,
+    fileDescriptor,
+    hostname,
+    pid,
+    mid,
+    parser,
+    progress,
+    progressStatus,
+    fileUploadSuccess,
+  ]);
 };
 
 /**
@@ -366,7 +384,7 @@ export const useHandleLocalFileSubmit = (): [
   const progressStatus = useAppSelector(selectProgressStatus);
   const dispatch = useAppDispatch();
   const fileUploadSuccess = useFileUploadSuccess();
-  const handleSubmit = React.useCallback(
+  const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
       const progressCallback = (input?: number) => {
         if (!input) {
@@ -396,6 +414,7 @@ export const useHandleLocalFileSubmit = (): [
           dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
           fileUploadSuccess(setProgress, setProgressStatus, setUploadStatus);
+          dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
         },
         error: function () {
           setUploadStatus(false);
@@ -409,16 +428,16 @@ export const useHandleLocalFileSubmit = (): [
       };
       fileUploader.uploadFile(fileObject);
     },
-    [mid, pid, progress, setProgress, setProgressStatus],
+    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus],
   );
 
-  return [handleSubmit, progress, progressStatus];
+  return [handleLocalFileSubmit, progress, progressStatus];
 };
 
 /**
  * Returns a function that sets the callback "setParser" value to the selected parser
  */
-export const handleParserChange = (
+export const useHandleParserChange = (
   setParser: (parser: string) => void | React.Dispatch<React.SetStateAction<string | undefined>>,
 ) =>
   React.useCallback(
@@ -499,7 +518,7 @@ export const useFinishModel = () => {
       // throw up a dialog if we get into an error state
       error: dialog.ajax_error("Error updating model."),
     });
-  }, [mid, name, description, marking, server_root]);
+  }, [mid, name, description, marking]);
 };
 
 export const useHandleAuthentication = () => {
@@ -545,7 +564,7 @@ export const useHandleAuthentication = () => {
           alert(`${errorResponse.statusText}`);
         }
       });
-  }, [authInfo]);
+  }, [authInfo, dispatch]);
 };
 
 /**

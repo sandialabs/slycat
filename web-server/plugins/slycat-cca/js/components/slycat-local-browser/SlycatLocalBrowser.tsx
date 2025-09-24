@@ -2,20 +2,18 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
-import { useHandleLocalFileSubmit } from "../CCAWizardUtils";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
-import { selectParser, setParser } from "../wizard-store/reducers/CCAWizardSlice";
+import { selectProgress, selectProgressStatus, setParser } from "../wizard-store/reducers/CCAWizardSlice";
 
-export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) => void }) => {
-  const { setUploadStatus } = props;
+export const SlycatLocalBrowser = (props: { callBack: (status: boolean) => void }) => {
   const dispatch = useAppDispatch();
-  const parser = useAppSelector(selectParser);
-  const [handleSubmit, progress, progressStatus] = useHandleLocalFileSubmit();
+  const progress = useAppSelector(selectProgress);
+  const progressStatus = useAppSelector(selectProgressStatus);
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files !== null && e.target.files.length >= 1) {
       if (e.target.files[0]) {
-        handleSubmit(e.target.files[0], parser, setUploadStatus);
+        props.callBack(true);
       }
     }
   };
@@ -25,8 +23,8 @@ export const SlycatLocalBrowser = (props: { setUploadStatus: (status: boolean) =
       <div className="col-sm-10">
         <input
           type="file"
-          onChange={handleFileSelected}
           className=""
+          onChange={handleFileSelected}
           id="slycat-local-browser-file"
           placeholder="file"
         ></input>
