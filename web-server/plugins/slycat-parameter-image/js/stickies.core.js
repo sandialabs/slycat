@@ -68,7 +68,7 @@
 			// 	.appendTo( this.uiStickyHeader );
 
 			this.uiStickyCloseButton = $('<i title="Close">')
-				.addClass("fas fa-xmark float-end")
+				.addClass("fas fa-xmark float-end close-button")
 				.appendTo(this.uiStickyHeader);
 			// End Slycat modification
 			
@@ -80,6 +80,7 @@
 					// widget functionality completely.
 
 					// this._destroy();
+					console.log("Closing sticky note");
 					this.uiSticky.remove();
 					this.destroy();
 					// End Slycat modification

@@ -44,7 +44,7 @@ NoteManager.prototype.build_note_in_dom = function (attributes) {
   $(".media-layer").append(text_area);
   text_area.stickies();
   var note = text_area.parent();
-  var close_button = note.find("i.fa.fa-close");
+  var close_button = note.find("i.close-button");
   var header = note.find(".ui-sticky-header");
   var title_button = $('<i class="fa fa-text-height">');
   var note_button = $('<i class="fas fa-file-alt-o">');
