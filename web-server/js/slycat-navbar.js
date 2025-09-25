@@ -516,10 +516,10 @@ export function renderNavBar() {
           value: name,
           buttons: [
             { className: "btn-light", label: "Cancel" },
-            { className: "btn-danger", label: "OK" },
+            { className: "btn-primary", label: "Save" },
           ],
           callback: function (button) {
-            if (!button || button.label != "OK") {
+            if (!button || button.label != "Save") {
               return;
             }
             client.put_reference({
@@ -540,11 +540,11 @@ export function renderNavBar() {
           message:
             "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
           buttons: [
-            { className: "btn-primary", label: "Cancel" },
-            { className: "btn-danger", label: "OK" },
+            { className: "btn-light", label: "Cancel" },
+            { className: "btn-danger", label: "Delete" },
           ],
           callback: function (button) {
-            if (!button || button.label != "OK") return;
+            if (!button || button.label != "Delete") return;
             client.delete_reference({
               rid: reference._id(),
               success: function () {
