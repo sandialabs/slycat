@@ -105,7 +105,7 @@ $.widget("mp.controls", {
     this.video_sync_button = $(
       "\
         <button class='btn btn-sm btn-slycat-controls slycatControlsButtonToggle' data-bs-toggle='button'> \
-          <span class='fa fa-video-camera' aria-hidden='true'></span> \
+          <span class='fas fa-video' aria-hidden='true'></span> \
         </button> \
       ",
     )

@@ -62,7 +62,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               onClick={props.onNavigateUp}
               disabled={props.disabled || props.isAtRoot}
             >
-              <i className="fa fa-level-up" aria-hidden="true"></i>
+              <i className="fas fa-level-up-alt" aria-hidden="true"></i>
             </button>
           </div>
           {props.hasError && props.errorMessage && (

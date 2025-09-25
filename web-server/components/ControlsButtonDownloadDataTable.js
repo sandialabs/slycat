@@ -128,7 +128,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
       txt += "You have " + visibleRows + " rows visible. ";
       buttons_save.splice(buttons_save.length-1, 0,
           {className: "btn-primary", label:"Save Visible",
-              icon_class:"fa fa-eye"});
+              icon_class:"far fa-eye"});
     }
 
     txt += "What would you like to do?";

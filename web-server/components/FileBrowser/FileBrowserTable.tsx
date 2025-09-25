@@ -25,7 +25,7 @@ export default function FileBrowserTable(props: FileBrowserTableProps) {
         {file.mimeType === "application/x-directory" ? (
           <span className="fa fa-folder"></span>
         ) : (
-          <span className="fa fa-file-o"></span>
+          <span className="far fa-file"></span>
         )}
       </td>
       <td data-bind-fail="text:name">{file.name}</td>

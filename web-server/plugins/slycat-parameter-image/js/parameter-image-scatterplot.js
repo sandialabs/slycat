@@ -1999,7 +1999,7 @@ $.widget("parameter_image.scatterplot", {
 
     var add_pin_button = function (fh) {
       fh.append("i")
-        .attr("class", "pin-button frame-button fa fa-thumb-tack")
+        .attr("class", "pin-button frame-button fas fa-thumbtack")
         .attr("title", "Pin")
         .attr("aria-hidden", "true")
         .on("click", handlers["pin"]);
@@ -2007,7 +2007,7 @@ $.widget("parameter_image.scatterplot", {
 
     var add_max_button = function (fh) {
       fh.append("i")
-        .attr("class", "max-button frame-button fa fa-window-maximize")
+        .attr("class", "max-button frame-button far fa-window-maximize")
         .attr("title", "Maximize")
         .attr("aria-hidden", "true")
         .on("click", handlers["maximize"]);
@@ -2057,7 +2057,7 @@ $.widget("parameter_image.scatterplot", {
     var add_clone_button = function (fh) {
       // console.log(`Adding clone button for 3D media...`);
       fh.append("i")
-        .attr("class", "clone-button frame-button fa fa-clone")
+        .attr("class", "clone-button frame-button far fa-clone")
         .attr("title", "Clone")
         .attr("aria-hidden", "true")
         .on("click", handlers["clone"]);
@@ -3054,7 +3054,7 @@ $.widget("parameter_image.scatterplot", {
               var reload_button = d3
                 .selectAll(related_frames.filter(":not(:has(>.reload-button))"))
                 .append("span")
-                .attr("class", "fa fa-refresh reload-button")
+                .attr("class", "fas fa-sync reload-button")
                 .attr("title", "Could not load image. Click to reconnect.")
                 .each(function () {
                   var parent = d3.select(this.parentNode);

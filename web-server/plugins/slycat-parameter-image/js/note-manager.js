@@ -29,7 +29,7 @@ function NoteManager(model_id, bookmarker, bookmark) {
 
   self.button = $(
     "<button class='btn btn-sm btn-slycat-controls' title='Add Note'> \
-                     <span class='fa fa-comment-o' aria-hidden='true'></span> \
+                     <span class='far fa-comment' aria-hidden='true'></span> \
                    </button>",
   )
     .prependTo($("#controls #add-note"))
@@ -47,7 +47,7 @@ NoteManager.prototype.build_note_in_dom = function (attributes) {
   var close_button = note.find("i.fa.fa-close");
   var header = note.find(".ui-sticky-header");
   var title_button = $('<i class="fa fa-text-height">');
-  var note_button = $('<i class="fa fa-file-text-o">');
+  var note_button = $('<i class="fas fa-file-alt-o">');
   header.append(title_button).append(note_button);
 
   note.attr("id", "note-" + attributes.id);
