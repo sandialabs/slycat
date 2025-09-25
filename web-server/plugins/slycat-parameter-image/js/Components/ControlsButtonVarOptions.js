@@ -610,7 +610,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
           </div>
         </div>
         <ControlsButton
-          icon="fa-cog"
+          icon="fa-gear"
           title={this.title}
           data_toggle="modal"
           data_target={"#" + this.modalId}

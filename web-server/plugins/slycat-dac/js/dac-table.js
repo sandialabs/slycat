@@ -1123,7 +1123,7 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename) {
   if (filters_applied) {
     txt =
       txt +
-      '<br><br><i class="text-warning fa fa-exclamation-triangle"></i> Filters ' +
+      '<br><br><i class="text-warning fa fa-triangle-exclamation"></i> Filters ' +
       "have been applied and the entire table may not be visible!  To use entire table " +
       "close this dialog and clear the filters.";
   }

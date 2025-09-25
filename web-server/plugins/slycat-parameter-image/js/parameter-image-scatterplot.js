@@ -2112,7 +2112,7 @@ $.widget("parameter_image.scatterplot", {
       // Create a close button ...
       var close_button_html = footer
         .append("i")
-        .attr("class", "close-button frame-button fa fa-times")
+        .attr("class", "close-button frame-button fa fa-xmark")
         .attr("aria-hidden", "true")
         .attr("title", "Close")
         .on("click", handlers["close"]);
@@ -3054,7 +3054,7 @@ $.widget("parameter_image.scatterplot", {
               var reload_button = d3
                 .selectAll(related_frames.filter(":not(:has(>.reload-button))"))
                 .append("span")
-                .attr("class", "fas fa-sync reload-button")
+                .attr("class", "fas fa-arrows-rotate reload-button")
                 .attr("title", "Could not load image. Click to reconnect.")
                 .each(function () {
                   var parent = d3.select(this.parentNode);

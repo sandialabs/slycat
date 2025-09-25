@@ -6,7 +6,7 @@ const ControlsPlayback = (props) => {
     <>
       <ControlsButton
         title="Jump to beginning"
-        icon="fa-fast-backward"
+        icon="fa-backward-fast"
         button_style={props.button_style}
         disabled={props.disabled}
         click={props.trigger_jump_to_start}
@@ -45,7 +45,7 @@ const ControlsPlayback = (props) => {
       />
       <ControlsButton
         title="Jump to end"
-        icon="fa-fast-forward"
+        icon="fa-forward-fast"
         button_style={props.button_style}
         disabled={props.disabled}
         click={props.trigger_jump_to_end}

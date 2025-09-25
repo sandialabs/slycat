@@ -79,7 +79,7 @@
                 [max]
               </div>
               <i
-                class="fa fa-undo reset-button button max-reset"
+                class="fa fa-arrow-rotate-left reset-button button max-reset"
                 title="Reset filter max to original value"
                 data-bind="
                     event: { click: $parent.maxMinReset },
@@ -109,7 +109,7 @@
                 [min]
               </div>
               <i
-                class="fa fa-undo reset-button button min-reset"
+                class="fa fa-arrow-rotate-left reset-button button min-reset"
                 title="Reset filter min to original value"
                 data-bind="
                     event: { click: $parent.maxMinReset },
@@ -189,7 +189,7 @@
                     "
           ></slycat-range-slider>
           <i
-            class="fa fa-times close-button button"
+            class="fa fa-xmark close-button button"
             title="Close filter"
             data-bind="click: $parent.removeFilter"
           ></i>
@@ -198,7 +198,7 @@
             title="Invert filter"
             data-bind="
                 click: $parent.invertFilter, 
-                css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }
+                css: { 'fa-compress': invert(), 'fa-arrows-up-down': !invert() }
               "
           ></i>
           <i
@@ -228,7 +228,7 @@
                     "
           ></slycat-category-select>
           <i
-            class="fa fa-times close-button button"
+            class="fa fa-xmark close-button button"
             title="Close filter"
             data-bind="click: $parent.removeFilter"
           ></i>
@@ -249,7 +249,7 @@
               "
           ></i>
           <i
-            class="fa fa-random invert-button button"
+            class="fa fa-shuffle invert-button button"
             title="Invert selected"
             data-bind="click: $parent.invertFilter"
           ></i>

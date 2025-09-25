@@ -136,7 +136,7 @@ $.widget("mp.controls", {
     this.jump_to_start_button = $(
       "\
       <button class='btn btn-sm btn-slycat-controls' title='Jump to beginning'> \
-        <span class='fa fa-fast-backward' aria-hidden='true'></span> \
+        <span class='fa fa-backward-fast' aria-hidden='true'></span> \
       </button> \
       ",
     )
@@ -201,7 +201,7 @@ $.widget("mp.controls", {
     this.jump_to_end_button = $(
       "\
       <button class='btn btn-sm btn-slycat-controls' title='Jump to end'> \
-        <span class='fa fa-fast-forward' aria-hidden='true'></span> \
+        <span class='fa fa-forward-fast' aria-hidden='true'></span> \
       </button> \
       ",
     )

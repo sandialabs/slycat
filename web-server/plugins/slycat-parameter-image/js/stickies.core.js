@@ -68,7 +68,7 @@
 			// 	.appendTo( this.uiStickyHeader );
 
 			this.uiStickyCloseButton = $('<i title="Close">')
-				.addClass("fas fa-times float-end")
+				.addClass("fas fa-xmark float-end")
 				.appendTo(this.uiStickyHeader);
 			// End Slycat modification
 			
