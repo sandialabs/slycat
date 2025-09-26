@@ -6,21 +6,21 @@ const ControlsPlayback = (props) => {
     <>
       <ControlsButton
         title="Jump to beginning"
-        icon="fa-backward-fast"
+        icon="fa-solid fa-backward-fast"
         button_style={props.button_style}
         disabled={props.disabled}
         click={props.trigger_jump_to_start}
       />
       <ControlsButton
         title="Skip one frame back"
-        icon="fa-backward"
+        icon="fa-solid fa-backward-step"
         button_style={props.button_style}
         disabled={props.disabled}
         click={props.trigger_frame_back}
       />
       <ControlsButton
         title="Play"
-        icon="fa-play"
+        icon="fa-solid fa-play"
         button_style={props.button_style}
         class="play-button"
         hidden={props.playing}
@@ -29,7 +29,7 @@ const ControlsPlayback = (props) => {
       />
       <ControlsButton
         title="Pause"
-        icon="fa-pause"
+        icon="fa-solid fa-pause"
         button_style={props.button_style}
         class="pause-button"
         hidden={!props.playing}
@@ -38,14 +38,14 @@ const ControlsPlayback = (props) => {
       />
       <ControlsButton
         title="Skip one frame forward"
-        icon="fa-forward"
+        icon="fa-solid fa-forward-step"
         button_style={props.button_style}
         disabled={props.disabled}
         click={props.trigger_frame_forward}
       />
       <ControlsButton
         title="Jump to end"
-        icon="fa-forward-fast"
+        icon="fa-solid fa-fast-forward"
         button_style={props.button_style}
         disabled={props.disabled}
         click={props.trigger_jump_to_end}
