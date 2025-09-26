@@ -1985,7 +1985,10 @@ $.widget("parameter_image.scatterplot", {
 
     var add_resize_handle = function (fh) {
       fh.append("i")
-        .attr("class", "resize-handle frame-button fa fa-expand fa-rotate-90")
+        .attr(
+          "class",
+          "resize-handle frame-button fa-solid fa-up-right-and-down-left-from-center fa-rotate-90",
+        )
         .attr("aria-hidden", "true")
         .attr("title", "Resize")
         .call(
@@ -1999,7 +2002,7 @@ $.widget("parameter_image.scatterplot", {
 
     var add_pin_button = function (fh) {
       fh.append("i")
-        .attr("class", "pin-button frame-button fas fa-thumbtack")
+        .attr("class", "pin-button frame-button fa-solid fa-thumbtack")
         .attr("title", "Pin")
         .attr("aria-hidden", "true")
         .on("click", handlers["pin"]);
@@ -2007,7 +2010,7 @@ $.widget("parameter_image.scatterplot", {
 
     var add_max_button = function (fh) {
       fh.append("i")
-        .attr("class", "max-button frame-button far fa-window-maximize")
+        .attr("class", "max-button frame-button fa-regular fa-window-maximize")
         .attr("title", "Maximize")
         .attr("aria-hidden", "true")
         .on("click", handlers["maximize"]);
@@ -2015,7 +2018,7 @@ $.widget("parameter_image.scatterplot", {
 
     var add_min_button = function (fh) {
       fh.append("i")
-        .attr("class", "min-button frame-button fa fa-window-minimize")
+        .attr("class", "min-button frame-button fa-regular fa-window-minimize")
         .attr("title", "Minimize")
         .attr("aria-hidden", "true")
         .on("click", handlers["minimize"]);
@@ -2024,7 +2027,7 @@ $.widget("parameter_image.scatterplot", {
     var add_download_button = function (fh, uri, filename) {
       fh.append("a")
         .attr("href", uri)
-        .attr("class", "download-button frame-button fa fa-download")
+        .attr("class", "download-button frame-button fa-solid fa-download")
         .attr("title", "Download media file")
         .attr("download", filename);
     };
@@ -2032,17 +2035,17 @@ $.widget("parameter_image.scatterplot", {
     var add_jump_button = function (fh, index) {
       var container = fh
         .append("span")
-        .attr("class", "jump-button frame-button")
+        .attr("class", "jump-button frame-button jump-button-container")
         .on("click", handlers["jump"]);
       container
         .append("i")
-        .attr("class", "table-button jump-button frame-button fa fa-table")
+        .attr("class", "table-button jump-button frame-button fa-solid fa-table")
         .attr("title", "Jump to row " + index + " in table")
         .attr("aria-hidden", "true");
 
       container
         .append("i")
-        .attr("class", "arrow-button jump-button frame-button fa fa-arrow-right")
+        .attr("class", "arrow-button jump-button frame-button fa-solid fa-arrow-right")
         .attr("title", "Jump to row " + index + " in table")
         .attr("aria-hidden", "true");
 
@@ -2057,7 +2060,7 @@ $.widget("parameter_image.scatterplot", {
     var add_clone_button = function (fh) {
       // console.log(`Adding clone button for 3D media...`);
       fh.append("i")
-        .attr("class", "clone-button frame-button far fa-clone")
+        .attr("class", "clone-button frame-button fa-solid fa-clone")
         .attr("title", "Clone")
         .attr("aria-hidden", "true")
         .on("click", handlers["clone"]);
@@ -2112,7 +2115,7 @@ $.widget("parameter_image.scatterplot", {
       // Create a close button ...
       var close_button_html = footer
         .append("i")
-        .attr("class", "close-button frame-button fa fa-xmark")
+        .attr("class", "close-button frame-button fa-solid fa-xmark")
         .attr("aria-hidden", "true")
         .attr("title", "Close")
         .on("click", handlers["close"]);
@@ -3054,7 +3057,7 @@ $.widget("parameter_image.scatterplot", {
               var reload_button = d3
                 .selectAll(related_frames.filter(":not(:has(>.reload-button))"))
                 .append("span")
-                .attr("class", "fas fa-arrows-rotate reload-button")
+                .attr("class", "fa-solid fa-arrows-rotate reload-button")
                 .attr("title", "Could not load image. Click to reconnect.")
                 .each(function () {
                   var parent = d3.select(this.parentNode);
