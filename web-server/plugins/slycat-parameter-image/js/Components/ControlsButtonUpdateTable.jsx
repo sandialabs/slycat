@@ -450,7 +450,7 @@ export default class ControlsButtonUpdateTable extends Component {
           footer={this.getFooterJSX()}
         />
         <ControlsButton
-          icon="fa-upload"
+          icon="fa-solid fa-upload"
           title={this.state.title}
           data_toggle="modal"
           data_target={"#" + this.state.modalId}
