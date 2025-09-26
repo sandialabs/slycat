@@ -21,10 +21,10 @@ const Template: React.FC<TemplateProps> = (props) => {
       message: `The template "${props.name}" will be deleted immediately and there is no undo.  This will not affect any existing models.`,
       buttons: [
         { className: "btn-light", label: "Cancel" },
-        { className: "btn-danger", label: "OK" },
+        { className: "btn-danger", label: "Delete" },
       ],
       callback(button: any) {
-        if (button?.label !== "OK") return;
+        if (button?.label !== "Delete") return;
         client.delete_reference({
           rid: templateId,
           success() {
@@ -45,10 +45,10 @@ const Template: React.FC<TemplateProps> = (props) => {
       value: props.name,
       buttons: [
         { className: "btn-light", label: "Cancel" },
-        { className: "btn-danger", label: "OK" },
+        { className: "btn-primary", label: "Save" },
       ],
       callback: (button: any, valueIn: any) => {
-        if (button?.label !== "OK") return;
+        if (button?.label !== "Save") return;
         console.debug("Edit template", templateId, props.name);
         client.put_reference({
           rid: templateId,
@@ -69,7 +69,7 @@ const Template: React.FC<TemplateProps> = (props) => {
         <ModelTypeBadge modelType={props.model_type} className="ms-4 me-3" />
         <button
           type="button"
-          className="btn btn-sm btn-outline-warning me-1"
+          className="btn btn-sm btn-outline-primary me-1"
           name={props.id}
           onClick={() => edit_template()}
           title="Edit this template"
@@ -83,7 +83,7 @@ const Template: React.FC<TemplateProps> = (props) => {
           onClick={() => delete_template()}
           title="Delete this template"
         >
-          <i className="fa-regular fa-trash-can"></i>
+          <i className="fa-solid fa-trash-can"></i>
         </button>
       </div>
       <div className="d-flex flex-row mt-0 align-items-baseline">
