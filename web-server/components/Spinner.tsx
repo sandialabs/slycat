@@ -1,17 +1,15 @@
-'use strict';
-import * as React from 'react';
+"use strict";
+import * as React from "react";
 
 /**
  * nut used
  */
-export interface SpinnerProps { 
-}
+export interface SpinnerProps {}
 
 /**
  * not used
  */
-export interface SpinnerState {
-}
+export interface SpinnerState {}
 /**
  * class that creates a Navbar for use in tracking progress through say a wizard or
  * some other process
@@ -20,15 +18,15 @@ export default class Spinner extends React.Component<SpinnerProps, SpinnerState>
   /**
    * not used
    */
-  public constructor(props:SpinnerProps) {
-    super(props)
-    this.state = {}
+  public constructor(props: SpinnerProps) {
+    super(props);
+    this.state = {};
   }
   render() {
     return (
-    	<div className="d-flex justify-content-center mt-4">
+      <div className="d-flex justify-content-center mt-4">
         <div className="spinner-border" role="status">
-          <span className="sr-only">Loading...</span>
+          <span className="visually-hidden">Loading...</span>
         </div>
       </div>
     );
