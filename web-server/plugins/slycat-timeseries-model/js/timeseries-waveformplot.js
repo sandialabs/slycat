@@ -270,7 +270,7 @@ $.widget("timeseries.waveformplot", {
 
     this.x = d3.scale.linear().domain([x_min, x_max]).range([0, this.diagram_width]);
 
-    this.y = d3.scale.linear().domain([y_max, y_min]).range([0, this.diagram_height]);
+    this.y = d3.scale.linear().domain([y_max, y_min]).range([0, this.diagram_height]).nice();
 
     this.x_axis = d3.svg.axis().scale(this.x).orient("bottom");
     this.x_axis_layer
@@ -284,7 +284,7 @@ $.widget("timeseries.waveformplot", {
       )
       .call(this.x_axis);
 
-    this.y_axis = d3.svg.axis().scale(this.y).orient("left");
+    this.y_axis = d3.svg.axis().scale(this.y).orient("left").tickFormat(d3.format(".2g"));
     this.y_axis_layer
       .attr(
         "transform",
