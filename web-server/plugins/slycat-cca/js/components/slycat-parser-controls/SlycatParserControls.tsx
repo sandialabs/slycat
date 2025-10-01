@@ -4,7 +4,7 @@
 import * as React from "react";
 import parsers from "js/slycat-parsers";
 import { includes } from "lodash";
-import { handleParserChange } from "../CCAWizardUtils";
+import { useHandleParserChange } from "../CCAWizardUtils";
 
 export const SlycatParserControls = (props: {
   setParser: (parser: string) => void | React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -17,7 +17,8 @@ export const SlycatParserControls = (props: {
     if (filteredParsers !== undefined && filteredParsers.length > 0) {
       setParser(filteredParsers[0].type());
     }
-  }, [filteredParsers.length]);
+  }, [filteredParsers, filteredParsers.length, setParser]);
+  const handleParserChange = useHandleParserChange(setParser);
   return (
     <div className="form-group row">
       <label className="col-sm-2 col-form-label">Filetype</label>
@@ -25,7 +26,7 @@ export const SlycatParserControls = (props: {
         <select
           id="slycat-model-parser"
           className="form-select"
-          onChange={handleParserChange(setParser)}
+          onChange={handleParserChange}
         >
           {filteredParsers.map((parser: { type: () => string; label: () => string }) => {
             return (

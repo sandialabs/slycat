@@ -47,6 +47,7 @@ export interface CCAWizardState {
   mid: string | undefined;
   pid: string | undefined;
   fileUploaded: boolean;
+  localFileSelected: boolean;
   attributes: Attribute[];
   scaleInputs: boolean;
   marking: string | undefined;
@@ -68,6 +69,7 @@ const initialState: CCAWizardState = {
   mid: undefined,
   pid: undefined,
   fileUploaded: false,
+  localFileSelected: false,
   attributes: [],
   scaleInputs: false,
   marking: undefined,
@@ -92,6 +94,9 @@ export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
   initialState,
   reducers: {
+    setLocalFileSelected: (state, action: PayloadAction<boolean>) => {
+      state.localFileSelected = action.payload;
+    },
     setRemotePath: (state, action: PayloadAction<FileDescriptor>) => {
       state.remotePath = action.payload;
     },
@@ -155,6 +160,7 @@ export const cCAWizardSlice = createSlice({
 
 // Action creators are generated for each case reducer function
 export const {
+  setLocalFileSelected,
   setRemotePath,
   setParser,
   setProgressStatus,
@@ -194,5 +200,6 @@ export const selectProgressStatus = (state: RootState) => state.cCAWizard.progre
 export const selectProgress = (state: RootState) => state.cCAWizard.progress;
 export const selectRemotePath = (state: RootState) => state.cCAWizard.remotePath;
 export const selectFileName = (state: RootState) => state.cCAWizard.fileName;
+export const selectLocalFileSelected = (state: RootState) => state.cCAWizard.localFileSelected;
 
 export default cCAWizardSlice.reducer;
