@@ -5,6 +5,7 @@ import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import styles from "./Models.module.scss";
 import ModelTypeBadge from "./ModelTypeBadge";
+import Icon from "components/Icons/Icon";
 
 interface ModelProps {
   markings: any[];
@@ -102,7 +103,7 @@ const Model: React.FC<ModelProps> = ({
               onClick={(e) => delete_model(name, id, e)}
               title="Delete this model"
             >
-              <i className="fa-regular fa-trash-can"></i>
+              <Icon type="trash-can" />
             </button>
           </span>
         </div>

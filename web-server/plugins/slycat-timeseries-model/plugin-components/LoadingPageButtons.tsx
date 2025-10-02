@@ -1,5 +1,5 @@
 import * as React from "react";
-import ControlsButton from "components/ControlsButton.js";
+import ControlsButton from "components/ControlsButton";
 import LoadButton from "./LoadButton";
 import { LoadingPageButtonsProps } from "./types";
 

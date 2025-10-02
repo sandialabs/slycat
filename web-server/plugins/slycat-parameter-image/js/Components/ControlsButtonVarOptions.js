@@ -452,26 +452,26 @@ class ControlsButtonVarOptions extends React.PureComponent {
                           </label>
                         </div>
                         <div className="col-auto">
-                        <div className="input-group input-group-sm">
-                          <input
-                            type="number"
-                            className="form-control form-control-sm border border-secondary"
-                            id="font-size"
-                            max="40"
-                            min="8"
-                            step="1"
-                            style={{ width: "70px" }}
-                            value={this.props.font_size}
-                            onChange={this.props.changeFontSize}
-                          />
-                          <button
-                            className="btn btn-outline-secondary"
-                            type="button"
-                            title="Reset font size to default"
-                            value={DEFAULT_FONT_SIZE}
-                            disabled={this.props.font_size == DEFAULT_FONT_SIZE}
-                            onClick={this.props.changeFontSize}
-                          >
+                          <div className="input-group input-group-sm">
+                            <input
+                              type="number"
+                              className="form-control form-control-sm border border-secondary"
+                              id="font-size"
+                              max="40"
+                              min="8"
+                              step="1"
+                              style={{ width: "70px" }}
+                              value={this.props.font_size}
+                              onChange={this.props.changeFontSize}
+                            />
+                            <button
+                              className="btn btn-outline-secondary"
+                              type="button"
+                              title="Reset font size to default"
+                              value={DEFAULT_FONT_SIZE}
+                              disabled={this.props.font_size == DEFAULT_FONT_SIZE}
+                              onClick={this.props.changeFontSize}
+                            >
                               <FontAwesomeIcon icon={faUndo} />
                             </button>
                           </div>
@@ -610,7 +610,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
           </div>
         </div>
         <ControlsButton
-          icon="fa-solid fa-gear"
+          icon="gear"
           title={this.title}
           data_toggle="modal"
           data_target={"#" + this.modalId}
