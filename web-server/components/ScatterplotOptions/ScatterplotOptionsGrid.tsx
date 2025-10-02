@@ -1,9 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  toggleShowGrid,
-  selectShowGrid,
-} from "plugins/slycat-parameter-image/js/scatterplotSlice";
+import { toggleShowGrid, selectShowGrid } from "plugins/slycat-parameter-image/js/scatterplotSlice";
 
 const ScatterplotOptionsGrid: React.FC = () => {
   const dispatch = useDispatch();
@@ -14,7 +11,7 @@ const ScatterplotOptionsGrid: React.FC = () => {
   };
 
   return (
-    <div className="form-check">
+    <div className="slycat-scatterplot-grid form-check">
       <input
         className="form-check-input"
         type="checkbox"
