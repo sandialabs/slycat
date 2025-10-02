@@ -1,5 +1,6 @@
 import * as React from "react";
 import styles from "./FileBrowser.module.scss";
+import Icon from "components/Icons/Icon";
 
 interface FileBrowserPathInputProps {
   hostname?: string;
@@ -27,7 +28,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
     props.onPathChange(e.target.value);
   };
 
-    const handleGoClick = () => {
+  const handleGoClick = () => {
     props.onBrowse(props.pathInput);
   };
 
@@ -62,7 +63,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               onClick={props.onNavigateUp}
               disabled={props.disabled || props.isAtRoot}
             >
-              <i className="fas fa-turn-up" aria-hidden="true"></i>
+              <Icon type="turn-up" />
             </button>
           </div>
           {props.hasError && props.errorMessage && (

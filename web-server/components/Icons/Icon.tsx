@@ -23,6 +23,8 @@ export const ICON_NAME_MAP = {
   pause: { icon: { prefix: "fas", iconName: "pause" } },
   "forward-step": { icon: { prefix: "fas", iconName: "forward-step" } },
   "fast-forward": { icon: { prefix: "fas", iconName: "fast-forward" } },
+  pencil: { icon: { prefix: "fas", iconName: "pencil" } },
+  "turn-up": { icon: { prefix: "fas", iconName: "turn-up" } },
 } satisfies Record<string, FontAwesomeIconProps>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;

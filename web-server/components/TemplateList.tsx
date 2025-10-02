@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as dialog from "../js/slycat-dialog";
 import client from "../js/slycat-web-client";
 import ModelTypeBadge from "./Models/ModelTypeBadge";
+import Icon from "components/Icons/Icon";
 
 export interface TemplateProps {
   id: string;
@@ -74,7 +75,7 @@ const Template: React.FC<TemplateProps> = (props) => {
           onClick={() => edit_template()}
           title="Edit this template"
         >
-          <i className="fa-solid fa-pencil"></i>
+          <Icon type="pencil" />
         </button>
         <button
           type="button"
@@ -83,7 +84,7 @@ const Template: React.FC<TemplateProps> = (props) => {
           onClick={() => delete_template()}
           title="Delete this template"
         >
-          <i className="fa-solid fa-trash-can"></i>
+          <Icon type="trash-can" />
         </button>
       </div>
       <div className="d-flex flex-row mt-0 align-items-baseline">
@@ -112,7 +113,7 @@ const TemplatesList: React.FC<TemplatesListProps> = (props) => {
         setTemplates(result);
       },
       error() {
-        console.log('Unable to retrieve project templates.');
+        console.log("Unable to retrieve project templates.");
       },
     });
   };
