@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import React, { useState } from "react";
 import ControlsButton from "components/ControlsButton";
-import SlycatTableIngestion from "js/slycat-table-ingestion-react";
+import SlycatTableIngestion from "components/TableIngestion/slycat-table-ingestion-react";
 import VariableAliasLabels from "components/VariableAliasLabels";
 import ScatterplotOptions from "components/ScatterplotOptions/ScatterplotOptions";
 import VariableRanges from "components/VariableRanges";
