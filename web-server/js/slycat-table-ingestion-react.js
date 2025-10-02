@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Icon from "components/Icons/Icon";
 
 export default function SlycatTableIngestion(props) {
   // Declare a new UI state variables...
@@ -85,8 +86,9 @@ export default function SlycatTableIngestion(props) {
       return (
         <th className="bool property-start property-end no-wrap px-2 py-2" key={indexProps}>
           <span>{property.name}</span>
-          <i
-            className={`fa fa-toggle-on select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
+          <Icon
+            type="toggle-on"
+            className={`select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
             onClick={anyVariablesSelected() ? checkAll : void 0}
             title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
           />
@@ -101,8 +103,9 @@ export default function SlycatTableIngestion(props) {
           key={indexVals}
         >
           <span>{value}</span>
-          <i
-            className={`fa fa-toggle-on select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
+          <Icon
+            type="toggle-on"
+            className={`select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
             title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
             data-property={value}
             onClick={anyVariablesSelected() ? selectAll : void 0}

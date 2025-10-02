@@ -3,6 +3,7 @@ import * as React from "react";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import styles from "./Projects.module.scss";
+import Icon from "components/Icons/Icon";
 
 interface ProjectProps {
   name: string;
@@ -69,7 +70,7 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
             onClick={(e) => delete_project(name, id, e)}
             title="Delete this project"
           >
-            <i className="fa-regular fa-trash-can"></i>
+            <Icon type="trash-can" />
           </button>
         </span>
       </div>
