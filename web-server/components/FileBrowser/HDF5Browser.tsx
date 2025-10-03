@@ -23,6 +23,7 @@ import { FileMetaData } from "./FileBrowserTypes";
 export interface HDF5BrowserProps {
   hostname: string;
   persistenceId?: string;
+  fileUploaded?: boolean;
   onSelectFileCallBack: Function;
   onSelectParserCallBack: Function;
   onReauthCallBack: Function;
@@ -152,7 +153,7 @@ export default function HDF5Browser(props: HDF5BrowserProps) {
     if (fileBrowser.pathInput != null) {
       browse(fileBrowser.pathInput);
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, [props.fileUploaded]); // Empty dependency array means this runs once on mount
 
   const options: Option[] = [
     {

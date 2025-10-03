@@ -4,7 +4,7 @@
 import * as React from "react";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
 import { selectTableFile } from "../CCAWizardUtils";
-import { selectMid, selectPid } from "../wizard-store/reducers/CCAWizardSlice"
+import { selectMid, selectPid, selectFileUploaded } from "../wizard-store/reducers/CCAWizardSlice"
 import { onReauth } from "../CCAWizardUtils";
 import { useAppSelector } from "../wizard-store/hooks";
 
@@ -12,6 +12,7 @@ export const CCAHDF5OutputSelectionTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const SelectTableFile = selectTableFile();
   const OnReauth = onReauth();
+  const fileUploaded = useAppSelector(selectFileUploaded);
   const mid = useAppSelector(selectMid)!;
   const pid = useAppSelector(selectPid)!; // Get from state
   const hostname = "local";
@@ -24,6 +25,7 @@ export const CCAHDF5OutputSelectionTab = (props: { hidden?: boolean }) => {
         hostname={hostname}
         pid={pid}
         mid={mid}
+        fileUploaded={fileUploaded}
       />
     </div>
   );

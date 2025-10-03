@@ -242,7 +242,6 @@ export const selectTableFile = () => {
           mid: mid,
           aids: [["data-table"], fileName],
           success: () => {
-            console.log("Success!");
             dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
           },
           error: () => {
@@ -261,14 +260,11 @@ export const selectTableFile = () => {
           mid: mid,
           aids: [["data-table"], fileName],
           success: () => {
-            console.log("Success!");
             // dispatch(setTabName(TabNames.CCA_FINISH_MODEL)); // maybe this should go after post_combine_hdf5_tables()?
 
             client.post_combine_hdf5_tables({
             mid: mid,
             success: () => { 
-              console.log('Combined Tables!');
-
               client.put_model_parameter({
                 mid: mid,
                 aid: "scale-inputs",
@@ -290,6 +286,7 @@ export const selectTableFile = () => {
   }, [currentTab, dispatch, mid, pid, fileName, scaleInputs]);
 };
 
+// Needs to be implemented when connection is lost to the host
 export const onReauth = () => {
   return React.useCallback(() => {
     console.log('onReauth');
@@ -323,7 +320,6 @@ export const useHandleClosingCallback = (
 const useFileUploadSuccess = () => {
   const mid = useAppSelector(selectMid);
   const parser = useAppSelector(selectParser);
-  
   const dispatch = useAppDispatch();
   return React.useCallback(
     (
@@ -432,6 +428,24 @@ export const useHandleRemoteFileSubmit = () => {
           }
           dispatch(setProgressStatus(input));
         };
+
+        let fileExtension = file.name.split(".")[1];
+        let autoParser: string | undefined = '';
+
+        if (fileExtension == "csv") {
+          autoParser = 'slycat-csv-parser';
+          dispatch(setParser('slycat-csv-parser'));
+        } else if (fileExtension == "dat") {
+          autoParser = 'slycat-dakota-parser';
+          dispatch(setParser('slycat-dakota-parser'));
+        } else if (fileExtension == "h5" || fileExtension == "hdf5") {
+          autoParser = 'slycat-hdf5-parser';
+          dispatch(setParser('slycat-hdf5-parser'));
+        }
+        else {
+          autoParser = parser;
+        }
+
         const fileObject = {
           pid,
           mid,
@@ -449,7 +463,7 @@ export const useHandleRemoteFileSubmit = () => {
             dispatch(setLoading(false));
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
             // setUploadStatus(true);
-            fileUploadSuccess(setProgress, setProgressStatus, (status) => console.log(status));
+            fileUploadSuccess(autoParser, setProgress, setProgressStatus, (status) => console.log(status));
           },
           error: function () {
             // setUploadStatus(false);
@@ -488,13 +502,12 @@ export const useHandleLocalFileSubmit = (): [
   const pid = useAppSelector(selectPid);
   const progress = useAppSelector(selectProgress);
   const progressStatus = useAppSelector(selectProgressStatus);
-  const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
   const fileUploadSuccess = useFileUploadSuccess();
   const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
       
-      let fileExtension = file.name.split(".")[1];
+      const fileExtension = file.name.split(".")[1];
       let autoParser: string | undefined = '';
 
       if (fileExtension == "csv") {
@@ -540,8 +553,8 @@ export const useHandleLocalFileSubmit = (): [
           dispatch(setProgress(100));
           dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
+          // dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
           fileUploadSuccess(autoParser, setProgress, setProgressStatus, setUploadStatus);
-          dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
         },
         error: function () {
           setUploadStatus(false);
@@ -578,7 +591,6 @@ export const useSetUploadStatus = () => {
   const dispatch = useAppDispatch();
   return React.useCallback(
     (status: boolean) => {
-      console.log(status);
       dispatch(setFileUploaded(status));
     },
     [dispatch],
