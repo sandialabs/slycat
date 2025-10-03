@@ -429,7 +429,10 @@ export const useHandleRemoteFileSubmit = () => {
           dispatch(setProgressStatus(input));
         };
 
-        let fileExtension = file.name.split(".")[1];
+        const splitFilePath = fileDescriptor.path.split("/");
+        const splitFilePathLength = splitFilePath.length;
+        const fileName = splitFilePath[splitFilePathLength - 1];
+        const fileExtension = fileName.split(".")[1];
         let autoParser: string | undefined = '';
 
         if (fileExtension == "csv") {
