@@ -17,7 +17,7 @@ export const CCAModelCreation = (props: { hidden?: boolean }) => {
         dispatch(setMarking(defaultMarking.type()));
       }
     }
-  }, [selectable_markings?.allowed()]);
+  }, [dispatch, marking]);
   const onOptionChangeHandler = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (event.target?.value) {
       dispatch(setMarking(event.target?.value));
