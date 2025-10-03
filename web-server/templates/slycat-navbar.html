@@ -213,8 +213,8 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-bookmarks pb-0 pt-0">
               <!-- ko if: model_id() -->
-              <li class="border-bottom px-4 py-3 mb-3 fs-7 d-flex flex-row">
-                <h2 class="m-0 fs-5 text-secondary text-nowrap flex-fill">
+              <li class="border-bottom px-4 py-3 fs-7 d-flex flex-row column-gap-5">
+                <h2 class="m-0 fs-5 text-primary text-nowrap flex-fill" data-bind="visible: saved_model_bookmarks().length > 0">
                   Bookmarks to This Model
                 </h2>
                 <!-- ko foreach: model_bookmark_wizards -->
@@ -243,7 +243,7 @@
               <!-- ko foreach: saved_model_bookmarks -->
               <li
                 class="dropdown-item ps-5 pe-5"
-                data-bind="css: { 'mb-3': $index() === $parent.saved_model_bookmarks().length - 1 }"
+                data-bind="css: { 'mb-3': $index() === $parent.saved_model_bookmarks().length - 1, 'mt-3': $index() === 0 }"
               >
                 <div class="d-flex flex-row align-items-center">
                   <!-- Bookmark link -->
@@ -290,7 +290,7 @@
 
               <!-- ko if: model_id() -->
               <li>
-                <div class="accordion accordion-flush mt-3" id="project-bookmarks-accordion">
+                <div class="accordion accordion-flush" id="project-bookmarks-accordion">
                   <div class="accordion-item">
                     <h2 class="accordion-header">
                       <button
