@@ -2,18 +2,50 @@ import React, { useState } from "react";
 import Icon from "components/Icons/Icon";
 import styles from "./TableIngestion.module.scss";
 
-export default function SlycatTableIngestion(props) {
-  // Declare a new UI state variables...
-  // To track which variables are selected
-  // selected is an array, each element corresponds to a variable, with boolean values indicating whether it's selected.
-  const [selected, setSelected] = useState(
-    props.variables.map((variable, indexVars) => variable.selected),
-  );
-  // To track the last selected variable
-  const [lastSelected, setLastSelected] = useState(0);
+type PropertySelect = {
+  name: string;
+  type: "select";
+  values: string[];
+  disabledValues?: Record<string, Array<number | string>>;
+};
 
-  function anyVariablesSelected() {
-    for (var i = 0; i < selected.length; i++) {
+type PropertyBool = {
+  name: string;
+  type: "bool";
+};
+
+type Property = PropertySelect | PropertyBool;
+
+type BaseVariable = {
+  name: string;
+  index: number | string;
+  selected: boolean;
+  disabled?: boolean;
+  hidden?: boolean;
+  tooltip?: string;
+  // Additional dynamic properties keyed by property.name
+  [key: string]: unknown;
+};
+
+type OnChangeArg = { currentTarget: HTMLInputElement };
+type OnBatchChangeArg = { batchTarget: HTMLInputElement[] };
+
+type Props = {
+  uniqueID: string;
+  variables: BaseVariable[];
+  properties: Property[];
+  onChange: (e: OnChangeArg) => void;
+  onBatchChange?: (e: OnBatchChangeArg) => void;
+};
+
+export default function TableIngestion(props: Props) {
+  const [selected, setSelected] = useState<boolean[]>(
+    props.variables.map((variable) => Boolean(variable.selected)),
+  );
+  const [lastSelected, setLastSelected] = useState<number>(0);
+
+  function anyVariablesSelected(): boolean {
+    for (let i = 0; i < selected.length; i++) {
       if (selected[i]) {
         return true;
       }
@@ -21,21 +53,22 @@ export default function SlycatTableIngestion(props) {
     return false;
   }
 
-  function checkAll(e) {
+  function checkAll(e: React.MouseEvent<SVGSVGElement>) {
+    // Placeholder: existing behavior was a no-op (console log)
+    // Keep function for parity and potential future implementation
+    // eslint-disable-next-line no-console
     console.log("checkAll");
   }
 
-  function selectAll(e) {
-    let property = e.currentTarget.dataset.property;
-    let batchRadio = [];
-    for (let [index, variableSelected] of selected.entries()) {
+  function selectAll(e: React.MouseEvent<SVGSVGElement>) {
+    const property = e.currentTarget.getAttribute("data-property");
+    if (!property) return;
+    const batchRadio: HTMLInputElement[] = [];
+    for (const [index, variableSelected] of selected.entries()) {
       if (variableSelected) {
-        // Find the radio button that needs to be selected based on its name and value attributes
-        let radio = document.querySelector(
-          `.${props.uniqueID} input[value='${property}'][name='${index}']`,
-        );
-        // Fire the onChange handler only if radio button is not disabled
-        if (!radio.disabled) {
+        const selector = `.${props.uniqueID} input[value='${property}'][name='${index}']`;
+        const radio = document.querySelector<HTMLInputElement>(selector);
+        if (radio && !radio.disabled) {
           batchRadio.push(radio);
           props.onChange({ currentTarget: radio });
         }
@@ -46,44 +79,44 @@ export default function SlycatTableIngestion(props) {
     }
   }
 
-  function select(event, varIndex) {
+  function select(event: React.MouseEvent<HTMLElement>, varIndex: number) {
     if (props.variables[varIndex].disabled) {
       return;
     } else if (event.shiftKey) {
-      // Find start and end between lastSelected and currently shift clicked
-      let begin = Math.min(lastSelected, varIndex);
-      let end = Math.max(lastSelected, varIndex);
-
-      // Set everything in between to selected
-      let newSelected = selected.slice(0);
-      for (var i = begin; i <= end; i++) {
+      const begin = Math.min(lastSelected, varIndex);
+      const end = Math.max(lastSelected, varIndex);
+      const newSelected = selected.slice(0);
+      for (let i = begin; i <= end; i++) {
         if (!props.variables[i].disabled) {
           newSelected[i] = true;
         }
       }
       setSelected(newSelected);
-      // Set current clicked to lastSelected
       setLastSelected(varIndex);
     } else if (event.ctrlKey || event.metaKey) {
       setLastSelected(varIndex);
-      let newSelected = selected.slice(0);
-      // Invert the selected state, so Ctrl + click will either selecte unselected, or unselect selected.
+      const newSelected = selected.slice(0);
       newSelected[varIndex] = !newSelected[varIndex];
       setSelected(newSelected);
     } else {
-      // Set last selected to current variable
       setLastSelected(varIndex);
-
-      // Set all selected to false
-      let newSelected = selected.map((x) => false);
-      // Set selected to true on current variable
+      const newSelected = selected.map(() => false);
       newSelected[varIndex] = true;
       setSelected(newSelected);
     }
   }
 
+  function disabledRadioButton(property: Property, value: string, variable: BaseVariable): boolean {
+    if (property.type !== "select") return Boolean(variable.disabled);
+    const disabledValue =
+      property.disabledValues &&
+      property.disabledValues[value] &&
+      property.disabledValues[value].indexOf(variable.index) > -1;
+    return Boolean(variable.disabled || disabledValue);
+  }
+
   const propertiesItems = props.properties.map((property, indexProps) => {
-    if (property.type == "bool") {
+    if (property.type === "bool") {
       return (
         <th
           className={`bool ${styles.propertyStart} ${styles.propertyEnd} no-wrap px-2 py-2`}
@@ -93,12 +126,12 @@ export default function SlycatTableIngestion(props) {
           <Icon
             type="toggle-on"
             className={`${styles.selectAllButton} button ${anyVariablesSelected() ? "" : styles.disabled}`}
-            onClick={anyVariablesSelected() ? checkAll : void 0}
+            onClick={anyVariablesSelected() ? checkAll : undefined}
             title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
           />
         </th>
       );
-    } else if (property.type == "select") {
+    } else if (property.type === "select") {
       return property.values.map((value, indexVals, array) => (
         <th
           className={`select no-wrap px-2 py-2
@@ -112,37 +145,27 @@ export default function SlycatTableIngestion(props) {
             className={`${styles.selectAllButton} button ${anyVariablesSelected() ? "" : styles.disabled}`}
             title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
             data-property={value}
-            onClick={anyVariablesSelected() ? selectAll : void 0}
+            onClick={anyVariablesSelected() ? selectAll : undefined}
           />
         </th>
       ));
     }
+    return null;
   });
 
-  // Figure out if radio button should be disabled
-  function disabledRadioButton(property, value, variable) {
-    // Check if we have a disabledValue defined for this radio button
-    let disabledValue =
-      property.disabledValues &&
-      property.disabledValues[value] &&
-      property.disabledValues[value].indexOf(variable.index) > -1;
-    // Also return disabled if the entire variable is disabled
-    return variable.disabled || disabledValue ? "disabled" : false;
-  }
-
-  const variablesItems = props.variables.map((variable, indexVars, arrayVars) => {
+  const variablesItems = props.variables.map((variable, indexVars) => {
     return (
       <tr
         key={indexVars}
-        title={variable.tooltip ? variable.tooltip : undefined}
+        title={variable.tooltip ? String(variable.tooltip) : undefined}
         style={{ display: variable.hidden ? "none" : "" }}
         className={`${selected[indexVars] ? styles.selected : ""} ${lastSelected == indexVars ? styles.lastSelected : ""} ${variable.disabled ? styles.disabled : ""}`}
       >
         <th className="force-wrap px-2 py-1" onClick={(event) => select(event, indexVars)}>
           {variable.name}
         </th>
-        {props.properties.map((property, indexProps, arrayProps) => {
-          if (property.type == "bool") {
+        {props.properties.map((property, indexProps) => {
+          if (property.type === "bool") {
             return (
               <td
                 className={`${styles.bool} ${styles.propertyStart} ${styles.propertyEnd} align-middle px-2 py-1`}
@@ -150,14 +173,14 @@ export default function SlycatTableIngestion(props) {
               >
                 <input
                   type="checkbox"
-                  name={variable.index}
+                  name={String(variable.index)}
                   value="true"
-                  disabled={variable.disabled ? "disabled" : false}
-                  defaultChecked={variable[property.name] ? "checked" : false}
+                  disabled={Boolean(variable.disabled)}
+                  defaultChecked={Boolean(variable[property.name])}
                 />
               </td>
             );
-          } else if (property.type == "select") {
+          } else if (property.type === "select") {
             return property.values.map((value, indexVals, arrayVals) => (
               <td
                 className={`select align-middle px-2 py-1
@@ -167,15 +190,16 @@ export default function SlycatTableIngestion(props) {
               >
                 <input
                   type="radio"
-                  name={variable.index}
+                  name={String(variable.index)}
                   value={value}
                   disabled={disabledRadioButton(property, value, variable)}
-                  checked={value == variable[property.name] ? "checked" : false}
-                  onChange={props.onChange}
+                  checked={value === (variable[property.name] as string)}
+                  onChange={(e) => props.onChange({ currentTarget: e.currentTarget })}
                 />
               </td>
             ));
           }
+          return null;
         })}
       </tr>
     );

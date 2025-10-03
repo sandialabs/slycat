@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import React, { useState } from "react";
 import ControlsButton from "components/ControlsButton";
-import SlycatTableIngestion from "components/TableIngestion/TableIngestion";
+import TableIngestion from "components/TableIngestion/TableIngestion";
 import VariableAliasLabels from "components/VariableAliasLabels";
 import ScatterplotOptions from "components/ScatterplotOptions/ScatterplotOptions";
 import VariableRanges from "components/VariableRanges";
@@ -479,7 +479,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       </div>
                     </div>
                     <hr />
-                    <SlycatTableIngestion
+                    <TableIngestion
                       uniqueID="varOptions"
                       variables={axes_variables}
                       properties={axes_properties}
