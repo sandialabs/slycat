@@ -42,7 +42,7 @@ export default function TableIngestion(props: Props) {
   const [selected, setSelected] = useState<boolean[]>(
     props.variables.map((variable) => Boolean(variable.selected)),
   );
-  const [lastSelected, setLastSelected] = useState<number>(0);
+  const [lastSelected, setLastSelected] = useState<number>(-1);
 
   function anyVariablesSelected(): boolean {
     for (let i = 0; i < selected.length; i++) {
