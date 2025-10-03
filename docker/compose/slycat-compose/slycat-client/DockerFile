@@ -1,6 +1,5 @@
-FROM node:18
+FROM node:22
 # :lts-alpine
-# see https://github.com/sass/node-sass/issues/3077 locking down to node 15 until this is resolved
 WORKDIR /usr/src/slycat
 RUN git config --global http.sslVerify false
 RUN git clone --depth 1 https://github.com/sandialabs/slycat.git

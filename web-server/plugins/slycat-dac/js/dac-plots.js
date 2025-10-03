@@ -500,7 +500,7 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 
     // extra text for zoomed plots
     if (zoomed) {
-        dialog_msg += "<br><br><i class='text-warning fa fa-exclamation-triangle'></i> The " +
+        dialog_msg += "<br><br><i class='text-warning fa fa-triangle-exclamation'></i> The " +
                       "displayed plots have been magnified (zoomed in), " +
                       "and only the time points shown will be exported.";
     }
@@ -508,7 +508,7 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
     // check for filters, warning for save all plots
     var use_data_order_all_plots = metadata_table.filters_active();
     if (use_data_order_all_plots) {
-        dialog_msg += "<br><br><i class='text-warning fa fa-exclamation-triangle'></i> The " +
+        dialog_msg += "<br><br><i class='text-warning fa fa-triangle-exclamation'></i> The " +
                       "table is filtered.  The default data order (rather than the current " +
                       'table order) will be used in the "Save All Plots" option.'
     }
@@ -516,7 +516,7 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
     // check for filters active but not used
     var use_data_order = (selections.filter_button_status() == false) && metadata_table.filters_active();
     if (use_data_order) {
-        dialog_msg += "<br><br><i class='text-warning fa fa-exclamation-triangle'></i> The table is filtered " +
+        dialog_msg += "<br><br><i class='text-warning fa fa-triangle-exclamation'></i> The table is filtered " +
                       "but not the plots.  The default data order (rather than the current table order) will be " +
                       'used with the "Save Selected" option.';
     }

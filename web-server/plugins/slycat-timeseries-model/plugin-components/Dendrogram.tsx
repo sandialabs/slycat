@@ -24,7 +24,7 @@ export const Dendrogram: React.FC<Props> = (props) => {
           {/* <!-- The following div is only necessary when there is more than one button, so leaving commented out for when we add another button here --> */}
           {/* <!-- <div className="btn-group btn-group-xs"> --> */}
           <button
-            className="outputs btn btn-outline-dark btn-sm dropdown-toggle"
+            className="outputs btn btn-slycat-controls btn-sm dropdown-toggle"
             type="button"
             id="outputs-dropdown"
             data-bs-toggle="dropdown"

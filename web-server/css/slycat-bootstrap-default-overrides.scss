@@ -1,0 +1,34 @@
+// Slycat Bootstrap default variable overrides.
+// https://getbootstrap.com/docs/5.3/customize/sass/#variable-defaults
+
+@use "slycat-bootstrap-variables";
+
+// Add horizontal padding to dropdown items.
+$dropdown-item-padding-x: 1.5rem;
+
+// Customize .table-active selected row background and text color
+$table-active-bg: rgb(51, 122, 183);
+$table-active-color: rgb(255, 255, 255);
+
+// Change primary color to sandia blue
+$primary: slycat-bootstrap-variables.$sandia-blue;
+$secondary: slycat-bootstrap-variables.$sandia-dark-gray;
+$danger: slycat-bootstrap-variables.$sandia-red;
+
+// Change primary link color
+$link-color: rgb(0 100 144);
+
+// Card
+$card-cap-bg: rgb(249 249 250);
+
+// Breadcrumb
+$breadcrumb-divider-color: rgb(108 117 125);
+$breadcrumb-divider: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><path d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='#{$breadcrumb-divider-color}'/></svg>");
+
+// Accordion
+$accordion-button-bg: white;
+$accordion-button-active-bg: slycat-bootstrap-variables.$sandia-light-blue;
+$accordion-button-color: slycat-bootstrap-variables.$sandia-dark-blue;
+$accordion-button-active-color: slycat-bootstrap-variables.$sandia-dark-blue;
+// $accordion-button-focus-box-shadow: inset 0 0 0 0.25rem slycat-bootstrap-variables.$sandia-medium-blue;
+$accordion-button-focus-box-shadow: none;

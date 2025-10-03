@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
-import SlycatTableIngestion from "js/slycat-table-ingestion-react";
+import TableIngestion from "components/TableIngestion/TableIngestion";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import { selectAttributes } from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleTableIngestionOnChange } from "../CCAWizardUtils";
@@ -11,19 +11,16 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const attributes = useAppSelector(selectAttributes);
   const handleTableIngestionOnChange = useHandleTableIngestionOnChange(attributes);
-  let axes_properties = [
+  const axes_properties = [
     {
       name: "Axis Type",
-      type: "select",
+      type: "select" as const,
       values: ["Input", "Output", "Neither"],
-      disabledValues: {
-        Log: [],
-      },
     },
   ];
   return (
     <div hidden={hidden}>
-      <SlycatTableIngestion
+      <TableIngestion
         uniqueID="varOptions"
         variables={attributes}
         properties={axes_properties}

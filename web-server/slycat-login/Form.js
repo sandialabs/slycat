@@ -93,29 +93,33 @@ class Form extends Component {
             {SLYCAT_AUTH_LABELS.authErrorDescription}
           </div>
 
-          <label htmlFor="username" className="sr-only"></label>
-          <input
-            id="username"
-            className="form-control"
-            placeholder={SLYCAT_AUTH_LABELS.username}
-            required=""
-            type="text"
-            value={this.state.credentials.username}
-            onChange={this.changeUsername}
-          />
+          <div className="form-floating">
+            <input
+              id="username"
+              className="form-control"
+              required
+              type="text"
+              placeholder="name@example.com"
+              value={this.state.credentials.username}
+              onChange={this.changeUsername}
+            />
+            <label htmlFor="username">{SLYCAT_AUTH_LABELS.username}</label>
+          </div>
 
-          <label htmlFor="password" className="sr-only"></label>
-          <input
-            id="password"
-            className="form-control"
-            placeholder={SLYCAT_AUTH_LABELS.password}
-            required=""
-            type="password"
-            value={this.state.credentials.password}
-            onChange={this.changePassword}
-          />
+          <div className="form-floating">
+            <input
+              id="password"
+              className="form-control"
+              required
+              type="password"
+              placeholder="Password"
+              value={this.state.credentials.password}
+              onChange={this.changePassword}
+            />
+            <label htmlFor="password">{SLYCAT_AUTH_LABELS.password}</label>
+          </div>
 
-          <button className="btn btn-lg btn-primary btn-block" id="go" type="submit">
+          <button className="btn btn-lg btn-primary btn-block w-100" id="go" type="submit">
             {SLYCAT_AUTH_LABELS.signIn}
           </button>
         </form>

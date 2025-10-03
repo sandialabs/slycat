@@ -20,9 +20,9 @@ interface ColorMapsInterface {
 
 const WHITE = "rgb(255 255 255)";
 const GRAY1 = "rgb(204 204 204)";
-const GRAY2 = "rgb(128 128 128)";
-const GRAY3 = "rgb(102 102 102)";
-const GRAY4 = "rgb(75 75 75)";
+const GRAY2 = "rgb(153 153 153)";
+const GRAY3 = "rgb(128 128 128)";
+const GRAY4 = "rgb(102 102 102)";
 const BLACK = "rgb(0 0 0)";
 const HISTOGRAM_BLUE = "rgb(102 170 215)";
 

@@ -2,9 +2,7 @@
 
 <div class="modal-header">
   <h3 class="modal-title">Edit Project</h3>
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-    
-  </button>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
   <form data-bind="submit: save_project" id="edit-project-form" novalidate>
@@ -90,7 +88,7 @@
               class="btn btn-sm btn-danger"
               data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as an administrator'}"
             >
-              <span class="fa fa-trash-o"></span>
+              <i class="fa-regular fa-trash-can"></i>
             </button>
             <div class="btn btn-sm btn-danger" style="pointer-events: none">
               <span data-bind="text:user"></span>
@@ -104,7 +102,7 @@
               title="Remove this user"
               data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a writer'}"
             >
-              <span class="fa fa-trash-o"></span>
+              <i class="fa-regular fa-trash-can"></i>
             </button>
             <div class="btn btn-sm btn-warning" style="pointer-events: none">
               <span data-bind="text:user"></span>
@@ -117,7 +115,7 @@
               class="btn btn-sm btn-primary"
               data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a reader'}"
             >
-              <span class="fa fa-trash-o"></span>
+              <i class="fa-regular fa-trash-can"></i>
             </button>
             <div class="btn btn-sm btn-primary" style="pointer-events: none">
               <span data-bind="text:user"></span>

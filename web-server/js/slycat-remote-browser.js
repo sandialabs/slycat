@@ -30,16 +30,16 @@ ko.components.register("slycat-remote-browser",
     component.progress_status = params.progress_status != undefined ? params.progress_status : ko.observable('');
 
     component.icon_map = {
-      "application/x-directory" : "<span class='fa fa-folder-o'></span>",
-      "application/octet-stream" : "<span class='fa fa-file-o'></span>",
-      "text/csv" : "<span class='fa fa-file-excel-o'></span>",
-      "text/x-python" : "<span class='fa fa-file-code-o'></span>",
+      "application/x-directory" : "<span class='far fa-folder'></span>",
+      "application/octet-stream" : "<span class='far fa-file'></span>",
+      "text/csv" : "<span class='far fa-file-excel'></span>",
+      "text/x-python" : "<span class='far fa-file-code'></span>",
 
     };
 
     component.files = component.raw_files.map(function(file)
     {
-      var icon = "<span class='fa fa-file-o'></span>";
+      var icon = "<span class='far fa-file'></span>";
       if(_.startsWith(file.mime_type(), "application/x-directory"))
       {
         icon = "<span class='fa fa-folder'></span>";
@@ -52,15 +52,15 @@ ko.components.register("slycat-remote-browser",
       // }
       // else if(_.startsWith(file.mime_type(), "text/"))
       // {
-      //   icon = "<span class='fa fa-file-text-o'></span>";
+      //   icon = "<span class='fas fa-file-alt-o'></span>";
       // }
       // else if(_.startsWith(file.mime_type(), "image/"))
       // {
-      //   icon = "<span class='fa fa-file-image-o'></span>";
+      //   icon = "<span class='far fa-file-image'></span>";
       // }
       // else if(_.startsWith(file.mime_type(), "video/"))
       // {
-      //   icon = "<span class='fa fa-file-video-o'></span>";
+      //   icon = "<span class='far fa-file-video'></span>";
       // }
 
       return {

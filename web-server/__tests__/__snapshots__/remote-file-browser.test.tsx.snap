@@ -63,7 +63,7 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
         >
           <i
             aria-hidden="true"
-            className="fa fa-level-up"
+            className="fas fa-turn-up"
           />
         </button>
       </div>
