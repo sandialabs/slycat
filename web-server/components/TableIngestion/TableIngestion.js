@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Icon from "components/Icons/Icon";
+import styles from "./TableIngestion.module.scss";
 
 export default function SlycatTableIngestion(props) {
   // Declare a new UI state variables...
@@ -25,7 +26,7 @@ export default function SlycatTableIngestion(props) {
   }
 
   function selectAll(e) {
-    let property = e.target.dataset.property;
+    let property = e.currentTarget.dataset.property;
     let batchRadio = [];
     for (let [index, variableSelected] of selected.entries()) {
       if (variableSelected) {
@@ -84,11 +85,14 @@ export default function SlycatTableIngestion(props) {
   const propertiesItems = props.properties.map((property, indexProps) => {
     if (property.type == "bool") {
       return (
-        <th className="bool property-start property-end no-wrap px-2 py-2" key={indexProps}>
-          <span>{property.name}</span>
+        <th
+          className={`bool ${styles.propertyStart} ${styles.propertyEnd} no-wrap px-2 py-2`}
+          key={indexProps}
+        >
+          <div>{property.name}</div>
           <Icon
             type="toggle-on"
-            className={`select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
+            className={`${styles.selectAllButton} button ${anyVariablesSelected() ? "" : styles.disabled}`}
             onClick={anyVariablesSelected() ? checkAll : void 0}
             title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
           />
@@ -102,10 +106,10 @@ export default function SlycatTableIngestion(props) {
                 ${indexVals == array.length - 1 ? "property-end" : ""}`}
           key={indexVals}
         >
-          <span>{value}</span>
+          <div>{value}</div>
           <Icon
             type="toggle-on"
-            className={`select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
+            className={`${styles.selectAllButton} button ${anyVariablesSelected() ? "" : styles.disabled}`}
             title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
             data-property={value}
             onClick={anyVariablesSelected() ? selectAll : void 0}
@@ -132,7 +136,7 @@ export default function SlycatTableIngestion(props) {
         key={indexVars}
         title={variable.tooltip ? variable.tooltip : undefined}
         style={{ display: variable.hidden ? "none" : "" }}
-        className={`${selected[indexVars] ? "selected" : ""} ${lastSelected == indexVars ? "lastSelected" : ""} ${variable.disabled ? "disabled" : ""}`}
+        className={`${selected[indexVars] ? styles.selected : ""} ${lastSelected == indexVars ? styles.lastSelected : ""} ${variable.disabled ? styles.disabled : ""}`}
       >
         <th className="force-wrap px-2 py-1" onClick={(event) => select(event, indexVars)}>
           {variable.name}
@@ -141,7 +145,7 @@ export default function SlycatTableIngestion(props) {
           if (property.type == "bool") {
             return (
               <td
-                className="bool property-start property-end align-middle px-2 py-1"
+                className={`${styles.bool} ${styles.propertyStart} ${styles.propertyEnd} align-middle px-2 py-1`}
                 key={property.name + indexProps}
               >
                 <input
@@ -178,7 +182,7 @@ export default function SlycatTableIngestion(props) {
   });
 
   return (
-    <div className={`slycat-table-ingestion ${props.uniqueID}`}>
+    <div className={`${styles.TableIngestion} ${props.uniqueID}`}>
       <table>
         <thead>
           <tr>

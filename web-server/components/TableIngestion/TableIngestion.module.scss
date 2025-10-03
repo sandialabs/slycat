@@ -1,0 +1,57 @@
+.TableIngestion {
+  table {
+    width: 100%;
+  }
+
+  thead th .select-all-button {
+    cursor: pointer;
+  }
+
+  thead th .select-all-button.disabled {
+    color: #cccccc;
+    cursor: default;
+  }
+
+  thead th,
+  td {
+    text-align: center;
+  }
+
+  td.property-start {
+    border-left: 1px solid #ddd;
+  }
+
+  td.property-end {
+    border-right: 1px solid #ddd;
+  }
+
+  tbody th {
+    padding-left: 5px;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  tbody tr.disabled th {
+    cursor: default;
+  }
+
+  tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+  }
+
+  tbody tr.selected {
+    background-color: #337ab7;
+  }
+
+  tbody tr.lastSelected {
+    background-color: #337ab7;
+  }
+
+  tbody tr.selected th {
+    color: white;
+  }
+
+  tbody tr.disabled th {
+    color: #cccccc;
+  }
+}
