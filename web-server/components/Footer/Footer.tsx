@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="mt-auto py-3">
-      <div className="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2 p-0">
+      <div className="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
         <div className="copyright text-muted small me-5 w-50">
           <p>{COPYRIGHT_TEXT}</p>
           <p className="mb-0">{LICENSE_TEXT_SHORT}</p>
