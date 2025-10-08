@@ -31,7 +31,8 @@ import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 import config from "config.json";
 
-import { DOCS_URL, SUPPORT_EMAIL, GITHUB_URL, ABOUT_MODAL_ID } from "components/Footer/Footer";
+import { DOCS_URL, GITHUB_URL, ABOUT_MODAL_ID } from "components/Footer/Footer";
+import { COPYRIGHT_TEXT, LICENSE_TEXT_HTML_FORMATTED } from "utils/copyright";
 
 export function renderNavBar() {
   // Let's check to see if we have a session by trying to retrieve the projects list.
@@ -119,6 +120,9 @@ export function renderNavBar() {
       component.slycatAuthLabelSignOut = SLYCAT_AUTH_LABELS.signOut;
 
       component.ABOUT_MODAL_ID = ABOUT_MODAL_ID;
+
+      component.COPYRIGHT_TEXT = COPYRIGHT_TEXT;
+      component.LICENSE_TEXT_FORMATTED = LICENSE_TEXT_HTML_FORMATTED;
 
       // Retrieve current project, if any.
       if (component.project_id()) {

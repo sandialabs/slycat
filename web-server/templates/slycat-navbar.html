@@ -516,19 +516,30 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" tabindex="-1" role="dialog" data-bind="attr: { id: ABOUT_MODAL_ID }">
+  <div
+    class="modal modal-xl fade"
+    tabindex="-1"
+    role="dialog"
+    data-bind="attr: { id: ABOUT_MODAL_ID }"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-body">
-          <div class="bg-light mb-4 rounded-2 py-5 px-3">
+        <div class="modal-header bg-light">
+          <div class="me-3">
             <img src="../img/slycat-brand.png" />
-            <p>
+            <p class="mb-0">
               &hellip; is the web-based analysis and visualization platform created at Sandia
               National Laboratories.
             </p>
           </div>
-          <!-- Old way of getting version and commit hash, which seems to be broken as of August 2020. -->
-          <!-- <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p> -->
+          <button
+            type="button"
+            class="btn-close align-self-start"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
           <div>
             Version
             <pre data-bind="text:GIT_SLYCAT_VERSION"></pre>
@@ -537,21 +548,8 @@
             Commit
             <pre data-bind="text:GIT_SLYCAT_COMMITHASH"></pre>
           </div>
-          <p>
-            <small
-              >Copyright 2013, Sandia Corporation. Under the terms of Contract DE-AC04-94AL85000
-              with Sandia Corporation, the U.S. Government retains certain rights in this
-              software.</small
-            >
-          </p>
-          <p>
-            <small
-              >Sandia National Laboratories is a multimission laboratory managed and operated by
-              National Technology and Engineering Solutions of Sandia, LLC., a wholly owned
-              subsidiary of Honeywell International, Inc., for the U.S. Department of Energy’s
-              National Nuclear Security Administration under contract DE-NA-0003525.</small
-            >
-          </p>
+          <p data-bind="text:COPYRIGHT_TEXT">[Copyright Text]</p>
+          <div data-bind="html:LICENSE_TEXT_FORMATTED">[License Text Formatted]</div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import client from "js/slycat-web-client";
+import { COPYRIGHT_TEXT, LICENSE_TEXT_SHORT } from "utils/copyright";
 
 export const GITHUB_URL = "https://github.com/sandialabs/slycat";
 export const DOCS_URL = "/docs/index.html";
@@ -36,9 +37,8 @@ const Footer: React.FC = () => {
     <footer className="mt-auto py-3">
       <div className="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2 p-0">
         <div className="copyright text-muted small me-5 w-50">
-          © {year} National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the
-          terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in
-          this software.
+          <p>{COPYRIGHT_TEXT}</p>
+          <p className="mb-0">{LICENSE_TEXT_SHORT}</p>
         </div>
         <ul className="nav small">
           <li className="nav-item">
