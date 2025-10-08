@@ -1,5 +1,8 @@
+export const COPYRIGHT_TEXT_SHORT = `
+© ${new Date().getFullYear()} National Technology & Engineering Solutions of Sandia, LLC (NTESS)`;
+
 export const COPYRIGHT_TEXT = `
-© ${new Date().getFullYear()} National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+${COPYRIGHT_TEXT_SHORT}.
 Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
 `;
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import client from "js/slycat-web-client";
-import { COPYRIGHT_TEXT, LICENSE_TEXT_SHORT } from "utils/copyright";
+import { COPYRIGHT_TEXT, COPYRIGHT_TEXT_SHORT, LICENSE_TEXT_SHORT } from "utils/copyright";
 
 export const GITHUB_URL = "https://github.com/sandialabs/slycat";
 export const DOCS_URL = "/docs/index.html";
@@ -8,7 +8,6 @@ export const RANDD100_URL = "https://www.rdworldonline.com/rd-100-2021-winner/sl
 export const ABOUT_MODAL_ID = "slycat-about";
 
 const Footer: React.FC = () => {
-  const year = new Date().getFullYear();
   const [supportHref, setSupportHref] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,12 +34,19 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="mt-auto py-3">
-      <div className="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
-        <div className="copyright text-muted small me-5 w-50">
-          <p>{COPYRIGHT_TEXT}</p>
-          <p className="mb-0">{LICENSE_TEXT_SHORT}</p>
+      <div className="container d-flex flex-row align-items-center justify-content-between gap-5">
+        <div
+          className="copyright text-muted small me-5 mb-0 text-truncate flex-fill"
+          data-bs-toggle="popover"
+          data-bs-trigger="hover"
+          data-bs-html="true"
+          data-bs-content={
+            "<p>" + COPYRIGHT_TEXT + "</p><p class='mb-0'>" + LICENSE_TEXT_SHORT + "</p>"
+          }
+        >
+          {COPYRIGHT_TEXT_SHORT}...
         </div>
-        <ul className="nav small align-self-start justify-content-end column-gap-4 row-gap-2">
+        <ul className="nav small align-self-start justify-content-end column-gap-4 row-gap-2 flex-nowrap text-nowrap">
           <li className="nav-item">
             <a
               className="nav-link p-0 text-muted"
