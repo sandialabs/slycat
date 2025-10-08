@@ -24,6 +24,7 @@ import {
   selectRemotePath,
   selectScaleInputs,
   selectTab,
+  selectFileName,
   setAttributes,
   setAuthInfo,
   setFileUploaded,
@@ -33,12 +34,19 @@ import {
   setProgress,
   setProgressStatus,
   setTabName,
+  setHdf5InputTable,
+  setHdf5OutputTable,
+  setFileName,
+  setParser,
   TabNames,
+  selectHdf5InputTable,
+  selectHdf5OutputTable,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+import { Parser } from "node_modules/webpack/types";
 
 /**
  * A hook for controlling how the back and continue buttons work based on the current redux state
@@ -58,7 +66,9 @@ export const useCCAWizardFooter = () => {
   const [handleLocalFileSubmit, ,] = useHandleLocalFileSubmit();
   const setUploadStatus = useSetUploadStatus();
   const localFileSelected = useAppSelector(selectLocalFileSelected);
-
+  const hdf5InputTable = useAppSelector(selectHdf5InputTable);
+  const hdf5OutputTable = useAppSelector(selectHdf5OutputTable);
+  const uploadTableFile = useUploadTableFile();
   /**
    * handle continue operation
    */
@@ -87,6 +97,12 @@ export const useCCAWizardFooter = () => {
         handleLocalFileSubmit(fileSelector[0], parser, setUploadStatus);
       }
     }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && hdf5InputTable) {
+      uploadTableFile(hdf5InputTable);
+    }
+    if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB && hdf5OutputTable) {
+      uploadTableFile(hdf5OutputTable);
+    }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       uploadSelection();
     }
@@ -106,6 +122,9 @@ export const useCCAWizardFooter = () => {
     setUploadStatus,
     uploadSelection,
     finishModel,
+    uploadTableFile,
+    hdf5InputTable,
+    hdf5OutputTable
   ]);
 
   /**
@@ -121,16 +140,28 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "local") {
+      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "remote") {
+      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
+      dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
+    }
     if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "local") {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "remote") {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_FINISH_MODEL) {
+    if (tabName === TabNames.CCA_FINISH_MODEL && parser !== "slycat-hdf5-parser") {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
     }
-  }, [dataLocation, dispatch, tabName]);
+    if (tabName === TabNames.CCA_FINISH_MODEL && parser === "slycat-hdf5-parser") {
+      dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
+    }
+  }, [dataLocation, dispatch, setTabName, tabName]);
 
   const backButton = (
     <button
@@ -199,6 +230,66 @@ export const useHandleWizardSetup = (
   }, [statePid, stateMid, dispatch, pid, marking]);
 };
 
+export const useUploadTableFile = () => {
+  const dispatch = useAppDispatch();
+  const currentTab = useAppSelector(selectTab);
+  const pid = useAppSelector(selectPid);
+  const mid = useAppSelector(selectMid);
+  const fileName = useAppSelector(selectFileName);
+  const scaleInputs = useAppSelector(selectScaleInputs);
+  
+  return React.useCallback((fullPath:string) => {
+      if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
+        client.post_hdf5_table({
+          path: fullPath,
+          pid: pid,
+          mid: mid,
+          aids: [["data-table"], fileName],
+          success: () => {
+            dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
+          },
+          error: () => {
+            dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
+          },
+        });
+      }
+      else if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
+        client.post_hdf5_table({
+          path: fullPath,
+          pid: pid,
+          mid: mid,
+          aids: [["data-table"], fileName],
+          success: () => {
+            client.post_combine_hdf5_tables({
+            mid: mid,
+            success: () => { 
+              client.put_model_parameter({
+                mid: mid,
+                aid: "scale-inputs",
+                value: scaleInputs,
+                input: true,
+                success: function () {
+                  // set the tab
+                  dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
+                },
+              });
+            }});
+          },
+          error: () => {
+            dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
+          },
+        });
+      }
+  }, [currentTab, dispatch, mid, pid, fileName, scaleInputs]);
+};
+
+// TODO: Needs to be implemented when connection is lost to the host
+export const onReauth = () => {
+  return React.useCallback(() => {
+    console.log('TODO: Implement onReauth');
+  }, []);
+}
+
 /**
  * Handle the cleanup for closing the cca wizard modal
  * @param setModalOpen function for setting local state for if the wizard is open
@@ -225,57 +316,66 @@ export const useHandleClosingCallback = (
  */
 const useFileUploadSuccess = () => {
   const mid = useAppSelector(selectMid);
+  const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
   return React.useCallback(
     (
+      autoParser: string | undefined,
       setProgress: (status: number) => void,
       setProgressStatus: (status: string) => void,
       setUploadStatus: (status: boolean) => void,
     ) => {
       setProgress(95);
       setProgressStatus("Finishing...");
-      client.get_model_arrayset_metadata({
-        mid: mid,
-        aid: "data-table",
-        arrays: "0",
-        statistics: "0/...",
-        success: function (metadata: any) {
-          setProgress(100);
-          setProgressStatus("Finished");
-          const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
-            (attribute: any, index) => {
-              const constant = metadata.statistics[index].unique === 1;
-              const string = attribute.type == "string";
-              let tooltip = "";
-              if (string) {
-                tooltip =
-                  "This variable's values contain strings, so it cannot be included in the analysis.";
-              } else if (constant) {
-                tooltip =
-                  "This variable's values are all identical, so it cannot be included in the analysis.";
-              }
-              return {
-                index: index,
-                name: attribute.name,
-                type: attribute.type,
-                "Axis Type": constant || string ? "" : "Input",
-                constant: constant,
-                disabled: constant || string,
-                hidden: false,
-                selected: false,
-                lastSelected: false,
-                tooltip: tooltip,
-              };
-            },
-          );
-          dispatch(setAttributes(attributes ?? []));
-          dispatch(setLoading(false));
-          setUploadStatus(true);
-          dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
-        },
-      });
+      if (autoParser === "slycat-hdf5-parser") {
+        dispatch(setLoading(false));
+        setUploadStatus(true);
+        dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
+      }
+      else {
+        client.get_model_arrayset_metadata({
+          mid: mid,
+          aid: "data-table",
+          arrays: "0",
+          statistics: "0/...",
+          success: function (metadata: any) {
+            setProgress(100);
+            setProgressStatus("Finished");
+            const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
+              (attribute: any, index) => {
+                const constant = metadata.statistics[index].unique === 1;
+                const string = attribute.type == "string";
+                let tooltip = "";
+                if (string) {
+                  tooltip =
+                    "This variable's values contain strings, so it cannot be included in the analysis.";
+                } else if (constant) {
+                  tooltip =
+                    "This variable's values are all identical, so it cannot be included in the analysis.";
+                }
+                return {
+                  index: index,
+                  name: attribute.name,
+                  type: attribute.type,
+                  "Axis Type": constant || string ? "" : "Input",
+                  constant: constant,
+                  disabled: constant || string,
+                  hidden: false,
+                  selected: false,
+                  lastSelected: false,
+                  tooltip: tooltip,
+                };
+              },
+            );
+            dispatch(setAttributes(attributes ?? []));
+            dispatch(setLoading(false));
+            setUploadStatus(true);
+            dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+          },
+        });
+      }
     },
-    [mid, dispatch],
+    [mid, parser, dispatch],
   );
 };
 
@@ -295,7 +395,6 @@ export const useHandleRemoteFileSubmit = () => {
   const fileUploadSuccess = useFileUploadSuccess();
   return React.useCallback(() => {
     dispatch(setLoading(true));
-    console.log(fileDescriptor);
     if (!fileDescriptor?.path) {
       dialog.ajax_error(`no file selected`)();
       dispatch(setLoading(false));
@@ -326,6 +425,27 @@ export const useHandleRemoteFileSubmit = () => {
           }
           dispatch(setProgressStatus(input));
         };
+
+        const splitFilePath = fileDescriptor?.path?.split("/");
+        const splitFilePathLength = splitFilePath.length;
+        const fileName = splitFilePath[splitFilePathLength - 1];
+        const fileExtension = fileName.split(".")[1];
+        let autoParser: string | undefined = '';
+
+        if (fileExtension == "csv") {
+          autoParser = "slycat-csv-parser";
+          dispatch(setParser('slycat-csv-parser'));
+        } else if (fileExtension == "dat") {
+          autoParser = "slycat-dakota-parser";
+          dispatch(setParser('slycat-dakota-parser'));
+        } else if (fileExtension == "h5" || fileExtension == "hdf5") {
+          autoParser = "slycat-hdf5-parser";
+          dispatch(setParser('slycat-hdf5-parser'));
+        }
+        else {
+          autoParser = parser;
+        }
+
         const fileObject = {
           pid,
           mid,
@@ -343,7 +463,7 @@ export const useHandleRemoteFileSubmit = () => {
             dispatch(setLoading(false));
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
             // setUploadStatus(true);
-            fileUploadSuccess(setProgress, setProgressStatus, (status) => console.log(status));
+            fileUploadSuccess(autoParser, setProgress, setProgressStatus, (status) => console.log(status));
           },
           error: function () {
             // setUploadStatus(false);
@@ -386,26 +506,46 @@ export const useHandleLocalFileSubmit = (): [
   const fileUploadSuccess = useFileUploadSuccess();
   const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
+      
+      const fileExtension = file.name.split(".")[1];
+      let autoParser: string | undefined = '';
+
+      if (fileExtension == "csv") {
+        autoParser = "slycat-csv-parser";
+        dispatch(setParser('slycat-csv-parser'));
+      } else if (fileExtension == "dat") {
+        autoParser = "slycat-dakota-parser";
+        dispatch(setParser('slycat-dakota-parser'));
+      } else if (fileExtension == "h5" || fileExtension == "hdf5") {
+        autoParser = "slycat-hdf5-parser";
+        dispatch(setParser('slycat-hdf5-parser'));
+      }
+      else {
+        autoParser = parser;
+      }
+
+      dispatch(setFileName(file?.name));
       const progressCallback = (input?: number) => {
         if (!input) {
           return progress;
         }
         dispatch(setProgress(input));
       };
+
       const progressStatusCallback = (input?: string) => {
         if (!input) {
           return progressStatus;
         }
         dispatch(setProgressStatus(input));
       };
+
       dispatch(setLoading(true));
       const fileObject = {
         pid,
         mid,
         file: file,
-        parser: parser,
+        parser: autoParser,
         aids: [["data-table"], file?.name],
-        // parser: component.parser(),
         progress: progressCallback,
         progress_status: progressStatusCallback,
         progress_final: 90,
@@ -413,8 +553,7 @@ export const useHandleLocalFileSubmit = (): [
           dispatch(setProgress(100));
           dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
-          fileUploadSuccess(setProgress, setProgressStatus, setUploadStatus);
-          dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+          fileUploadSuccess(autoParser, setProgress, setProgressStatus, setUploadStatus);
         },
         error: function () {
           setUploadStatus(false);
@@ -428,7 +567,7 @@ export const useHandleLocalFileSubmit = (): [
       };
       fileUploader.uploadFile(fileObject);
     },
-    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus],
+    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus, setProgress, fileUploadSuccess],
   );
 
   return [handleLocalFileSubmit, progress, progressStatus];
@@ -544,7 +683,6 @@ export const useHandleAuthentication = () => {
           if (json.status === false) {
             alert(`connection could not be established`);
           } else {
-            console.log("dispatching", { ...authInfo, sessionExists: true });
             dispatch(setAuthInfo({ ...authInfo, sessionExists: true }));
           }
           dispatch(setLoading(false));
