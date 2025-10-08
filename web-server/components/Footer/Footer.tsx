@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
     <footer className="mt-auto py-3">
       <div className="container d-flex flex-row align-items-center justify-content-between gap-5">
         <div
-          className="copyright text-muted small me-5 mb-0 text-truncate flex-fill"
+          className="copyright text-muted small me-5 mb-0 flex-fill"
           data-bs-toggle="popover"
           data-bs-trigger="hover"
           data-bs-html="true"

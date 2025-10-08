@@ -31,7 +31,7 @@ import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 import config from "config.json";
 
-import { DOCS_URL, GITHUB_URL, ABOUT_MODAL_ID } from "components/Footer/Footer";
+import { DOCS_URL, GITHUB_URL, ABOUT_MODAL_ID, RANDD100_URL } from "components/Footer/Footer";
 import { COPYRIGHT_TEXT, LICENSE_TEXT_HTML_FORMATTED } from "utils/copyright";
 
 export function renderNavBar() {
@@ -120,6 +120,8 @@ export function renderNavBar() {
       component.slycatAuthLabelSignOut = SLYCAT_AUTH_LABELS.signOut;
 
       component.ABOUT_MODAL_ID = ABOUT_MODAL_ID;
+      component.RANDD100_URL = RANDD100_URL;
+      component.GITHUB_URL = GITHUB_URL;
 
       component.COPYRIGHT_TEXT = COPYRIGHT_TEXT;
       component.LICENSE_TEXT_FORMATTED = LICENSE_TEXT_HTML_FORMATTED;
