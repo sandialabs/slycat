@@ -214,7 +214,10 @@
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-bookmarks pb-0 pt-0">
               <!-- ko if: model_id() -->
               <li class="border-bottom px-4 py-3 fs-7 d-flex flex-row column-gap-5">
-                <h2 class="m-0 fs-5 text-primary text-nowrap flex-fill" data-bind="visible: saved_model_bookmarks().length > 0">
+                <h2
+                  class="m-0 fs-5 text-primary text-nowrap flex-fill"
+                  data-bind="visible: saved_model_bookmarks().length > 0"
+                >
                   Bookmarks to This Model
                 </h2>
                 <!-- ko foreach: model_bookmark_wizards -->
