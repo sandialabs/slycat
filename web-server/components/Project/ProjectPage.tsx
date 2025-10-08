@@ -1,4 +1,5 @@
 import React from "react";
+import Footer from "components/Footer/Footer";
 import SearchWrapper from "components/SearchWrapper";
 import { TemplatesList } from "components/TemplateList";
 
@@ -16,6 +17,7 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ projectId, models }) => {
       <div id="slycat-templates" className="mb-5">
         <TemplatesList projectId={projectId} />
       </div>
+      <Footer />
     </>
   );
 };

@@ -31,6 +31,8 @@ import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 import config from "config.json";
 
+import { DOCS_URL, SUPPORT_EMAIL, GITHUB_URL, ABOUT_MODAL_ID } from "components/Footer/Footer";
+
 export function renderNavBar() {
   // Let's check to see if we have a session by trying to retrieve the projects list.
   // If we get redirected, it likely means we don't have a session, so let's take the user
@@ -115,6 +117,8 @@ export function renderNavBar() {
       component.slycatAuthLabelPassword = SLYCAT_AUTH_LABELS.password;
       component.slycatAuthLabelSignIn = SLYCAT_AUTH_LABELS.signIn;
       component.slycatAuthLabelSignOut = SLYCAT_AUTH_LABELS.signOut;
+
+      component.ABOUT_MODAL_ID = ABOUT_MODAL_ID;
 
       // Retrieve current project, if any.
       if (component.project_id()) {
@@ -450,7 +454,7 @@ export function renderNavBar() {
           },
         });
 
-        $("#slycat-about").modal("show");
+        $("#" + component.ABOUT_MODAL_ID).modal("show");
       };
 
       component.support_request = function () {
@@ -462,7 +466,7 @@ export function renderNavBar() {
       };
 
       component.open_documentation = function () {
-        window.open("/docs/index.html");
+        window.open(DOCS_URL);
       };
 
       var references = mapping.fromJS([]);
