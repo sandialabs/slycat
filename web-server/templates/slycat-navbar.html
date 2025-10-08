@@ -21,6 +21,7 @@
         <div class="navbar-personal navbar-nav flex-nowrap">
           <div class="dropdown">
             <a
+              href="#"
               id="slycat-personal-tools-user"
               class="btn btn-sm dropdown-toggle slycat-dropdown-toggle-no-arrow text-secondary"
               data-bs-toggle="dropdown"
@@ -43,7 +44,7 @@
               <div role="separator" class="dropdown-divider"></div>
 
               <!-- ko if: ispasswordrequired.slycat_passwordrequired -->
-              <a class="dropdown-item" data-bind="click:sign_out">
+              <a href="#" class="dropdown-item" data-bind="click:sign_out">
                 <span class="fas fa-right-from-bracket"></span>
                 <span data-bind="text: slycatAuthLabelSignOut"></span>
               </a>
@@ -52,6 +53,7 @@
           </div>
           <div class="dropdown">
             <a
+              href="#"
               id="slycat-personal-tools-help"
               class="btn btn-sm dropdown-toggle slycat-dropdown-toggle-no-arrow text-secondary"
               data-bs-toggle="dropdown"
@@ -64,13 +66,13 @@
               class="dropdown-menu dropdown-menu-end"
               aria-labelledby="slycat-personal-tools-help"
             >
-              <a class="dropdown-item" data-bind="click:about"
+              <a href="#" class="dropdown-item" data-bind="click:about"
                 >About Slycat</a
               >
-              <a class="dropdown-item" data-bind="click:support_request"
+              <a href="#" class="dropdown-item" data-bind="click:support_request"
                 >Support Request</a
               >
-              <a class="dropdown-item" data-bind="click:open_documentation"
+              <a href="#" class="dropdown-item" data-bind="click:open_documentation"
                 >Documentation</a
               >
               <a class="dropdown-item" href="#" target="_blank" data-bind="attr: { href: GITHUB_URL }"
@@ -389,7 +391,7 @@
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-delete">
               <!-- ko foreach: model_delete_wizards -->
               <li>
-                <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
+                <a href="#" class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
               </li>
               <!-- /ko -->
               <li
@@ -399,7 +401,7 @@
               </li>
               <!-- ko foreach: project_delete_wizards -->
               <li>
-                <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
+                <a href="#" class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
               </li>
               <!-- /ko -->
               <li
@@ -409,7 +411,7 @@
               </li>
               <!-- ko foreach: global_delete_wizards -->
               <li>
-                <a class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
+                <a href="#" class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
               </li>
               <!-- /ko -->
             </ul>
