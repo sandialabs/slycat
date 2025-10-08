@@ -179,10 +179,6 @@ export const useCCAWizardFooter = () => {
     </button>
   );
   return [backButton, nextButton];
-  // return React.useMemo(
-  //   () => [backButton, nextButton],
-  //   [fileUploaded, loading, handleContinue, handleBack, tabName, dataLocation, dispatch, parser],
-  // );
 };
 
 /**
@@ -221,7 +217,7 @@ export const useHandleWizardSetup = (
   }, [statePid, stateMid, dispatch, pid, marking]);
 };
 
-export const selectTableFile = () => {
+export const useSelectTableFile = () => {
   const dispatch = useAppDispatch();
   const currentTab = useAppSelector(selectTab);
   const pid = useAppSelector(selectPid);
@@ -232,6 +228,7 @@ export const selectTableFile = () => {
   return React.useCallback((fullPath:string, fileType:string, file:object) => {
     if (fileType === "f") {
       if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
+        // Can't use '/' in web service call to post_hdf5_table
         fullPath = fullPath.replace(/(?!^)\//g, "-");
 
         dispatch(setHdf5InputTable(fullPath));
@@ -245,11 +242,12 @@ export const selectTableFile = () => {
             dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
           },
           error: () => {
-            console.log("Failure...");
+            dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
           },
         });
       }
       else if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
+        // Can't use '/' in web service call to post_hdf5_table
         fullPath = fullPath.replace(/(?!^)\//g, "-");
 
         dispatch(setHdf5OutputTable(fullPath));
@@ -260,8 +258,6 @@ export const selectTableFile = () => {
           mid: mid,
           aids: [["data-table"], fileName],
           success: () => {
-            // dispatch(setTabName(TabNames.CCA_FINISH_MODEL)); // maybe this should go after post_combine_hdf5_tables()?
-
             client.post_combine_hdf5_tables({
             mid: mid,
             success: () => { 
@@ -278,7 +274,7 @@ export const selectTableFile = () => {
             }});
           },
           error: () => {
-            console.log("Failure...");
+            dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
           },
         });
       }
@@ -286,10 +282,10 @@ export const selectTableFile = () => {
   }, [currentTab, dispatch, mid, pid, fileName, scaleInputs]);
 };
 
-// Needs to be implemented when connection is lost to the host
+// TODO: Needs to be implemented when connection is lost to the host
 export const onReauth = () => {
   return React.useCallback(() => {
-    console.log('onReauth');
+    console.log('TODO: Implement onReauth');
   }, []);
 }
 
@@ -330,7 +326,7 @@ const useFileUploadSuccess = () => {
     ) => {
       setProgress(95);
       setProgressStatus("Finishing...");
-      if (autoParser === 'slycat-hdf5-parser') {
+      if (autoParser === "slycat-hdf5-parser") {
         dispatch(setLoading(false));
         setUploadStatus(true);
         dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
@@ -429,20 +425,20 @@ export const useHandleRemoteFileSubmit = () => {
           dispatch(setProgressStatus(input));
         };
 
-        const splitFilePath = fileDescriptor.path.split("/");
+        const splitFilePath = fileDescriptor?.path?.split("/");
         const splitFilePathLength = splitFilePath.length;
         const fileName = splitFilePath[splitFilePathLength - 1];
         const fileExtension = fileName.split(".")[1];
         let autoParser: string | undefined = '';
 
         if (fileExtension == "csv") {
-          autoParser = 'slycat-csv-parser';
+          autoParser = "slycat-csv-parser";
           dispatch(setParser('slycat-csv-parser'));
         } else if (fileExtension == "dat") {
-          autoParser = 'slycat-dakota-parser';
+          autoParser = "slycat-dakota-parser";
           dispatch(setParser('slycat-dakota-parser'));
         } else if (fileExtension == "h5" || fileExtension == "hdf5") {
-          autoParser = 'slycat-hdf5-parser';
+          autoParser = "slycat-hdf5-parser";
           dispatch(setParser('slycat-hdf5-parser'));
         }
         else {
@@ -514,13 +510,13 @@ export const useHandleLocalFileSubmit = (): [
       let autoParser: string | undefined = '';
 
       if (fileExtension == "csv") {
-        autoParser = 'slycat-csv-parser';
+        autoParser = "slycat-csv-parser";
         dispatch(setParser('slycat-csv-parser'));
       } else if (fileExtension == "dat") {
-        autoParser = 'slycat-dakota-parser';
+        autoParser = "slycat-dakota-parser";
         dispatch(setParser('slycat-dakota-parser'));
       } else if (fileExtension == "h5" || fileExtension == "hdf5") {
-        autoParser = 'slycat-hdf5-parser';
+        autoParser = "slycat-hdf5-parser";
         dispatch(setParser('slycat-hdf5-parser'));
       }
       else {
@@ -556,7 +552,6 @@ export const useHandleLocalFileSubmit = (): [
           dispatch(setProgress(100));
           dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
-          // dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
           fileUploadSuccess(autoParser, setProgress, setProgressStatus, setUploadStatus);
         },
         error: function () {

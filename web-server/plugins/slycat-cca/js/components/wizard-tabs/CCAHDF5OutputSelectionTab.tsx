@@ -3,14 +3,14 @@
  retains certain rights in this software. */
 import * as React from "react";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
-import { selectTableFile } from "../CCAWizardUtils";
+import { useSelectTableFile } from "../CCAWizardUtils";
 import { selectMid, selectPid, selectFileUploaded } from "../wizard-store/reducers/CCAWizardSlice"
 import { onReauth } from "../CCAWizardUtils";
 import { useAppSelector } from "../wizard-store/hooks";
 
 export const CCAHDF5OutputSelectionTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
-  const SelectTableFile = selectTableFile();
+  const SelectTableFile = useSelectTableFile();
   const OnReauth = onReauth();
   const fileUploaded = useAppSelector(selectFileUploaded);
   const mid = useAppSelector(selectMid)!;
