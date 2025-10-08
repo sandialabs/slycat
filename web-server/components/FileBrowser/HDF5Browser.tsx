@@ -27,8 +27,8 @@ export interface HDF5BrowserProps {
   onSelectFileCallBack: Function;
   onSelectParserCallBack: Function;
   onReauthCallBack: Function;
-  pid: string;
-  mid: string;
+  pid?: string; //TODO: Update error handling for undefined
+  mid?: string;
 }
 
 /**

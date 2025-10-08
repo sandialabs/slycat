@@ -39,6 +39,8 @@ import {
   setFileName,
   setParser,
   TabNames,
+  selectHdf5InputTable,
+  selectHdf5OutputTable,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
@@ -64,7 +66,9 @@ export const useCCAWizardFooter = () => {
   const [handleLocalFileSubmit, ,] = useHandleLocalFileSubmit();
   const setUploadStatus = useSetUploadStatus();
   const localFileSelected = useAppSelector(selectLocalFileSelected);
-
+  const hdf5InputTable = useAppSelector(selectHdf5InputTable);
+  const hdf5OutputTable = useAppSelector(selectHdf5OutputTable);
+  const uploadTableFile = useUploadTableFile();
   /**
    * handle continue operation
    */
@@ -93,6 +97,12 @@ export const useCCAWizardFooter = () => {
         handleLocalFileSubmit(fileSelector[0], parser, setUploadStatus);
       }
     }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && hdf5InputTable) {
+      uploadTableFile(hdf5InputTable);
+    }
+    if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB && hdf5OutputTable) {
+      uploadTableFile(hdf5OutputTable);
+    }
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       uploadSelection();
     }
@@ -112,6 +122,9 @@ export const useCCAWizardFooter = () => {
     setUploadStatus,
     uploadSelection,
     finishModel,
+    uploadTableFile,
+    hdf5InputTable,
+    hdf5OutputTable
   ]);
 
   /**
@@ -217,7 +230,7 @@ export const useHandleWizardSetup = (
   }, [statePid, stateMid, dispatch, pid, marking]);
 };
 
-export const useSelectTableFile = () => {
+export const useUploadTableFile = () => {
   const dispatch = useAppDispatch();
   const currentTab = useAppSelector(selectTab);
   const pid = useAppSelector(selectPid);
@@ -225,14 +238,8 @@ export const useSelectTableFile = () => {
   const fileName = useAppSelector(selectFileName);
   const scaleInputs = useAppSelector(selectScaleInputs);
   
-  return React.useCallback((fullPath:string, fileType:string, file:object) => {
-    if (fileType === "f") {
+  return React.useCallback((fullPath:string) => {
       if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
-        // Can't use '/' in web service call to post_hdf5_table
-        fullPath = fullPath.replace(/(?!^)\//g, "-");
-
-        dispatch(setHdf5InputTable(fullPath));
-
         client.post_hdf5_table({
           path: fullPath,
           pid: pid,
@@ -247,11 +254,6 @@ export const useSelectTableFile = () => {
         });
       }
       else if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
-        // Can't use '/' in web service call to post_hdf5_table
-        fullPath = fullPath.replace(/(?!^)\//g, "-");
-
-        dispatch(setHdf5OutputTable(fullPath));
-
         client.post_hdf5_table({
           path: fullPath,
           pid: pid,
@@ -278,7 +280,6 @@ export const useSelectTableFile = () => {
           },
         });
       }
-    };
   }, [currentTab, dispatch, mid, pid, fileName, scaleInputs]);
 };
 

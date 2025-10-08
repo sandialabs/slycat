@@ -201,5 +201,7 @@ export const selectProgress = (state: RootState) => state.cCAWizard.progress;
 export const selectRemotePath = (state: RootState) => state.cCAWizard.remotePath;
 export const selectFileName = (state: RootState) => state.cCAWizard.fileName;
 export const selectLocalFileSelected = (state: RootState) => state.cCAWizard.localFileSelected;
+export const selectHdf5InputTable = (state: RootState) => state.cCAWizard.hdf5InputTable;
+export const selectHdf5OutputTable = (state: RootState) => state.cCAWizard.hdf5OutputTable;
 
 export default cCAWizardSlice.reducer;
