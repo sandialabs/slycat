@@ -541,15 +541,15 @@
         </div>
         <div class="modal-body">
           <div>
-            Version
+            <label class="fw-bold">Version</label>
             <pre data-bind="text:GIT_SLYCAT_VERSION"></pre>
-            Branch
+            <label class="fw-bold">Branch</label>
             <pre data-bind="text:GIT_SLYCAT_BRANCH"></pre>
-            Commit
+            <label class="fw-bold">Commit</label>
             <pre data-bind="text:GIT_SLYCAT_COMMITHASH"></pre>
           </div>
-          <p data-bind="text:COPYRIGHT_TEXT">[Copyright Text]</p>
-          <div data-bind="html:LICENSE_TEXT_FORMATTED">[License Text Formatted]</div>
+          <p class="mt-4 text-body-secondary" data-bind="text:COPYRIGHT_TEXT">[Copyright Text]</p>
+          <div class="text-body-secondary" data-bind="html:LICENSE_TEXT_FORMATTED">[License Text Formatted]</div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
