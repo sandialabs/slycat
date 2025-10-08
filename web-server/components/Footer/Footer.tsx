@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="mt-auto py-3">
-      <div className="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
+      <div className="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2 p-0">
         <div className="copyright text-muted small me-5 w-50">
           © {year} National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the
           terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in
