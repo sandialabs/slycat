@@ -21,5 +21,3 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ projectId, models }) => {
 };
 
 export default ProjectPage;
-
-
