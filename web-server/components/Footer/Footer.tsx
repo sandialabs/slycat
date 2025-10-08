@@ -40,10 +40,10 @@ const Footer: React.FC = () => {
           <p>{COPYRIGHT_TEXT}</p>
           <p className="mb-0">{LICENSE_TEXT_SHORT}</p>
         </div>
-        <ul className="nav small">
+        <ul className="nav small align-self-start">
           <li className="nav-item">
             <a
-              className="nav-link px-4 text-muted"
+              className="nav-link px-4 pt-0 text-muted"
               href="#"
               data-bs-toggle="modal"
               data-bs-target="#slycat-about"
@@ -53,23 +53,23 @@ const Footer: React.FC = () => {
           </li>
           {supportHref && (
             <li className="nav-item">
-              <a className="nav-link px-4 text-muted" href={supportHref}>
+              <a className="nav-link px-4 pt-0 text-muted" href={supportHref}>
                 Support
               </a>
             </li>
           )}
           <li className="nav-item">
-            <a className="nav-link px-4 text-muted" href={DOCS_URL} target="_blank">
+            <a className="nav-link px-4 pt-0 text-muted" href={DOCS_URL} target="_blank">
               Docs
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link px-4 text-muted" href={GITHUB_URL} target="_blank">
+            <a className="nav-link px-4 pt-0 text-muted" href={GITHUB_URL} target="_blank">
               GitHub
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link px-4 pe-0 text-muted" href={RANDD100_URL} target="_blank">
+            <a className="nav-link px-4 pt-0 pe-0 text-muted" href={RANDD100_URL} target="_blank">
               R&D 100 Winner
             </a>
           </li>
