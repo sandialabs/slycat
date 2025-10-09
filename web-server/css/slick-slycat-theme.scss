@@ -78,7 +78,9 @@
   background-color: slycat-variables.$slycat-lavender-dark;
   color: slycat-variables.$slycat-text-on-dark;
 }
-
+.slick-cell, .slick-headerrow-column, .slick-footerrow-column, .slick-header-columns, .slick-headerrow-columns, .slick-footerrow-columns, .slick-group-header-columns {
+  cursor: pointer;
+}
 /* Removing zebra striping */
 .slick-row[row$="1"],
 .slick-row[row$="3"],
