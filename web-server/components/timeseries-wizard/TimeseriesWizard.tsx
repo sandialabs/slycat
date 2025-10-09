@@ -171,6 +171,9 @@ export default class TimeseriesWizard extends React.Component<
                 });
               }}
             />
+            <div className="col-sm-12">
+              { this.state.loadingData && <div className="alert alert-info" role="alert">Connecting ...</div>}
+          </div>
           </div>
         ) : null}
         {this.state.visibleTab === "1" ? (

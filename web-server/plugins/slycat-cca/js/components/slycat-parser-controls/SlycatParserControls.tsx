@@ -17,7 +17,8 @@ export const SlycatParserControls = (props: {
     if (filteredParsers !== undefined && filteredParsers.length > 0) {
       setParser(filteredParsers[0].type());
     }
-  }, [filteredParsers, filteredParsers.length, setParser]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const handleParserChange = useHandleParserChange(setParser);
   return (
     <div className="form-group row">

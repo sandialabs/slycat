@@ -38,10 +38,29 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   checkRemoteStatus = async (hostname) => {
-    return client.get_remotes_fetch(hostname).then((json) => {
+    if (hostname !== "" && hostname != null && !hostname.includes("\\") && !hostname.includes("/") && !hostname.includes(" ")) {
+      return client.get_remotes_fetch(hostname).then((json) => {
+        this.setState(
+          {
+            session_exists: json.status,
+            initialLoad: true,
+            loadingData: false,
+          },
+          () => {
+            this.props.callBack(
+              this.state.hostname,
+              this.state.username,
+              this.state.password,
+              this.state.session_exists,
+            );
+          },
+        );
+      });
+    }
+    else {
       this.setState(
         {
-          session_exists: json.status,
+          session_exists: false,
           initialLoad: true,
           loadingData: false,
         },
@@ -54,7 +73,7 @@ export default class SlycatRemoteControls extends Component {
           );
         },
       );
-    });
+    }
   };
 
   /**
