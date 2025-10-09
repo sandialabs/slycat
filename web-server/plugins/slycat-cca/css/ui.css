@@ -285,9 +285,11 @@ a {
   position: absolute;
   left: 0;
   top: 0;
+  cursor: pointer;
 }
 #legend {
   position: absolute;
+  cursor: pointer;
 }
 #legend g.legend {
   cursor: move;

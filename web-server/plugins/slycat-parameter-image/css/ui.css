@@ -511,6 +511,7 @@
 
 #scatterplot .scatterplot-svg {
   position: absolute;
+  cursor: pointer;
 }
 
 /* Image Preview */
