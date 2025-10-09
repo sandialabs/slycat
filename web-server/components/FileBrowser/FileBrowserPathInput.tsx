@@ -1,5 +1,6 @@
 import * as React from "react";
 import styles from "./FileBrowser.module.scss";
+import Icon from "components/Icons/Icon";
 
 interface FileBrowserPathInputProps {
   hostname?: string;
@@ -27,7 +28,7 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
     props.onPathChange(e.target.value);
   };
 
-    const handleGoClick = () => {
+  const handleGoClick = () => {
     props.onBrowse(props.pathInput);
   };
 
@@ -39,8 +40,8 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
         </label>
       )}
       <div className="form-group row path mb-3">
-        <div className="col-sm-12">
-          <div className={`input-group ${styles.pathContainer}`}>
+        <div className="col-sm-12 d-flex flex-row align-items-center">
+          <div className={`input-group flex-grow-1 ${styles.pathContainer}`}>
             <input
               type="text"
               className={`form-control ${props.hasError ? "is-invalid" : ""}`}
@@ -61,8 +62,9 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
               title="Navigate to parent directory"
               onClick={props.onNavigateUp}
               disabled={props.disabled || props.isAtRoot}
+              alex-test="test"
             >
-              <i className="fa fa-level-up" aria-hidden="true"></i>
+              <Icon type="turn-up" />
             </button>
           </div>
           {props.hasError && props.errorMessage && (

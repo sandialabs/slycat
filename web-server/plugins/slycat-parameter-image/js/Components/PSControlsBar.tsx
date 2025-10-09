@@ -330,7 +330,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
 
   render() {
     // Define default button style
-    const button_style = "btn-outline-dark";
+    const button_style = "btn-slycat-controls";
 
     const axes_items: PSControlsBarAxesVariablesType[] = [];
     for (let axes_variable of this.props.axes_variables) {

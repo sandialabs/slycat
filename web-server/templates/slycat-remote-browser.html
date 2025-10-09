@@ -4,7 +4,7 @@
       <label class="fw-bold" for="slycat-remote-browser-path" data-bind="text: hostname() + ':'" />
     </div>
     <div class="mb-3 row path" data-bind="css: {'is-invalid': path_error}">
-      <div class="col-sm-12">
+      <div class="col-sm-12 d-flex flex-row align-items-center">
         <div class="input-group" style="width: calc(100% - 44px); float: left; margin-right: 5px">
           <input
             type="text"
@@ -26,7 +26,7 @@
             disable:path()=='/'
           "
           >
-            <i class="fa fa-level-up" aria-hidden="true"></i>
+            <i class="fas fa-turn-up" aria-hidden="true"></i>
           </button>
         </div>
         <div class="alert alert-danger" role="alert" data-bind="fadeError: browse_error">

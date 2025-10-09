@@ -218,7 +218,7 @@ $.widget("mp.movies", {
       var frame_footer = $('<div class="frame-footer"></div>').appendTo(video_container);
       // Create a close button ...
       var close_button = $(
-        '<i class="close-button frame-button fa fa-times" aria-hidden="true" title="Close"></i>',
+        '<i class="close-button frame-button fa fa-xmark" aria-hidden="true" title="Close"></i>',
       )
         .click(function () {
           // pinned_simulations needs to exclude the to-be-closed movies before _close_movies is called

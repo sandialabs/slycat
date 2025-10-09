@@ -1,0 +1,27 @@
+// Slycat Bootstrap variables.
+// Only use this file to define variables that are used in customizing the Slycat Bootstrap theme.
+// Do not use this file to define variables that are used in the Slycat application outside of customizing Bootstrap,
+// like for table, scatterplot, etc. Those should go in slycat-variables.scss.
+
+// Sandia blue button color
+$sandia-blue: rgb(0, 100, 144);
+$sandia-light-blue: rgb(230, 241, 246);
+$sandia-medium-blue: rgb(153, 200, 221);
+$sandia-dark-blue: rgb(0, 100, 144);
+$sandia-red: rgb(129, 6, 46);
+$sandia-dark-gray: rgb(88, 99, 112);
+
+// Slycat navbar background color
+$slycat-navbar-bg: rgb(210 210 210);
+
+// Slycat controls button styling
+$slycat-controls: rgb(255, 255, 255); // White background
+$slycat-controls-color: rgb(50, 57, 64);
+$slycat-controls-border-color: rgba(0, 0, 0, 0.176);
+$slycat-controls-hover-bg: rgb(248, 249, 250);
+$slycat-controls-active-color: rgb(255, 255, 255);
+$slycat-controls-active-bg: $sandia-blue;
+$slycat-controls-disabled-color: shift-color($slycat-controls-color, -40%);
+
+// Slycat default background color
+$slycat-default-bg: rgb(229 232 236);
