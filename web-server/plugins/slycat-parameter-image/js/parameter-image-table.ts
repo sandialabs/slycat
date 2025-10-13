@@ -29,6 +29,15 @@ import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
 import { selectAxesVariables, selectVIndex } from "./selectors";
 import { parseDate } from "js/slycat-dates";
 
+const SET_X_VARIABLE_TEXT = "Set as X Axis Variable"; 
+const SET_Y_VARIABLE_TEXT = "Set as Y Axis Variable"; 
+const SET_MEDIA_VARIABLE_TEXT = "Set as Media Variable";
+const CURRENT_X_VARIABLE_TEXT = "Current X Axis Variable";
+const CURRENT_Y_VARIABLE_TEXT = "Current Y Axis Variable";
+const CURRENT_MEDIA_VARIABLE_TEXT = "Current Media Variable";
+const SORT_ASCENDING_TEXT = "Sort Ascending";
+const SORT_DESCENDING_TEXT = "Sort Descending";
+
 $.widget("parameter_image.table", {
   options: {
     "server-root": "",
@@ -155,9 +164,9 @@ $.widget("parameter_image.table", {
               tooltip:
                 self.options["sort-variable"] == column_index
                   ? self.options["sort-order"] == "asc"
-                    ? "Sort descending"
-                    : "Sort ascending"
-                  : "Sort ascending",
+                    ? SORT_DESCENDING_TEXT
+                    : SORT_ASCENDING_TEXT
+                  : SORT_ASCENDING_TEXT,
               command:
                 self.options["sort-variable"] == column_index
                   ? self.options["sort-order"] == "asc"
@@ -176,8 +185,8 @@ $.widget("parameter_image.table", {
             self.options["image-variable"] == column_index ? "icon-image-on" : "icon-image-off",
           tooltip:
             self.options["image-variable"] == column_index
-              ? "Current image variable"
-              : "Set as image variable",
+              ? CURRENT_MEDIA_VARIABLE_TEXT
+              : SET_MEDIA_VARIABLE_TEXT,
           command: "image-on",
         });
       }
@@ -189,16 +198,16 @@ $.widget("parameter_image.table", {
             cssClass: self.options["x-variable"] == column_index ? "icon-x-on" : "icon-x-off",
             tooltip:
               self.options["x-variable"] == column_index
-                ? "Current x variable"
-                : "Set as x variable",
+                ? CURRENT_X_VARIABLE_TEXT
+                : SET_X_VARIABLE_TEXT,
             command: "x-on",
           },
           {
             cssClass: self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
             tooltip:
               self.options["y-variable"] == column_index
-                ? "Current y variable"
-                : "Set as y variable",
+                ? CURRENT_Y_VARIABLE_TEXT
+                : SET_Y_VARIABLE_TEXT,
             command: "y-on",
           },
         );
@@ -271,7 +280,7 @@ $.widget("parameter_image.table", {
       if (command == "sort-ascending" || command == "sort-descending") {
         for (var i in self.columns) {
           self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
-          self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+          self.columns[i].header.buttons[0].tooltip = SORT_ASCENDING_TEXT;
           self.columns[i].header.buttons[0].command = "sort-ascending";
           grid.updateColumnHeader(self.columns[i].id);
         }
@@ -280,22 +289,22 @@ $.widget("parameter_image.table", {
       if (command == "sort-ascending") {
         button.cssClass = "icon-sort-ascending";
         button.command = "sort-descending";
-        button.tooltip = "Sort descending";
+        button.tooltip = SORT_DESCENDING_TEXT;
         set_sort(column.id, "asc");
       } else if (command == "sort-descending") {
         button.cssClass = "icon-sort-descending";
         button.command = "sort-ascending";
-        button.tooltip = "Sort ascending";
+        button.tooltip = SORT_ASCENDING_TEXT;
         set_sort(column.id, "desc");
       } else if (command == "image-on") {
         for (var i = 0; i < self.options.images.length; i++) {
           var index = grid.getColumnIndex(self.options.images[i]);
           self.columns[index].header.buttons[1].cssClass = "icon-image-off";
-          self.columns[index].header.buttons[1].tooltip = "Set as image variable";
+          self.columns[index].header.buttons[1].tooltip = SET_MEDIA_VARIABLE_TEXT;
           grid.updateColumnHeader(self.columns[index].id);
         }
         button.cssClass = "icon-image-on";
-        button.tooltip = "Current image variable";
+        button.tooltip = CURRENT_MEDIA_VARIABLE_TEXT;
         // Dispatch update to media index in Redux
         window.store.dispatch(setMediaIndex(column.id));
       } else if (command == "x-on") {
@@ -305,12 +314,12 @@ $.widget("parameter_image.table", {
             self.options.metadata["column-count"] - 1 != self.columns[i].id
           ) {
             self.columns[i].header.buttons[1].cssClass = "icon-x-off";
-            self.columns[i].header.buttons[1].tooltip = "Set as x variable";
+            self.columns[i].header.buttons[1].tooltip = SET_X_VARIABLE_TEXT;
             grid.updateColumnHeader(self.columns[i].id);
           }
         }
         button.cssClass = "icon-x-on";
-        button.tooltip = "Current x variable";
+        button.tooltip = CURRENT_X_VARIABLE_TEXT;
         self.options["x-variable"] = column.id;
         self.options.x_y_variables.x = column.id;
         grid.invalidate();
@@ -323,12 +332,12 @@ $.widget("parameter_image.table", {
             self.options.metadata["column-count"] - 1 != self.columns[i].id
           ) {
             self.columns[i].header.buttons[2].cssClass = "icon-y-off";
-            self.columns[i].header.buttons[2].tooltip = "Set as y variable";
+            self.columns[i].header.buttons[2].tooltip = SET_Y_VARIABLE_TEXT;
             grid.updateColumnHeader(self.columns[i].id);
           }
         }
         button.cssClass = "icon-y-on";
-        button.tooltip = "Current y variable";
+        button.tooltip = CURRENT_Y_VARIABLE_TEXT;
         self.options["y-variable"] = column.id;
         self.options.x_y_variables.y = column.id;
         grid.invalidate();
@@ -473,10 +482,10 @@ $.widget("parameter_image.table", {
       ) {
         if (self.columns[i].id == self.options["x-variable"]) {
           self.columns[i].header.buttons[1].cssClass = "icon-x-on";
-          self.columns[i].header.buttons[1].tooltip = "Current x variable";
+          self.columns[i].header.buttons[1].tooltip = CURRENT_X_VARIABLE_TEXT;
         } else {
           self.columns[i].header.buttons[1].cssClass = "icon-x-off";
-          self.columns[i].header.buttons[1].tooltip = "Set as x variable";
+          self.columns[i].header.buttons[1].tooltip = SET_X_VARIABLE_TEXT;
         }
         self.grid.updateColumnHeader(self.columns[i].id);
       }
@@ -493,10 +502,10 @@ $.widget("parameter_image.table", {
       ) {
         if (self.columns[i].id == self.options["y-variable"]) {
           self.columns[i].header.buttons[2].cssClass = "icon-y-on";
-          self.columns[i].header.buttons[2].tooltip = "Current y variable";
+          self.columns[i].header.buttons[2].tooltip = CURRENT_Y_VARIABLE_TEXT;
         } else {
           self.columns[i].header.buttons[2].cssClass = "icon-y-off";
-          self.columns[i].header.buttons[2].tooltip = "Set as y variable";
+          self.columns[i].header.buttons[2].tooltip = SET_Y_VARIABLE_TEXT;
         }
         self.grid.updateColumnHeader(self.columns[i].id);
       }
@@ -510,10 +519,10 @@ $.widget("parameter_image.table", {
       var index = self.grid.getColumnIndex(self.options.images[i]);
       if (self.columns[index].id == self.options["image-variable"]) {
         self.columns[index].header.buttons[1].cssClass = "icon-image-on";
-        self.columns[index].header.buttons[1].tooltip = "Current image variable";
+        self.columns[index].header.buttons[1].tooltip = CURRENT_MEDIA_VARIABLE_TEXT;
       } else {
         self.columns[index].header.buttons[1].cssClass = "icon-image-off";
-        self.columns[index].header.buttons[1].tooltip = "Set as image variable";
+        self.columns[index].header.buttons[1].tooltip = SET_MEDIA_VARIABLE_TEXT;
       }
       self.grid.updateColumnHeader(self.columns[index].id);
     }
