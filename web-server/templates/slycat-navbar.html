@@ -66,19 +66,25 @@
               class="dropdown-menu dropdown-menu-end"
               aria-labelledby="slycat-personal-tools-help"
             >
-              <a href="#" class="dropdown-item" data-bind="click:about"
-                >About Slycat</a
-              >
+              <a href="#" class="dropdown-item" data-bind="click:about">About Slycat</a>
               <a href="#" class="dropdown-item" data-bind="click:support_request"
                 >Support Request</a
               >
               <a href="#" class="dropdown-item" data-bind="click:open_documentation"
                 >Documentation</a
               >
-              <a class="dropdown-item" href="#" target="_blank" data-bind="attr: { href: GITHUB_URL }"
+              <a
+                class="dropdown-item"
+                href="#"
+                target="_blank"
+                data-bind="attr: { href: GITHUB_URL }"
                 >GitHub</a
               >
-              <a class="dropdown-item" href="#" target="_blank" data-bind="attr: { href: RANDD100_URL }"
+              <a
+                class="dropdown-item"
+                href="#"
+                target="_blank"
+                data-bind="attr: { href: RANDD100_URL }"
                 >R&D 100 Winner</a
               >
             </div>
@@ -327,9 +333,8 @@
                             params="
                               name: name,
                               model_name: model_name,
-                              model_type: model_type,
+                              model_type: $parent.model_names.translate_model_type(model_type),
                               uri: uri,
-                              model_names: $parent.model_names,
                               onEdit: $parent.edit_saved_bookmark,
                               onDelete: $parent.delete_saved_bookmark,
                               showControls: $parent.relation() === 'writer' || $parent.relation() === 'administrator',
@@ -354,9 +359,8 @@
                 params="
                   name: name,
                   model_name: model_name,
-                  model_type: model_type,
+                  model_type: $parent.model_names.translate_model_type(model_type),
                   uri: uri,
-                  model_names: $parent.model_names,
                   onEdit: $parent.edit_saved_bookmark,
                   onDelete: $parent.delete_saved_bookmark,
                   showControls: false,
@@ -391,7 +395,11 @@
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-delete">
               <!-- ko foreach: model_delete_wizards -->
               <li>
-                <a href="#" class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
+                <a
+                  href="#"
+                  class="dropdown-item"
+                  data-bind="text: label, click:$parent.run_wizard"
+                ></a>
               </li>
               <!-- /ko -->
               <li
@@ -401,7 +409,11 @@
               </li>
               <!-- ko foreach: project_delete_wizards -->
               <li>
-                <a href="#" class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
+                <a
+                  href="#"
+                  class="dropdown-item"
+                  data-bind="text: label, click:$parent.run_wizard"
+                ></a>
               </li>
               <!-- /ko -->
               <li
@@ -411,7 +423,11 @@
               </li>
               <!-- ko foreach: global_delete_wizards -->
               <li>
-                <a href="#" class="dropdown-item" data-bind="text: label, click:$parent.run_wizard"></a>
+                <a
+                  href="#"
+                  class="dropdown-item"
+                  data-bind="text: label, click:$parent.run_wizard"
+                ></a>
               </li>
               <!-- /ko -->
             </ul>
@@ -473,7 +489,6 @@
             <li
               class="breadcrumb-item active model text-dark fw-bold"
               data-bind="
-              text:name,
               attr:{
                 'data-bs-content': $parent.navbar_popover()
               },
@@ -481,7 +496,12 @@
               data-bs-toggle="popover"
               data-bs-trigger="hover"
               data-bs-html="true"
-            ></li>
+            >
+              <span data-bind="text:name"></span>
+              <slycat-model-type-badge
+                params="model_type: $parent.model_names.translate_model_type($data['model-type']()), classNames: 'ms-3'"
+              ></slycat-model-type-badge>
+            </li>
             <!-- /ko -->
           </ol>
         </nav>
@@ -557,7 +577,9 @@
             <pre data-bind="text:GIT_SLYCAT_COMMITHASH"></pre>
           </div>
           <p class="mt-4 text-body-secondary" data-bind="text:COPYRIGHT_TEXT">[Copyright Text]</p>
-          <div class="text-body-secondary" data-bind="html:LICENSE_TEXT_FORMATTED">[License Text Formatted]</div>
+          <div class="text-body-secondary" data-bind="html:LICENSE_TEXT_FORMATTED">
+            [License Text Formatted]
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>

@@ -1,8 +1,8 @@
 import * as React from "react";
-import ModalMedium from "components/ModalMedium.tsx";
-import ConnectButton from "components/ConnectButton.tsx";
-import client from "../js/slycat-web-client";
-import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
+import ModalMedium from "components/ModalMedium";
+import ConnectButton from "components/ConnectButton";
+import client from "js/slycat-web-client";
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 /**
  * @member modalId string dom id for the modal
@@ -161,29 +161,27 @@ export default class ConnectModal extends React.Component<ConnectModalProps, Con
     return (
       <div>
         <form>
-          <div className="form-group row mb-3">
-            <label className="col-sm-2 col-form-label">Username</label>
-            <div className="col-sm-9">
-              <input
-                disabled={this.state.loadingData}
-                className="form-control"
-                type="text"
-                value={this.state.username ? this.state.username : ""}
-                onChange={(e) => this.onValueChange(e.target.value, "username")}
-              />
-            </div>
+          <div className="form-floating mb-3">
+            <input
+              id="username"
+              disabled={this.state.loadingData}
+              className="form-control"
+              type="text"
+              value={this.state.username ? this.state.username : ""}
+              onChange={(e) => this.onValueChange(e.target.value, "username")}
+            />
+            <label htmlFor="username">{REMOTE_AUTH_LABELS.username}</label>
           </div>
-          <div className="form-group row mb-3">
-            <label className="col-sm-2 col-form-label">Password</label>
-            <div className="col-sm-9">
-              <input
-                disabled={this.state.loadingData}
-                className="form-control"
-                type="password"
-                onKeyDown={this.handleKeyDown}
-                onChange={(e) => this.onValueChange(e.target.value, "password")}
-              />
-            </div>
+          <div className="form-floating mb-3">
+            <input
+              id="password"
+              disabled={this.state.loadingData}
+              className="form-control"
+              type="password"
+              onKeyDown={this.handleKeyDown}
+              onChange={(e) => this.onValueChange(e.target.value, "password")}
+            />
+            <label htmlFor="password">{REMOTE_AUTH_LABELS.password}</label>
           </div>
         </form>
       </div>

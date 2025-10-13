@@ -47,9 +47,7 @@ export default class ModalMedium extends React.Component<ModalMediumProps,ModalM
           <div className='modal-content'>
             <div className='modal-header'>
               <h3 className='modal-title'>{this.props.title}</h3>
-              <button type='button' className='close' aria-label='Close' onClick={this.closeModal}>
-                <span aria-hidden='true'>&times;</span>
-              </button>
+              <button type='button' className='close btn-close' aria-label='Close' onClick={this.closeModal}></button>
             </div>
             <div className='modal-body' id="slycat-wizard">
               {this.props.body}

@@ -20,6 +20,7 @@ import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import "js/slycat-nag";
 import slycatNavbar from "templates/slycat-navbar.html";
 import slycatBookmarkItem from "templates/slycat-bookmark-item.html";
+import slycatModelTypeBadge from "templates/slycat-model-type-badge.html";
 import "js/slycat-plugins";
 // Under Bootstrap 3, we couldn't import bootstrap here because it broke models,
 // which are dynamically imported and also contain bootstrap, and it seemed to clash with this one.
@@ -51,6 +52,15 @@ export function renderNavBar() {
       : (window.location.href = "/projects");
   });
 
+  // Register model type badge component for reuse
+  ko.components.register("slycat-model-type-badge", {
+    viewModel: function (params) {
+      this.model_type = params.model_type;
+      this.classNames = params.classNames || "";
+    },
+    template: slycatModelTypeBadge,
+  });
+
   // Register bookmark item component for reuse
   ko.components.register("slycat-bookmark-item", {
     viewModel: function (params) {
@@ -58,7 +68,6 @@ export function renderNavBar() {
       this.model_name = params.model_name;
       this.model_type = params.model_type;
       this.uri = params.uri;
-      this.model_names = params.model_names;
       this.onEdit = params.onEdit || function () {};
       this.onDelete = params.onDelete || function () {};
       this.showControls = params.showControls || false;

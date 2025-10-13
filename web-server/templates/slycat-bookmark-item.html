@@ -8,11 +8,9 @@
         [Model Name]
       </h5>
 
-      <span
-        class="badge rounded-pill bg-primary-subtle text-primary text-capitalize py-2 px-3 ms-4 mt-1 mb-1"
-        data-bind="visible: model_type, text: model_names.translate_model_type(model_type)"
-        >[Model Type Badge]</span
-      >
+      <slycat-model-type-badge
+        params="model_type: model_type, classNames: 'ms-4 mt-1 mb-1'"
+      ></slycat-model-type-badge>
     </div>
     <div class="d-flex flex-row align-items-center">
       <span
