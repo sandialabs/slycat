@@ -16,7 +16,7 @@ export interface ModalContentProps {
 
 export const CCAModalContent = (props: React.PropsWithChildren<ModalContentProps>) => {
   const { modalId, closingCallBack, title, children, footer } = props;
-  const myModalEl = document.getElementById(modalId);
+  const modalElement = document.getElementById(modalId);
   /**
    *close the modal and call the cleanup function
    * @memberof ModalContent
@@ -26,11 +26,11 @@ export const CCAModalContent = (props: React.PropsWithChildren<ModalContentProps
       $("#" + modalId).modal("hide");
       closingCallBack();
       // cleanup
-      myModalEl?.removeEventListener("hidden.bs.modal", handleCloseModal);
+      modalElement?.removeEventListener("hidden.bs.modal", handleCloseModal);
     },
-    [modalId, closingCallBack, myModalEl],
+    [modalId, closingCallBack, modalElement],
   );
-  myModalEl?.addEventListener("hidden.bs.modal", handleCloseModal);
+  modalElement?.addEventListener("hidden.bs.modal", handleCloseModal);
   return (
     <div>
       <div className="modal-header" data-bs-keyboard="false">
