@@ -393,6 +393,7 @@ export const useHandleRemoteFileSubmit = () => {
   const progress = useAppSelector(selectProgress);
   const progressStatus = useAppSelector(selectProgressStatus);
   const fileUploadSuccess = useFileUploadSuccess();
+  const setUploadStatus = useSetUploadStatus();
   return React.useCallback(() => {
     dispatch(setLoading(true));
     if (!fileDescriptor?.path) {
@@ -462,11 +463,11 @@ export const useHandleRemoteFileSubmit = () => {
             setProgressStatus("File upload complete");
             dispatch(setLoading(false));
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
-            // setUploadStatus(true);
+            setUploadStatus(true);
             fileUploadSuccess(autoParser, setProgress, setProgressStatus, (status) => console.log(status));
           },
           error: function () {
-            // setUploadStatus(false);
+            setUploadStatus(false);
             dispatch(setLoading(false));
             dialog.ajax_error(
               "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
