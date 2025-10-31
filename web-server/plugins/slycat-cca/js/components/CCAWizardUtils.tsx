@@ -39,6 +39,7 @@ import {
   TabNames,
   selectHdf5InputTable,
   selectHdf5OutputTable,
+  dataLocationType,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
@@ -69,11 +70,23 @@ export const useCCAHandleContinue = () => {
    * handle continue operation
    */
   const handleContinue = React.useCallback(() => {
-    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "local") {
+    if (
+      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
+      dataLocation === dataLocationType.LOCAL
+    ) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "remote") {
+    if (
+      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
+      dataLocation === dataLocationType.REMOTE
+    ) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
+    }
+    if (
+      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
+      dataLocation === dataLocationType.SMB
+    ) {
+      dispatch(setTabName(TabNames.CCA_SMB_TAB));
     }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
       if (authInfo?.sessionExists) {
@@ -124,6 +137,11 @@ export const useCCAHandleContinue = () => {
   ]);
   return handleContinue;
 };
+
+/**
+ * build logic for the back button
+ * @returns handler for back button logic
+ */
 export const useCCAHandleBack = () => {
   const tabName = useAppSelector(selectTab);
   const dataLocation = useAppSelector(selectDataLocation);
@@ -175,9 +193,7 @@ export const useCCAWizardFooter = () => {
   const tabName = useAppSelector(selectTab);
   const loading = useAppSelector(selectLoading);
   const localFileSelected = useAppSelector(selectLocalFileSelected);
-  /**
-   * handle continue operation
-   */
+
   const handleContinue = useCCAHandleContinue();
   const handleBack = useCCAHandleBack();
 
@@ -395,7 +411,7 @@ const useFileUploadSuccess = () => {
         });
       }
     },
-    [mid, parser, dispatch],
+    [mid, dispatch],
   );
 };
 
