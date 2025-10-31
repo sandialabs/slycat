@@ -8,7 +8,6 @@ import {
   AuthenticationInformation,
   selectAuthInfo,
   selectLoading,
-  selectTab,
   setAuthInfo,
   setTabName,
   TabNames,

@@ -3,8 +3,11 @@
  retains certain rights in this software. */
 import * as React from "react";
 import SmbAuthentication from "components/SmbAuthentication";
+import { AuthenticationInformation, setAuthInfo } from "../wizard-store/reducers/CCAWizardSlice";
+import { useAppDispatch } from "../wizard-store/hooks";
 export const CCASmbTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
+  const dispatch = useAppDispatch();
   const setSmbAuthValues = function (
     hostname: string,
     username: string,
@@ -14,13 +17,23 @@ export const CCASmbTab = (props: { hidden?: boolean }) => {
     session_exists: boolean,
     last_key: string,
   ) {
-    console.log('values');
-    console.log('hostname',hostname);
-    console.log('username',username);
-    console.log('password',password);
-    console.log('share',share);
-    console.log('domain',domain);
-    console.log('session_exists',session_exists);
+    console.log("values");
+    console.log("hostname", hostname);
+    console.log("username", username);
+    console.log("password", password);
+    console.log("share", share);
+    console.log("domain", domain);
+    console.log("session_exists", session_exists);
+    const authInfo: AuthenticationInformation = {
+      username,
+      password: password,
+      // decode with atob for password
+      hostname,
+      domain,
+      share,
+      sessionExists: session_exists,
+    };
+    dispatch(setAuthInfo(authInfo));
     //If the user hits enter key, try to connect
     if (last_key === "Enter") {
       console.log("enter");
