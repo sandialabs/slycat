@@ -47,6 +47,22 @@ export const CCAWizardDataSelectionTab = (props: { hidden?: boolean }) => {
           Remote
         </label>
       </div>
+      <div className="form-check" style={{ marginLeft: "15px" }}>
+        <label>
+          <input
+            style={{ marginRight: ".5rem" }}
+            type="radio"
+            name="local-or-remote-radios"
+            id="smb-radio"
+            value="smb"
+            onChange={React.useCallback(() => {
+              dispatch(setDataLocation(dataLocationType.SMB));
+            }, [dispatch])}
+            checked={dataLocation && dataLocation === dataLocationType.SMB}
+          />
+          SMB
+        </label>
+      </div>
     </div>
   );
 };
