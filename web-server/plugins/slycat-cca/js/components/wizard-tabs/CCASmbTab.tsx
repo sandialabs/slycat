@@ -2,32 +2,39 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 import * as React from "react";
+import SmbAuthentication from "components/SmbAuthentication";
 export const CCASmbTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
+  const setSmbAuthValues = function (
+    hostname: string,
+    username: string,
+    password: string,
+    share: string,
+    domain: string,
+    session_exists: boolean,
+    last_key: string,
+  ) {
+    console.log('values');
+    console.log('hostname',hostname);
+    console.log('username',username);
+    console.log('password',password);
+    console.log('share',share);
+    console.log('domain',domain);
+    console.log('session_exists',session_exists);
+    //If the user hits enter key, try to connect
+    if (last_key === "Enter") {
+      console.log("enter");
+      // component.connectSMB();
+    }
+  };
 
-  return <div hidden={hidden}>SMB</div>;
+  return (
+    <div hidden={hidden}>
+      <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />
+      SMB
+    </div>
+  );
 };
-
-//   const setSmbAuthValues = function (
-//     hostname,
-//     username,
-//     password,
-//     share,
-//     domain,
-//     session_exists,
-//     last_key,
-//   ) {
-//     component.remote.hostname(hostname);
-//     component.remote.username(username);
-//     component.remote.password(password);
-//     component.remote.share(share);
-//     component.remote.domain(domain);
-//     component.remote.session_exists(session_exists);
-//     //If the user hits enter key, try to connect
-//     if (last_key === "Enter") {
-//       component.connectSMB();
-//     }
-//   };
 
 // component.connectSMB = function () {
 //     component.remote.enable(false);
@@ -94,7 +101,3 @@ export const CCASmbTab = (props: { hidden?: boolean }) => {
 //         });
 //     }
 //   };
-
-{
-  /* <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} /> */
-}
