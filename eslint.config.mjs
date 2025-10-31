@@ -8,5 +8,5 @@ export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tseslint.configs.stylistic,
-  reactHooks.configs['recommended-latest']
+  reactHooks.configs.recommended
 );

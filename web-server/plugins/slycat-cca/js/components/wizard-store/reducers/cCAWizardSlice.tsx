@@ -7,6 +7,7 @@ import { RootState } from "../store";
 export enum TabNames {
   CCA_DATA_WIZARD_SELECTION_TAB = "CCADataWizardSelectionTab",
   CCA_LOCAL_BROWSER_TAB = "CCALocalBrowserTab",
+  CCA_SMB_TAB = 'CCASmbTab',
   CCA_HDF5_INPUT_SELECTION_TAB = "CCAHDF5InputSelectionTab",
   CCA_HDF5_OUTPUT_SELECTION_TAB = "CCAHDF5OutputSelectionTab",
   CCA_AUTHENTICATION_TAB = "CCAAuthenticationTab",
@@ -17,6 +18,7 @@ export enum TabNames {
 export enum dataLocationType {
   LOCAL = "local",
   REMOTE = "remote",
+  SMB = "smb"
 }
 export interface FileDescriptor {
   type: string;
