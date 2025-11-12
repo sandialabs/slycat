@@ -26,14 +26,14 @@ export const CCAHDF5InputSelectionTab = (props: { hidden?: boolean }) => {
 
   return (
     <div hidden={hidden}>
-      <HDF5Browser
+      {!hidden && <HDF5Browser
         onSelectFileCallBack={handleTablePath}
         onReauthCallBack={OnReauth}
         hostname={hostname}
         pid={pid}
         mid={mid}
         fileUploaded={fileUploaded}
-      />
+      />}
     </div>
   );
 };

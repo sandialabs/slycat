@@ -237,7 +237,7 @@ export const useUploadTableFile = () => {
   const mid = useAppSelector(selectMid);
   const fileName = useAppSelector(selectFileName);
   const scaleInputs = useAppSelector(selectScaleInputs);
-  
+
   return React.useCallback((fullPath:string) => {
       if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
         client.post_hdf5_table({
@@ -607,15 +607,16 @@ export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
   return React.useCallback(
     (input: any) => {
       // this function is overloaded to handle batching so we need to check for target or batchTarget
-      if (input?.target && (input as any)?.target?.name && (input as any)?.target?.value) {
+      if (input?.currentTarget && (input as any)?.currentTarget?.name && (input as any)?.currentTarget?.value) {
         const nextAttributes = produce(attributes, (draftState) => {
-          draftState[input?.target?.name] = {
-            ...draftState[input?.target?.name],
-            "Axis Type": input?.target?.value,
+          draftState[input?.currentTarget?.name] = {
+            ...draftState[input?.currentTarget?.name],
+            "Axis Type": input?.currentTarget?.value,
           };
         });
         dispatch(setAttributes(nextAttributes));
-      } else if (input?.batchTarget && input?.batchTarget?.length > 0) {
+      }
+      else if (input?.batchTarget && input?.batchTarget?.length > 0) {
         const nextAttributes = produce(attributes, (draftState) => {
           input?.batchTarget.forEach((row: any) => {
             draftState[row?.name] = {
