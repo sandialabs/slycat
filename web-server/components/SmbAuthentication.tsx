@@ -151,6 +151,11 @@ export default class SmbAuthentication extends React.Component<any, any> {
           ? localStorage.getItem("slycat-smb-remote-controls-share")
           : null;
       }
+      if (localStorage.getItem("slycat-smb-remote-controls-domain")) {
+        display.domain = localStorage.getItem("slycat-smb-remote-controls-domain")
+          ? localStorage.getItem("slycat-smb-remote-controls-domain")
+          : null;
+      }
     } else {
       display.hostname = this.props.smb_info["hostname"];
       display.share = this.props.smb_info["collab"];

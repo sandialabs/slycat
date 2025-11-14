@@ -66,6 +66,7 @@ export const useCCAHandleContinue = () => {
   const hdf5InputTable = useAppSelector(selectHdf5InputTable);
   const hdf5OutputTable = useAppSelector(selectHdf5OutputTable);
   const uploadTableFile = useUploadTableFile();
+  const connectSMB = useConnectSMB();
   /**
    * handle continue operation
    */
@@ -89,7 +90,11 @@ export const useCCAHandleContinue = () => {
       dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
     }
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
-      dispatch(setTabName(TabNames.CCA_SMB_TAB));
+      if (!authInfo.sessionExists) {
+        connectSMB(() => dispatch(setTabName(TabNames.CCA_SMB_TAB)));
+      } else {
+        dispatch(setTabName(TabNames.CCA_SMB_TAB));
+      }
     }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
       if (authInfo?.sessionExists) {
@@ -125,18 +130,19 @@ export const useCCAHandleContinue = () => {
     tabName,
     dataLocation,
     localFileSelected,
+    hdf5InputTable,
+    hdf5OutputTable,
     dispatch,
+    connectSMB,
     authInfo?.sessionExists,
     handleAuthentication,
     uploadHandleRemoteFileSubmit,
     handleLocalFileSubmit,
     parser,
     setUploadStatus,
+    uploadTableFile,
     uploadSelection,
     finishModel,
-    uploadTableFile,
-    hdf5InputTable,
-    hdf5OutputTable,
   ]);
   return handleContinue;
 };
@@ -167,7 +173,7 @@ export const useCCAHandleBack = () => {
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
     }
-        if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
+    if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
     }
     if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "local") {
@@ -331,9 +337,7 @@ export const useUploadTableFile = () => {
 
 // TODO: Needs to be implemented when connection is lost to the host
 export const onReauth = () => {
-  return React.useCallback(() => {
-    console.log("TODO: Implement onReauth");
-  }, []);
+  console.log("TODO: Implement onReauth");
 };
 
 /**
@@ -362,7 +366,6 @@ export const useHandleClosingCallback = (
  */
 const useFileUploadSuccess = () => {
   const mid = useAppSelector(selectMid);
-  const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
   return React.useCallback(
     (
@@ -383,10 +386,12 @@ const useFileUploadSuccess = () => {
           aid: "data-table",
           arrays: "0",
           statistics: "0/...",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           success: function (metadata: any) {
             setProgress(100);
             setProgressStatus("Finished");
             const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attribute: any, index) => {
                 const constant = metadata.statistics[index].unique === 1;
                 const string = attribute.type == "string";
@@ -614,16 +619,7 @@ export const useHandleLocalFileSubmit = (): [
       };
       fileUploader.uploadFile(fileObject);
     },
-    [
-      dispatch,
-      fileUploadSuccess,
-      mid,
-      pid,
-      progress,
-      progressStatus,
-      setProgress,
-      fileUploadSuccess,
-    ],
+    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus],
   );
 
   return [handleLocalFileSubmit, progress, progressStatus];
@@ -826,24 +822,34 @@ export const useUploadSelection = () => {
  */
 export const useConnectSMB = () => {
   const authValues = useAppSelector(selectAuthInfo);
-  return React.useCallback(() => {
-    client
-      .post_remotes_smb_fetch({
-        user_name: authValues.username?.trim(),
-        password: authValues.password,
-        server: authValues.hostname?.trim(),
-        share: authValues.share?.trim(),
-      })
-      .then((response: Response) => {
-        console.log("authenticated.", response);
-        if (response.ok) {
-          console.log("connected");
-        } else {
-          console.log("could not connect");
-        }
-      })
-      .catch((error) => {
-        console.log("could not connect", error);
-      });
-  }, [authValues.hostname, authValues.password, authValues.share, authValues.username]);
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (callBackSuccess?: () => void) => {
+      dispatch(setLoading(true));
+      client
+        .post_remotes_smb_fetch({
+          user_name: authValues.username?.trim(),
+          password: authValues.password,
+          server: authValues.hostname?.trim(),
+          share: authValues.share?.trim(),
+        })
+        .then((response: Response) => {
+          console.log("authenticated.", response);
+          dispatch(setLoading(false));
+          if (response.ok) {
+            if (callBackSuccess) {
+              callBackSuccess();
+            }
+            console.log("connected");
+          } else {
+            console.log("could not connect", response.statusText);
+          }
+        })
+        .catch((error) => {
+          dispatch(setLoading(false));
+          console.log("could not connect", error);
+        });
+    },
+    [authValues.hostname, authValues.password, authValues.share, authValues.username, dispatch],
+  );
 };
