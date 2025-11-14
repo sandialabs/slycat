@@ -13,6 +13,8 @@ import { CCATableIngestion } from "./wizard-tabs/CCATableIngestion";
 import { CCAModelCreation } from "./wizard-tabs/CCAModelCreation";
 import { CCARemoteBrowserTab } from "./wizard-tabs/CCARemoteBrowser";
 import { CCAAuthenticationTab } from "./wizard-tabs/CCAAuthenticationTab";
+import { CCASmbAuthenticationTab } from "./wizard-tabs/CCASmbAuthenticationTab";
+import { CCASmbTab } from "./wizard-tabs/CCASmbTab";
 
 export const CCAWizardSteps = () => {
   // The `state` arg is correctly typed as `RootState` already
@@ -26,6 +28,8 @@ export const CCAWizardSteps = () => {
         <CCAHDF5InputSelectionTab hidden={!(tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB)} />
         <CCAHDF5OutputSelectionTab hidden={!(tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB)} />
         <CCAAuthenticationTab hidden={!(tabName === TabNames.CCA_AUTHENTICATION_TAB)} />
+        <CCASmbAuthenticationTab hidden={!(tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB)}/>
+        <CCASmbTab hidden={!(tabName === TabNames.CCA_SMB_TAB)}/>
         <CCARemoteBrowserTab hidden={!(tabName === TabNames.CCA_REMOTE_BROWSER_TAB)} />
         <CCATableIngestion hidden={!(tabName === TabNames.CCA_TABLE_INGESTION)} />
         <CCAModelCreation hidden={!(tabName === TabNames.CCA_FINISH_MODEL)}/>

@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { merge } = require("webpack-merge");
 const common = require("./webpack.common.js");
 
@@ -17,6 +19,7 @@ module.exports = merge(common, {
     // inline: false,
 
     // compress: true,
+    liveReload: true,
     host: "0.0.0.0",
     port: 9000,
     server: "https",
