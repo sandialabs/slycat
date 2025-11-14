@@ -93,7 +93,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         }
       }
     },
-    [browseAPI, fileBrowser, props.hostname, props.useSMB, props.onReauthCallBack],
+    [browseAPI, props, fileBrowser],
   );
 
   /**
@@ -120,7 +120,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       fileBrowser.setSelected(index);
       props.onSelectFileCallBack(fullPath, file.type, file);
     },
-    [fileBrowser, pathNav, props.onSelectFileCallBack],
+    [fileBrowser, pathNav, props],
   );
 
   /**
@@ -141,7 +141,10 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
     const storedPath = fileBrowser.loadStoredPath();
     if (storedPath != null) {
       browse(pathNav.pathDirname(storedPath));
+    } else {
+      browse(pathNav.pathDirname("/"));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array means this runs once on mount
 
   // Parser options

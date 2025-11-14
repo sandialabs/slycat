@@ -22,6 +22,7 @@ export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
   const progress = useAppSelector(selectProgress);
   const progressStatus = useAppSelector(selectProgressStatus);
   const dispatch = useAppDispatch();
+  const tabName = useAppSelector(selectTab);
   const { hostname, sessionExists } = useAppSelector(selectAuthInfo);
   const currentTab = useAppSelector(selectTab);
   // set the path
@@ -43,7 +44,7 @@ export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
   };
   return (
     <div hidden={hidden}>
-      {hostname && sessionExists ? (
+      {hostname && sessionExists && tabName === TabNames.CCA_REMOTE_BROWSER_TAB ? (
         <>
           <RemoteFileBrowser
             onSelectFileCallBack={onSelectTableFile}
