@@ -5,11 +5,9 @@ import * as React from "react";
 import SmbAuthentication from "components/SmbAuthentication";
 import { AuthenticationInformation, setAuthInfo } from "../wizard-store/reducers/CCAWizardSlice";
 import { useAppDispatch } from "../wizard-store/hooks";
-import { useConnectSMB } from "../CCAWizardUtils";
 export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const dispatch = useAppDispatch();
-  const connectSMB = useConnectSMB();
   const setSmbAuthValues = function (
     hostname: string,
     username: string,
@@ -39,7 +37,6 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
   return (
     <div hidden={hidden}>
       <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />
-      <button onClick={connectSMB}>SMB</button>
     </div>
   );
 };
