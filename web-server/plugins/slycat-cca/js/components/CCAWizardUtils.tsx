@@ -164,6 +164,12 @@ export const useCCAHandleBack = () => {
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
+    if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
+      dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+    }
+        if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
+      dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
+    }
     if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "local") {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
