@@ -86,6 +86,9 @@ export const useCCAHandleContinue = () => {
       tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
       dataLocation === dataLocationType.SMB
     ) {
+      dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
+    }
+    if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_SMB_TAB));
     }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
@@ -809,4 +812,32 @@ export const useUploadSelection = () => {
       });
     }
   }, [mid, attributes, scaleInputs, dispatch]);
+};
+
+/**
+ *  Builds and returns a stable function that will connect and authenticate to an smb server
+ * @returns callback for connecting to smb server
+ */
+export const useConnectSMB = () => {
+  const authValues = useAppSelector(selectAuthInfo);
+  return React.useCallback(() => {
+    client
+      .post_remotes_smb_fetch({
+        user_name: authValues.username?.trim(),
+        password: authValues.password,
+        server: authValues.hostname?.trim(),
+        share: authValues.share?.trim(),
+      })
+      .then((response: Response) => {
+        console.log("authenticated.", response);
+        if (response.ok) {
+          console.log("connected");
+        } else {
+          console.log("could not connect");
+        }
+      })
+      .catch((error) => {
+        console.log("could not connect", error);
+      });
+  }, [authValues.hostname, authValues.password, authValues.share, authValues.username]);
 };
