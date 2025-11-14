@@ -4,7 +4,13 @@
 import * as React from "react";
 import { CCANavItem } from "./CCANavItem";
 import { useAppSelector } from "./wizard-store/hooks";
-import { selectDataLocation, selectParser, selectTab, TabNames } from "./wizard-store/reducers/CCAWizardSlice";
+import {
+  dataLocationType,
+  selectDataLocation,
+  selectParser,
+  selectTab,
+  TabNames,
+} from "./wizard-store/reducers/CCAWizardSlice";
 
 export const CCAWizardNavItems = () => {
   const tabName = useAppSelector(selectTab);
@@ -20,42 +26,46 @@ export const CCAWizardNavItems = () => {
       <CCANavItem
         key={"Authentication"}
         name={"Authentication"}
-        active={tabName === TabNames.CCA_AUTHENTICATION_TAB}
-        hidden={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB || dataLocation !== "remote"}
+        active={
+          tabName === TabNames.CCA_AUTHENTICATION_TAB ||
+          tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB
+        }
+        hidden={
+          tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
+          (dataLocation !== dataLocationType.REMOTE && dataLocation !== dataLocationType.SMB)
+        }
       />
       <CCANavItem
         key={"Upload Table"}
         name={"Upload Table"}
         active={
           tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
-          tabName === TabNames.CCA_REMOTE_BROWSER_TAB
+          tabName === TabNames.CCA_REMOTE_BROWSER_TAB ||
+          tabName === TabNames.CCA_SMB_TAB
         }
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
-          tabName === TabNames.CCA_AUTHENTICATION_TAB
+          tabName === TabNames.CCA_AUTHENTICATION_TAB ||
+          tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB
         }
       />
       <CCANavItem
         key={"HDF5 Input"}
         name={"HDF5 Input"}
-        active={
-          tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB
-        }
+        active={tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB}
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
           tabName === TabNames.CCA_AUTHENTICATION_TAB ||
           tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
           tabName === TabNames.CCA_REMOTE_BROWSER_TAB ||
           tabName === TabNames.CCA_TABLE_INGESTION ||
-          parser !== 'slycat-hdf5-parser'
+          parser !== "slycat-hdf5-parser"
         }
       />
       <CCANavItem
         key={"HDF5 Output"}
         name={"HDF5 Output"}
-        active={
-          tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB
-        }
+        active={tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB}
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
           tabName === TabNames.CCA_AUTHENTICATION_TAB ||
@@ -63,7 +73,7 @@ export const CCAWizardNavItems = () => {
           tabName === TabNames.CCA_REMOTE_BROWSER_TAB ||
           tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB ||
           tabName === TabNames.CCA_TABLE_INGESTION ||
-          parser !== 'slycat-hdf5-parser'
+          parser !== "slycat-hdf5-parser"
         }
       />
       <CCANavItem
@@ -73,11 +83,13 @@ export const CCAWizardNavItems = () => {
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
           tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
-          tabName === TabNames.CCA_REMOTE_BROWSER_TAB || 
+          tabName === TabNames.CCA_REMOTE_BROWSER_TAB ||
           tabName === TabNames.CCA_AUTHENTICATION_TAB ||
+          tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB || 
+          tabName === TabNames.CCA_SMB_TAB ||
           tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB ||
           tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB ||
-          parser === 'slycat-hdf5-parser'
+          parser === "slycat-hdf5-parser"
         }
       />
       <CCANavItem
