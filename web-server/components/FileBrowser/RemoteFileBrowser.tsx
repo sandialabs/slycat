@@ -28,7 +28,7 @@ export interface RemoteFileBrowserProps {
   persistenceId?: string;
   onSelectFileCallBack: Function;
   onSelectParserCallBack?: Function;
-  onReauthCallBack: Function;
+  onReauthCallBack?: Function;
   selectedOption?: string;
   showSelector?: boolean;
   useSMB?: boolean;

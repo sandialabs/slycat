@@ -6,11 +6,13 @@ import {
   selectAuthInfo,
   selectTab,
   setParser,
+  setRemotePath,
   TabNames,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
+import { FileMetaData } from "components/FileBrowser/FileBrowserTypes";
 export const CCASmbTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const authValues = useAppSelector(selectAuthInfo);
@@ -23,28 +25,29 @@ export const CCASmbTab = (props: { hidden?: boolean }) => {
     },
     [dispatch],
   );
+  const onSelectFileCallBack = React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (fullPath: string, fileType: string, file: FileMetaData) => {
+      dispatch(setRemotePath({ type: fileType, path: fullPath }));
+    },
+    [dispatch],
+  );
   return (
     <div hidden={hidden}>
       <div>
-        {tabName ===  TabNames.CCA_SMB_TAB && 
-        <><RemoteFileBrowser
-          onSelectFileCallBack={() => {
-            console.log("onSelectFileCallBack")
-          }}
-          onSelectParserCallBack={() => {
-            console.log("onSelectParserCallBack")
-          }}
-          onReauthCallBack={() => {
-            console.log("onReauthCallBack")
-          }}
-          hostname={authValues.hostname??''}
-          useSMB={true}
-          showSelector={false}
-        />
-        <SlycatParserControls setParser={onSetParser} />
-        </>
-        }
+        {tabName === TabNames.CCA_SMB_TAB && (
+          <>
+            <RemoteFileBrowser
+              onSelectFileCallBack={onSelectFileCallBack}
+              hostname={authValues.hostname ?? ""}
+              useSMB={true}
+              showSelector={false}
+            />
+            <SlycatParserControls setParser={onSetParser} />
+          </>
+        )}
       </div>
     </div>
   );
 };
+

@@ -3,7 +3,7 @@
  retains certain rights in this software. */
 import * as React from "react";
 import TableIngestion from "components/TableIngestion/TableIngestion";
-import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
+import { useAppSelector } from "../wizard-store/hooks";
 import { selectAttributes } from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleTableIngestionOnChange } from "../CCAWizardUtils";
 
