@@ -3780,7 +3780,6 @@ def get_remote_file(hostname, path, **kwargs):
     if session_type == "smb":
         with slycat.web.server.smb.get_session(sid) as session:
             split_list = path.split("/")
-            del split_list[1]
             del split_list[0]
             content_type, encoding = slycat.mime_type.guess_type(path)
             if content_type is None:

@@ -96,6 +96,9 @@ export const useCCAHandleContinue = () => {
         dispatch(setTabName(TabNames.CCA_SMB_TAB));
       }
     }
+    if (tabName === TabNames.CCA_SMB_TAB) {
+      uploadHandleRemoteFileSubmit();
+    }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
       if (authInfo?.sessionExists) {
         dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
@@ -337,7 +340,7 @@ export const useUploadTableFile = () => {
 
 // TODO: Needs to be implemented when connection is lost to the host
 export const onReauth = () => {
-  console.log("TODO: Implement onReauth");
+  // console.log("TODO: Implement onReauth");
 };
 
 /**

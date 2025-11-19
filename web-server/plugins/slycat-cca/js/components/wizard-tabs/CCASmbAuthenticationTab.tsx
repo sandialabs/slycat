@@ -36,7 +36,7 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
 
   return (
     <div hidden={hidden}>
-      <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />
+      {!hidden && <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />}
     </div>
   );
 };
