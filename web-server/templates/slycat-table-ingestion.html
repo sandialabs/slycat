@@ -36,8 +36,9 @@
       </tr>
     </thead>
     <tbody data-bind="foreach: { data: variables, as: 'variable' }">
+      <!-- Don't render hidden rows -->
+      <!-- ko if: !hidden() -->
       <tr data-bind="
-        visible: !hidden(),
         css: {
           'selected': selected(),
           'lastSelected': lastSelected(),
@@ -90,6 +91,7 @@
           <!-- /ko -->
         <!-- /ko -->
       </tr>
+      <!-- /ko -->
     </tbody>
   </table>
 </div>
