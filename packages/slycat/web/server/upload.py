@@ -273,7 +273,7 @@ class Session(object):
                 # new way self._aids[0] is the file name being added to the model and hdf5
                 # self._aids[1] is the name of the file being pushed to the project_data data object
                 if len(self._aids) > 1:
-                    if ".h5" == self._aids[1] or ".hdf5" == self._aids[1]:
+                    if ".h5" in self._aids[1] or ".hdf5" in self._aids[1]:
                         slycat.web.server.plugin.manager.parsers[self._parser]["parse"](
                             database,
                             model,
