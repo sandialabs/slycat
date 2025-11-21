@@ -3,11 +3,18 @@
  retains certain rights in this software. */
 import * as React from "react";
 import SmbAuthentication from "components/SmbAuthentication";
-import { AuthenticationInformation, setAuthInfo } from "../wizard-store/reducers/CCAWizardSlice";
+import {
+  AuthenticationInformation,
+  setAuthInfo,
+  setTabName,
+  TabNames,
+} from "../wizard-store/reducers/CCAWizardSlice";
 import { useAppDispatch } from "../wizard-store/hooks";
+import { useHandleAuthentication } from "../CCAWizardUtils";
 export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const dispatch = useAppDispatch();
+  const handleAuthentication = useHandleAuthentication();
   const setSmbAuthValues = function (
     hostname: string,
     username: string,
@@ -29,8 +36,11 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
     dispatch(setAuthInfo(authInfo));
     //If the user hits enter key, try to connect
     if (last_key === "Enter") {
-      console.log("enter");
-      // component.connectSMB();
+      if (authInfo?.sessionExists) {
+        dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+      } else {
+        handleAuthentication();
+      }
     }
   };
 

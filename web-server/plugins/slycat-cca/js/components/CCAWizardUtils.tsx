@@ -719,6 +719,10 @@ export const useFinishModel = () => {
   }, [mid, name, description, marking]);
 };
 
+/**
+ * Creates a function that uses authentication state to authenticate to  authenticate to remote server
+ * @returns callback function
+ */
 export const useHandleAuthentication = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
@@ -845,12 +849,21 @@ export const useConnectSMB = () => {
             }
             console.log("connected");
           } else {
-            console.log("could not connect", response.statusText);
+            alert(`could not connect ${response.statusText}`);
           }
         })
-        .catch((error) => {
+        .catch((errorResponse) => {
           dispatch(setLoading(false));
-          console.log("could not connect", error);
+          if (errorResponse.status == 403) {
+            alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
+        \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
+          } else if (errorResponse.status == 401) {
+            alert(
+              `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
+            );
+          } else {
+            alert(`${errorResponse.statusText}`);
+          }
         });
     },
     [authValues.hostname, authValues.password, authValues.share, authValues.username, dispatch],
