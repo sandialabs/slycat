@@ -3448,10 +3448,10 @@ def post_browse_hdf5(path, pid, mid):
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
         dimensions = ''
-        for thing in obj:
-            if isinstance(obj[thing], h5py.Dataset):
-                rows = obj[thing].shape[0]
-                cols = obj[thing].shape[1]
+        for path in obj:
+            if isinstance(obj[path], h5py.Dataset):
+                rows = obj[path].shape[0]
+                cols = obj[path].shape[1]
                 dimensions = str(rows) + ' x ' + str(cols)
         # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure["path"] = path
