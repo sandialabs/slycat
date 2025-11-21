@@ -16,7 +16,7 @@ type PropertyBool = {
 
 type Property = PropertySelect | PropertyBool;
 
-type BaseVariable = {
+interface BaseVariable {
   name: string;
   index: number | string;
   selected: boolean;
