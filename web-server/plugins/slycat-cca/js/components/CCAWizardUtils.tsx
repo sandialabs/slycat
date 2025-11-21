@@ -179,20 +179,23 @@ export const useCCAHandleBack = () => {
     if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
     }
-    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "local") {
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === dataLocationType.LOCAL) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "remote") {
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === dataLocationType.REMOTE) {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
       dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "local") {
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.LOCAL) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "remote") {
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.REMOTE) {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.SMB) {
+      dispatch(setTabName(TabNames.CCA_SMB_TAB));
     }
     if (tabName === TabNames.CCA_FINISH_MODEL && parser !== "slycat-hdf5-parser") {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
