@@ -192,6 +192,7 @@ function constructor(params) {
         if (component.error_messages().length == 0) {
           if (component.parser() == "slycat-hdf5-parser") {
             component.tab(6);
+            $(".browser-continue").toggleClass("disabled", true);
             this.hdf5_input_browse();
           } else {
             if (component.ps_type() == "local") {
@@ -238,6 +239,7 @@ function constructor(params) {
   const onSelectTableFile = function (path, fileType, file) {
     if (fileType === "f") {
       component.browser.path(path);
+      $(".remote-browser-continue").toggleClass("disabled", false);
     }
   };
   const onSelectParserCallBack = function (ParserName) {
