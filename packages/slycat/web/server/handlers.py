@@ -3447,6 +3447,12 @@ def post_browse_hdf5(path, pid, mid):
 
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
+        dimensions = ''
+        for thing in obj:
+            if isinstance(obj[thing], h5py.Dataset):
+                rows = obj[thing].shape[0]
+                cols = obj[thing].shape[1]
+                dimensions = str(rows) + ' x ' + str(cols)
         # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure["path"] = path
         tree_structure["name"] = []
@@ -3458,7 +3464,7 @@ def post_browse_hdf5(path, pid, mid):
         for key, value in all_items:
             # key will be all the sub groups and datasets in the current path
             tree_structure["name"].append(key)
-            tree_structure["sizes"].append(0)
+            tree_structure["sizes"].append(dimensions)
             tree_structure["mtimes"].append("2024")
             if isinstance(value, h5py.Group):
                 tree_structure["mime-types"].append("application/x-directory")
