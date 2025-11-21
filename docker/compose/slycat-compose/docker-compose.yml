@@ -42,7 +42,7 @@ services:
         && NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
         && npm run dev
     ports:
-      - 9001:9000
+      - 9001:9001
     networks:
       - sly-net
     volumes:
