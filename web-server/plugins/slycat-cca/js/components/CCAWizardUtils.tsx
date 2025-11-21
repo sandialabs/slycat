@@ -501,7 +501,8 @@ export const useHandleRemoteFileSubmit = () => {
         } else {
           autoParser = parser;
         }
-
+        const filePath = fileDescriptor.path.split("/")
+        const fileNameFromPath = filePath[filePath.length -1]
         const fileObject = {
           pid,
           mid,
@@ -509,7 +510,7 @@ export const useHandleRemoteFileSubmit = () => {
           parser,
           hostname,
           paths: fileDescriptor.path,
-          aids: [["data-table"], fileDescriptor.path.split("/")[-1]],
+          aids: [["data-table"], fileNameFromPath],
           progress: progressCallback,
           progress_status: progressStatusCallback,
           progress_final: 90,
