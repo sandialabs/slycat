@@ -60,20 +60,6 @@ class MyEncoder(json.JSONEncoder):
             return super(MyEncoder, self).default(obj)
 
 
-def add_timezone_to_datetime(datetime_str):
-    """
-    Add UTC timezone info to datetime strings that lack timezone information.
-    
-    :param datetime_str: ISO format datetime string
-    :return: datetime string with timezone info
-    """
-    if isinstance(datetime_str, str):
-        # If the datetime string doesn't have timezone info, add UTC timezone
-        if not (datetime_str.endswith("Z") or "+" in datetime_str or datetime_str.count("-") > 2):
-            return datetime_str + "+00:00"
-    return datetime_str
-
-
 def get_sid(hostname):
     """
     Takes a hostname address and returns the established sid value
@@ -243,12 +229,6 @@ def get_projects_list(_=None):
         or slycat.web.server.authentication.is_project_administrator(project)
         or slycat.web.server.authentication.is_server_administrator()
     ]
-    
-    # Add timezone info to datetime strings for backward compatibility
-    for project in projects:
-        if "created" in project:
-            project["created"] = add_timezone_to_datetime(project["created"])
-    
     projects = sorted(projects, key=lambda x: x["created"], reverse=True)
     return {"revision": 0, "projects": projects}
 
@@ -276,7 +256,7 @@ def post_projects():
                 "writers": [],
                 "groups": [],
             },
-            "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "created": datetime.datetime.utcnow().isoformat(),
             "creator": cherrypy.request.login,
             "description": cherrypy.request.json.get("description", ""),
             "name": cherrypy.request.json["name"],
@@ -445,12 +425,6 @@ def get_project_models(pid, **kwargs):
         model
         for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)
     ]
-    
-    # Add timezone info to datetime strings for backward compatibility
-    for model in models:
-        if "created" in model:
-            model["created"] = add_timezone_to_datetime(model["created"])
-    
     models = sorted(models, key=lambda x: x["created"], reverse=True)
     return models
 
@@ -648,7 +622,7 @@ def post_project_models(pid):
         "model-type": model_type,
         "marking": marking,
         "project": pid,
-        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
         "name": name,
         "description": description,
@@ -1089,11 +1063,6 @@ def get_model(mid, **kwargs):
     model = database.get("model", mid)
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
-    
-    # Add timezone info to datetime strings for backward compatibility
-    if "created" in model:
-        model["created"] = add_timezone_to_datetime(model["created"])
-    
     return model
 
 
