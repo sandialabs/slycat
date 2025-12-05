@@ -979,7 +979,7 @@ def post_project_bookmarks(pid):
                 "_id": bid,
                 "project": pid,
                 "type": "bookmark",
-                "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "created": datetime.datetime.now(datetime.UTC).isoformat(),
                 "last_accessed": datetime.datetime.now(
                     datetime.timezone.utc
                 ).isoformat(),
@@ -3447,12 +3447,12 @@ def post_browse_hdf5(path, pid, mid):
 
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
-        dimensions = ''
+        dimensions = ""
         for path in obj:
             if isinstance(obj[path], h5py.Dataset):
                 rows = obj[path].shape[0]
                 cols = obj[path].shape[1]
-                dimensions = str(rows) + ' x ' + str(cols)
+                dimensions = str(rows) + " x " + str(cols)
         # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure["path"] = path
         tree_structure["name"] = []
