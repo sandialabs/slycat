@@ -102,8 +102,13 @@ try:
         logging.info("Loading model %s", source)
         model = json.load(open(source))
         del model["_rev"]
-        if model["marking"] in markings:
-            model["marking"] = markings[model["marking"]]
+        if isinstance(model["marking"], str):
+            if model["marking"] in markings:
+                model["marking"] = markings[model["marking"]]
+            else:
+                model["marking"] = ""
+        else:
+            model["marking"] = ""
         if arguments.force and model["_id"] in couchdb:
             del couchdb[model["_id"]]
         couchdb.save(model)
