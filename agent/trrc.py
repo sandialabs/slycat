@@ -57,7 +57,7 @@ def myIDfunction(x):
         + ", PID: "
         + str(os.getpid())
         + " at "
-        + datetime.datetime.now(datetime.UTC).isoformat()
+        + datetime.datetime.now(datetime.timezone.utc).isoformat()
         + "\n"
     )
     fh.write(output)

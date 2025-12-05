@@ -14,7 +14,7 @@ commit = (
     .communicate()[0]
     .strip()[:8]
 )
-timestamp = datetime.datetime.now(datetime.UTC)
+timestamp = datetime.datetime.now(datetime.timezone.utc)
 
 
 def build_image(image):
