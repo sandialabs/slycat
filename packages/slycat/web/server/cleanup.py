@@ -45,7 +45,7 @@ def _login_session_cleanup_worker():
             database = slycat.web.server.database.couchdb.connect()
             # cherrypy.log.error("Login session cleanup worker running.")
             cutoff = (
-                datetime.datetime.now(datetime.UTC)
+                datetime.datetime.now(datetime.timezone.utc)
                 - cherrypy.request.app.config["slycat"]["session-timeout"]
             ).isoformat()
             for session in database.view("slycat/sessions", include_docs=True):
@@ -97,14 +97,15 @@ def _bookmark_cleanup_worker():
         # set the run frequency
         if "bookmark-expiration" in cherrypy.request.app.config["slycat-web-server"]:
             cutoff = (
-                datetime.datetime.now(datetime.UTC)
+                datetime.datetime.now(datetime.timezone.utc)
                 - cherrypy.request.app.config["slycat-web-server"][
                     "bookmark-expiration"
                 ]
             ).isoformat()
         else:
             cutoff = (
-                datetime.datetime.now(datetime.UTC) - datetime.timedelta(weeks=56)
+                datetime.datetime.now(datetime.timezone.utc)
+                - datetime.timedelta(weeks=56)
             ).isoformat()
         # lets make this a locked operation
         with slycat.web.server.database.couchdb.db_lock:

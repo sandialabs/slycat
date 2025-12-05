@@ -28,7 +28,7 @@ def generate_model(connection, pid, marking, index):
     mid = connection.post_project_models(
         pid,
         "generic",
-        "Model %s %s" % (index, datetime.datetime.now(datetime.UTC)),
+        "Model %s %s" % (index, datetime.datetime.now(datetime.timezone.utc)),
         marking,
     )
 

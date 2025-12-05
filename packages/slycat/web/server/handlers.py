@@ -979,7 +979,7 @@ def post_project_bookmarks(pid):
                 "_id": bid,
                 "project": pid,
                 "type": "bookmark",
-                "created": datetime.datetime.now(datetime.UTC).isoformat(),
+                "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "last_accessed": datetime.datetime.now(
                     datetime.timezone.utc
                 ).isoformat(),

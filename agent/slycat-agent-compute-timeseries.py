@@ -113,7 +113,7 @@ def tardir(path):
 
 # Compute the model.
 try:
-    start_now = datetime.datetime.now(datetime.UTC)
+    start_now = datetime.datetime.now(datetime.timezone.utc)
     start_time_str = start_now.strftime("%d/%m/%Y %H:%M:%S")
     print("[START] " + start_time_str)
 
@@ -585,7 +585,7 @@ except:
     print((traceback.format_exc()))
 tardir(dirname)
 
-finish_now = datetime.datetime.now(datetime.UTC)
+finish_now = datetime.datetime.now(datetime.timezone.utc)
 finish_time_str = finish_now.strftime("%d/%m/%Y %H:%M:%S")
 print("[FINISH] " + finish_time_str)
 
