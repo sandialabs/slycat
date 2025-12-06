@@ -1,34 +1,32 @@
+import { DateTime } from "luxon";
+
 /**
- * Ensure a date string has timezone information; if missing, assume UTC.
- * Returns the original value for Date objects.
+ * Parse an ISO date string, preserving timezone when provided and
+ * defaulting to UTC when missing.
  */
-export const ensureUtcTimezone = (date: string | Date): string | Date => {
-  if (date instanceof Date) {
-    return date;
+export const parseDateWithTimezone = (date: string): Date | null => {
+  if (typeof date !== "string") {
+    return null;
   }
 
-  const trimmed = typeof date === "string" ? date.trim() : date;
-  const hasTimezone =
-    typeof trimmed === "string" &&
-    /(Z|[+-]\d{2}:?\d{2})$/i.test(trimmed);
-
-  if (typeof trimmed !== "string") {
-    return trimmed;
+  const trimmed = date.trim();
+  if (!trimmed) {
+    return null;
   }
 
-  return hasTimezone ? trimmed : `${trimmed}Z`;
+  const parsed = DateTime.fromISO(trimmed, { setZone: true, zone: "utc" });
+  return parsed.isValid ? parsed.toJSDate() : null;
 };
 
 /**
- * Normalize a date input and return its locale string representation.
+ * Normalize an ISO date string and return its locale string representation.
  * Returns an empty string for null/undefined/invalid inputs.
  */
-export const formatDateToLocaleString = (date?: string | Date): string => {
+export const formatDateToLocaleString = (date?: string): string => {
   if (date === undefined || date === null) {
     return "";
   }
 
-  const normalized = ensureUtcTimezone(date);
-  const parsed = normalized instanceof Date ? normalized : new Date(normalized);
-  return Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleString();
+  const parsed = parseDateWithTimezone(date);
+  return parsed ? parsed.toLocaleString() : "";
 };
