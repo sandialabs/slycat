@@ -57,7 +57,7 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
           <h4 className="card-title">{name}</h4>
         </a>
 
-        {description && <p className="card-text">{description}</p>}
+        {description && <p className="card-text text-pre-line">{description}</p>}
       </div>
       <div className="card-footer d-flex flex-row align-items-baseline">
         <small className="fst-italic text-body-secondary flex-fill">

@@ -4,7 +4,12 @@
 import * as React from "react";
 import selectable_markings from "js/slycat-selectable-markings";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
-import { selectMarking, setDescription, setMarking, setName } from "../wizard-store/reducers/CCAWizardSlice";
+import {
+  selectMarking,
+  setDescription,
+  setMarking,
+  setName,
+} from "../wizard-store/reducers/CCAWizardSlice";
 
 export const CCAModelCreation = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
@@ -17,7 +22,7 @@ export const CCAModelCreation = (props: { hidden?: boolean }) => {
         dispatch(setMarking(defaultMarking.type()));
       }
     }
-  }, [selectable_markings?.allowed()]);
+  }, [dispatch, marking]);
   const onOptionChangeHandler = (event: React.ChangeEvent<HTMLSelectElement>) => {
     if (event.target?.value) {
       dispatch(setMarking(event.target?.value));
@@ -33,13 +38,29 @@ export const CCAModelCreation = (props: { hidden?: boolean }) => {
       dispatch(setName(event.target?.value));
     }
   };
+  const handleOnKey = (event: React.KeyboardEvent) => {
+    if (event.code === "Enter") {
+      //prevent page refresh on enter
+      event.preventDefault();
+      // find the continue button and trigger a click
+      $("button:contains('Continue')").trigger('click');
+    }
+  };
   return (
     <div hidden={hidden}>
-      <form data-bind="submit: name_model" id="new-cca-name-model-form" noValidate>
+      <form id="new-cca-name-model-form" noValidate>
         <div className="mb-3 row required">
           <label className="col-sm-2 col-form-label">Name</label>
           <div className="col-sm-10">
-            <input id="slycat-model-name" onChange={onNameChangeHandler} className="form-control" type="text" required />
+            <input
+              id="slycat-model-name"
+              onChange={onNameChangeHandler}
+              className="form-control"
+              type="text"
+              required
+              onKeyDown={handleOnKey}
+              onKeyUp={handleOnKey}
+            />
             <div className="invalid-feedback">Please enter a model name.</div>
           </div>
         </div>

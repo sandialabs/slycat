@@ -16,7 +16,7 @@ type PropertyBool = {
 
 type Property = PropertySelect | PropertyBool;
 
-type BaseVariable = {
+interface BaseVariable {
   name: string;
   index: number | string;
   selected: boolean;
@@ -154,11 +154,15 @@ export default function TableIngestion(props: Props) {
   });
 
   const variablesItems = props.variables.map((variable, indexVars) => {
+    // Don't render hidden rows
+    if (variable.hidden) {
+      return null;
+    }
+    
     return (
       <tr
         key={indexVars}
         title={variable.tooltip ? String(variable.tooltip) : undefined}
-        style={{ display: variable.hidden ? "none" : "" }}
         className={`${selected[indexVars] ? styles.selected : ""} ${lastSelected == indexVars ? styles.lastSelected : ""} ${variable.disabled ? styles.disabled : ""}`}
       >
         <th className="force-wrap px-2 py-1" onClick={(event) => select(event, indexVars)}>

@@ -3447,6 +3447,12 @@ def post_browse_hdf5(path, pid, mid):
 
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
+        dimensions = ''
+        for path in obj:
+            if isinstance(obj[path], h5py.Dataset):
+                rows = obj[path].shape[0]
+                cols = obj[path].shape[1]
+                dimensions = str(rows) + ' x ' + str(cols)
         # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure["path"] = path
         tree_structure["name"] = []
@@ -3458,7 +3464,7 @@ def post_browse_hdf5(path, pid, mid):
         for key, value in all_items:
             # key will be all the sub groups and datasets in the current path
             tree_structure["name"].append(key)
-            tree_structure["sizes"].append(0)
+            tree_structure["sizes"].append(dimensions)
             tree_structure["mtimes"].append("2024")
             if isinstance(value, h5py.Group):
                 tree_structure["mime-types"].append("application/x-directory")
@@ -3774,7 +3780,6 @@ def get_remote_file(hostname, path, **kwargs):
     if session_type == "smb":
         with slycat.web.server.smb.get_session(sid) as session:
             split_list = path.split("/")
-            del split_list[1]
             del split_list[0]
             content_type, encoding = slycat.mime_type.guess_type(path)
             if content_type is None:

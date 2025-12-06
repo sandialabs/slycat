@@ -34,28 +34,25 @@ import {
   setProgress,
   setProgressStatus,
   setTabName,
-  setHdf5InputTable,
-  setHdf5OutputTable,
   setFileName,
   setParser,
   TabNames,
   selectHdf5InputTable,
   selectHdf5OutputTable,
+  dataLocationType,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import * as dialog from "js/slycat-dialog";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
-import { Parser } from "node_modules/webpack/types";
 
 /**
- * A hook for controlling how the back and continue buttons work based on the current redux state
- * @returns the back button and continue button jsx
+ * Higher order function for handling the continue logic
+ * @returns continue logic function
  */
-export const useCCAWizardFooter = () => {
+export const useCCAHandleContinue = () => {
   const tabName = useAppSelector(selectTab);
   const dataLocation = useAppSelector(selectDataLocation);
-  const loading = useAppSelector(selectLoading);
   const authInfo = useAppSelector(selectAuthInfo);
   const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
@@ -69,15 +66,38 @@ export const useCCAWizardFooter = () => {
   const hdf5InputTable = useAppSelector(selectHdf5InputTable);
   const hdf5OutputTable = useAppSelector(selectHdf5OutputTable);
   const uploadTableFile = useUploadTableFile();
+  const connectSMB = useConnectSMB();
   /**
    * handle continue operation
    */
   const handleContinue = React.useCallback(() => {
-    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "local") {
+    if (
+      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
+      dataLocation === dataLocationType.LOCAL
+    ) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB && dataLocation === "remote") {
+    if (
+      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
+      dataLocation === dataLocationType.REMOTE
+    ) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
+    }
+    if (
+      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
+      dataLocation === dataLocationType.SMB
+    ) {
+      dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
+    }
+    if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
+      if (!authInfo.sessionExists) {
+        connectSMB(() => dispatch(setTabName(TabNames.CCA_SMB_TAB)));
+      } else {
+        dispatch(setTabName(TabNames.CCA_SMB_TAB));
+      }
+    }
+    if (tabName === TabNames.CCA_SMB_TAB) {
+      uploadHandleRemoteFileSubmit();
     }
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
       if (authInfo?.sessionExists) {
@@ -113,19 +133,32 @@ export const useCCAWizardFooter = () => {
     tabName,
     dataLocation,
     localFileSelected,
+    hdf5InputTable,
+    hdf5OutputTable,
     dispatch,
+    connectSMB,
     authInfo?.sessionExists,
     handleAuthentication,
     uploadHandleRemoteFileSubmit,
     handleLocalFileSubmit,
     parser,
     setUploadStatus,
+    uploadTableFile,
     uploadSelection,
     finishModel,
-    uploadTableFile,
-    hdf5InputTable,
-    hdf5OutputTable
   ]);
+  return handleContinue;
+};
+
+/**
+ * build logic for the back button
+ * @returns handler for back button logic
+ */
+export const useCCAHandleBack = () => {
+  const tabName = useAppSelector(selectTab);
+  const dataLocation = useAppSelector(selectDataLocation);
+  const parser = useAppSelector(selectParser);
+  const dispatch = useAppDispatch();
 
   /**
    * handle back operation
@@ -140,20 +173,29 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
     }
-    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "local") {
+    if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
+      dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+    }
+    if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
+      dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
+    }
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === dataLocationType.LOCAL) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === "remote") {
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === dataLocationType.REMOTE) {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
       dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "local") {
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.LOCAL) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === "remote") {
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.REMOTE) {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+    }
+    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.SMB) {
+      dispatch(setTabName(TabNames.CCA_SMB_TAB));
     }
     if (tabName === TabNames.CCA_FINISH_MODEL && parser !== "slycat-hdf5-parser") {
       dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
@@ -161,7 +203,20 @@ export const useCCAWizardFooter = () => {
     if (tabName === TabNames.CCA_FINISH_MODEL && parser === "slycat-hdf5-parser") {
       dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
     }
-  }, [dataLocation, dispatch, setTabName, tabName]);
+  }, [tabName, dataLocation, parser, dispatch]);
+  return handleBack;
+};
+/**
+ * A hook for controlling how the back and continue buttons work based on the current redux state
+ * @returns the back button and continue button jsx
+ */
+export const useCCAWizardFooter = () => {
+  const tabName = useAppSelector(selectTab);
+  const loading = useAppSelector(selectLoading);
+  const localFileSelected = useAppSelector(selectLocalFileSelected);
+
+  const handleContinue = useCCAHandleContinue();
+  const handleBack = useCCAHandleBack();
 
   const backButton = (
     <button
@@ -237,8 +292,9 @@ export const useUploadTableFile = () => {
   const mid = useAppSelector(selectMid);
   const fileName = useAppSelector(selectFileName);
   const scaleInputs = useAppSelector(selectScaleInputs);
-  
-  return React.useCallback((fullPath:string) => {
+
+  return React.useCallback(
+    (fullPath: string) => {
       if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
         client.post_hdf5_table({
           path: fullPath,
@@ -252,8 +308,7 @@ export const useUploadTableFile = () => {
             dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
           },
         });
-      }
-      else if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
+      } else if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
         client.post_hdf5_table({
           path: fullPath,
           pid: pid,
@@ -261,34 +316,35 @@ export const useUploadTableFile = () => {
           aids: [["data-table"], fileName],
           success: () => {
             client.post_combine_hdf5_tables({
-            mid: mid,
-            success: () => { 
-              client.put_model_parameter({
-                mid: mid,
-                aid: "scale-inputs",
-                value: scaleInputs,
-                input: true,
-                success: function () {
-                  // set the tab
-                  dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
-                },
-              });
-            }});
+              mid: mid,
+              success: () => {
+                client.put_model_parameter({
+                  mid: mid,
+                  aid: "scale-inputs",
+                  value: scaleInputs,
+                  input: true,
+                  success: function () {
+                    // set the tab
+                    dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
+                  },
+                });
+              },
+            });
           },
           error: () => {
             dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
           },
         });
       }
-  }, [currentTab, dispatch, mid, pid, fileName, scaleInputs]);
+    },
+    [currentTab, dispatch, mid, pid, fileName, scaleInputs],
+  );
 };
 
 // TODO: Needs to be implemented when connection is lost to the host
 export const onReauth = () => {
-  return React.useCallback(() => {
-    console.log('TODO: Implement onReauth');
-  }, []);
-}
+  // console.log("TODO: Implement onReauth");
+};
 
 /**
  * Handle the cleanup for closing the cca wizard modal
@@ -316,7 +372,6 @@ export const useHandleClosingCallback = (
  */
 const useFileUploadSuccess = () => {
   const mid = useAppSelector(selectMid);
-  const parser = useAppSelector(selectParser);
   const dispatch = useAppDispatch();
   return React.useCallback(
     (
@@ -331,17 +386,18 @@ const useFileUploadSuccess = () => {
         dispatch(setLoading(false));
         setUploadStatus(true);
         dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
-      }
-      else {
+      } else {
         client.get_model_arrayset_metadata({
           mid: mid,
           aid: "data-table",
           arrays: "0",
           statistics: "0/...",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           success: function (metadata: any) {
             setProgress(100);
             setProgressStatus("Finished");
             const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (attribute: any, index) => {
                 const constant = metadata.statistics[index].unique === 1;
                 const string = attribute.type == "string";
@@ -375,7 +431,7 @@ const useFileUploadSuccess = () => {
         });
       }
     },
-    [mid, parser, dispatch],
+    [mid, dispatch],
   );
 };
 
@@ -393,6 +449,7 @@ export const useHandleRemoteFileSubmit = () => {
   const progress = useAppSelector(selectProgress);
   const progressStatus = useAppSelector(selectProgressStatus);
   const fileUploadSuccess = useFileUploadSuccess();
+  const setUploadStatus = useSetUploadStatus();
   return React.useCallback(() => {
     dispatch(setLoading(true));
     if (!fileDescriptor?.path) {
@@ -430,22 +487,22 @@ export const useHandleRemoteFileSubmit = () => {
         const splitFilePathLength = splitFilePath.length;
         const fileName = splitFilePath[splitFilePathLength - 1];
         const fileExtension = fileName.split(".")[1];
-        let autoParser: string | undefined = '';
+        let autoParser: string | undefined = "";
 
         if (fileExtension == "csv") {
           autoParser = "slycat-csv-parser";
-          dispatch(setParser('slycat-csv-parser'));
+          dispatch(setParser("slycat-csv-parser"));
         } else if (fileExtension == "dat") {
           autoParser = "slycat-dakota-parser";
-          dispatch(setParser('slycat-dakota-parser'));
+          dispatch(setParser("slycat-dakota-parser"));
         } else if (fileExtension == "h5" || fileExtension == "hdf5") {
           autoParser = "slycat-hdf5-parser";
-          dispatch(setParser('slycat-hdf5-parser'));
-        }
-        else {
+          dispatch(setParser("slycat-hdf5-parser"));
+        } else {
           autoParser = parser;
         }
-
+        const filePath = fileDescriptor.path.split("/")
+        const fileNameFromPath = filePath[filePath.length -1]
         const fileObject = {
           pid,
           mid,
@@ -453,7 +510,7 @@ export const useHandleRemoteFileSubmit = () => {
           parser,
           hostname,
           paths: fileDescriptor.path,
-          aids: [["data-table"], fileDescriptor.path.split("/").at(-1)],
+          aids: [["data-table"], fileNameFromPath],
           progress: progressCallback,
           progress_status: progressStatusCallback,
           progress_final: 90,
@@ -462,11 +519,13 @@ export const useHandleRemoteFileSubmit = () => {
             setProgressStatus("File upload complete");
             dispatch(setLoading(false));
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
-            // setUploadStatus(true);
-            fileUploadSuccess(autoParser, setProgress, setProgressStatus, (status) => console.log(status));
+            setUploadStatus(true);
+            fileUploadSuccess(autoParser, setProgress, setProgressStatus, (status) =>
+              console.log(status),
+            );
           },
           error: function () {
-            // setUploadStatus(false);
+            setUploadStatus(false);
             dispatch(setLoading(false));
             dialog.ajax_error(
               "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
@@ -479,13 +538,15 @@ export const useHandleRemoteFileSubmit = () => {
       });
   }, [
     dispatch,
-    fileDescriptor,
+    fileDescriptor?.path,
+    fileDescriptor?.type,
     hostname,
     pid,
     mid,
     parser,
     progress,
     progressStatus,
+    setUploadStatus,
     fileUploadSuccess,
   ]);
 };
@@ -506,21 +567,19 @@ export const useHandleLocalFileSubmit = (): [
   const fileUploadSuccess = useFileUploadSuccess();
   const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
-      
       const fileExtension = file.name.split(".")[1];
-      let autoParser: string | undefined = '';
+      let autoParser: string | undefined = "";
 
       if (fileExtension == "csv") {
         autoParser = "slycat-csv-parser";
-        dispatch(setParser('slycat-csv-parser'));
+        dispatch(setParser("slycat-csv-parser"));
       } else if (fileExtension == "dat") {
         autoParser = "slycat-dakota-parser";
-        dispatch(setParser('slycat-dakota-parser'));
+        dispatch(setParser("slycat-dakota-parser"));
       } else if (fileExtension == "h5" || fileExtension == "hdf5") {
         autoParser = "slycat-hdf5-parser";
-        dispatch(setParser('slycat-hdf5-parser'));
-      }
-      else {
+        dispatch(setParser("slycat-hdf5-parser"));
+      } else {
         autoParser = parser;
       }
 
@@ -567,7 +626,7 @@ export const useHandleLocalFileSubmit = (): [
       };
       fileUploader.uploadFile(fileObject);
     },
-    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus, setProgress, fileUploadSuccess],
+    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus],
   );
 
   return [handleLocalFileSubmit, progress, progressStatus];
@@ -606,11 +665,15 @@ export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
   return React.useCallback(
     (input: any) => {
       // this function is overloaded to handle batching so we need to check for target or batchTarget
-      if (input?.target && (input as any)?.target?.name && (input as any)?.target?.value) {
+      if (
+        input?.currentTarget &&
+        (input as any)?.currentTarget?.name &&
+        (input as any)?.currentTarget?.value
+      ) {
         const nextAttributes = produce(attributes, (draftState) => {
-          draftState[input?.target?.name] = {
-            ...draftState[input?.target?.name],
-            "Axis Type": input?.target?.value,
+          draftState[input?.currentTarget?.name] = {
+            ...draftState[input?.currentTarget?.name],
+            "Axis Type": input?.currentTarget?.value,
           };
         });
         dispatch(setAttributes(nextAttributes));
@@ -660,6 +723,10 @@ export const useFinishModel = () => {
   }, [mid, name, description, marking]);
 };
 
+/**
+ * Creates a function that uses authentication state to authenticate to  authenticate to remote server
+ * @returns callback function
+ */
 export const useHandleAuthentication = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
@@ -758,4 +825,51 @@ export const useUploadSelection = () => {
       });
     }
   }, [mid, attributes, scaleInputs, dispatch]);
+};
+
+/**
+ *  Builds and returns a stable function that will connect and authenticate to an smb server
+ * @returns callback for connecting to smb server
+ */
+export const useConnectSMB = () => {
+  const authValues = useAppSelector(selectAuthInfo);
+  const dispatch = useAppDispatch();
+  return React.useCallback(
+    (callBackSuccess?: () => void) => {
+      dispatch(setLoading(true));
+      client
+        .post_remotes_smb_fetch({
+          user_name: authValues.username?.trim(),
+          password: authValues.password,
+          server: authValues.hostname?.trim(),
+          share: authValues.share?.trim(),
+        })
+        .then((response: Response) => {
+          console.log("authenticated.", response);
+          dispatch(setLoading(false));
+          if (response.ok) {
+            if (callBackSuccess) {
+              callBackSuccess();
+            }
+            console.log("connected");
+          } else {
+            alert(`could not connect ${response.statusText}`);
+          }
+        })
+        .catch((errorResponse) => {
+          dispatch(setLoading(false));
+          if (errorResponse.status == 403) {
+            alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
+        \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
+          } else if (errorResponse.status == 401) {
+            alert(
+              `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
+            );
+          } else {
+            alert(`${errorResponse.statusText}`);
+          }
+        });
+    },
+    [authValues.hostname, authValues.password, authValues.share, authValues.username, dispatch],
+  );
 };

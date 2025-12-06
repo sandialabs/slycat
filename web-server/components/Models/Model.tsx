@@ -80,7 +80,7 @@ const Model: React.FC<ModelProps> = ({
             <h5 className="card-title">{name}</h5>
           </a>
 
-          {description && <p className="card-text">{description}</p>}
+          {description && <p className="card-text text-pre-line">{description}</p>}
         </div>
 
         {result == "failed" && (
