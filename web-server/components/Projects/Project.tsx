@@ -4,6 +4,7 @@ import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import styles from "./Projects.module.scss";
 import Icon from "components/Icons/Icon";
+import { formatDateToLocaleString } from "utils/formatting";
 
 interface ProjectProps {
   name: string;
@@ -60,7 +61,7 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
       </div>
       <div className="card-footer d-flex flex-row align-items-baseline">
         <small className="fst-italic text-body-secondary flex-fill">
-          Created <span>{new Date(created).toLocaleString()}</span> by <span>{creator}</span>
+          Created <span>{formatDateToLocaleString(created)}</span> by <span>{creator}</span>
         </small>
         <span>
           <button
