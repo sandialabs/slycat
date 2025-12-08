@@ -96,9 +96,7 @@ export default class SlycatRemoteControls extends Component {
     }
   }
   async componentDidMount() {
-    if (this.state.hostname?.length > 0) {
-      await this.checkRemoteStatus(this.state.hostname);
-    }
+    await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
   }
 
