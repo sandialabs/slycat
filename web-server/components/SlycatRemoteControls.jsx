@@ -84,7 +84,7 @@ export default class SlycatRemoteControls extends Component {
    */
   getRemoteHosts = async () => {
     return client.get_configuration_remote_hosts_fetch().then((json) => {
-      this.setState({ hostnames: json });
+      this.setState({ hostnames: json, initialLoad: true });
     });
   };
   componentDidUpdate() {
