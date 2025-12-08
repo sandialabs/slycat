@@ -10,7 +10,7 @@ $.widget("timeseries.legend", {
     label: "Label",
     min: null,
     max: null,
-    border: 25,
+    border: 20,
     v_type: null,
     uniqueValues: null,
   },
@@ -130,11 +130,10 @@ $.widget("timeseries.legend", {
     }
 
     if (self.updates["update_legend_position"]) {
-      var total_width = self.element.width();
       var total_height = self.element.height();
       var rectHeight = parseInt(total_height - self.options.border * 2);
 
-      var transx = self.options.border + 28; // 28 is height of label
+      var transx = self.options.border + 23; // 23 is height of label
       var transy = self.options.border;
       self.legend_layer
         .attr("transform", "translate(" + transx + "," + transy + ")")
