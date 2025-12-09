@@ -16,7 +16,7 @@ def generate_model(connection, pid, marking, index):
                 mid,
                 state="finished",
                 result="failed",
-                finished=datetime.datetime.utcnow().isoformat(),
+                finished=datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 message="RANDOM FAILURE!!!",
             )
             return True
@@ -58,7 +58,7 @@ def generate_model(connection, pid, marking, index):
         mid,
         state="finished",
         result="succeeded",
-        finished=datetime.datetime.utcnow().isoformat(),
+        finished=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         progress=1.0,
         message="",
     )

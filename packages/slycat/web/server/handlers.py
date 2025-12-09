@@ -195,7 +195,7 @@ def is_user_currently_active():
             session.doc["creator"]
             not in cherrypy.request.app.config["slycat"]["server-admins"]
             and (
-                datetime.datetime.utcnow()
+                datetime.datetime.now(datetime.timezone.utc)
                 - datetime.datetime.strptime(
                     str(session.doc["last-active-time"]), "%Y-%m-%dT%H:%M:%S.%f"
                 )
@@ -205,7 +205,7 @@ def is_user_currently_active():
             most_recent_time = session.doc["last-active-time"]
 
     if (
-        datetime.datetime.utcnow()
+        datetime.datetime.now(datetime.timezone.utc)
         - datetime.datetime.strptime(str(most_recent_time), "%Y-%m-%dT%H:%M:%S.%f")
     ) >= time_threshold:
         return True
@@ -256,7 +256,7 @@ def post_projects():
                 "writers": [],
                 "groups": [],
             },
-            "created": datetime.datetime.utcnow().isoformat(),
+            "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "creator": cherrypy.request.login,
             "description": cherrypy.request.json.get("description", ""),
             "name": cherrypy.request.json["name"],
@@ -622,7 +622,7 @@ def post_project_models(pid):
         "model-type": model_type,
         "marking": marking,
         "project": pid,
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
         "name": name,
         "description": description,
@@ -740,7 +740,7 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
         "data_table": "data-table",
         "project": pid,
         "mid": [""],
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
     }
 
@@ -826,7 +826,7 @@ def create_project_data(mid, aid, file):
                     "data_table": aid[0],
                     "project": pid,
                     "mid": [mid],
-                    "created": datetime.datetime.utcnow().isoformat(),
+                    "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                     "creator": cherrypy.request.login,
                 }
                 if "project_data" not in model:
@@ -934,7 +934,7 @@ def create_project_data(mid, aid, file):
                 "data_table": aid[0],
                 "project": pid,
                 "mid": [mid],
-                "created": datetime.datetime.utcnow().isoformat(),
+                "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "creator": cherrypy.request.login,
             }
             if "project_data" not in model:
@@ -1013,7 +1013,7 @@ def post_project_references(pid):
         "_id": rid,
         "type": "reference",
         "project": pid,
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
         "name": require_json_parameter("name"),
         "model-type": cherrypy.request.json.get("model-type", None),
@@ -1312,7 +1312,7 @@ def post_model_finish(mid):
         database,
         model,
         state="running",
-        started=datetime.datetime.utcnow().isoformat(),
+        started=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         progress=0.0,
     )
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](
@@ -1562,7 +1562,7 @@ def login():
     # try and decode the username and password
     user_name, password = slycat.web.server.decode_username_and_password()
 
-    # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
+    # cherrypy.log.error("login attempt started %s" % datetime.datetime.now(datetime.timezone.utc))
     # try and delete any outdated sessions for the user if they have the cookie for it
     slycat.web.server.clean_up_old_session(user_name)
 
@@ -2999,7 +2999,7 @@ def get_bookmark(bid):
     # Update last accessed
     bookmark = database.get("bookmark", bid)
     slycat.web.server.authentication.require_project_reader(project)
-    bookmark["last_accessed"] = datetime.datetime.utcnow().isoformat()
+    bookmark["last_accessed"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     database.save(bookmark)
 
     cherrypy.response.headers["content-type"] = accept
