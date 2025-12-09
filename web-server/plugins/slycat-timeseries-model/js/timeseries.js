@@ -428,7 +428,8 @@ export default function initialize_timeseries_model(
       bookmark &&
       cluster_index !== null &&
       selected_column !== null &&
-      selected_column_type !== null
+      selected_column_type !== null &&
+      uniqueValues !== null
     ) {
       legend_ready = true;
 
