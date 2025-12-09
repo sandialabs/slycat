@@ -429,7 +429,8 @@ export default function initialize_timeseries_model(
       cluster_index !== null &&
       selected_column !== null &&
       selected_column_type !== null &&
-      uniqueValues !== null
+      // If the column is a string, we need to have uniqueValues to display the legend
+      (selected_column_type[cluster_index] !== "string" || uniqueValues !== null)
     ) {
       legend_ready = true;
 
