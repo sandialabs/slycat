@@ -155,7 +155,12 @@ $.widget("timeseries.legend", {
           .scalePoint()
           .domain(self.options.uniqueValues?.reverse() ?? [])
           .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
-        tickFormat = d3.format("c");
+        // Truncate string tick labels to avoid overflow.
+        const maxChars = 7;
+        tickFormat = (d) => {
+          const s = String(d);
+          return s.length <= maxChars ? s : s.slice(0, maxChars - 1) + "…";
+        };
       }
       self.legend_axis = d3.axisRight(self.legend_scale).tickFormat(tickFormat);
       self.legend_axis_layer
