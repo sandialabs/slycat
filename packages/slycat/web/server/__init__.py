@@ -28,17 +28,20 @@ cache_it = Cache(seconds=1000000)  # 277.777778 hours
 model_locks = {}
 project_data_locks = {}
 
-def tonative(n, encoding='ISO-8859-1'):
+
+def tonative(n, encoding="ISO-8859-1"):
     """Return the given string as a native string in the given encoding."""
     # In Python 2, the native string type is bytes.
     if isinstance(n, six.text_type):  # unicode for Python 2
         return n.encode(encoding)
     return n
 
-def base64_decode(n, encoding='ISO-8859-1'):	
-    """Return the native string base64-decoded (as a native string)."""	
-    decoded = base64.decodestring(n.encode('ascii'))	
+
+def base64_decode(n, encoding="ISO-8859-1"):
+    """Return the native string base64-decoded (as a native string)."""
+    decoded = base64.decodestring(n.encode("ascii"))
     return tonative(decoded, encoding)
+
 
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -46,7 +49,9 @@ def mix(a, b, amount):
 
 
 # @cache_it
-def evaluate(hdf5_array, expression, expression_type, expression_level=0, hyperslice=None):
+def evaluate(
+    hdf5_array, expression, expression_type, expression_level=0, hyperslice=None
+):
     """Evaluate a hyperchunk expression."""
     # cherrypy.log.error("%sEvaluating %s expression: %s" % (
     #     "  " * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))
@@ -63,7 +68,9 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, hypers
         else:
             return hdf5_array.get_data(expression.index)[hyperslice]
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-        left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1)
+        left = evaluate(
+            hdf5_array, expression.operands[0], expression_type, expression_level + 1
+        )
         for operand in expression.operands[1:]:
             right = evaluate(hdf5_array, operand, expression_type, expression_level + 1)
             # cherrypy.log.error("left::%s \n right::%s" % (left, right))
@@ -91,8 +98,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, hypers
             elif expression.operator == "not in":
                 left = numpy.in1d(left, right, invert=True)
             else:
-                cherrypy.log.error("slycat.web.server.__init__.py evaluate",
-                                        "Unknown operator: %s" % expression.operator)
+                cherrypy.log.error(
+                    "slycat.web.server.__init__.py evaluate",
+                    "Unknown operator: %s" % expression.operator,
+                )
                 raise ValueError("Unknown operator: %s" % expression.operator)
         return left
     elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
@@ -102,18 +111,26 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, hypers
             else:
                 return numpy.indices(hdf5_array.shape)[expression.args[0]][hyperslice]
         elif expression.name == "rank":
-            values = evaluate(hdf5_array, expression.args[0], expression_type, expression_level + 1)
+            values = evaluate(
+                hdf5_array, expression.args[0], expression_type, expression_level + 1
+            )
             order = numpy.argsort(values)
             if expression.args[1] == "desc":
                 order = order[::-1]
             return order
         else:
-            cherrypy.log.error("slycat.web.server.__init__.py evaluate", "Unknown function: %s" % expression.name)
+            cherrypy.log.error(
+                "slycat.web.server.__init__.py evaluate",
+                "Unknown function: %s" % expression.name,
+            )
             raise ValueError("Unknown function: %s" % expression.name)
     elif isinstance(expression, slycat.hyperchunks.grammar.List):
         return expression.values
     else:
-        cherrypy.log.error("slycat.web.server.__init__.py evaluate", "Unknown expression: %s" % expression)
+        cherrypy.log.error(
+            "slycat.web.server.__init__.py evaluate",
+            "Unknown expression: %s" % expression,
+        )
         raise ValueError("Unknown expression: %s" % expression)
 
 
@@ -123,11 +140,19 @@ def update_model(database, model, **kwargs):
     will only update model base on "state", "result", "started", "finished", "progress", "message"
     """
     with get_model_lock(model["_id"]):
-      model = database.get('model',model["_id"])
-      for name, value in list(kwargs.items()):
-          if name in ["state", "result", "started", "finished", "progress", "message"]:
-              model[name] = value
-      database.save(model)
+        model = database.get("model", model["_id"])
+        for name, value in list(kwargs.items()):
+            if name in [
+                "state",
+                "result",
+                "started",
+                "finished",
+                "progress",
+                "message",
+            ]:
+                model[name] = value
+        database.save(model)
+
 
 def parse_existing_file(database, parser, input, attachment, model, aid):
     """
@@ -141,38 +166,42 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
     else:
         aids = aid
     try:
-        slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
-                                                                  aids, **kwargs)
+        slycat.web.server.plugin.manager.parsers[parser]["parse"](
+            database, model, input, attachment, aids, **kwargs
+        )
     except Exception as e:
         cherrypy.log.error("[MICROSERVICE] Exception parsing posted files: %s" % str(e))
         cherrypy.log.error(traceback.format_exc())
     cherrypy.log.error("[MICROSERVICE] Upload parsing finished.")
 
+
 @cache_it
-def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
+def get_model_arrayset_metadata(
+    database, model, aid, arrays=None, statistics=None, unique=None
+):
     """Retrieve metadata describing an arrayset artifact.
-  Parameters
-  ----------
-  database: database object, required
-  model: model object, required
-  aid: string, required
-    Unique (to the model) arrayset artifact id.
-  arrays: string or hyperchunks parse tree, optional
-    Specifies a collection of arrays, in :ref:`Hyperchunks` format.  Metadata
-    describing the specified arrays will be returned in the results.
-  statistics: string or hyperchunks parse tree, optional
-    Specifies a collection of array attributes, in :ref:`Hyperchunks` format.
-    Statistics describing each attribute will be returned in the results.
-  unique: string or hyperchunks parse tree, optional
-    Specifies a collection of array attributes, in :ref:`Hyperchunks` format.
-    Unique values from each attribute will be returned in the results.
-  Returns
-  -------
-  metadata: dict
-  See Also
-  --------
-  :http:get:`/models/(mid)/arraysets/(aid)/metadata`
-  """
+    Parameters
+    ----------
+    database: database object, required
+    model: model object, required
+    aid: string, required
+      Unique (to the model) arrayset artifact id.
+    arrays: string or hyperchunks parse tree, optional
+      Specifies a collection of arrays, in :ref:`Hyperchunks` format.  Metadata
+      describing the specified arrays will be returned in the results.
+    statistics: string or hyperchunks parse tree, optional
+      Specifies a collection of array attributes, in :ref:`Hyperchunks` format.
+      Statistics describing each attribute will be returned in the results.
+    unique: string or hyperchunks parse tree, optional
+      Specifies a collection of array attributes, in :ref:`Hyperchunks` format.
+      Unique values from each attribute will be returned in the results.
+    Returns
+    -------
+    metadata: dict
+    See Also
+    --------
+    :http:get:`/models/(mid)/arraysets/(aid)/metadata`
+    """
     if isinstance(arrays, str):
         arrays = slycat.hyperchunks.parse(arrays)
     if isinstance(statistics, str):
@@ -188,42 +217,68 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
                 results = []
                 for array in sorted(hdf5_arrayset.keys()):
                     hdf5_array = hdf5_arrayset[array]
-                    results.append({
-                        "array": int(array),
-                        "index": int(array),
-                        "dimensions": hdf5_array.dimensions,
-                        "attributes": hdf5_array.attributes,
-                        "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-                    })
+                    results.append(
+                        {
+                            "array": int(array),
+                            "index": int(array),
+                            "dimensions": hdf5_array.dimensions,
+                            "attributes": hdf5_array.attributes,
+                            "shape": tuple(
+                                [
+                                    dimension["end"] - dimension["begin"]
+                                    for dimension in hdf5_array.dimensions
+                                ]
+                            ),
+                        }
+                    )
                 return results
 
     with slycat.web.server.hdf5.lock:
-        with slycat.web.server.hdf5.open(model["artifact:%s" % aid],
-                                         "r+") as file:  # We have to open the file with writing enabled in case the statistics cache needs to be updated.
+        with slycat.web.server.hdf5.open(
+            model["artifact:%s" % aid], "r+"
+        ) as file:  # We have to open the file with writing enabled in case the statistics cache needs to be updated.
             hdf5_arrayset = slycat.hdf5.ArraySet(file)
             results = {}
             if arrays is not None:
                 results["arrays"] = []
-                for array in slycat.hyperchunks.arrays(arrays, hdf5_arrayset.array_count()):
+                for array in slycat.hyperchunks.arrays(
+                    arrays, hdf5_arrayset.array_count()
+                ):
                     hdf5_array = hdf5_arrayset[array.index]
-                    results["arrays"].append({
-                        "index": array.index,
-                        "dimensions": hdf5_array.dimensions,
-                        "attributes": hdf5_array.attributes,
-                        "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-                    })
+                    results["arrays"].append(
+                        {
+                            "index": array.index,
+                            "dimensions": hdf5_array.dimensions,
+                            "attributes": hdf5_array.attributes,
+                            "shape": tuple(
+                                [
+                                    dimension["end"] - dimension["begin"]
+                                    for dimension in hdf5_array.dimensions
+                                ]
+                            ),
+                        }
+                    )
             if statistics is not None:
                 results["statistics"] = []
-                for array in slycat.hyperchunks.arrays(statistics, hdf5_arrayset.array_count()):
+                for array in slycat.hyperchunks.arrays(
+                    statistics, hdf5_arrayset.array_count()
+                ):
                     hdf5_array = hdf5_arrayset[array.index]
                     for attribute in array.attributes(len(hdf5_array.attributes)):
                         statistics = {}
                         statistics["array"] = array.index
-                        if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+                        if isinstance(
+                            attribute.expression,
+                            slycat.hyperchunks.grammar.AttributeIndex,
+                        ):
                             statistics["attribute"] = attribute.expression.index
-                            statistics.update(hdf5_array.get_statistics(attribute.expression.index))
+                            statistics.update(
+                                hdf5_array.get_statistics(attribute.expression.index)
+                            )
                         else:
-                            values = evaluate(hdf5_array, attribute.expression, "statistics")
+                            values = evaluate(
+                                hdf5_array, attribute.expression, "statistics"
+                            )
                             statistics["min"] = values.min()
                             statistics["max"] = values.max()
                             statistics["unique"] = len(numpy.unique(values))
@@ -231,21 +286,33 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 
             if unique is not None:
                 results["unique"] = []
-                for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
+                for array in slycat.hyperchunks.arrays(
+                    unique, hdf5_arrayset.array_count()
+                ):
                     hdf5_array = hdf5_arrayset[array.index]
                     for attribute in array.attributes(len(hdf5_array.attributes)):
                         unique = {}
                         unique["array"] = array.index
                         unique["values"] = []
-                        if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+                        if isinstance(
+                            attribute.expression,
+                            slycat.hyperchunks.grammar.AttributeIndex,
+                        ):
                             for hyperslice in attribute.hyperslices():
                                 unique["attribute"] = attribute.expression.index
                                 unique["values"].append(
-                                    hdf5_array.get_unique(attribute.expression.index, hyperslice)["values"])
+                                    hdf5_array.get_unique(
+                                        attribute.expression.index, hyperslice
+                                    )["values"]
+                                )
                         else:
-                            values = evaluate(hdf5_array, attribute.expression, "uniques")
+                            values = evaluate(
+                                hdf5_array, attribute.expression, "uniques"
+                            )
                             for hyperslice in attribute.hyperslices():
-                                unique["values"].append(numpy.unique(values)[hyperslice])
+                                unique["values"].append(
+                                    numpy.unique(values)[hyperslice]
+                                )
                         if isinstance(unique["values"][0], list):
                             unique["values"] = [a.tolist() for a in unique["values"]]
                         results["unique"].append(unique)
@@ -286,7 +353,9 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
             hdf5_arrayset = slycat.hdf5.ArraySet(file)
 
             # go through each array in arrayset
-            for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+            for array in slycat.hyperchunks.arrays(
+                hyperchunks, hdf5_arrayset.array_count()
+            ):
 
                 # instatiate array
                 hdf5_array = hdf5_arrayset[array.index]
@@ -298,12 +367,12 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
                 # go through each attribute in array
                 for attribute in array.attributes(len(hdf5_array.attributes)):
 
-                    # previous code: this pulls entire dataset!                 
+                    # previous code: this pulls entire dataset!
                     # values = evaluate(hdf5_array, attribute.expression, "attribute")
 
                     # if order is present, we still pull entire dataset
                     if array.order is not None:
-                       values = evaluate(hdf5_array, attribute.expression, "attribute")
+                        values = evaluate(hdf5_array, attribute.expression, "attribute")
 
                     # get each hyperslice
                     for hyperslice in attribute.hyperslices():
@@ -311,15 +380,19 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
                         # put in order, if necessary
                         if array.order is not None:
                             return_list.append(values[order][hyperslice])
-                            
+
                         else:
 
                             # prevous code -- select hyperslices from all values
-                            # return_list.append(values[hyperslice]) 
+                            # return_list.append(values[hyperslice])
 
                             # new code: only pull one hyperslice at a time
-                            values = evaluate(hdf5_array, attribute.expression, "attribute",
-                                hyperslice=hyperslice)
+                            values = evaluate(
+                                hdf5_array,
+                                attribute.expression,
+                                "attribute",
+                                hyperslice=hyperslice,
+                            )
                             return_list.append(values)
 
     return return_list
@@ -335,43 +408,49 @@ def get_model_parameter(database, model, aid):
 
 def put_model_arrayset(database, model, aid, input=False):
     """
-  Start a new model array set artifact.
-  :param database: the database with our model
-  :param model: the model
-  :param aid: artifact id
-  :param input:
-  :return:
-  """
-    model = database.get('model',model["_id"])
-    slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
+    Start a new model array set artifact.
+    :param database: the database with our model
+    :param model: the model
+    :param aid: artifact id
+    :param input:
+    :return:
+    """
+    model = database.get("model", model["_id"])
+    slycat.web.server.update_model(
+        database, model, message="Starting array set %s." % (aid)
+    )
     storage = uuid.uuid4().hex
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.create(storage) as file:
             arrayset = slycat.hdf5.start_arrayset(file)
             with get_model_lock(model["_id"]):
                 database.save({"_id": storage, "type": "hdf5"})
-                model = database.get('model',model["_id"])
+                model = database.get("model", model["_id"])
                 model["artifact:%s" % aid] = storage
                 model["artifact-types"][aid] = "hdf5"
                 if input:
-                    model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+                    model["input-artifacts"] = list(
+                        set(model["input-artifacts"] + [aid])
+                    )
                 database.save(model)
 
 
 def put_model_array(database, model, aid, array_index, attributes, dimensions):
     """
-  store array for model
-  
-  :param database: database of model
-  :param model: model as an object
-  :param aid: artifact id (eg data-table)
-  :param array_index: index of the array
-  :param attributes: name and type in column
-  :param dimensions: number of data rows
-  :return:
-  """
-    slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
-    model = database.get('model', model['_id'])
+    store array for model
+
+    :param database: database of model
+    :param model: model as an object
+    :param aid: artifact id (eg data-table)
+    :param array_index: index of the array
+    :param attributes: name and type in column
+    :param dimensions: number of data rows
+    :return:
+    """
+    slycat.web.server.update_model(
+        database, model, message="Starting array set %s array %s." % (aid, array_index)
+    )
+    model = database.get("model", model["_id"])
     storage = model["artifact:%s" % aid]
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(storage, "r+") as file:
@@ -381,54 +460,69 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
 def put_model_arrayset_data(database, model, aid, hyperchunks, data):
     """Write data to an arrayset artifact.
 
-  Parameters
-  ----------
-  database: database object, required
-  model: model object, required
-  aid: string, required
-    Unique (to the model) arrayset artifact id.
-  hyperchunks: string or hyperchunks parse tree, required
-    Specifies where the data will be stored, in :ref:`Hyperchunks` format.
-  data: iterable, required
-    A collection of numpy.ndarray data chunks to be stored.  The number of
-    data chunks must match the number implied by the `hyperchunks` parameter.
+    Parameters
+    ----------
+    database: database object, required
+    model: model object, required
+    aid: string, required
+      Unique (to the model) arrayset artifact id.
+    hyperchunks: string or hyperchunks parse tree, required
+      Specifies where the data will be stored, in :ref:`Hyperchunks` format.
+    data: iterable, required
+      A collection of numpy.ndarray data chunks to be stored.  The number of
+      data chunks must match the number implied by the `hyperchunks` parameter.
 
-  See Also
-  --------
-  :http:put:`/api/models/(mid)/arraysets/(aid)/data`
-  """
+    See Also
+    --------
+    :http:put:`/api/models/(mid)/arraysets/(aid)/data`
+    """
     # cherrypy.log.error("put_model_arrayset_data called with: {}".format(aid))
     if isinstance(hyperchunks, str):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
     data = iter(data)
-    slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
-    model = database.get('model', model['_id'])
+    slycat.web.server.update_model(
+        database, model, message="Storing data to array set %s." % (aid)
+    )
+    model = database.get("model", model["_id"])
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
             hdf5_arrayset = slycat.hdf5.ArraySet(file)
-            for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+            for array in slycat.hyperchunks.arrays(
+                hyperchunks, hdf5_arrayset.array_count()
+            ):
                 hdf5_array = hdf5_arrayset[array.index]
                 for attribute in array.attributes(len(hdf5_array.attributes)):
-                    if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-                        cherrypy.log.error("slycat.web.server.__init__.py put_model_arrayset_data",
-                                                "Cannot write to computed attribute.")
+                    if not isinstance(
+                        attribute.expression, slycat.hyperchunks.grammar.AttributeIndex
+                    ):
+                        cherrypy.log.error(
+                            "slycat.web.server.__init__.py put_model_arrayset_data",
+                            "Cannot write to computed attribute.",
+                        )
                         raise ValueError("Cannot write to computed attribute.")
 
-                    stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
+                    stored_type = slycat.hdf5.dtype(
+                        hdf5_array.attributes[attribute.expression.index]["type"]
+                    )
                     for hyperslice in attribute.hyperslices():
                         data_hyperslice = next(data)
                         if isinstance(data_hyperslice, list):
-                            data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-                        hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
+                            data_hyperslice = numpy.array(
+                                data_hyperslice, dtype=stored_type
+                            )
+                        hdf5_array.set_data(
+                            attribute.expression.index, hyperslice, data_hyperslice
+                        )
             file.close()
 
 
 def put_model_file(database, model, aid, value, content_type, input=False):
     with get_model_lock(model["_id"]):
         fid = database.write_file(model, content=value, content_type=content_type)
-        model = database[model[
-            "_id"]]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
+        model = database[
+            model["_id"]
+        ]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
         model["artifact:%s" % aid] = fid
         model["artifact-types"][aid] = "file"
         if input:
@@ -449,7 +543,9 @@ def get_model_file(database, model, aid):
 
 
 def put_model_inputs(database, model, source, deep_copy=False):
-    slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
+    slycat.web.server.update_model(
+        database, model, message="Copying existing model inputs."
+    )
     for aid in source["input-artifacts"]:
         original_type = source["artifact-types"][aid]
         original_value = source["artifact:%s" % aid]
@@ -461,7 +557,10 @@ def put_model_inputs(database, model, source, deep_copy=False):
                 new_value = uuid.uuid4().hex
                 os.makedirs(os.path.dirname(slycat.web.server.hdf5.path(new_value)))
                 with slycat.web.server.hdf5.lock:
-                    shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
+                    shutil.copy(
+                        slycat.web.server.hdf5.path(original_value),
+                        slycat.web.server.hdf5.path(new_value),
+                    )
                     with get_model_lock(model["_id"]):
                         model["artifact:%s" % aid] = new_value
                         database.save({"_id": new_value, "type": "hdf5"})
@@ -469,21 +568,33 @@ def put_model_inputs(database, model, source, deep_copy=False):
                 model["artifact:%s" % aid] = original_value
         elif original_type == "file":
             original_content = database.get_attachment(source["_id"], original_value)
-            original_content_type = source["_attachments"][original_value]["content_type"]
+            original_content_type = source["_attachments"][original_value][
+                "content_type"
+            ]
 
-            database.put_attachment(model, original_content, filename=original_value,
-                                    content_type=original_content_type)
+            database.put_attachment(
+                model,
+                original_content,
+                filename=original_value,
+                content_type=original_content_type,
+            )
             model["artifact:%s" % aid] = original_value
         else:
-            cherrypy.log.error("slycat.web.server.__init__.py put_model_inputs",
-                                    "Cannot copy unknown input artifact type %s." % original_type)
-            raise Exception("Cannot copy unknown input artifact type %s." % original_type)
+            cherrypy.log.error(
+                "slycat.web.server.__init__.py put_model_inputs",
+                "Cannot copy unknown input artifact type %s." % original_type,
+            )
+            raise Exception(
+                "Cannot copy unknown input artifact type %s." % original_type
+            )
         model["artifact-types"][aid] = original_type
         model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
         with get_model_lock(model["_id"]):
             model["_rev"] = database[model["_id"]][
-                "_rev"]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
+                "_rev"
+            ]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
             database.save(model)
+
 
 def get_project_data_lock(did):
     if did in project_data_locks:
@@ -491,34 +602,42 @@ def get_project_data_lock(did):
     project_data_locks[did] = threading.Lock()
     return project_data_locks[did]
 
+
 def get_model_lock(model_id):
     if model_id in model_locks:
         return model_locks[model_id]
     model_locks[model_id] = threading.Lock()
     return model_locks[model_id]
 
+
 def put_project_data_parameter(database, project_data, aid, value, input=False):
     with get_project_data_lock(project_data["_id"]):
         project_data["artifact:%s" % aid] = value
         # Alex commenting this out since it results in a KeyError: 'artifact-types'
-        # because there is no 'artifact-types' key on a project_data 
+        # because there is no 'artifact-types' key on a project_data
         # project_data["artifact-types"][aid] = "json"
         if input:
-            project_data["input-artifacts"] = list(set(project_data["input-artifacts"] + [aid]))
+            project_data["input-artifacts"] = list(
+                set(project_data["input-artifacts"] + [aid])
+            )
         database.save(project_data)
+
 
 def get_project_data_parameter(database, project_data, param):
     key = "%s" % param
     if key not in project_data:
-        cherrypy.log.error("slycat.web.server.__init__.py get_project_data_parameter", "Unknown parameter: %s" % param)
+        cherrypy.log.error(
+            "slycat.web.server.__init__.py get_project_data_parameter",
+            "Unknown parameter: %s" % param,
+        )
         raise KeyError("Unknown parameter: %s" % param)
     return project_data[key]
-        
+
 
 def put_model_parameter(database, model, aid, value, input=False):
     with get_model_lock(model["_id"]):
         try:
-            model = database.get('model',model['_id'])
+            model = database.get("model", model["_id"])
             model["artifact:%s" % aid] = value
             model["artifact-types"][aid] = "json"
             if input:
@@ -526,7 +645,7 @@ def put_model_parameter(database, model, aid, value, input=False):
             database.save(model)
         except Exception as e:
             time.sleep(1)
-            model = database.get('model',model['_id'])
+            model = database.get("model", model["_id"])
             model["artifact:%s" % aid] = value
             model["artifact-types"][aid] = "json"
             if input:
@@ -537,7 +656,7 @@ def put_model_parameter(database, model, aid, value, input=False):
 def delete_model_parameter(database, model, aid):
     """
     Delete a model parameter in the couch database
-    :param database: 
+    :param database:
     :param model: model from the couchdb
     :param aid: artifact id
     :return: not used
@@ -547,41 +666,42 @@ def delete_model_parameter(database, model, aid):
         del model["artifact-types"][aid]
         database.save(model)
 
+
 def create_session(hostname, username, password):
     """Create a cached remote session for the given host.
 
-  Parameters
-  ----------
-  hostname : string
-    Name of the remote host to connect via SSH.
-  username : string
-    Username for SSH authentication.
-  password : string
-    Password for SSH authentication
+    Parameters
+    ----------
+    hostname : string
+      Name of the remote host to connect via SSH.
+    username : string
+      Username for SSH authentication.
+    password : string
+      Password for SSH authentication
 
-  Returns
-  -------
-  sid : string
-    A unique session identifier.
-  """
+    Returns
+    -------
+    sid : string
+      A unique session identifier.
+    """
     return slycat.web.server.remote.create_session(hostname, username, password, None)
 
 
 def checkjob(sid, jid):
     """Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.
 
-  Parameters
-  ----------
-  sid : int
-    Session identifier
-  jid : int
-    Job identifier
+    Parameters
+    ----------
+    sid : int
+      Session identifier
+    jid : int
+      Job identifier
 
-  Returns
-  -------
-  response : dict
-    A dictionary with the following keys: jid, status, errors
-  """
+    Returns
+    -------
+    response : dict
+      A dictionary with the following keys: jid, status, errors
+    """
     with slycat.web.server.remote.get_session(sid) as session:
         return session.checkjob(jid)
 
@@ -589,61 +709,68 @@ def checkjob(sid, jid):
 def get_remote_file(sid, path):
     """Returns the content of a file from a remote system.
 
-  Parameters
-  ----------
-  sid : int
-    Session identifier
-  path : string
-    Path for the requested file
+    Parameters
+    ----------
+    sid : int
+      Session identifier
+    path : string
+      Path for the requested file
 
-  Returns
-  -------
-  content : string
-    Content of the requested file
-  """
+    Returns
+    -------
+    content : string
+      Content of the requested file
+    """
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path)
+
 
 def write_remote_file(sid, path, data):
     """Returns the content of a file from a remote system.
 
-  Parameters
-  ----------
-  sid : int
-    Session identifier
-  path : string
-    Path for the requested file
+    Parameters
+    ----------
+    sid : int
+      Session identifier
+    path : string
+      Path for the requested file
 
-  Returns
-  -------
-  content : string
-    Content of the requested file
-  """
+    Returns
+    -------
+    content : string
+      Content of the requested file
+    """
     with slycat.web.server.remote.get_session(sid) as session:
         return session.write_file(path, data)
+
 
 def get_remote_file_server(client, sid, path):
     """Returns the content of a file from a remote system.
 
-  Parameters
-  ----------
-  sid : int
-    Session identifier
-  path : string
-    Path for the requested file
+    Parameters
+    ----------
+    sid : int
+      Session identifier
+    path : string
+      Path for the requested file
 
-  Returns
-  -------
-  content : string
-    Content of the requested file
-  """
+    Returns
+    -------
+    content : string
+      Content of the requested file
+    """
     with slycat.web.server.remote.get_session_server(client, sid) as session:
         return session.get_file(path)
 
 
-def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, client=None, **kwargs):
+def post_model_file(
+    mid, input=None, sid=None, path=None, aid=None, parser=None, client=None, **kwargs
+):
     if input is None:
-        cherrypy.log.error("slycat.web.server.__init__.py put_model_file", "Required input parameter is missing.")
+        cherrypy.log.error(
+            "slycat.web.server.__init__.py put_model_file",
+            "Required input parameter is missing.",
+        )
         raise Exception("Required input parameter is missing.")
 
     if path is not None and sid is not None:
@@ -658,20 +785,28 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
                 # TODO verify that the file exists first...
                 file = session.sftp.file(path).read()
     else:
-        cherrypy.log.error("slycat.web.server.__init__.py post_model_file", "Must supply path and sid parameters.")
+        cherrypy.log.error(
+            "slycat.web.server.__init__.py post_model_file",
+            "Must supply path and sid parameters.",
+        )
         raise Exception("Must supply path and sid parameters.")
 
     if parser is None:
         Exception("Required parser parameter is missing.")
     if parser not in slycat.web.server.plugin.manager.parsers:
-        cherrypy.log.error("slycat.web.server.__init__.py post_model_file", "Unknown parser plugin: %s." % parser)
+        cherrypy.log.error(
+            "slycat.web.server.__init__.py post_model_file",
+            "Unknown parser plugin: %s." % parser,
+        )
         raise Exception("Unknown parser plugin: %s." % parser)
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
 
     try:
-        slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, [file], [aid], **kwargs)
+        slycat.web.server.plugin.manager.parsers[parser]["parse"](
+            database, model, input, [file], [aid], **kwargs
+        )
     except Exception as e:
         cherrypy.log.error("slycat.web.server.__init__.py post_model_file", "%s" % e)
         raise Exception("%s" % e)
@@ -680,10 +815,19 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 def ssh_connect(hostname=None, username=None, password=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    if hostname == 'localhost' and 'localhost' in slycat.web.server.config["slycat-web-server"]["remote-authentication"]:
-        hostname = slycat.web.server.config["slycat-web-server"]["remote-authentication"]["localhost"]
+    if (
+        hostname == "localhost"
+        and "localhost"
+        in slycat.web.server.config["slycat-web-server"]["remote-authentication"]
+    ):
+        hostname = slycat.web.server.config["slycat-web-server"][
+            "remote-authentication"
+        ]["localhost"]
 
-    if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] == "certificate":
+    if (
+        slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"]
+        == "certificate"
+    ):
         _certFn = "gen-rsa-ssh-cert"
         if _certFn not in slycat.web.server.plugin.manager.utilities:
             raise Exception("Unknown ssh_connect plugin: %s." % _certFn)
@@ -691,19 +835,34 @@ def ssh_connect(hostname=None, username=None, password=None):
         try:
             # get SSH cert from SSO server
             RSAcert = slycat.web.server.plugin.manager.utilities[_certFn]()
-            ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=RSAcert,
-                        port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
+            ssh.connect(
+                hostname=hostname,
+                username=cherrypy.request.login,
+                pkey=RSAcert,
+                port=slycat.web.server.config["slycat-web-server"][
+                    "remote-authentication"
+                ]["port"],
+            )
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (
-                cherrypy.request.login, hostname, str(e)))
-            cherrypy.log.error("ssh_connect cert method, called ssh.connect traceback: %s" % traceback.print_exc())
+            cherrypy.log.error(
+                "ssh_connect cert method, authentication failed for %s@%s: %s"
+                % (cherrypy.request.login, hostname, str(e))
+            )
+            cherrypy.log.error(
+                "ssh_connect cert method, called ssh.connect traceback: %s"
+                % traceback.print_exc()
+            )
             raise cherrypy.HTTPError("403 Remote authentication failed.")
     else:
         try:
-            ssh.connect(hostname=hostname, username=username, password=password, compress=True)
+            ssh.connect(
+                hostname=hostname, username=username, password=password, compress=True
+            )
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (
-                username, hostname, str(e)))
+            cherrypy.log.error(
+                "ssh_connect username/password method, authentication failed for %s@%s: %s"
+                % (username, hostname, str(e))
+            )
             raise cherrypy.HTTPError("403 Remote authentication failed.")
 
     ssh.get_transport().set_keepalive(5)
@@ -714,16 +873,24 @@ def get_password_function():
     if get_password_function.password_check is None:
         if "password-check" not in cherrypy.request.app.config["slycat-web-server"]:
             raise cherrypy.HTTPError("500 No password check configured.")
-        plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
-        args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
-        kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
+        plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"][
+            "plugin"
+        ]
+        args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get(
+            "args", []
+        )
+        kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get(
+            "kwargs", {}
+        )
         if plugin not in list(slycat.web.server.plugin.manager.password_checks.keys()):
-            cherrypy.log.error("slycat-standard-authentication.py authenticate",
-                                    "cherrypy.HTTPError 500 no password check plugin found.")
+            cherrypy.log.error(
+                "slycat-standard-authentication.py authenticate",
+                "cherrypy.HTTPError 500 no password check plugin found.",
+            )
             raise cherrypy.HTTPError("500 No password check plugin found.")
         get_password_function.password_check = functools.partial(
-            slycat.web.server.plugin.manager.password_checks[plugin], *args,
-            **kwargs)
+            slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs
+        )
     return get_password_function.password_check
 
 
@@ -739,20 +906,21 @@ def response_url():
     current_url = urlparse(cherrypy.url())  # gets current location on the server
     try:
         location = cherrypy.request.json["location"]
-        if parse_qs(urlparse(location['href']).query)['from']:  # get from query href
-            cleaned_url = parse_qs(urlparse(location['href']).query)['from'][0]
+        if parse_qs(urlparse(location["href"]).query)["from"]:  # get from query href
+            cleaned_url = parse_qs(urlparse(location["href"]).query)["from"][0]
             if not cleaned_url.__contains__(
-                    current_url.netloc):  # check net location to avoid cross site script attacks
-                # No longer need to add projects to root url, so removing 
+                current_url.netloc
+            ):  # check net location to avoid cross site script attacks
+                # No longer need to add projects to root url, so removing
                 # cleaned_url = "https://" + current_url.netloc + "/projects"
                 cleaned_url = "https://" + current_url.netloc
         else:
-            # No longer need to add projects to root url, so removing 
+            # No longer need to add projects to root url, so removing
             # cleaned_url = "https://" + current_url.netloc + "/projects"
             cleaned_url = "https://" + current_url.netloc
     except Exception as e:
         # cherrypy.log.error("no location provided setting target to /projects")
-        # No longer need to add projects to root url, so removing 
+        # No longer need to add projects to root url, so removing
         # cleaned_url = "https://" + current_url.netloc + "/projects"
         cleaned_url = "https://" + current_url.netloc
     return cleaned_url
@@ -770,7 +938,9 @@ def decode_username_and_password():
     except Exception as e:
         cherrypy.log.error(str(e))
         # cherrypy.log.error("username and password could not be decoded")
-        cherrypy.log.error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
+        cherrypy.log.error(
+            "slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400"
+        )
         raise cherrypy.HTTPError(400)
     return user_name, password
 
@@ -796,13 +966,16 @@ def clean_up_old_session(user_name=None):
     if user_name is not None:
         try:
             couchdb = slycat.web.server.database.couchdb.connect()
-            sessions = [session for session in couchdb.scan("slycat/sessions") if
-                        session["creator"] == user_name]
+            sessions = [
+                session
+                for session in couchdb.scan("slycat/sessions")
+                if session["creator"] == user_name
+            ]
             if sessions:
-                #cherrypy.log.error("sessions found %s" % user_name)
+                # cherrypy.log.error("sessions found %s" % user_name)
                 for session in sessions:
                     couchdb.delete(session)
-                    #cherrypy.log.error("sessions deleted %s" % user_name)
+                    # cherrypy.log.error("sessions deleted %s" % user_name)
         except:
             # if an exception was throw there is nothing to be done
             pass
@@ -820,8 +993,11 @@ def check_user(session_user, apache_user, sid):
     :return:
     """
     if session_user != apache_user:
-        cherrypy.log.error("session_user::%s is not equal to apache_user::%s in standard auth"
-                           "deleting session and throwing 403 error to the browser" % (session_user, apache_user))
+        cherrypy.log.error(
+            "session_user::%s is not equal to apache_user::%s in standard auth"
+            "deleting session and throwing 403 error to the browser"
+            % (session_user, apache_user)
+        )
         # force a lock so only one delete is called at a time
         with slycat.web.server.database.couchdb.db_lock:
             # we need to wrap this in a try catch in case the session is already removed
@@ -834,7 +1010,7 @@ def check_user(session_user, apache_user, sid):
                 pass
         # expire the old cookie
         cherrypy.response.cookie["slycatauth"] = sid
-        cherrypy.response.cookie["slycatauth"]['expires'] = 0
+        cherrypy.response.cookie["slycatauth"]["expires"] = 0
         cherrypy.response.status = "403 Forbidden"
         raise cherrypy.HTTPError(403)
 
@@ -850,22 +1026,39 @@ def create_single_sign_on_session(remote_ip, auth_user, secure=True):
     groups = []
 
     # Successful authentication and access verification, create a session and return.
-    cherrypy.log.error("++ create_single_sign_on_session creating session for %s" % auth_user)
+    cherrypy.log.error(
+        "++ create_single_sign_on_session creating session for %s" % auth_user
+    )
     sid = uuid.uuid4().hex
-    session = {"created": datetime.datetime.utcnow(), "creator": auth_user}
+    session = {
+        "created": datetime.datetime.now(datetime.timezone.utc),
+        "creator": auth_user,
+    }
     with slycat.web.server.database.couchdb.db_lock:
         clean_up_old_session(auth_user)
         database = slycat.web.server.database.couchdb.connect()
-        
-        database.save({"_id": sid, "type": "session", "created": str(session["created"].isoformat()), "creator": str(session["creator"]),
-             'groups': groups, 'ip': remote_ip, "sessions": [], "last-active-time": str(session["created"].isoformat())})
+
+        database.save(
+            {
+                "_id": sid,
+                "type": "session",
+                "created": str(session["created"].isoformat()),
+                "creator": str(session["creator"]),
+                "groups": groups,
+                "ip": remote_ip,
+                "sessions": [],
+                "last-active-time": str(session["created"].isoformat()),
+            }
+        )
 
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
     if secure:
         cherrypy.response.cookie["slycatauth"]["secure"] = 1
         cherrypy.response.cookie["slycatauth"]["httponly"] = 1
-    timeout = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
+    timeout = int(
+        cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds()
+    )
     cherrypy.response.cookie["slycatauth"]["Max-Age"] = timeout
     cherrypy.response.cookie["slycattimeout"] = "timeout"
     cherrypy.response.cookie["slycattimeout"]["path"] = "/"
@@ -878,7 +1071,9 @@ def create_single_sign_on_session(remote_ip, auth_user, secure=True):
 def check_rules(groups):
     # cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
     # Successful authentication, now check access rules.
-    authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
+    authentication_kwargs = cherrypy.request.app.config["slycat-web-server"][
+        "authentication"
+    ]["kwargs"]
     # for rules see slycat config file
     rules = []
     if "rules" in authentication_kwargs:
@@ -893,9 +1088,13 @@ def check_rules(groups):
         deny = True
         for operation, category, members in rules:
             if operation not in ["allow"]:
-                raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
+                raise cherrypy.HTTPError(
+                    "500 Unknown access rule operation: %s." % operation
+                )
             if category not in ["users", "groups", "directory"]:
-                raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)
+                raise cherrypy.HTTPError(
+                    "500 Unknown access rule category: %s." % category
+                )
             if category in ["groups"]:
                 # see the slycat-dev web config for an example with this rule
                 # verify the group given in rules is one of the user's meta groups as returned by the ldap password fn
@@ -904,7 +1103,9 @@ def check_rules(groups):
                         deny = False
             if category in ["directory"]:
                 try:
-                    lookupResult = cherrypy.request.app.config["slycat-web-server"]["directory"](user_name)
+                    lookupResult = cherrypy.request.app.config["slycat-web-server"][
+                        "directory"
+                    ](user_name)
                     if lookupResult != {}:
                         deny = False
                 except:
@@ -919,9 +1120,17 @@ def check_https_get_remote_ip():
     checks that the connection is https and then returns the users remote ip
     :return: remote ip
     """
-    if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
-        cherrypy.log.error("slycat-standard-authentication.py authenticate",
-                                "cherrypy.HTTPError 403 secure connection required.")
+    if not (
+        cherrypy.request.scheme == "https"
+        or cherrypy.request.headers.get("x-forwarded-proto") == "https"
+    ):
+        cherrypy.log.error(
+            "slycat-standard-authentication.py authenticate",
+            "cherrypy.HTTPError 403 secure connection required.",
+        )
         raise cherrypy.HTTPError("403 Secure connection required.")
-    return cherrypy.request.headers.get(
-        "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
+    return (
+        cherrypy.request.headers.get("x-forwarded-for")
+        if "x-forwarded-for" in cherrypy.request.headers
+        else cherrypy.request.rem
+    )

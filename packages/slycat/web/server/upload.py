@@ -81,7 +81,7 @@ class Session(object):
     """
 
     def __init__(self, uid, client, mid, input, parser, aids, kwargs):
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         self._uid = uid
         self._client = client
         self._mid = mid
@@ -401,7 +401,7 @@ def get_session(uid):
             raise cherrypy.HTTPError("404")
 
         session = session_cache[uid]
-        session._accessed = datetime.datetime.utcnow()
+        session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return session
 
 
@@ -427,7 +427,7 @@ def _expire_session(uid):
     Assumes that the caller already holds session_cache_lock.
     """
     if uid in session_cache:
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         session = session_cache[uid]
         if (
             now - session.accessed

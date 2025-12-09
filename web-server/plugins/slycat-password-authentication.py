@@ -8,15 +8,17 @@ def register_slycat_plugin(context):
     import datetime
     import slycat.web.server.database.couchdb
     import slycat.web.server.plugin
-    
+
     from urllib.parse import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
         if '"' in realm:
-            cherrypy.log.error("slycat-standard-authentication.py authenticate",
-                                    "Realm cannot contain the \" (quote) character.")
-            raise ValueError("Realm cannot contain the \" (quote) character.")
+            cherrypy.log.error(
+                "slycat-standard-authentication.py authenticate",
+                'Realm cannot contain the " (quote) character.',
+            )
+            raise ValueError('Realm cannot contain the " (quote) character.')
 
         # we need to parse the current url so we can do an https redirect
         # cherrypy will redirect http by default :(
@@ -39,39 +41,62 @@ def register_slycat_plugin(context):
                     groups = session["groups"]
 
                     # no chaching plz
-                    cherrypy.response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"  # HTTP 1.1.
+                    cherrypy.response.headers["Cache-Control"] = (
+                        "no-cache, no-store, must-revalidate"  # HTTP 1.1.
+                    )
                     cherrypy.response.headers["Pragma"] = "no-cache"  # HTTP 1.0.
                     cherrypy.response.headers["Expires"] = "0"  # Proxies.
 
-                    # cherrypy.log.error("%s ::: %s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
-                    # cherrypy.log.error("%s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
-                    if datetime.datetime.utcnow() - datetime.datetime.strptime(str(started), '%Y-%m-%dT%H:%M:%S.%f') > \
-                            cherrypy.request.app.config["slycat"]["session-timeout"]:
+                    # cherrypy.log.error("%s ::: %s" % (datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
+                    # cherrypy.log.error("%s" % (datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
+                    if (
+                        datetime.datetime.now(datetime.timezone.utc)
+                        - datetime.datetime.strptime(
+                            str(started), "%Y-%m-%dT%H:%M:%S.%f"
+                        )
+                        > cherrypy.request.app.config["slycat"]["session-timeout"]
+                    ):
                         couchdb.delete(session)
                         # expire the old cookie
                         cherrypy.response.cookie["slycatauth"] = sid
-                        cherrypy.response.cookie["slycatauth"]['expires'] = 0
+                        cherrypy.response.cookie["slycatauth"]["expires"] = 0
                         session = None
                     cherrypy.request.login = user_name
-                    session["last-active-time"] = str(datetime.datetime.utcnow().isoformat())
+                    session["last-active-time"] = str(
+                        datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    )
                     couchdb.save(session)
                     # Apply (optional) authentication rules.
             except Exception as e:
-                cherrypy.log.error("@%s: could not get db session from cookie for %s" % (e, remote_ip))
+                cherrypy.log.error(
+                    "@%s: could not get db session from cookie for %s" % (e, remote_ip)
+                )
 
             # there was no session time to authenticate
             if session is None:
-                cherrypy.log.error("no session found redirecting %s to login" % remote_ip)
+                cherrypy.log.error(
+                    "no session found redirecting %s to login" % remote_ip
+                )
                 raise cherrypy.HTTPRedirect(
-                    "https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace(
-                        "http:", "https:"), 307)
+                    "https://"
+                    + current_url.netloc
+                    + "/login/slycat-login.html?from="
+                    + current_url.geturl().replace("http:", "https:"),
+                    307,
+                )
 
                 # Successful authentication, create a session and return.
                 # return
         else:
             cherrypy.log.error("no cookie found redirecting %s to login" % remote_ip)
             raise cherrypy.HTTPRedirect(
-                "https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace(
-                    "http:", "https:"), 307)
+                "https://"
+                + current_url.netloc
+                + "/login/slycat-login.html?from="
+                + current_url.geturl().replace("http:", "https:"),
+                307,
+            )
 
-    context.register_tool("slycat-password-authentication", "on_start_resource", authenticate)
+    context.register_tool(
+        "slycat-password-authentication", "on_start_resource", authenticate
+    )
