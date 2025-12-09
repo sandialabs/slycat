@@ -47,12 +47,21 @@ def register_slycat_plugin(context):
                     cherrypy.response.headers["Pragma"] = "no-cache"  # HTTP 1.0.
                     cherrypy.response.headers["Expires"] = "0"  # Proxies.
 
-                    # cherrypy.log.error("%s ::: %s" % (datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
-                    # cherrypy.log.error("%s" % (datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
+                    cherrypy.log.error(
+                        "%s ::: %s"
+                        % (
+                            datetime.datetime.now(datetime.timezone.utc)
+                            - datetime.datetime.strptime(
+                                str(started), "%Y-%m-%dT%H:%M:%S.%f%z"
+                            ).replace(tzinfo=datetime.timezone.utc),
+                            cherrypy.request.app.config["slycat"]["session-timeout"],
+                        )
+                    )
+                    # cherrypy.log.error("%s" % (datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f%z') > cherrypy.request.app.config["slycat"]["session-timeout"]))
                     if (
                         datetime.datetime.now(datetime.timezone.utc)
                         - datetime.datetime.strptime(
-                            str(started), "%Y-%m-%dT%H:%M:%S.%f"
+                            str(started), "%Y-%m-%dT%H:%M:%S.%f%z"
                         )
                         > cherrypy.request.app.config["slycat"]["session-timeout"]
                     ):

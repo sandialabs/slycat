@@ -197,7 +197,7 @@ def is_user_currently_active():
             and (
                 datetime.datetime.now(datetime.timezone.utc)
                 - datetime.datetime.strptime(
-                    str(session.doc["last-active-time"]), "%Y-%m-%dT%H:%M:%S.%f"
+                    str(session.doc["last-active-time"]), "%Y-%m-%dT%H:%M:%S.%f%z"
                 )
             )
             < most_recent_time
@@ -206,7 +206,7 @@ def is_user_currently_active():
 
     if (
         datetime.datetime.now(datetime.timezone.utc)
-        - datetime.datetime.strptime(str(most_recent_time), "%Y-%m-%dT%H:%M:%S.%f")
+        - datetime.datetime.strptime(str(most_recent_time), "%Y-%m-%dT%H:%M:%S.%f%z")
     ) >= time_threshold:
         return True
     else:
@@ -1259,7 +1259,7 @@ def put_model(mid):
 
             if key in ["started", "finished"]:
                 try:
-                    datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                    datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
                 except:
                     cherrypy.log.error(
                         "slycat.web.server.handlers.py put_model",
@@ -3068,8 +3068,8 @@ def get_model_statistics(mid):
     # amount of time it took to make the model
     if "finished" in model and model["finished"] is not None:
         delta_creation_time = (
-            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
-            - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f")
+            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
+            - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
         ).total_seconds()
     else:
         delta_creation_time = 0
@@ -3077,10 +3077,10 @@ def get_model_statistics(mid):
     if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
             datetime.datetime.strptime(
-                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
             - datetime.datetime.strptime(
-                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
         ).total_seconds()
     else:
@@ -3089,24 +3089,24 @@ def get_model_statistics(mid):
     if "job_completed_time" in model and "job_running_time" in model:
         delta_running_time = (
             datetime.datetime.strptime(
-                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
             - datetime.datetime.strptime(
-                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
         ).total_seconds()
         delta_model_compute_time = (
-            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
+            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
             - datetime.datetime.strptime(
-                model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
         ).total_seconds()
     elif "job_completed_time" in model:
         delta_running_time = (
             datetime.datetime.strptime(
-                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
-            - datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
+            - datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
         ).total_seconds()
         delta_model_compute_time = 0
 
