@@ -416,7 +416,7 @@ const useFileUploadSuccess = () => {
                   "Axis Type": constant || string ? "" : "Input",
                   constant: constant,
                   disabled: constant || string,
-                  hidden: false,
+                  hidden: string ? true : false,
                   selected: false,
                   lastSelected: false,
                   tooltip: tooltip,

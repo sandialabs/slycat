@@ -18,8 +18,19 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
       values: ["Input", "Output", "Neither"],
     },
   ];
+
+  const stringColumns = attributes.filter((attribute) => attribute.type == "string");
+
   return (
     <div hidden={hidden}>
+      {stringColumns.length > 0 && (
+        <div className="alert alert-primary" role="alert">
+          Slycat has detected non-numeric data columns in the given data table. The CCA calculation
+          is only valid for numeric data so the following non-numeric columns are not displayed:
+          <br />
+          <strong>{stringColumns.map((attribute) => attribute.name).join(", ")}</strong>
+        </div>
+      )}
       <TableIngestion
         uniqueID="varOptions"
         variables={attributes}
