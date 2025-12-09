@@ -1,6 +1,6 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import d3 from "d3";
+import * as d3 from "d3v7";
 
 $.widget("timeseries.legend", {
   options: {
@@ -119,7 +119,7 @@ $.widget("timeseries.legend", {
       var gradient = self.legend_layer.select("#color-gradient");
       var stop = gradient.selectAll("stop").data(self.options.gradient);
       stop.exit().remove();
-      stop.enter().append("stop");
+      stop = stop.enter().append("stop").merge(stop);
       stop
         .attr("offset", function (d) {
           return d.offset + "%";
@@ -144,24 +144,29 @@ $.widget("timeseries.legend", {
     }
 
     if (self.updates["update_legend_axis"]) {
+      let tickFormat = d3.format(".3~g");
       if (self.options.v_type != "string") {
-        self.legend_scale = d3.scale
-          .linear()
+        self.legend_scale = d3
+          .scaleLinear()
           .domain([self.options.max, self.options.min])
           .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       } else {
-        self.legend_scale = d3.scale
-          .ordinal()
-          .domain(self.options.uniqueValues.reverse())
-          .rangePoints([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+        self.legend_scale = d3
+          .scalePoint()
+          .domain(self.options.uniqueValues?.reverse() ?? [])
+          .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+        tickFormat = d3.format("c");
       }
-      self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
+      self.legend_axis = d3.axisRight(self.legend_scale).tickFormat(tickFormat);
       self.legend_axis_layer
         .attr(
           "transform",
-          "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)"
+          "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)",
         )
         .call(self.legend_axis);
+      // Need to remove the font-size and font-family attributes because they are now added automatically by d3v7
+      // and interfere with slycat styling.
+      self.legend_axis_layer.attr("font-size", null).attr("font-family", null);
 
       // Need to re-assign fill style to get around this firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=652991
       // It only seems to affect fill gradients and only when the URI changes, like it does for us with bookmarking.
