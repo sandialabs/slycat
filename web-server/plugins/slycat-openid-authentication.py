@@ -64,7 +64,7 @@ def register_slycat_plugin(context):
                     if (
                         datetime.datetime.now(datetime.timezone.utc)
                         - datetime.datetime.strptime(
-                            str(started), "%Y-%m-%dT%H:%M:%S.%f"
+                            str(started), "%Y-%m-%dT%H:%M:%S.%f%z"
                         )
                         > cherrypy.request.app.config["slycat"]["session-timeout"]
                     ):
