@@ -34,6 +34,10 @@ var fisher_pos = null;
 var diff_button_used = false;
 var diff_desired_state = null;
 
+// is lof button out of date?
+// true if correct, false if out of date
+var lof_button_state = null;
+
 // maximum number of plots
 var max_num_plots = null;
 
@@ -64,7 +68,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
                          init_fisher_order, init_fisher_pos, init_diff_desired_state,
                          VAR_INCLUDE_COLUMNS, datapoints_meta, meta_include_columns, data_table,
                          editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME,
-                         init_use_PCA_comps, init_lof_values)
+                         init_use_PCA_comps, init_lof_values, init_lof_button_state)
 {
 
     // set up selection buttons (1-2-3 subset zoom)
@@ -103,6 +107,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
     // set up lof button
     lof_color_by_col = init_lof_values;
     $("#dac-lof-button").on("click", lof_button);
+    module.update_lof_button(init_lof_button_state);
 
     // set initial zoom button indicator
     module.set_zoom_button(init_zoom_flag);
@@ -740,6 +745,16 @@ function lof_button ()
                 // re-color by lof
                 scatter_plot.update_color(curr_color_by_col);
 
+                // update lof button event
+                var LOFButtonEvent = new CustomEvent("DACLOFButtonChanged", 
+                    { detail: true });
+                document.body.dispatchEvent(LOFButtonEvent);
+
+                // fire new colorby event
+		        var colorbyEvent = new CustomEvent("DACColorByChanged",
+                    {detail: curr_color_by_sel});
+                document.body.dispatchEvent(colorbyEvent);
+
             },
         error: function ()
     
@@ -748,6 +763,23 @@ function lof_button ()
             }
 
     });
+
+}
+
+// update scatter button if sliders changed to yellow
+// true if correct, false if out of date
+module.update_lof_button = function(lof_state)
+{
+
+    // set lof button state
+    lof_button_state = lof_state;
+
+    // color button yellow if out of sync
+    if (lof_state) {
+        $("#dac-lof-button").removeClass("bg-warning");
+    } else {
+        $("#dac-lof-button").addClass("bg-warning");
+    }
 
 }
 
