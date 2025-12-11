@@ -755,6 +755,13 @@ function lof_button ()
                     {detail: curr_color_by_sel});
                 document.body.dispatchEvent(colorbyEvent);
 
+                // update lof values
+                client.put_model_parameter ({
+                    mid: mid,
+                    aid: "dac-lof-values",
+                    value: lof_color_by_col
+                })
+
             },
         error: function ()
     
