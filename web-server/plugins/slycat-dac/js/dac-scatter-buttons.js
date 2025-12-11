@@ -9,6 +9,7 @@ import URI from "urijs";
 
 import scatter_plot from "./dac-scatter-plot";
 import selections from "./dac-manage-selections";
+import alpha_sliders from "./dac-alpha-sliders.js";
 import request from "./dac-request-data.js";
 
 import metadata_table from "./dac-table";
@@ -38,10 +39,13 @@ var max_num_plots = null;
 
 // color by selection menu (default is "Do Not Color")
 var curr_color_by_sel = -1;
-var color_by_cols = [-1];
-var color_by_names = ["Do Not Color"];
+var color_by_cols = [-1, -2];
+var color_by_names = ["Do Not Color", "Local Outlier Factor"];
 var color_by_type = [];
 var max_color_by_name_length = null;
+
+// lof calculated values
+var lof_color_by_col = [];
 
 // current actual color by data
 var curr_color_by_col = [];
@@ -60,7 +64,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
                          init_fisher_order, init_fisher_pos, init_diff_desired_state,
                          VAR_INCLUDE_COLUMNS, datapoints_meta, meta_include_columns, data_table,
                          editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME,
-                         init_use_PCA_comps)
+                         init_use_PCA_comps, init_lof_values)
 {
 
     // set up selection buttons (1-2-3 subset zoom)
@@ -95,7 +99,11 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
         function() { selections.set_sel_type(-1); scatter_plot.draw(); })
     $("#dac-scatter-button-zoom").on("click",
         function() { selections.set_sel_type(0); scatter_plot.draw(); });
-    
+
+    // set up lof button
+    lof_color_by_col = init_lof_values;
+    $("#dac-lof-button").on("click", lof_button);
+
     // set initial zoom button indicator
     module.set_zoom_button(init_zoom_flag);
 
@@ -205,6 +213,11 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
 
         // no coloring
         curr_color_by_col = [];
+
+    } else if (init_color_by_sel == -2) {
+
+        // LOF coloring, set flag to compute later by scatter plot
+        curr_color_by_col = lof_color_by_col;
 
     // editable column coloring
     } else if (init_color_by_sel >= num_metadata_cols + num_origin_col) {
@@ -559,6 +572,12 @@ module.update_color_by_col = function(select_col)
         curr_color_by_col = [];
         scatter_plot.update_color(curr_color_by_col);
 
+    } else if (select_col == -2) {
+
+        // display local outlier factor
+        curr_color_by_col = lof_color_by_col;
+        scatter_plot.update_color(curr_color_by_col);
+        
     // editable column coloring
     } else if (select_col >= num_metadata_cols + num_origin_col) {
 
@@ -633,7 +652,7 @@ function update_color_by_col_data (data, data_col, select_col)
             }
         }
 
-        // if there are nay numbers, use those + NaNs for the remaining strings
+        // if there are any numbers, use those + NaNs for the remaining strings
         if (any_nums) {
 
             curr_color_by_col = num_array;
@@ -692,6 +711,44 @@ function set_curr_color_by_col (color_by_string_data, ordered_strings)
 module.get_color_by_col = function()
 {
     return curr_color_by_col;
+}
+
+// lof button calls server to recompute lof then draws new color
+function lof_button ()
+{
+
+    // call server to compute lof
+	client.post_sensitive_model_command(
+    {
+        mid: mid,
+        type: "DAC",
+        command: "compute_lof",
+        parameters: {alpha: alpha_sliders.get_alpha_values(),
+                     subset: selections.get_subset(),
+                     include_columns: var_include_columns,
+                     use_PCA_comps: use_PCA_comps},
+        success: function (result)
+            {
+
+                lof_color_by_col = JSON.parse(result)["lof"];
+
+                // set color by pulldown to display lof
+                $("#dac-scatter-select").prop("selectedIndex", 1);
+                curr_color_by_sel = -2;
+                curr_color_by_col = lof_color_by_col;
+
+                // re-color by lof
+                scatter_plot.update_color(curr_color_by_col);
+
+            },
+        error: function ()
+    
+            {
+                dialog.ajax_error ('Server failure: could not compute Local Outlier Factor.')("","","");
+            }
+
+    });
+
 }
 
 export default module;

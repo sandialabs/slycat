@@ -565,6 +565,50 @@ def register_slycat_plugin(context):
         # return unsorted discriminant values as JSON array
         return json.dumps({"fisher_disc": fisher_disc.tolist()})
 
+    # compute local outlier factor
+    def compute_lof(database, model, verb, type, command, **kwargs):
+
+        # get alpha values and subset mask
+        alpha_values = numpy.array(kwargs["alpha"])
+        subset_mask = numpy.array(kwargs["subset"])
+
+        # only use included variables
+        include_columns = numpy.array(kwargs["include_columns"])
+
+        # use PCA components
+        use_PCA_comps = kwargs["use_PCA_comps"]
+
+        # check for projection mask
+        proj = numpy.ones(len(subset_mask))
+        if "artifact:dac-proj-mask" in model:
+
+            # load projecgtion mask
+            proj = numpy.array(slycat.web.server.get_model_parameter(
+                database, model, "dac-proj-mask"))
+
+        # get landmarks
+        landmarks = None
+        if "artifact:dac-landmarks" in model:
+
+            # load landmarks mask
+            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-landmarks", "0/0/..."))[0]
+
+        # get distance matrices as a list of numpy arrays from slycat server
+        dist_mats = []
+        for i in include_columns:
+            dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-var-dist", "%s/0/..." % i))))
+        
+
+        # compute new lof
+        lof_values = dac.compute_LOF(dist_mats, alpha_values[include_columns],
+                                     subset_mask, proj=proj, 
+                                     landmarks=landmarks, 
+                                     use_coordinates=use_PCA_comps)
+    
+        return json.dumps({"lof": lof_values.tolist()})
+
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
 
@@ -2149,6 +2193,7 @@ def register_slycat_plugin(context):
     )
     context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)
+    context.register_model_command("POST", "DAC", "compute_lof", compute_lof)
 
     # register input wizard with slycat
     context.register_wizard(
