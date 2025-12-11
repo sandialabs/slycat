@@ -764,7 +764,9 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
             tdms_ref.append(nptdms.TdmsFile(file_object[i]))
 
         except Exception as e:
-
+            
+            cherrypy.log.error("[DAC] Couldn't read .tdms file.")
+            cherrypy.log.error(str(traceback.format_exc()))
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
                 "Progress", "Couldn't read .tdms file -- skipping \"" + FILE_NAMES[i] + '".')
 

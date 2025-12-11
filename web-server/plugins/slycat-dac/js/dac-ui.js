@@ -107,6 +107,9 @@ $(document).ready(function() {
     // use PCA components
     var use_PCA_comps = false;
 
+    // use LOF values, if available
+    var lof_values = [];
+
     // model name (for downloading tables)
     var MODEL_NAME = "";
 
@@ -592,8 +595,52 @@ $(document).ready(function() {
                         use_PCA_comps = true;
                     }
 
-                    // continue to model
-                    launch_model();
+                    // check for LOF values
+                    setup_LOF_values();
+                }        
+            });
+    }
+
+    function setup_LOF_values () {
+
+        // get model data
+        client.get_model(
+            {
+                mid: mid,
+                success: function (result)
+                {
+                    // check for lof values
+                    if ('artifact:dac-lof-values' in result)
+                    {
+                        // load LOF values
+                        client.get_model_parameter({
+                            mid: mid,
+                            aid: "dac-lof-values",
+                            success: function (result)
+                            {
+                                // save lof values
+                                lof_values = result;
+
+                                // go to model
+                                launch_model();
+                            },
+                            error: function () {
+
+                                // notify user that editable columns exist, but could not be loaded
+                                dialog.ajax_error('Server error: could not load LOF data.')
+                                ("","","")
+
+                                // no lof values, go to model anyway
+                                launch_model();
+                            }
+                        });
+                        
+                    } else {
+
+                        // no lof values is OK too
+                        launch_model();
+                    }
+
                 }        
             });
     }
@@ -977,7 +1024,7 @@ $(document).ready(function() {
                       init_zoom_flag, init_fisher_order, init_fisher_pos, 
                       init_diff_desired_state, var_include_columns, data_table_meta[0], 
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
-                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps
+                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps, lof_values
                     );
 
                     // set up the MDS scatter plot

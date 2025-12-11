@@ -95,6 +95,9 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, alpha_columns, alpha_column_types, 
         landmarks=landmarks, use_coordinates=use_coordinates)
 
+    # new addition: compute initial LOF per variable
+    LOF_vec = dac.init_LOF(var_dist, proj=proj, landmarks=landmarks, use_coordinates=use_coordinates)
+
     dac_error.log_dac_msg("Pushing data to database.")
 
     # Push DAC variables to slycat server
@@ -122,13 +125,6 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # start our single "dac-datapoints-meta" array.
     dimensions = [dict(name="row", end=len(meta_rows))]
     attributes = [dict(name=name, type=type) for name, type in zip(meta_column_str_names, meta_column_types)]
-
-    cherrypy.log.error(str(dimensions))
-    cherrypy.log.error(str(attributes))
-    cherrypy.log.error(str(len(attributes)))
-    cherrypy.log.error(str(meta_columns))
-    cherrypy.log.error(str(len(meta_columns)))
-
     slycat.web.server.put_model_array(database, model, "dac-datapoints-meta", 0, attributes, dimensions)
 
     # upload data into the array
@@ -268,6 +264,9 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # upload as slycat array
     slycat.web.server.put_model_array(database, model, "dac-alpha-clusters", 0, attributes, dimensions)
     slycat.web.server.put_model_arrayset_data(database, model, "dac-alpha-clusters", "0/0/...", [alpha_cluster_mat])
+
+    # upload lof values as parameter
+    slycat.web.server.put_model_parameter(database, model, "dac-lof-values", LOF_vec.tolist())
 
     # upload done indicator for polling routine
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
