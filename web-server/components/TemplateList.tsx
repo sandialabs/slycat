@@ -3,6 +3,7 @@ import * as dialog from "../js/slycat-dialog";
 import client from "../js/slycat-web-client";
 import ModelTypeBadge from "./Models/ModelTypeBadge";
 import Icon from "components/Icons/Icon";
+import { formatDateToLocaleString } from "utils/formatting";
 
 export interface TemplateProps {
   id: string;
@@ -89,7 +90,7 @@ const Template: React.FC<TemplateProps> = (props) => {
       </div>
       <div className="d-flex flex-row mt-0 align-items-baseline">
         <small className="fst-italic text-body-secondary flex-fill">
-          Created <span>{props.created}</span> by <span>{props.creator}</span>
+          Created <span>{formatDateToLocaleString(props.created)}</span> by <span>{props.creator}</span>
         </small>
       </div>
     </div>

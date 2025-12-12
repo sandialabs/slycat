@@ -84,7 +84,7 @@ export default class SlycatRemoteControls extends Component {
    */
   getRemoteHosts = async () => {
     return client.get_configuration_remote_hosts_fetch().then((json) => {
-      this.setState({ hostnames: json });
+      this.setState({ hostnames: json, initialLoad: true });
     });
   };
   componentDidUpdate() {
@@ -107,16 +107,12 @@ export default class SlycatRemoteControls extends Component {
    */
   populateDisplay = () => {
     const display = {};
-    if (localStorage.getItem("slycat-remote-controls-hostname")) {
-      display.hostname = localStorage.getItem("slycat-remote-controls-hostname")
-        ? localStorage.getItem("slycat-remote-controls-hostname")
-        : undefined;
-    }
-    if (localStorage.getItem("slycat-remote-controls-username")) {
-      display.username = localStorage.getItem("slycat-remote-controls-username")
-        ? localStorage.getItem("slycat-remote-controls-username")
-        : undefined;
-    }
+    const storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
+    display.hostname =
+      storedHostname && storedHostname !== "null" ? storedHostname : undefined;
+    const storedUsername = localStorage.getItem("slycat-remote-controls-username");
+    display.username =
+      storedUsername && storedUsername !== "null" ? storedUsername : undefined;
     return display;
   };
 

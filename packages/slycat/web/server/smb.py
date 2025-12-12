@@ -21,7 +21,7 @@ class Smb(object):
 
     def __init__(self, username, password, server, share, domain="", port=445):
         # setup data
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         self.domain = str(domain)
         self.username = str(username)
         self.password = str(password)
@@ -216,7 +216,7 @@ def check_session(sid):
             response = False
         if response:
             session = session_cache[sid]
-            session._accessed = datetime.datetime.utcnow()
+            session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return response
 
 
@@ -260,7 +260,7 @@ def get_session(sid):
         if sid not in session_cache:
             raise cherrypy.HTTPError("404 not a session")
         session = session_cache[sid]
-        session._accessed = datetime.datetime.utcnow()
+        session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return session
 
 

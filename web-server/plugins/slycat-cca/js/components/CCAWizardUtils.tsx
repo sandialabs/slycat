@@ -179,10 +179,16 @@ export const useCCAHandleBack = () => {
     if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
     }
-    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === dataLocationType.LOCAL) {
+    if (
+      tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB &&
+      dataLocation === dataLocationType.LOCAL
+    ) {
       dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
     }
-    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && dataLocation === dataLocationType.REMOTE) {
+    if (
+      tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB &&
+      dataLocation === dataLocationType.REMOTE
+    ) {
       dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
     }
     if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
@@ -416,7 +422,7 @@ const useFileUploadSuccess = () => {
                   "Axis Type": constant || string ? "" : "Input",
                   constant: constant,
                   disabled: constant || string,
-                  hidden: false,
+                  hidden: string ? true : false,
                   selected: false,
                   lastSelected: false,
                   tooltip: tooltip,
@@ -501,8 +507,8 @@ export const useHandleRemoteFileSubmit = () => {
         } else {
           autoParser = parser;
         }
-        const filePath = fileDescriptor.path.split("/")
-        const fileNameFromPath = filePath[filePath.length -1]
+        const filePath = fileDescriptor.path.split("/");
+        const fileNameFromPath = filePath[filePath.length - 1];
         const fileObject = {
           pid,
           mid,
