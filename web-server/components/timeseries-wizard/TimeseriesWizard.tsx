@@ -39,7 +39,9 @@ export interface TimeseriesWizardState {
   inputDirectory: string;
   parserType: string;
   columnNames: { text: string; value: string }[];
+  allColumnNames: { text: string; value: string }[];
   timeseriesColumn: string;
+  indexColumn: string;
   binCount: number;
   resamplingAlg: string;
   clusterLinkageMeasure: string;
@@ -92,6 +94,7 @@ export default class TimeseriesWizard extends React.Component<
       parserType: "",
       columnNames: [],
       timeseriesColumn: "",
+      indexColumn: "",
       binCount: 500,
       resamplingAlg: "uniform-paa",
       clusterLinkageMeasure: "average",
@@ -193,6 +196,10 @@ export default class TimeseriesWizard extends React.Component<
               fileType={this.state.selectedOption}
               delimiter={this.state.delimiter}
               columnNames={this.state.columnNames}
+              allColumnNames={this.state.allColumnNames}
+              indexColumnCallback={(col: string) => {
+                this.setState({indexColumn: col});
+              }}
               delimiterCallback={(delim: string) => {
                 this.setState({ delimiter: delim });
               }}
@@ -525,6 +532,16 @@ export default class TimeseriesWizard extends React.Component<
     }
     if (selectedPathType === "f" && this.state.selectedOption === "csv") {
       client
+      .get_all_column_names_fetch({
+        hostname: this.state.hostname,
+        path: selectedPath,
+      })
+      .then((result) => {
+        console.log(result);
+        this.handleAllColumnNames(result);
+      });
+
+      client
         .get_time_series_names_fetch({
           hostname: this.state.hostname,
           path: selectedPath,
@@ -532,6 +549,17 @@ export default class TimeseriesWizard extends React.Component<
         .then((result) => {
           this.handleColumnNames(result);
         });
+    }
+    if (selectedPathType === "f" && this.state.selectedOption === "xyce") {
+      client
+      .get_all_column_names_fetch({
+        hostname: this.state.hostname,
+        path: selectedPath,
+      })
+      .then((result) => {
+        console.log(result);
+        this.handleAllColumnNames(result);
+      });
     }
   };
 
@@ -551,6 +579,14 @@ export default class TimeseriesWizard extends React.Component<
 
   onSelectParser = (selectedParser: string) => {
     this.setState({ parserType: selectedParser });
+  };
+
+  handleAllColumnNames = (names: []) => {
+    const allColumnNames = [];
+    for (let i = 0; i < names.length; i++) {
+      allColumnNames.push({ text: names[i], value: names[i] });
+    }
+    this.setState({ allColumnNames: allColumnNames });
   };
 
   handleColumnNames = (names: []) => {

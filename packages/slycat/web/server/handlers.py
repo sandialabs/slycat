@@ -3804,6 +3804,29 @@ def get_remote_image(hostname, path, **kwargs):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_image(path, **kwargs)
 
+# TODO: clean up everything
+@cherrypy.tools.json_out(on=True)
+def get_all_column_names(hostname, path, **kwargs):
+    """
+    Parse a csv/dat for all column names
+    :param hostname: connection host name
+    :param path: path to csv/dat file
+    :param kwargs:
+    :return: json object of column names
+    """
+    sid, session_type = get_sid(hostname)
+    with slycat.web.server.remote.get_session(sid) as session:
+        csv_file = str(session.get_file(path, **kwargs).decode("utf-8"))
+    csv_file = csv_file.replace("\\r\\n", "\r\n")
+    rows = [row.split(",") for row in csv_file.splitlines()]
+    column_names = [name.strip() for name in rows[0]]
+
+    if len(column_names) >= 1:
+        return column_names
+    else:
+        raise cherrypy.HTTPError(
+            "400 could not detect column names. There could be hidden characters in your csv."
+        )
 
 # TODO: clean up everything
 @cherrypy.tools.json_out(on=True)

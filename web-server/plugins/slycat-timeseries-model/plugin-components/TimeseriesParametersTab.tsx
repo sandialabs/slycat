@@ -8,6 +8,8 @@ interface TimeseriesParametersTabProps {
     delimiter: string
     delimiterCallback: Function
     columnNames: any
+    allColumnNames: any
+    indexColumnCallback: Function
     columnCallback: Function
     bincountCallback: Function
     resamplingCallback: Function
@@ -36,6 +38,11 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
             </div>
         : null }
         <div>
+            <SlycatSelector
+            label={'Index Column Name'}
+            options={props.allColumnNames}
+            onSelectCallBack={props.indexColumnCallback}
+            />
             <SlycatNumberInput
             label={'Timeseries Bin Count'}
             value={500}
