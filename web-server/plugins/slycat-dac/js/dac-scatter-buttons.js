@@ -36,7 +36,7 @@ var diff_desired_state = null;
 
 // is lof button out of date?
 // true if correct, false if out of date
-var lof_button_state = null;
+var lof_button_state = true;
 
 // maximum number of plots
 var max_num_plots = null;
@@ -219,7 +219,7 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
         // no coloring
         curr_color_by_col = [];
 
-    } else if (init_color_by_sel == -2) {
+    } else if (init_color_by_sel === -2) {
 
         // LOF coloring, set flag to compute later by scatter plot
         curr_color_by_col = lof_color_by_col;
@@ -577,7 +577,7 @@ module.update_color_by_col = function(select_col)
         curr_color_by_col = [];
         scatter_plot.update_color(curr_color_by_col);
 
-    } else if (select_col == -2) {
+    } else if (select_col === -2) {
 
         // display local outlier factor
         curr_color_by_col = lof_color_by_col;
@@ -735,8 +735,12 @@ function lof_button ()
         success: function (result)
             {
 
-                lof_color_by_col = JSON.parse(result)["lof"];
-
+                // collect result, if not available default to empty
+                lof_color_by_col = [];
+                if (JSON.parse(result).hasOwnProperty("lof")) {
+                    lof_color_by_col = JSON.parse(result)["lof"];
+                }
+                
                 // set color by pulldown to display lof
                 $("#dac-scatter-select").prop("selectedIndex", 1);
                 curr_color_by_sel = -2;

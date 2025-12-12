@@ -161,7 +161,7 @@ dac_ui_parms = {
     'ALPHA_SLIDER_WIDTH': 170,         # width in pixels for alpha slider
     'ALPHA_BUTTONS_HEIGHT': 33,        # height of alpha buttons pixels
     'MAX_POINTS_ANIMATE': 2500,        # number of points below which we animate
-    'SCATTER_BORDER': .05,             # border around scatter plot (fraction)
+    'SCATTER_BORDER': .025,            # border around scatter plot (fraction)
     'SCATTER_BUTTONS_HEIGHT': 37,      # scatter plot toolbar height
     'POINT_COLOR': 'whitesmoke',       # css named color for non selected points
     'POINT_SIZE': 5,                   # d3 point size for scatter plot
