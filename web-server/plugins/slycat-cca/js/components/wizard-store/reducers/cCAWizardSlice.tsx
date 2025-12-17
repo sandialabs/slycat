@@ -76,7 +76,7 @@ const initialState: CCAWizardState = {
   fileUploaded: false,
   localFileSelected: false,
   attributes: [],
-  scaleInputs: false,
+  scaleInputs: true,
   marking: undefined,
   description: undefined,
   name: undefined,
@@ -95,7 +95,7 @@ const initialState: CCAWizardState = {
   parser: undefined,
   hdf5InputTable: undefined,
   hdf5OutputTable: undefined,
-  fileName: undefined,
+  fileName: undefined
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
