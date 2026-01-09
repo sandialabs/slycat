@@ -3064,15 +3064,16 @@ def get_model_statistics(mid):
     except:
         raise cherrypy.HTTPError("404 error: %s" % mid)
     slycat.web.server.authentication.require_project_reader(project)
-
+    delta_creation_time = 0
     # amount of time it took to make the model
     if "finished" in model and model["finished"] is not None:
-        delta_creation_time = (
-            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
-            - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
-        ).total_seconds()
-    else:
-        delta_creation_time = 0
+        try:
+            delta_creation_time = (
+                datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
+                - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
+            ).total_seconds()
+        except ValueError as e:
+            delta_running_time = 0
 
     if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
@@ -3087,29 +3088,40 @@ def get_model_statistics(mid):
         delta_queue_time = 0
 
     if "job_completed_time" in model and "job_running_time" in model:
-        delta_running_time = (
-            datetime.datetime.strptime(
-                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
-            - datetime.datetime.strptime(
-                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
-        ).total_seconds()
-        delta_model_compute_time = (
-            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
-            - datetime.datetime.strptime(
-                model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
-        ).total_seconds()
+        try:
+            delta_running_time = (
+                datetime.datetime.strptime(
+                    model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+                - datetime.datetime.strptime(
+                    model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+            ).total_seconds()
+        except ValueError as e:
+            delta_running_time = 0
+        try:
+            delta_model_compute_time = (
+                datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
+                - datetime.datetime.strptime(
+                    model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+            ).total_seconds()
+        except ValueError as e:
+            delta_model_compute_time = 0
     elif "job_completed_time" in model:
-        delta_running_time = (
-            datetime.datetime.strptime(
-                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
-            - datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
-        ).total_seconds()
-        delta_model_compute_time = 0
-
+        try:
+            delta_running_time = (
+                datetime.datetime.strptime(
+                    model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+                - datetime.datetime.strptime(
+                    model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+            ).total_seconds()
+            delta_model_compute_time = 0
+        except ValueError as e:
+            delta_running_time = 0
+            delta_model_compute_time = 0
     else:
         delta_running_time = 0
         delta_model_compute_time = 0
