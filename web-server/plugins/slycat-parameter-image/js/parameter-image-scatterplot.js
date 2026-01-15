@@ -1428,10 +1428,10 @@ $.widget("parameter_image.scatterplot", {
           .append("text")
           .attr("class", "label warning-icon")
           .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-toggle", "popover")
-          .attr("data-trigger", "hover")
-          .attr("data-placement", "auto")
+          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-bs-toggle", "popover")
+          .attr("data-bs-trigger", "hover")
+          .attr("data-bs-placement", "auto")
           .attr("x", xOffset) // Position after text with small gap
           .attr("y", y)
           .style("font-size", fontSize + "px")
@@ -1440,10 +1440,10 @@ $.widget("parameter_image.scatterplot", {
 
         label
           .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-toggle", "popover")
-          .attr("data-trigger", "hover")
-          .attr("data-placement", "auto");
+          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-bs-toggle", "popover")
+          .attr("data-bs-trigger", "hover")
+          .attr("data-bs-placement", "auto");
 
         $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
       }
@@ -1487,10 +1487,10 @@ $.widget("parameter_image.scatterplot", {
           .append("text")
           .attr("class", "label warning-icon")
           .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-toggle", "popover")
-          .attr("data-trigger", "hover")
-          .attr("data-placement", "auto")
+          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-bs-toggle", "popover")
+          .attr("data-bs-trigger", "hover")
+          .attr("data-bs-placement", "auto")
           .attr("x", xOffset)
           .attr("y", y)
           .attr("transform", `rotate(-90,${x},${y})`)
@@ -1501,10 +1501,10 @@ $.widget("parameter_image.scatterplot", {
 
         label
           .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-toggle", "popover")
-          .attr("data-trigger", "hover")
-          .attr("data-placement", "auto");
+          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-bs-toggle", "popover")
+          .attr("data-bs-trigger", "hover")
+          .attr("data-bs-placement", "auto");
 
         $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
       }
@@ -1863,10 +1863,10 @@ $.widget("parameter_image.scatterplot", {
           .append("text")
           .attr("class", "label warning-icon")
           .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-toggle", "popover")
-          .attr("data-trigger", "hover")
-          .attr("data-placement", "auto")
+          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-bs-toggle", "popover")
+          .attr("data-bs-trigger", "hover")
+          .attr("data-bs-placement", "auto")
           .attr("x", xOffset)
           .attr("y", y)
           .attr("transform", `rotate(-90,${x},${y})`)
@@ -1877,10 +1877,10 @@ $.widget("parameter_image.scatterplot", {
 
         label
           .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-toggle", "popover")
-          .attr("data-trigger", "hover")
-          .attr("data-placement", "auto");
+          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
+          .attr("data-bs-toggle", "popover")
+          .attr("data-bs-trigger", "hover")
+          .attr("data-bs-placement", "auto");
 
         $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
       }
