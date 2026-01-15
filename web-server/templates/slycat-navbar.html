@@ -212,6 +212,62 @@
           </li>
           <!-- /ko -->
 
+          <!-- Delete menu -->
+          <!-- ko if: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              role="button"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+              aria-expanded="false"
+            >
+              Delete
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-delete">
+              <!-- ko foreach: model_delete_wizards -->
+              <li>
+                <a
+                  href="#"
+                  class="dropdown-item"
+                  data-bind="text: label, click:$parent.run_wizard"
+                ></a>
+              </li>
+              <!-- /ko -->
+              <li
+                data-bind="visible: model_delete_wizards().length && global_delete_wizards().length"
+              >
+                <hr class="dropdown-divider" />
+              </li>
+              <!-- ko foreach: project_delete_wizards -->
+              <li>
+                <a
+                  href="#"
+                  class="dropdown-item"
+                  data-bind="text: label, click:$parent.run_wizard"
+                ></a>
+              </li>
+              <!-- /ko -->
+              <li
+                data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"
+              >
+                <hr class="dropdown-divider" />
+              </li>
+              <!-- ko foreach: global_delete_wizards -->
+              <li>
+                <a
+                  href="#"
+                  class="dropdown-item"
+                  data-bind="text: label, click:$parent.run_wizard"
+                ></a>
+              </li>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <!-- /ko -->
+          <!-- End of Delete menu -->
+
           <!-- Bookmark menu -->
           <!-- ko if: (model_id() && model_create_wizards().length) || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0)) -->
           <li class="nav-item dropdown">
@@ -378,62 +434,7 @@
           </li>
           <!--/ko -->
           <!-- End of Bookmark menu -->
-
-          <!-- Delete menu -->
-          <!-- ko if: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length -->
-          <li class="nav-item dropdown">
-            <a
-              class="nav-link dropdown-toggle"
-              href="#"
-              role="button"
-              data-bs-toggle="dropdown"
-              data-bs-auto-close="outside"
-              aria-expanded="false"
-            >
-              Delete
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-delete">
-              <!-- ko foreach: model_delete_wizards -->
-              <li>
-                <a
-                  href="#"
-                  class="dropdown-item"
-                  data-bind="text: label, click:$parent.run_wizard"
-                ></a>
-              </li>
-              <!-- /ko -->
-              <li
-                data-bind="visible: model_delete_wizards().length && global_delete_wizards().length"
-              >
-                <hr class="dropdown-divider" />
-              </li>
-              <!-- ko foreach: project_delete_wizards -->
-              <li>
-                <a
-                  href="#"
-                  class="dropdown-item"
-                  data-bind="text: label, click:$parent.run_wizard"
-                ></a>
-              </li>
-              <!-- /ko -->
-              <li
-                data-bind="visible: project_delete_wizards().length && global_delete_wizards().length"
-              >
-                <hr class="dropdown-divider" />
-              </li>
-              <!-- ko foreach: global_delete_wizards -->
-              <li>
-                <a
-                  href="#"
-                  class="dropdown-item"
-                  data-bind="text: label, click:$parent.run_wizard"
-                ></a>
-              </li>
-              <!-- /ko -->
-            </ul>
-          </li>
-          <!-- /ko -->
-          <!-- End of Delete menu -->
+          
         </ul>
 
         <!-- Breadcrumb -->
