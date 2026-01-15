@@ -62,9 +62,7 @@ export default class SlycatTextInput extends React.Component<
         />
         <label htmlFor={inputId}>{this.props.label}</label>
         {/* Only show warning if the input is empty */}
-        {this.isInputInvalid() && (
-          <div className="invalid-feedback">{this.props.warning}</div>
-        )}
+        {this.isInputInvalid() && <div className="invalid-feedback">{this.props.warning}</div>}
       </div>
     );
   }
