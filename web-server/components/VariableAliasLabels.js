@@ -63,7 +63,7 @@ class VariableAliasLabelsRow extends React.PureComponent {
               className={`form-control form-control-sm variable-alias 
                 ${this.props.userInput ? "contains-user-input" : ""}`}
               minLength="0"
-              maxLength="256"
+              maxLength="75"
               name={this.props.index}
               value={this.props.alias}
               onChange={this.props.onChange}
