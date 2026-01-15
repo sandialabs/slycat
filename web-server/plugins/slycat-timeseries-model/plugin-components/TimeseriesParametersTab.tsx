@@ -25,7 +25,7 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
                     id={"delimiter"}
                     label={"Table File Delimeter"}
                     value={props.delimiter ? props.delimiter : ','}
-                    warning={props.delimiter ? "" : "Please enter a table file delimiter."}
+                    warning="Please enter a table file delimiter."
                     callBack={props.delimiterCallback}
                 />
                 <SlycatSelector
