@@ -306,10 +306,19 @@ export default class TimeseriesWizard extends React.Component<
         </button>,
       );
     }
-    const isDisabled = this.state.visibleTab === "1" && this.state.selectedTablePath === ""
+    const isDisabled =
+      (this.state.visibleTab === "1" && this.state.selectedTablePath === "") ||
+      (this.state.visibleTab == "0" && this.state.sessionExists !== true);
+
     const continueClassNames = isDisabled ? "btn btn-primary disabled" : "btn btn-primary";
 
-    if (this.state.visibleTab == "0" && this.state.sessionExists != true) {
+    if (
+      this.state.visibleTab == "0" &&
+      this.state.sessionExists !== true &&
+      this.state.hostname.length > 0 &&
+      this.state.username.length > 0 &&
+      this.state.password.length > 0
+    ) {
       footerJSX.push(
         <ConnectButton
           key={3}
@@ -331,7 +340,7 @@ export default class TimeseriesWizard extends React.Component<
           className={continueClassNames}
           onClick={this.continue}
         >
-          Continue{this.state.visibleTab}
+          Continue
         </button>,
       );
     }
