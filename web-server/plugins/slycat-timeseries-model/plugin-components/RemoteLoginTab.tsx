@@ -7,6 +7,7 @@ interface RemoteLoginTabProps {
   onChange: Function;
   loadingData: any;
   callBack: Function;
+  sessionExists?: boolean;
 }
 
 function RemoteLoginTab(props: RemoteLoginTabProps) {
@@ -38,7 +39,7 @@ function RemoteLoginTab(props: RemoteLoginTabProps) {
       <div className="alert alert-primary" role="alert">
         Hostname is the HPC system where the timeseries job will be submitted.
       </div>
-      <SlycatRemoteControls loadingData={props.loadingData} callBack={props.callBack} />
+      <SlycatRemoteControls loadingData={props.loadingData} callBack={props.callBack} sessionExists={props.sessionExists}/>
     </div>
   );
 }
