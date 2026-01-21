@@ -3,15 +3,14 @@ import vtkActor from "vtk.js/Sources/Rendering/Core/Actor";
 import vtkXMLPolyDataReader from "vtk.js/Sources/IO/XML/XMLPolyDataReader";
 import vtkSTLReader from "vtk.js/Sources/IO/Geometry/STLReader";
 import vtkMapper from "vtk.js/Sources/Rendering/Core/Mapper";
+import vtkCellPicker from "vtk.js/Sources/Rendering/Core/CellPicker";
 import vtkOpenGLRenderWindow from "vtk.js/Sources/Rendering/OpenGL/RenderWindow";
 import vtkRenderWindow from "vtk.js/Sources/Rendering/Core/RenderWindow";
 import vtkRenderWindowInteractor from "vtk.js/Sources/Rendering/Core/RenderWindowInteractor";
 import vtkRenderer from "vtk.js/Sources/Rendering/Core/Renderer";
-// import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
 import vtkInteractorStyleManipulator from "vtk.js/Sources/Interaction/Style/InteractorStyleManipulator";
 import vtkGestureCameraManipulator from "vtk.js/Sources/Interaction/Manipulators/GestureCameraManipulator";
 
-// import vtkMouseCameraTrackballMultiRotateManipulator from 'vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballMultiRotateManipulator';
 import vtkMouseCameraTrackballPanManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballPanManipulator";
 import vtkMouseCameraTrackballRollManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballRollManipulator";
 import vtkMouseCameraTrackballRotateManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballRotateManipulator";
@@ -26,6 +25,7 @@ import { ColorMode, ScalarMode } from "vtk.js/Sources/Rendering/Core/Mapper/Cons
 import { addCamera } from "./vtk-camera-synchronizer";
 
 import {
+  updateThreeDCameras,
   updateThreeDColorByOptions,
   setThreeDColorByRange,
   adjustThreeDVariableDataRange,
@@ -474,6 +474,39 @@ export function load(container, buffer, uri, uid, type) {
 
   interactor.setInteractorStyle(interactorStyle);
 
+  // ----------------------------------------------------------------------------
+  // Double-click handler to set the center of rotation
+  // ----------------------------------------------------------------------------
+
+  const picker = vtkCellPicker.newInstance();
+  picker.setPickFromList(true);
+  picker.initializePickList();
+  picker.addPickList(actor);
+
+  container.addEventListener(
+    "dblclick",
+    (event) => {
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const viewHeight = openglRenderWindow.getSize()[1];
+      const displayY = viewHeight - y;
+      picker.pick([x, displayY, 0], renderer);
+      const pickedPositions = picker.getPickedPositions();
+      if (picker.getActors().length > 0 && pickedPositions.length > 0) {
+        interactorStyle.setCenterOfRotation(pickedPositions[0]);
+        window.store.dispatch(updateThreeDCameras([{ uid, camera, interactorStyle }]));
+        // console.debug("vtk geometry double-clicked shape", {
+        //   uri,
+        //   uid,
+        //   pickedPosition: pickedPositions[0],
+        //   cellId: picker.getCellId(),
+        // });
+      }
+    },
+    false,
+  );
+
   // Dispatching a vtk start interaction event when someone starts interacting with this
   // 3d model. It's used by the scatterplot to select the model's frame.
   interactorStyle.onStartInteractionEvent(() => {
@@ -493,6 +526,10 @@ export function load(container, buffer, uri, uid, type) {
     camera.setPosition(...cameraState.position);
     camera.setFocalPoint(...cameraState.focalPoint);
     camera.setViewUp(...cameraState.viewUp);
+    // Restore the center of rotation
+    if (cameraState.centerOfRotation && interactorStyle.setCenterOfRotation) {
+      interactorStyle.setCenterOfRotation(cameraState.centerOfRotation);
+    }
     // Trying to reset clipping range instead of setting it to see if it helps with issue #986
     // camera.setClippingRange(...cameraState.clippingRange);
     renderer.resetCameraClippingRange();
@@ -500,6 +537,6 @@ export function load(container, buffer, uri, uid, type) {
     interactor.render();
   }
 
-  // Pass the active camera to camera synchronizer
-  addCamera(camera, container, interactor, uid, renderer);
+  // Pass the active camera and interactor style to camera synchronizer
+  addCamera(camera, container, interactor, uid, renderer, interactorStyle);
 }
