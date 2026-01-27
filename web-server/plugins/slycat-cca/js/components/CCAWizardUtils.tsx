@@ -493,7 +493,6 @@ export const useHandleRemoteFileSubmit = () => {
         const splitFilePathLength = splitFilePath.length;
         const fileName = splitFilePath[splitFilePathLength - 1];
         const fileExtension = fileName.split(".")[1];
-        console.log('File extension: ' + fileExtension);
 
         // Automatically detect file type from the file name, and select the parser accordingly
         if (fileExtension == "csv") {
