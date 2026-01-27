@@ -27,6 +27,7 @@ import scipy.optimize
 
 from scipy import spatial
 from sklearn.decomposition import PCA
+from sklearn.neighbors import LocalOutlierFactor
 
 # better version of natural sort
 # from natsort import natsorted
@@ -35,6 +36,10 @@ from sklearn.decomposition import PCA
 import re
 
 import cherrypy
+
+# number of neighbors for LOF, defaults to 20 (same as scikit-learn)
+# may be adjustable in future versions
+LOF_K = 10
 
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D, full=False):
@@ -132,7 +137,7 @@ def compute_coords_subset (dist_mats, alpha_values, old_coords, subset, proj=Non
             - proj is an optional vector similar to subset, defaults to vector
               of all 1.
     
-    OUTPUTS: Y is a numpy array of coordinates (n,2) and
+    OUTPUTS: Y is a numpy array of coordinates (n,2)
     """
 
     # set projection default (vector of all ones -- everything in projection)
@@ -300,7 +305,7 @@ def compute_coords_landmark (dist_mats, alpha_values, old_coords, subset,
 def compute_coords (dist_mats, alpha_values, old_coords, subset, 
                     proj=None, landmarks=None, use_coordinates=False):
     """
-    Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
+    Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale (legacy) to compute
     classical multidimensional scaling.
     
     INPUTS: -- dist_mats is a list of numpy arrays containing square
@@ -318,7 +323,7 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
             -- use_coordinates is an optional Boolean flag indicating distance matrices
                are in fact just coordinates
     
-    OUTPUTS: Y is a numpy array of coordinates (n,2) and
+    OUTPUTS: Y is a numpy array of coordinates (n,2)
     """
 
     # if distance matrices are actual distances, use previous behavior
@@ -751,3 +756,329 @@ def select_landmarks(num_points, num_landmarks, variable):
 
     return landmarks
 
+
+# compute initial local outlier factor
+def init_LOF(var_dist, num_neighbors=LOF_K, proj=None, 
+             landmarks=None, use_coordinates=False):
+    """
+    Computes the initial local outlier factor values (assuming alpha all 1)
+
+    INPUTS: -- var_dist is a list of distance matrices
+            -- num_neighbors is the number of neighbors to use for LOF
+            -- proj is a vector mask of projected points (optional)
+            -- landmarks is a vector of indices of landmark points (optional)
+            -- use_coordinates indicates that var_dist actually contains PCA intermediates
+
+    OUTPUTS: LOF_vec is a vector with num_points containing the LOF value
+             for each data point.
+    """
+
+    num_vars = len(var_dist)
+
+    # assume initial alpha values are all one
+    alpha_values = np.ones(num_vars)
+
+    # scale distance matrices (or coordinates) by maximum, unless maximum is zero
+    for i in range(0, num_vars):
+
+        coords_scale = np.amax(np.absolute(var_dist[i]))
+        if coords_scale < np.finfo(float).eps:
+            coords_scale = 1.0
+
+        var_dist[i] = var_dist[i] / coords_scale
+
+    # compute LOF values assuming alpha = 1 for scaling, full subset, full view
+    subset_mask = np.ones(var_dist[0].shape[0])
+    LOF_vec = compute_LOF(var_dist, alpha_values, subset_mask, 
+                          num_neighbors=num_neighbors, proj=proj, 
+                          landmarks=landmarks, use_coordinates=use_coordinates)
+
+    return LOF_vec
+
+
+# compute LOF factor for different alpha, subset values
+def compute_LOF(dist_mats, alpha_values, subset, 
+                num_neighbors=LOF_K, proj=None, 
+                landmarks=None, use_coordinates=False):
+    """
+    Computes sum alpha_i^2 dist_mat_i.^2 then calls lof to compute outlier factors.
+    
+    INPUTS: -- dist_mats is a list of numpy arrays containing square
+               matrices (n,n) representing distances,
+            -- alpha_values is a numpy array containing a vector of 
+               alpha values between 0 and 1.
+            -- subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            -- proj is an optional vector similar to subset, defaults to vector
+               of all 1.
+            -- landmarks is an optional vector which specifies landmark indices to use
+               in the MDS calculation using mask. if the dist_mats are not square it 
+               is required and the matrices are assumed to be size (n,k), where k is 
+               the number of landmarks
+            -- use_coordinates is an optional Boolean flag indicating distance matrices
+               are in fact just coordinates
+    
+    OUTPUTS: vector of LOF values.
+    """
+
+    # hold over from update mds coords
+    old_lof_vals = np.zeros(dist_mats[0].shape[0])
+
+    # if not PCA components, use landmarks/distance matrices
+    if use_coordinates == False:
+        compute_LOF_landmarks(dist_mats, alpha_values, old_lof_vals, subset, 
+                              proj=proj, landmarks=landmarks, num_neighbors=num_neighbors)
+
+    # number of points/components
+    [num_tests, num_comps] = dist_mats[0].shape
+
+    # number of landmarks (all points)
+    landmarks = np.ones(num_tests)
+
+    # set projection default (vector of all ones -- everything in base calculation)
+    if proj is None:
+        proj = np.ones(num_tests)
+
+    # make sure projection is an array
+    else:
+        proj = np.asarray(proj)
+
+    # remove projected points from landmarks
+    landmarks = np.multiply(landmarks, proj)
+
+    # get size of subset
+    num_subset = int(np.sum(subset))
+
+    # always use landmarks to compute basic coordinates
+    num_landmarks = int(np.sum(landmarks))
+    full_dist_mat = np.zeros((num_landmarks, num_comps))
+
+    # compute alpha-sum of distance matrices on landmarks
+    landmark_rows = np.where(landmarks)[0]
+    landmark_cols = np.arange(num_comps)
+    for i in range(len(dist_mats)):
+        full_dist_mat = full_dist_mat + alpha_values[i] * \
+                        dist_mats[i][landmark_rows[:,None], landmark_cols]
+
+    # set up LOF, use novelty=True if something to project
+    lof = LocalOutlierFactor(n_neighbors=num_neighbors)
+    if num_landmarks < num_tests:
+        lof = LocalOutlierFactor(n_neighbors=num_neighbors, novelty=True)
+    
+    # compute LOF
+    lof.fit_predict(full_dist_mat)
+    landmark_lof_vals = -lof.negative_outlier_factor_
+
+    # if not in landmarks, assign old values
+    lof_vals = old_lof_vals
+    lof_vals[landmark_rows] = landmark_lof_vals
+
+    # now project onto landmarks
+    if num_landmarks < num_tests:
+
+        # get points to project (subset or proj except landmarks)
+        if num_subset == num_tests:
+            proj_inds = np.where(landmarks==0)[0]
+        else:
+            proj_inds = np.where(np.logical_and(landmarks==0, subset))[0]
+        
+        # compute distance squared for each point to be projected
+        num_proj_inds = len(proj_inds)
+        proj_dist_mat = np.zeros((num_proj_inds, num_comps))
+        for i in range(len(dist_mats)):
+            proj_dist_mat = proj_dist_mat + alpha_values[i] * \
+                            dist_mats[i][proj_inds[:, None], landmark_cols]
+
+        # project using LOF model
+        proj_vals = -lof.decision_function(proj_dist_mat)
+
+        # put projected coords into mds coords
+        lof_vals[proj_inds] = proj_vals
+
+    return lof_vals
+
+
+# compute LOF factor using landmarks
+def compute_LOF_landmarks(dist_mats, alpha_values, old_lof_vals, subset, 
+                          proj=None, landmarks=None, num_neighbors=LOF_K):
+    """
+    Computes sum alpha_i^2 dist_mat_i.^2 then calls LOF to compute
+    outlier values.
+    
+    INPUTS: -- dist_mats is a list of numpy arrays containing square
+               matrices (n,n) representing distances,
+            -- alpha_values is a numpy array containing a vector of 
+               alpha values between 0 and 1.
+            -- old_lof_vals is a numpy array containing the previous values.
+            -- subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            -- proj is an optional vector similar to subset, defaults to vector
+               of all 1.
+            -- landmarks is an optional vector which specifies landmark indices to use
+               in the MDS calculation using mask. if the dist_mats are not square it 
+               is required and the matrices are assumed to be size (n,k), where k is 
+               the number of landmarks
+    
+    OUTPUTS: vector of LOF values.
+    """
+    # set landmark default, vector of all ones, indicating that
+    # everything is a landmark and distance matrices are square
+    num_tests = dist_mats[0].shape[0]
+    if landmarks is None:
+        landmarks = np.ones(num_tests)
+    
+    # make sure landmarks is an array
+    else:
+        landmarks = np.asarray(landmarks)
+
+    # use legacy behavior if we have full pairwise distance matrices
+    num_landmarks = int(np.sum(landmarks))
+    if num_landmarks == num_tests:
+        return compute_LOF_subset (dist_mats, alpha_values, 
+            old_lof_vals, subset, proj=proj, num_neighbors=num_neighbors)
+
+    # set projection default (vector of all ones -- everything in base calculation)
+    if proj is None:
+        proj = np.ones(num_tests)
+
+    # make sure projection is an array
+    else:
+        proj = np.asarray(proj)
+
+    # remove projected points from landmarks
+    landmarks = np.multiply(landmarks, proj)
+
+    # get size of subset
+    num_subset = int(np.sum(subset))
+
+    # always use landmarks to compute basic coordinates
+    num_landmarks = int(np.sum(landmarks))
+    full_dist_mat = np.zeros((num_landmarks,num_landmarks))
+
+    # compute alpha-sum of distance matrices on landmarks
+    landmark_rows = np.where(landmarks)[0]
+    landmark_cols = np.arange(num_landmarks)
+    for i in range(len(dist_mats)):
+        full_dist_mat = full_dist_mat + alpha_values[i]**2 * \
+                        dist_mats[i][landmark_rows[:,None], landmark_cols]**2
+    full_dist_mat = np.sqrt(full_dist_mat)
+
+    # compute LOF values on landmarks
+    lof = LocalOutlierFactor(n_neighbors=num_neighbors, 
+                             novelty=True, metric="precomputed")
+    lof.fit(full_dist_mat)
+    landmark_lof_vals = -lof.decision_function(full_dist_mat)
+
+    # if not in landmarks, assign old coordinates
+    lof_vals = old_lof_vals
+    lof_vals[landmark_rows] = landmark_lof_vals
+
+    # now project onto landmarks
+    if num_landmarks < num_tests:
+
+        # get points to project (subset or proj except landmarks)
+        if num_subset == num_tests:
+            proj_inds = np.where(landmarks==0)[0]
+        else:
+            proj_inds = np.where(np.logical_and(landmarks==0, subset))[0]
+
+        # compute distance squared for each point to be projected
+        num_proj_inds = len(proj_inds)
+        proj_dist_mat = np.zeros((num_proj_inds, num_landmarks))
+        for i in range(len(dist_mats)):
+            proj_dist_mat = proj_dist_mat + alpha_values[i] ** 2 * \
+                            dist_mats[i][proj_inds[:, None], landmark_cols] ** 2
+
+        # compute predicted lof values
+        proj_vals = -lof.decision_function(np.sqrt(proj_dist_mat))
+
+        # put projected coords into mds coords
+        lof_vals[proj_inds] = proj_vals
+    
+    return lof_vals
+
+
+# square distance matrix behavior for LOF
+def compute_LOF_subset(dist_mats, alpha_values, old_lof_vals, subset, proj=None,
+                       num_neighbors=LOF_K):
+    """
+    Computes sum alpha_i^2 dist_mat_i.^2 then calls LOF to compute
+    local outlier factors.
+    
+    INPUTS: - dist_mats is a list of numpy arrays containing square
+              matrices (n,n) representing distances,
+            - alpha_values is a numpy array containing a vector of 
+              alpha values between 0 and 1.
+            - subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            - proj is an optional vector similar to subset, defaults to vector
+              of all 1.
+    
+    OUTPUTS: vectors of LOF values
+    """
+
+    # set projection default (vector of all ones -- everything in projection)
+    num_tests = dist_mats[0].shape[0]
+    if proj is None:
+        proj = np.ones(num_tests)
+
+    # make sure projection is an array
+    else:
+        proj = np.asarray(proj)
+
+    # get sizes of projection, subset
+    num_proj = int(np.sum(proj))
+    num_subset = int(np.sum(subset))
+
+    # use subset if not full dataset, otherwise get projection
+    cmd_subset = subset
+    compute_proj = False
+    if num_subset == num_tests:
+        cmd_subset = proj
+        compute_proj = True
+
+    # init distance matrix to size of working subset
+    num_cmd_subset = int(np.sum(cmd_subset))
+    full_dist_mat = np.zeros((num_cmd_subset,num_cmd_subset))
+
+    # compute alpha-sum of distance matrices on subset
+    subset_inds = np.where(cmd_subset)[0]
+    for i in range(len(dist_mats)):
+        full_dist_mat = full_dist_mat + alpha_values[i]**2 * \
+                        dist_mats[i][subset_inds[:,None], subset_inds]**2
+
+    # compute LOF values on subset, if not full dataset
+    if compute_proj and (num_proj < num_tests):
+        lof = LocalOutlierFactor(n_neighbors=num_neighbors, 
+                                novelty=True, metric="precomputed")
+        lof.fit_predict(np.sqrt(full_dist_mat))
+        lof_subset_vals = -lof.negative_outlier_factor_
+    
+    # otherwise use novelty=False
+    else:
+        lof = LocalOutlierFactor(n_neighbors=num_neighbors, 
+                                 metric="precomputed")
+        lof.fit_predict(np.sqrt(full_dist_mat))
+        lof_subset_vals = -lof.negative_outlier_factor_
+
+    # if not in subset, assign old values (probably 0)
+    lof_vals = old_lof_vals
+    lof_vals[subset_inds] = lof_subset_vals
+
+    # compute projection, if no subset and projection not full dataset
+    if compute_proj and (num_proj < num_tests):
+
+        # get points to project
+        proj_inds = np.where(cmd_subset==0)[0]
+        num_proj_inds = len(proj_inds)
+
+        # compute distance squared for each point to be projected
+        proj_dist_mat = np.zeros((num_proj_inds, num_proj))
+        for i in range(len(dist_mats)):
+            proj_dist_mat = proj_dist_mat + alpha_values[i] ** 2 * \
+                            dist_mats[i][proj_inds[:, None], subset_inds] ** 2
+
+        # compute predicted lof values
+        proj_vals = -lof.decision_function(np.sqrt(proj_dist_mat))
+
+        # put projected coords into mds coords
+        lof_vals[proj_inds] = proj_vals
+
+    return lof_vals

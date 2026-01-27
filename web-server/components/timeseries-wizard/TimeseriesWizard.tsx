@@ -158,6 +158,7 @@ export default class TimeseriesWizard extends React.Component<
               onChange={(value: string) => {
                 this.setState({ selectedOption: value });
               }}
+              sessionExists={this.state.sessionExists}
               checked={this.state.selectedOption}
               loadingData={this.state.loadingData}
               callBack={(
@@ -175,8 +176,12 @@ export default class TimeseriesWizard extends React.Component<
               }}
             />
             <div className="col-sm-12">
-              { this.state.loadingData && <div className="alert alert-info" role="alert">Connecting ...</div>}
-          </div>
+              {this.state.loadingData && (
+                <div className="alert alert-info" role="alert">
+                  Connecting ...
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
         {this.state.visibleTab === "1" ? (
@@ -246,7 +251,7 @@ export default class TimeseriesWizard extends React.Component<
         ) : null}
         {this.state.visibleTab === "5" ? (
           <div>
-            <HPCParametersTab 
+            <HPCParametersTab
               hostName={this.state.hostname}
               accountId={this.state.accountId}
               partition={this.state.partition}
@@ -308,10 +313,19 @@ export default class TimeseriesWizard extends React.Component<
         </button>,
       );
     }
-    const isDisabled = this.state.visibleTab === "1" && this.state.selectedTablePath === "";
+    const isDisabled =
+      (this.state.visibleTab === "1" && this.state.selectedTablePath === "") ||
+      (this.state.visibleTab == "0" && this.state.sessionExists !== true);
+
     const continueClassNames = isDisabled ? "btn btn-primary disabled" : "btn btn-primary";
 
-    if (this.state.visibleTab == "0" && this.state.sessionExists != true) {
+    if (
+      this.state.visibleTab == "0" &&
+      this.state.sessionExists !== true &&
+      this.state.hostname.length > 0 &&
+      this.state.username.length > 0 &&
+      this.state.password.length > 0
+    ) {
       footerJSX.push(
         <ConnectButton
           key={3}
@@ -376,39 +390,40 @@ export default class TimeseriesWizard extends React.Component<
 
   continue = () => {
     if (this.validateFields()) {
-      if (this.state.visibleTab === '0' && this.state.selectedOption != 'hdf5') {
-        this.setState({ visibleTab: '1' }, () => {
-          client.get_user_config_fetch({ hostname: this.state.hostname })
-            .then((results: any) => {
-              if(results != undefined) {
-                if("config" in results && "slurm" in results["config"]){
-                    if("timeseries-wizard" in results["config"]){
-                      this.setState({
-                        numNodes: results["config"]["slurm"]["nnodes"] ?? null,
-                        cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
-                        partition: results["config"]["slurm"]["partition"] ?? null,
-                        jobHours: results["config"]["slurm"]["time-hours"] ?? null,
-                        jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
-                        accountId: results["config"]["slurm"]["wcid"] ?? null,
-                        workDir: results["config"]["slurm"]["workdir"] ?? null,
-                        idCol: results["config"]["timeseries-wizard"]["id-column"] ?? null,
-                        delimiter: results["config"]["timeseries-wizard"]["inputs-file-delimiter"] ?? null,
-                        timeseriesColumn: results["config"]["timeseries-wizard"]["timeseries-name"] ?? null
-                      });
-                    } else {
-                      this.setState({
-                        numNodes: results["config"]["slurm"]["nnodes"] ?? null,
-                        cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
-                        partition: results["config"]["slurm"]["partition"] ?? null,
-                        jobHours: results["config"]["slurm"]["time-hours"] ?? null,
-                        jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
-                        accountId: results["config"]["slurm"]["wcid"] ?? null,
-                        workDir: results["config"]["slurm"]["workdir"] ?? null
-                      });
-                    }
-                  }
+      if (this.state.visibleTab === "0" && this.state.selectedOption != "hdf5") {
+        this.setState({ visibleTab: "1" }, () => {
+          client.get_user_config_fetch({ hostname: this.state.hostname }).then((results: any) => {
+            if (results != undefined) {
+              if ("config" in results && "slurm" in results["config"]) {
+                if ("timeseries-wizard" in results["config"]) {
+                  this.setState({
+                    numNodes: results["config"]["slurm"]["nnodes"] ?? null,
+                    cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
+                    partition: results["config"]["slurm"]["partition"] ?? null,
+                    jobHours: results["config"]["slurm"]["time-hours"] ?? null,
+                    jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
+                    accountId: results["config"]["slurm"]["wcid"] ?? null,
+                    workDir: results["config"]["slurm"]["workdir"] ?? null,
+                    idCol: results["config"]["timeseries-wizard"]["id-column"] ?? null,
+                    delimiter:
+                      results["config"]["timeseries-wizard"]["inputs-file-delimiter"] ?? null,
+                    timeseriesColumn:
+                      results["config"]["timeseries-wizard"]["timeseries-name"] ?? null,
+                  });
+                } else {
+                  this.setState({
+                    numNodes: results["config"]["slurm"]["nnodes"] ?? null,
+                    cores: results["config"]["slurm"]["ntasks-per-node"] ?? null,
+                    partition: results["config"]["slurm"]["partition"] ?? null,
+                    jobHours: results["config"]["slurm"]["time-hours"] ?? null,
+                    jobMin: results["config"]["slurm"]["time-minutes"] ?? null,
+                    accountId: results["config"]["slurm"]["wcid"] ?? null,
+                    workDir: results["config"]["slurm"]["workdir"] ?? null,
+                  });
+                }
               }
-            });
+            }
+          });
         });
       } else if (this.state.visibleTab === "0" && this.state.selectedOption == "hdf5") {
         this.setState({ visibleTab: "2" });
@@ -622,7 +637,7 @@ export default class TimeseriesWizard extends React.Component<
   generateUniqueId = () => {
     var d = Date.now();
     var uid = "xxxxxxxx".replace(/[xy]/g, function (c) {
-      var r = (d + Math.random() * 16) % 16 | 0;
+      var r = ((d + Math.random() * 16) % 16) | 0;
       d = Math.floor(d / 16);
       return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });

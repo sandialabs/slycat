@@ -107,6 +107,9 @@ $(document).ready(function() {
     // use PCA components
     var use_PCA_comps = false;
 
+    // use LOF values, if available
+    var lof_values = [];
+
     // model name (for downloading tables)
     var MODEL_NAME = "";
 
@@ -592,8 +595,52 @@ $(document).ready(function() {
                         use_PCA_comps = true;
                     }
 
-                    // continue to model
-                    launch_model();
+                    // check for LOF values
+                    setup_LOF_values();
+                }        
+            });
+    }
+
+    function setup_LOF_values () {
+
+        // get model data
+        client.get_model(
+            {
+                mid: mid,
+                success: function (result)
+                {
+                    // check for lof values
+                    if ('artifact:dac-lof-values' in result)
+                    {
+                        // load LOF values
+                        client.get_model_parameter({
+                            mid: mid,
+                            aid: "dac-lof-values",
+                            success: function (result)
+                            {
+                                // save lof values
+                                lof_values = result;
+
+                                // go to model
+                                launch_model();
+                            },
+                            error: function () {
+
+                                // notify user that editable columns exist, but could not be loaded
+                                dialog.ajax_error('Server error: could not load LOF data.')
+                                ("","","")
+
+                                // no lof values, go to model anyway
+                                launch_model();
+                            }
+                        });
+                        
+                    } else {
+
+                        // no lof values is OK too
+                        launch_model();
+                    }
+
                 }        
             });
     }
@@ -678,6 +725,9 @@ $(document).ready(function() {
 
                 // set up alpha slider value change event
                 document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
+
+                // set up lof button change event
+                document.body.addEventListener("DACLOFButtonChanged", lof_button_changed);
 
                 // set up selection change event
                 document.body.addEventListener("DACSelectionsChanged", selections_changed);
@@ -840,6 +890,12 @@ $(document).ready(function() {
                     }
                     selections.update_subset(init_mds_subset);
 
+                    // initialize lof button
+                    var init_lof_button_state = true;
+                    if ("dac-lof-button-state" in bookmark) {
+                        init_lof_button_state = bookmark["dac-lof-button-state"];
+                    }
+
                     // initialize difference button order and position
                     var init_fisher_order = [];
                     var init_fisher_pos = null;
@@ -977,7 +1033,8 @@ $(document).ready(function() {
                       init_zoom_flag, init_fisher_order, init_fisher_pos, 
                       init_diff_desired_state, var_include_columns, data_table_meta[0], 
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
-                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps
+                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps, lof_values, 
+                      init_lof_button_state
                     );
 
                     // set up the MDS scatter plot
@@ -1105,8 +1162,20 @@ $(document).ready(function() {
         // update MDS scatter plot
         scatter_plot.update(new_alpha_values.detail);
 
+        // update lof button to show that it's out of date
+        lof_button_changed({detail: false});
+
         // update bookmark to reflect new values
         bookmarker.updateState({"dac-slider-values": new_alpha_values.detail});
+    }
+
+    // custom event for change in lof button state
+    function lof_button_changed (new_lof_state)
+    {
+        scatter_buttons.update_lof_button(new_lof_state.detail);
+
+        // update bookmark to reflect to lof value
+        bookmarker.updateState({"dac-lof-button-state": new_lof_state.detail});
     }
 
     // custom event for change in selection 1, selection 2, active selection

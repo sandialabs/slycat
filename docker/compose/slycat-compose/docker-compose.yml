@@ -94,7 +94,7 @@ services:
       COUCHDB_PASSWORD: password
     networks:
       - sly-net
-    #uncomment to expose cherrypy @http://localhost:5984/_utils
+    # uncomment to expose cherrypy @http://localhost:5984/_utils
     # ports:
     #   - "5984:5984"
     volumes:

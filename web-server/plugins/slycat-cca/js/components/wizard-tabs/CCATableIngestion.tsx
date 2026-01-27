@@ -3,13 +3,19 @@
  retains certain rights in this software. */
 import * as React from "react";
 import TableIngestion from "components/TableIngestion/TableIngestion";
-import { useAppSelector } from "../wizard-store/hooks";
-import { selectAttributes } from "../wizard-store/reducers/CCAWizardSlice";
+import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
+import {
+  selectAttributes,
+  selectScaleInputs,
+  setScaleInputs,
+} from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleTableIngestionOnChange } from "../CCAWizardUtils";
 
 export const CCATableIngestion = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const attributes = useAppSelector(selectAttributes);
+  const variance = useAppSelector(selectScaleInputs);
+  const dispatch = useAppDispatch();
   const handleTableIngestionOnChange = useHandleTableIngestionOnChange(attributes);
   const axes_properties = [
     {
@@ -33,7 +39,8 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
       )}
       <TableIngestion
         uniqueID="varOptions"
-        variables={attributes}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        variables={attributes as any}
         properties={axes_properties}
         onChange={handleTableIngestionOnChange}
         onBatchChange={handleTableIngestionOnChange}
@@ -42,7 +49,14 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
         <div className="form-group mt-3">
           <div className="form-check pl-1">
             <label>
-              <input type="checkbox" /> Scale to unit variance
+              <input
+                type="checkbox"
+                checked={variance}
+                onChange={(e) => {
+                  dispatch(setScaleInputs(!variance));
+                }}
+              />
+              Scale to unit variance
             </label>
           </div>
         </div>

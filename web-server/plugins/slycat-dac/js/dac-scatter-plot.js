@@ -185,9 +185,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .range([color_by_low, color_by_high])
                             .interpolate(d3.interpolateRgb);
 
-                        // finish with plot
-                        module.draw();
-
+						// finish with plot
+						module.draw();
+						
                     },
                 error: function ()
                     {
@@ -225,7 +225,6 @@ module.draw = function ()
 	scatter_plot.attr("width", width)
 		.attr("height", height);
 
-	// set up coloring
 	if (curr_color_by_col.length > 0) {
 
 		// set colormap if present

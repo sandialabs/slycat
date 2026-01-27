@@ -38,7 +38,13 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   checkRemoteStatus = async (hostname) => {
-    if (hostname !== "" && hostname != null && !hostname.includes("\\") && !hostname.includes("/") && !hostname.includes(" ")) {
+    if (
+      hostname !== "" &&
+      hostname != null &&
+      !hostname.includes("\\") &&
+      !hostname.includes("/") &&
+      !hostname.includes(" ")
+    ) {
       return client.get_remotes_fetch(hostname).then((json) => {
         this.setState(
           {
@@ -56,8 +62,7 @@ export default class SlycatRemoteControls extends Component {
           },
         );
       });
-    }
-    else {
+    } else {
       this.setState(
         {
           session_exists: false,
@@ -96,9 +101,7 @@ export default class SlycatRemoteControls extends Component {
     }
   }
   async componentDidMount() {
-    if (this.state.hostname?.length > 0) {
-      await this.checkRemoteStatus(this.state.hostname);
-    }
+    await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
   }
 
@@ -110,11 +113,9 @@ export default class SlycatRemoteControls extends Component {
   populateDisplay = () => {
     const display = {};
     const storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
-    display.hostname =
-      storedHostname && storedHostname !== "null" ? storedHostname : undefined;
+    display.hostname = storedHostname && storedHostname !== "null" ? storedHostname : undefined;
     const storedUsername = localStorage.getItem("slycat-remote-controls-username");
-    display.username =
-      storedUsername && storedUsername !== "null" ? storedUsername : undefined;
+    display.username = storedUsername && storedUsername !== "null" ? storedUsername : undefined;
     return display;
   };
 
@@ -128,7 +129,14 @@ export default class SlycatRemoteControls extends Component {
     switch (type) {
       case "username":
         localStorage.setItem("slycat-remote-controls-username", value);
-        this.setState({ username: value });
+        this.setState({ username: value }, () => {
+          this.props.callBack(
+            this.state.hostname,
+            this.state.username,
+            this.state.password,
+            this.state.session_exists,
+          );
+        });
         break;
       case "hostname":
         localStorage.setItem("slycat-remote-controls-hostname", value);

@@ -229,7 +229,7 @@ function constructor(params)
             MAX_POINTS_ANIMATE: 2500,
 
             // border around scatter plot (fraction of 1)
-            SCATTER_BORDER: 0.025,
+            SCATTER_BORDER: 0.05,
 
             // scatter button toolbar height
             SCATTER_BUTTONS_HEIGHT: 37,
