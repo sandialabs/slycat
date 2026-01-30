@@ -62,6 +62,7 @@ export interface TimeseriesWizardState {
   validForms: boolean;
   marking: { text: string; value: string }[];
   selectedMarking: { text: string; value: string }[];
+  license: string;
 }
 
 /**
@@ -280,6 +281,9 @@ export default class TimeseriesWizard extends React.Component<
               }}
               workDirCallback={(dir: string) => {
                 this.setState({ workDir: dir });
+              }}
+              licenseCallback={(license: string) => {
+                this.setState({ license: license});
               }}
             />
           </div>
@@ -635,9 +639,9 @@ export default class TimeseriesWizard extends React.Component<
   };
 
   generateUniqueId = () => {
-    var d = Date.now();
-    var uid = "xxxxxxxx".replace(/[xy]/g, function (c) {
-      var r = ((d + Math.random() * 16) % 16) | 0;
+    let d = Date.now();
+    const uid = "xxxxxxxx".replace(/[xy]/g, function (c) {
+      const r = ((d + Math.random() * 16) % 16) | 0;
       d = Math.floor(d / 16);
       return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });
@@ -646,14 +650,14 @@ export default class TimeseriesWizard extends React.Component<
   };
 
   on_slycat_fn = () => {
-    let agent_function = "timeseries-model";
-    let uid = this.generateUniqueId();
+    // const agent_function = "timeseries-model";
+    const uid = this.generateUniqueId();
 
-    let fn_params = {
+    const fn_params = {
       timeseries_type: this.state.selectedOption,
       inputs_file: this.state.selectedTablePath,
       input_directory: this.state.inputDirectory,
-      id_column: this.state.idCol,
+      id_column: this.state.indexColumn,
       inputs_file_delimiter: this.state.delimiter,
       xyce_timeseries_file: this.state.selectedXycePath,
       timeseries_name: this.state.timeseriesColumn,
@@ -666,14 +670,14 @@ export default class TimeseriesWizard extends React.Component<
       retain_hdf5: true,
     };
 
-    var fn_params_copy = $.extend(true, {}, fn_params);
+    const fn_params_copy = $.extend(true, {}, fn_params);
 
     if (fn_params.timeseries_type !== "csv") {
       // Blank out timeseries_name
       fn_params_copy.timeseries_name = "";
     }
 
-    let json_payload: any = {
+    const json_payload: any = {
       scripts: [],
       hpc: {
         is_hpc_job: true,
@@ -685,13 +689,14 @@ export default class TimeseriesWizard extends React.Component<
           time_hours: this.state.jobHours,
           time_minutes: this.state.jobMin,
           time_seconds: 0,
+          license: this.state.license,
           working_dir: fn_params.workdir + "/slycat/",
         },
       },
     };
 
-    var hdf5_dir = fn_params.workdir + "/slycat/" + uid + "/" + "hdf5";
-    var pickle_dir = fn_params.workdir + "/slycat/" + uid + "/" + "pickle";
+    const hdf5_dir = fn_params.workdir + "/slycat/" + uid + "/" + "hdf5";
+    const pickle_dir = fn_params.workdir + "/slycat/" + uid + "/" + "pickle";
 
     if (fn_params.timeseries_type === "csv") {
       json_payload.scripts.push({

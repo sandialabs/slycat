@@ -73,6 +73,7 @@ class Agent(agent.Agent):
             time_hours = command["hpc"]["parameters"]["time_hours"]
             time_minutes = command["hpc"]["parameters"]["time_minutes"]
             time_seconds = command["hpc"]["parameters"]["time_seconds"]
+            license = command["hpc"]["parameters"]["time_seconds"]
             working_dir = command["hpc"]["parameters"]["working_dir"]
             output = ["running batch job", "running batch job"]
             try:
@@ -81,7 +82,7 @@ class Agent(agent.Agent):
                 output[0] = e.message
             tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode='w')
             self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
-                                time_seconds, run_commands,
+                                time_seconds, license, run_commands,
                                 tmp_file)
             # with open(tmp_file.name, 'r') as myfile:
             #     data = myfile.read().replace('\n', '')
@@ -251,7 +252,7 @@ class Agent(agent.Agent):
         sys.stdout.flush()
 
     def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
-                       time_seconds, fn,
+                       time_seconds, license, fn,
                        tmp_file):
         f = tmp_file
 
@@ -262,6 +263,8 @@ class Agent(agent.Agent):
         f.write("#SBATCH --nodes=%s\n" % nnodes)
         f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
         f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+        # License for slurm
+        f.write("#SBATCH --license=%s\n" % (license))
         f.write("module load %s\n" % module_name)
         f.write("profile=default \n")
         f.write("ipython profile create --parallel \n")
@@ -292,6 +295,7 @@ class Agent(agent.Agent):
         time_hours = command["command"]["time_hours"]
         time_minutes = command["command"]["time_minutes"]
         time_seconds = command["command"]["time_seconds"]
+        license = command["command"]["license"]
         fn = command["command"]["fn"]
         working_dir = command["command"]["working_dir"]
         # uid = command["command"]["uid"]
@@ -301,7 +305,7 @@ class Agent(agent.Agent):
             pass
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode='w')
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
-                            time_seconds, fn,
+                            time_seconds, license, fn,
                             tmp_file)
         with open(tmp_file.name, 'r') as myfile:
             data = myfile.read().replace('\n', '')

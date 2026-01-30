@@ -19,6 +19,7 @@ interface HPCParametersTabProps {
   hoursCallback: Function;
   minutesCallback: Function;
   workDirCallback: Function;
+  licenseCallback: Function;
 }
 
 function HPCParametersTab(props: HPCParametersTabProps) {
@@ -64,6 +65,13 @@ function HPCParametersTab(props: HPCParametersTabProps) {
         minutes={props.jobMin ? props.jobMin : 30}
         minCallBack={props.minutesCallback}
         hourCallBack={props.hoursCallback}
+      />
+      <SlycatTextInput
+        id={"license"}
+        label={"License"}
+        value={""}
+        warning=""
+        callBack={props.licenseCallback}
       />
       <SlycatTextInput
         id={"work-dir"}
