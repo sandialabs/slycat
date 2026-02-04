@@ -606,6 +606,7 @@ export default class TimeseriesWizard extends React.Component<
       allColumnNames.push({ text: names[i], value: names[i] });
     }
     this.setState({ allColumnNames: allColumnNames });
+    this.setState({indexColumn: allColumnNames[0].text});
   };
 
   handleColumnNames = (names: []) => {
