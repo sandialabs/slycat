@@ -449,7 +449,7 @@ export const useHandleRemoteFileSubmit = () => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
   const fileDescriptor = useAppSelector(selectRemotePath);
-  const parser = useAppSelector(selectParser);
+  let parser = useAppSelector(selectParser);
   const { hostname } = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
   const progress = useAppSelector(selectProgress);
@@ -493,20 +493,19 @@ export const useHandleRemoteFileSubmit = () => {
         const splitFilePathLength = splitFilePath.length;
         const fileName = splitFilePath[splitFilePathLength - 1];
         const fileExtension = fileName.split(".")[1];
-        let autoParser: string | undefined = "";
 
+        // Automatically detect file type from the file name, and select the parser accordingly
         if (fileExtension == "csv") {
-          autoParser = "slycat-csv-parser";
+          parser = "slycat-csv-parser";
           dispatch(setParser("slycat-csv-parser"));
         } else if (fileExtension == "dat") {
-          autoParser = "slycat-dakota-parser";
+          parser = "slycat-dakota-parser";
           dispatch(setParser("slycat-dakota-parser"));
         } else if (fileExtension == "h5" || fileExtension == "hdf5") {
-          autoParser = "slycat-hdf5-parser";
+          parser = "slycat-hdf5-parser";
           dispatch(setParser("slycat-hdf5-parser"));
-        } else {
-          autoParser = parser;
-        }
+        } 
+
         const filePath = fileDescriptor.path.split("/");
         const fileNameFromPath = filePath[filePath.length - 1];
         const fileObject = {
@@ -526,7 +525,7 @@ export const useHandleRemoteFileSubmit = () => {
             dispatch(setLoading(false));
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
             setUploadStatus(true);
-            fileUploadSuccess(autoParser, setProgress, setProgressStatus, (status) =>
+            fileUploadSuccess(parser, setProgress, setProgressStatus, (status) =>
               console.log(status),
             );
           },
