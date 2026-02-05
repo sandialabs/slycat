@@ -34,14 +34,14 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
             options={props.columnNames}
             onSelectCallBack={props.columnCallback}
           />
+          <SlycatSelector
+            label={'Index Column Name'}
+            options={props.allColumnNames}
+            onSelectCallBack={props.indexColumnCallback}
+          />
         </div>
       ) : null}
       <div>
-        <SlycatSelector
-        label={'Index Column Name'}
-        options={props.allColumnNames}
-        onSelectCallBack={props.indexColumnCallback}
-        />
         <SlycatNumberInput
           label={"Timeseries Bin Count"}
           value={500}
