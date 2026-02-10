@@ -56,12 +56,17 @@ import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
 } from "components/ScatterplotOptions/ScatterplotOptionsCategoricalAxisLabels";
+import TypeButton from "./Components/TypeButton";
+import { MEDIA_TYPES } from "./constants/media-types";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
 var vtkunselect_event = new Event("vtkunselect");
 var vtkresize_event = new Event("vtkresize");
 var vtkclose_event = new Event("vtkclose");
+
+// WeakMap to store the root elements for the type buttons
+const rootsByPopupEl = new WeakMap();
 
 $.widget("parameter_image.scatterplot", {
   options: {
@@ -2066,6 +2071,15 @@ $.widget("parameter_image.scatterplot", {
         .on("click", handlers["clone"]);
     };
 
+    var add_type_button = function (fh, media_type) {
+      console.debug(`Adding type button for ${fh.attr("data-uri")}`);
+      let typeButton = fh
+        .append("div")
+        .attr("class", "react-component-type-button")
+        .attr("data-media-type", media_type);
+      return typeButton;
+    };
+
     var build_frame_html = function (img) {
       // Define a default size for every image.
       if (!img.width) img.width = self.options.pinned_width;
@@ -2206,6 +2220,16 @@ $.widget("parameter_image.scatterplot", {
       close: function () {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
+
+        // Unmount the TypeButton root
+        const root = rootsByPopupEl.get(frame.node());
+        if (root) {
+          root.unmount();
+        } else {
+          console.error("No root found for frame", frame);
+        }
+        rootsByPopupEl.delete(frame.node());
+
         self._remove_image_and_leader_line(frame);
         self._sync_open_media();
       },
@@ -2605,8 +2629,11 @@ $.widget("parameter_image.scatterplot", {
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
 
+      let media_type = MEDIA_TYPES.UNKNOWN;
+
       // If the URL is a web link, create a link to open it in a new window
       if (link) {
+        media_type = MEDIA_TYPES.LINK;
         // Create a "open in new window" link for http or https URLs
         frame_html.style({
           width: image.width + "px",
@@ -2629,6 +2656,7 @@ $.widget("parameter_image.scatterplot", {
         var image_url = url_creator.createObjectURL(blob);
 
         if (blob.type.indexOf("image/") == 0) {
+          media_type = MEDIA_TYPES.IMAGE;
           // Create the html image ...
           var htmlImage = frame_html
             .append("img")
@@ -2663,6 +2691,7 @@ $.widget("parameter_image.scatterplot", {
             self._adjust_leader_line(frame_html);
           });
         } else if (blob.type.indexOf("video/") == 0) {
+          media_type = MEDIA_TYPES.VIDEO;
           // Create the video ...
           var video = frame_html
             .append("video")
@@ -2785,7 +2814,7 @@ $.widget("parameter_image.scatterplot", {
           frame_html.append("div").classed("mouseEventOverlay", true);
         } else if (blob.type.indexOf("application/pdf") == 0) {
           // Create the pdf ...
-
+          media_type = MEDIA_TYPES.PDF;
           var pdfWidth = 320;
 
           // Using an embed element
@@ -2891,6 +2920,7 @@ $.widget("parameter_image.scatterplot", {
           frame_html.append("div").classed("mouseEventOverlay", true);
         } else if (isVtp || isStl) {
           // console.debug(`opening a vtp or stl`);
+          media_type = isVtp ? MEDIA_TYPES.VTP : MEDIA_TYPES.STL;
 
           // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
           // other media, but caused 3D frame to grow by 20px each time the page is refreshed. So this
@@ -2944,6 +2974,7 @@ $.widget("parameter_image.scatterplot", {
             reader.readAsArrayBuffer(blob);
           }
         } else {
+          media_type = MEDIA_TYPES.UNKNOWN;
           // We don't support this file type, so just create a download link for files
           // or a "open in new window" link for http or https URLs
           // console.log("blob?type is: " + blob.type)
@@ -2992,6 +3023,12 @@ $.widget("parameter_image.scatterplot", {
       if (isVtp) {
         add_clone_button(footer, image.uri);
       }
+
+      // Create a TypeButton in React
+      let typeButton = add_type_button(footer, media_type);
+      const root = createRoot(typeButton.node());
+      root.render(<TypeButton mediaType={media_type} />);
+      rootsByPopupEl.set(frame_html.node(), root);
 
       if (!image.no_sync) self._sync_open_media();
 

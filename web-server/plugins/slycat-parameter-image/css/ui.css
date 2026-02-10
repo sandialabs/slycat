@@ -432,6 +432,9 @@
 .frame-button.resize-handle:hover {
   cursor: nwse-resize;
 }
+.frame-button.type-button {
+  margin: 0;
+}
 
 #scatterplot .media-layer .reload-button {
   position: absolute;
