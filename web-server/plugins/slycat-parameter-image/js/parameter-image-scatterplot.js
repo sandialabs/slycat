@@ -2326,15 +2326,15 @@ $.widget("parameter_image.scatterplot", {
         }
       },
 
-      maximize: function () {
-        let target = d3.event.target;
+      maximize: function (event) {
+        let target = event ? event.target : d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
 
         // Remove frame's hover state
         self._cancel_hover_state(frame, image);
 
         // Get the SVG pane's size
-        var $svg = $("#scatterplot svg");
+        var $svg = $("#scatterplot svg.scatterplot-svg");
         var svgh = $svg.height();
         var svgw = $svg.width();
 
@@ -3007,10 +3007,7 @@ $.widget("parameter_image.scatterplot", {
       // Create a pin button ...
       add_pin_button(footer);
 
-      // Create a maximize button ...
-      add_max_button(footer);
-
-      // Create a maximize button ...
+      // Create a minimize button (shown only when frame is maximized) ...
       add_min_button(footer);
 
       // Create a download button for non-links ...
@@ -3027,7 +3024,12 @@ $.widget("parameter_image.scatterplot", {
       // Create a TypeButton in React
       let typeButton = add_type_button(footer, media_type);
       const root = createRoot(typeButton.node());
-      root.render(<TypeButton mediaType={media_type} />);
+      root.render(
+        <TypeButton
+          mediaType={media_type}
+          onMaximize={(event) => handlers["maximize"](event)}
+        />,
+      );
       rootsByPopupEl.set(frame_html.node(), root);
 
       if (!image.no_sync) self._sync_open_media();

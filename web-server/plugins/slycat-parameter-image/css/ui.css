@@ -435,6 +435,40 @@
 .frame-button.type-button {
   margin: 0;
 }
+/* TypeButton dropdown styles */
+.frame-button.type-button.dropup {
+  display: inline-block;
+  float: right;
+}
+.frame-button.type-button .type-button-toggle {
+  background: none;
+  border: none;
+  color: #c8c8c8;
+  font-size: 12px;
+  padding: 0 4px;
+  line-height: 20px;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.frame-button.type-button .type-button-toggle:hover,
+.frame-button.type-button .type-button-toggle:focus {
+  color: white;
+}
+.frame-button.type-button .type-button-toggle::after {
+  /* Bootstrap dropdown caret */
+  vertical-align: middle;
+  font-size: 10px;
+}
+.frame-button.type-button .type-button-label {
+  white-space: nowrap;
+}
+.frame-button.type-button .dropdown-menu {
+  font-size: 13px;
+  min-width: 120px;
+}
 
 #scatterplot .media-layer .reload-button {
   position: absolute;

@@ -35,6 +35,7 @@ export const ICON_NAME_MAP = {
   cube: { icon: { prefix: "fas", iconName: "cube" } },
   link: { icon: { prefix: "fas", iconName: "link" } },
   "question-circle": { icon: { prefix: "fas", iconName: "circle-question" } },
+  "window-maximize": { icon: { prefix: "far", iconName: "window-maximize" } },
 } satisfies Record<string, FontAwesomeIconProps>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;
