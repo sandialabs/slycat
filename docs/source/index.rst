@@ -46,8 +46,14 @@ Slycat™ incorporates several components:
 The Slycat™ Web Server provides easy collaboration and a graphical user
 interface for analyses that have broad appeal.
 
-Documentation:
-==============
+User Manual
+===========
+
+The User Manual link will go here.
+
+
+Developer Documentation
+========================
 
 .. toctree::
   :maxdepth: 2
