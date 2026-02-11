@@ -7,7 +7,7 @@ import jquery_ui_css from "jquery-ui/themes/base/all.css";
 import "slickgrid/dist/styles/sass/slick.grid.scss";
 import "slickgrid/dist/styles/sass/slick-default-theme.scss";
 import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
-import "css/slick-slycat-theme.css";
+import "css/slick-slycat-theme.scss";
 import "../css/ui.css";
 
 import api_root from "js/slycat-api-root";
@@ -428,7 +428,9 @@ export default function initialize_timeseries_model(
       bookmark &&
       cluster_index !== null &&
       selected_column !== null &&
-      selected_column_type !== null
+      selected_column_type !== null &&
+      // If the column is a string, we need to have uniqueValues to display the legend
+      (selected_column_type[cluster_index] !== "string" || uniqueValues !== null)
     ) {
       legend_ready = true;
 

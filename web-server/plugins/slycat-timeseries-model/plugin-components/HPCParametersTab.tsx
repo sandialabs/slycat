@@ -38,14 +38,14 @@ function HPCParametersTab(props: HPCParametersTabProps) {
         id={"account-id"}
         label={"Account ID"}
         value={props.accountId ? props.accountId : ""}
-        warning={"Please enter an account ID."}
+        warning="Please enter an account ID."
         callBack={props.accountIdCallback}
       />
       <SlycatTextInput
         id={"partition"}
         label={"Partition/Queue"}
         value={props.partition ? props.partition : ""}
-        warning={"Please enter a partition/batch."}
+        warning="Please enter a partition/batch."
         callBack={props.partitionCallback}
       />
       <SlycatNumberInput
@@ -69,7 +69,7 @@ function HPCParametersTab(props: HPCParametersTabProps) {
         id={"work-dir"}
         label={"Working Directory"}
         value={props.workDir ? props.workDir : ""}
-        warning={"Please enter a working directory."}
+        warning="Please enter a working directory."
         callBack={props.workDirCallback}
       />
     </div>

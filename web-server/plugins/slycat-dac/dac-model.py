@@ -6,6 +6,7 @@
 # S. Martin
 # 1/28/2015
 
+
 def register_slycat_plugin(context):
 
     import datetime
@@ -25,7 +26,7 @@ def register_slycat_plugin(context):
     # for model combination via threads
     import threading
     import traceback
-    
+
     # for profiling
     import time
     from datetime import timedelta
@@ -33,16 +34,20 @@ def register_slycat_plugin(context):
     import cherrypy
 
     def finish(database, model):
-        slycat.web.server.update_model(database, model,
-                                       state="finished", result="succeeded",
-                                       finished=datetime.datetime.utcnow().isoformat(),
-                                       progress=1.0, message="")
-
+        slycat.web.server.update_model(
+            database,
+            model,
+            state="finished",
+            result="succeeded",
+            finished=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            progress=1.0,
+            message="",
+        )
 
     def page_html(database, model):
-        return open(os.path.join(os.path.dirname(__file__),
-                                 "html/dac-ui.html"), "r").read()
-
+        return open(
+            os.path.join(os.path.dirname(__file__), "html/dac-ui.html"), "r"
+        ).read()
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
         """
@@ -60,9 +65,11 @@ def register_slycat_plugin(context):
         # ------------------
 
         dac_error.log_dac_msg("Initializing MDS coords.")
-        
+
         # get number of alpha values using array metadata
-        meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "dac-var-dist"
+        )
         num_vars = len(meta_dist)
 
         # get distance matrices and included columns
@@ -73,16 +80,20 @@ def register_slycat_plugin(context):
         if "artifact:dac-proj-mask" in model:
 
             # load projecgtion mask
-            proj = numpy.array(slycat.web.server.get_model_parameter(
-                database, model, "dac-proj-mask"))
+            proj = numpy.array(
+                slycat.web.server.get_model_parameter(database, model, "dac-proj-mask")
+            )
 
         # get landmarks
         landmarks = None
         if "artifact:dac-landmarks" in model:
 
             # load landmarks mask
-            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-landmarks", "0/0/..."))[0]
+            landmarks = numpy.array(
+                slycat.web.server.get_model_arrayset_data(
+                    database, model, "dac-landmarks", "0/0/..."
+                )
+            )[0]
 
         # get use PCA components
         use_PCA_comps = False
@@ -90,35 +101,44 @@ def register_slycat_plugin(context):
 
             # load PCA comps flag
             use_PCA_comps = slycat.web.server.get_model_parameter(
-                database, model, "dac-use-PCA-comps")
+                database, model, "dac-use-PCA-comps"
+            )
 
         # compute initial MDS coordinates
-        mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, 
-            landmarks=landmarks, use_coordinates=use_PCA_comps)
+        mds_coords, full_mds_coords = dac.init_coords(
+            var_dist, proj=proj, landmarks=landmarks, use_coordinates=use_PCA_comps
+        )
 
         # compute alpha cluster parameters
         # --------------------------------
 
         # get metadata information
         metadata = slycat.web.server.get_model_arrayset_metadata(
-            database, model, "dac-datapoints-meta")
+            database, model, "dac-datapoints-meta"
+        )
 
         # number of columns of metadata
-        metadata_cols = metadata[0]['attributes']
+        metadata_cols = metadata[0]["attributes"]
         num_meta_cols = len(metadata_cols)
 
         # data type of each column
         meta_column_types = []
         for i in range(num_meta_cols):
-            meta_column_types.append(metadata_cols[i]['type'].decode())
+            meta_column_types.append(metadata_cols[i]["type"].decode())
 
         # get actual metadata
         meta_columns = slycat.web.server.get_model_arrayset_data(
-            database, model, "dac-datapoints-meta", "0/.../...")
+            database, model, "dac-datapoints-meta", "0/.../..."
+        )
 
         # compute alpha cluster values for NNLS cluster button
-        alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist, meta_columns, 
-            meta_column_types, landmarks=landmarks, use_coordinates=use_PCA_comps)
+        alpha_cluster_mat_included = dac.compute_alpha_clusters(
+            var_dist,
+            meta_columns,
+            meta_column_types,
+            landmarks=landmarks,
+            use_coordinates=use_PCA_comps,
+        )
 
         # re-size alpha values to actual number of variables (not just number of included variables)
         alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
@@ -131,44 +151,61 @@ def register_slycat_plugin(context):
         slycat.web.server.put_model_arrayset(database, model, "dac-mds-coords")
 
         # store as matrix
-        dimensions = [dict(name="row", end=int(mds_coords.shape[0])),
-                      dict(name="column", end=int(mds_coords.shape[1]))]
+        dimensions = [
+            dict(name="row", end=int(mds_coords.shape[0])),
+            dict(name="column", end=int(mds_coords.shape[1])),
+        ]
         attributes = [dict(name="value", type="float64")]
 
         # upload as slycat array
-        slycat.web.server.put_model_array(database, model, "dac-mds-coords", 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, "dac-mds-coords", "0/0/...", [mds_coords])
+        slycat.web.server.put_model_array(
+            database, model, "dac-mds-coords", 0, attributes, dimensions
+        )
+        slycat.web.server.put_model_arrayset_data(
+            database, model, "dac-mds-coords", "0/0/...", [mds_coords]
+        )
 
         # create array for full-mds-coords
         slycat.web.server.put_model_arrayset(database, model, "dac-full-mds-coords")
 
         # store as matrix
-        dimensions = [dict(name="row", end=int(full_mds_coords.shape[0])),
-                      dict(name="column", end=int(full_mds_coords.shape[1]))]
+        dimensions = [
+            dict(name="row", end=int(full_mds_coords.shape[0])),
+            dict(name="column", end=int(full_mds_coords.shape[1])),
+        ]
         attributes = [dict(name="value", type="float64")]
 
         # upload as slycat array
-        slycat.web.server.put_model_array(database, model, "dac-full-mds-coords", 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, "dac-full-mds-coords", "0/0/...", [full_mds_coords])
+        slycat.web.server.put_model_array(
+            database, model, "dac-full-mds-coords", 0, attributes, dimensions
+        )
+        slycat.web.server.put_model_arrayset_data(
+            database, model, "dac-full-mds-coords", "0/0/...", [full_mds_coords]
+        )
 
         # create array for alpha cluster parameters
         slycat.web.server.put_model_arrayset(database, model, "dac-alpha-clusters")
 
         # store as matrix
-        dimensions = [dict(name="row", end=int(alpha_cluster_mat.shape[0])),
-                      dict(name="column", end=int(alpha_cluster_mat.shape[1]))]
+        dimensions = [
+            dict(name="row", end=int(alpha_cluster_mat.shape[0])),
+            dict(name="column", end=int(alpha_cluster_mat.shape[1])),
+        ]
         attributes = [dict(name="value", type="float64")]
 
         # upload as slycat array
-        slycat.web.server.put_model_array(database, model, "dac-alpha-clusters", 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, "dac-alpha-clusters", "0/0/...", [alpha_cluster_mat])
+        slycat.web.server.put_model_array(
+            database, model, "dac-alpha-clusters", 0, attributes, dimensions
+        )
+        slycat.web.server.put_model_arrayset_data(
+            database, model, "dac-alpha-clusters", "0/0/...", [alpha_cluster_mat]
+        )
 
         # upload done indicator for polling routine
         dac_error.log_dac_msg("Done initializing MDS coords.")
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
-
 
     # compute new alpha cluster coordinates for editable columns
     def update_alpha_clusters(database, model, verb, type, command, **kwargs):
@@ -180,7 +217,9 @@ def register_slycat_plugin(context):
         use_PCA_comps = kwargs["use_PCA_comps"]
 
         # get number of alpha values using array metadata
-        meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "dac-var-dist"
+        )
         num_vars = len(meta_dist)
 
         # get distance matrices and included columns
@@ -188,11 +227,16 @@ def register_slycat_plugin(context):
 
         # load editable column data
         editable_cols = slycat.web.server.get_model_parameter(
-            database, model, "dac-editable-columns")
+            database, model, "dac-editable-columns"
+        )
 
         # compute alpha cluster values for NNLS cluster button
-        alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist,
-            [editable_cols["data"][update_col]], ["string"], use_coordinates=use_PCA_comps)
+        alpha_cluster_mat_included = dac.compute_alpha_clusters(
+            var_dist,
+            [editable_cols["data"][update_col]],
+            ["string"],
+            use_coordinates=use_PCA_comps,
+        )
 
         # re-size alpha values to actual number of variables (not just number of included variables)
         alpha_cluster_mat = numpy.zeros((1, num_vars))
@@ -204,17 +248,17 @@ def register_slycat_plugin(context):
 
         return content()
 
-
     # helper function for init_mds_coords and update_alpha_clusters
     # loads up distance matrices and include variables
-    def load_var_dist (database, model, num_vars):
+    def load_var_dist(database, model, num_vars):
 
         # check to see if the user wants to include a subset of variables
         if "artifact:dac-var-include-columns" in model:
 
             # load include columns
             var_include_columns = slycat.web.server.get_model_parameter(
-                database, model, "dac-var-include-columns")
+                database, model, "dac-var-include-columns"
+            )
 
         else:
 
@@ -224,12 +268,16 @@ def register_slycat_plugin(context):
         # get distance matrices as a list of numpy arrays from slycat server
         var_dist = []
         for i in var_include_columns:
-            var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-var-dist", "%s/0/..." % i)))
+            var_dist_i = next(
+                iter(
+                    slycat.web.server.get_model_arrayset_data(
+                        database, model, "dac-var-dist", "%s/0/..." % i
+                    )
+                )
+            )
             var_dist.append(var_dist_i)
 
         return var_include_columns, var_dist
-
 
     # computes new MDS coordinate representation using alpha values
     def update_mds_coords(database, model, verb, type, command, **kwargs):
@@ -251,35 +299,58 @@ def register_slycat_plugin(context):
         if "artifact:dac-proj-mask" in model:
 
             # load projecgtion mask
-            proj = numpy.array(slycat.web.server.get_model_parameter(
-                database, model, "dac-proj-mask"))
+            proj = numpy.array(
+                slycat.web.server.get_model_parameter(database, model, "dac-proj-mask")
+            )
 
         # get landmarks
         landmarks = None
         if "artifact:dac-landmarks" in model:
 
             # load landmarks mask
-            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-landmarks", "0/0/..."))[0]
+            landmarks = numpy.array(
+                slycat.web.server.get_model_arrayset_data(
+                    database, model, "dac-landmarks", "0/0/..."
+                )
+            )[0]
 
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
         for i in include_columns:
-            dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-var-dist", "%s/0/..." % i))))
+            dist_mats.append(
+                next(
+                    iter(
+                        slycat.web.server.get_model_arrayset_data(
+                            database, model, "dac-var-dist", "%s/0/..." % i
+                        )
+                    )
+                )
+            )
 
         # get full MDS coordinate representation for scaling
-        full_mds_coords = next(iter(slycat.web.server.get_model_arrayset_data(
-            database, model, "dac-full-mds-coords", "0/0/...")))
+        full_mds_coords = next(
+            iter(
+                slycat.web.server.get_model_arrayset_data(
+                    database, model, "dac-full-mds-coords", "0/0/..."
+                )
+            )
+        )
 
         # compute new MDS coords (truncate coords for old models)
-        mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns],
-                                        old_coords[:, 0:2], subset_mask, proj=proj, 
-                                        landmarks=landmarks, use_coordinates=use_PCA_comps)
+        mds_coords = dac.compute_coords(
+            dist_mats,
+            alpha_values[include_columns],
+            old_coords[:, 0:2],
+            subset_mask,
+            proj=proj,
+            landmarks=landmarks,
+            use_coordinates=use_PCA_comps,
+        )
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
-        scaled_mds_coords = dac.scale_coords(mds_coords,
-                                             full_mds_coords[:, 0:2], subset_mask, subset_center)
+        scaled_mds_coords = dac.scale_coords(
+            mds_coords, full_mds_coords[:, 0:2], subset_mask, subset_center
+        )
 
         # add index as third coordinate
         index_col = numpy.vstack(numpy.arange(len(scaled_mds_coords)))
@@ -290,7 +361,6 @@ def register_slycat_plugin(context):
             yield json.dumps({"mds_coords": scaled_indexed_mds_coords.tolist()})
 
         return content()
-
 
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
@@ -318,7 +388,9 @@ def register_slycat_plugin(context):
         tot_selection = numpy.asarray(tot_selection)
 
         # get number of alpha values using array metadata
-        meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "dac-var-dist"
+        )
         num_vars = len(meta_dist)
 
         # get distance matrices as a list of numpy arrays from slycat server
@@ -327,8 +399,15 @@ def register_slycat_plugin(context):
 
             # only get distance matrices for included columns
             if i in include_columns:
-                dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
-                    database, model, "dac-var-dist", "%s/0/..." % i))))
+                dist_mats.append(
+                    next(
+                        iter(
+                            slycat.web.server.get_model_arrayset_data(
+                                database, model, "dac-var-dist", "%s/0/..." % i
+                            )
+                        )
+                    )
+                )
 
             else:
                 dist_mats.append(0)
@@ -338,19 +417,22 @@ def register_slycat_plugin(context):
         if "artifact:dac-landmarks" in model:
 
             # load landmarks mask
-            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-landmarks", "0/0/..."))[0].astype(int)
-                
+            landmarks = numpy.array(
+                slycat.web.server.get_model_arrayset_data(
+                    database, model, "dac-landmarks", "0/0/..."
+                )
+            )[0].astype(int)
+
         # compute coordinates for each distance matrix
         coord_mats = []
         for i in range(num_vars):
-            
+
             if i in include_columns:
 
                 # if PCA components have been calculated,
                 # use first two components for coordinates
                 if use_PCA_comps:
-                    coord_mats.append(dist_mats[i][tot_selection,0:2])
+                    coord_mats.append(dist_mats[i][tot_selection, 0:2])
 
                 # compute coordinates using landmarks
                 else:
@@ -359,21 +441,23 @@ def register_slycat_plugin(context):
                     if landmarks is not None:
                         landmark_rows = numpy.where(landmarks)[0]
                         landmark_cols = numpy.arange(len(landmark_rows))
-                        D = dist_mats[i][landmark_rows[:,None], landmark_cols]
-                    
+                        D = dist_mats[i][landmark_rows[:, None], landmark_cols]
+
                     # or full distance matrix if no landmarks
                     else:
                         D = dist_mats[i]
 
                     # compute coordinates using landmark distance matrix
                     mds_landmark_coords, proj_inv = dac.cmdscale(numpy.sqrt(D))
-                    
+
                     # project non-landmarks onto coordinates
                     if landmarks is not None:
 
                         # project selection
                         mean_dist = numpy.mean(D, axis=1)
-                        proj_dist_mat = dist_mats[i][tot_selection[:, None], landmark_cols] ** 2
+                        proj_dist_mat = (
+                            dist_mats[i][tot_selection[:, None], landmark_cols] ** 2
+                        )
                         proj_coords = (proj_dist_mat - mean_dist).dot(proj_inv)
 
                         # really only care about selection
@@ -381,15 +465,16 @@ def register_slycat_plugin(context):
 
                     # if no landmarks coordinates include everything
                     else:
-                        coord_mats.append(mds_landmark_coords[tot_selection,:])
-            
+                        coord_mats.append(mds_landmark_coords[tot_selection, :])
+
             else:
                 coord_mats.append([])
 
         # convert coord mats to squared distance mats
         for i in include_columns:
             dist_mats[i] = spatial.distance.squareform(
-                spatial.distance.pdist(coord_mats[i], 'sqeuclidean'))
+                spatial.distance.pdist(coord_mats[i], "sqeuclidean")
+            )
 
         # calculate Fisher's discriminant for each variable
         num_sel = len(selection)
@@ -413,10 +498,12 @@ def register_slycat_plugin(context):
             for j in range(0, num_sel):
                 if num_sel_x[j] > 0:
                     sw[j] = ss_sel_x[j] / (2 * num_sel_x[j])
-                    sb[j] = num_sel_x[j] * (numpy.sum(
-                        dist_mats[i][sel_inds[j], :]) /
-                        (num_sel_x[j] * tot_num_sel) - sw[j] / num_sel_x[j] -
-                        tot_sw_sel / tot_num_sel)
+                    sb[j] = num_sel_x[j] * (
+                        numpy.sum(dist_mats[i][sel_inds[j], :])
+                        / (num_sel_x[j] * tot_num_sel)
+                        - sw[j] / num_sel_x[j]
+                        - tot_sw_sel / tot_num_sel
+                    )
 
             # compute multi-class Fisher (do not divide by zero)
             if numpy.sum(sw) > numpy.finfo(float).eps:
@@ -447,7 +534,7 @@ def register_slycat_plugin(context):
         #             # within scatter
         #             mj = numpy.mean(coord_mats[i][sel_inds[j],:], axis=0)
         #             xj_mj = coord_mats[i][sel_inds[j],:] - mj
-        #             Sj = numpy.sum([numpy.outer(xj_mj[k,:], xj_mj[k,:]) 
+        #             Sj = numpy.sum([numpy.outer(xj_mj[k,:], xj_mj[k,:])
         #                     for k in range(nj)], axis=0)
         #             Sw += Sj
 
@@ -478,6 +565,49 @@ def register_slycat_plugin(context):
         # return unsorted discriminant values as JSON array
         return json.dumps({"fisher_disc": fisher_disc.tolist()})
 
+    # compute local outlier factor
+    def compute_lof(database, model, verb, type, command, **kwargs):
+
+        # get alpha values and subset mask
+        alpha_values = numpy.array(kwargs["alpha"])
+        subset_mask = numpy.array(kwargs["subset"])
+
+        # only use included variables
+        include_columns = numpy.array(kwargs["include_columns"])
+
+        # use PCA components
+        use_PCA_comps = kwargs["use_PCA_comps"]
+
+        # check for projection mask
+        proj = numpy.ones(len(subset_mask))
+        if "artifact:dac-proj-mask" in model:
+
+            # load projecgtion mask
+            proj = numpy.array(slycat.web.server.get_model_parameter(
+                database, model, "dac-proj-mask"))
+
+        # get landmarks
+        landmarks = None
+        if "artifact:dac-landmarks" in model:
+
+            # load landmarks mask
+            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-landmarks", "0/0/..."))[0]
+
+        # get distance matrices as a list of numpy arrays from slycat server
+        dist_mats = []
+        for i in include_columns:
+            dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-var-dist", "%s/0/..." % i))))
+        
+
+        # compute new lof
+        lof_values = dac.compute_LOF(dist_mats, alpha_values[include_columns],
+                                     subset_mask, proj=proj, 
+                                     landmarks=landmarks, 
+                                     use_coordinates=use_PCA_comps)
+    
+        return json.dumps({"lof": lof_values.tolist()})
 
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
@@ -489,7 +619,9 @@ def register_slycat_plugin(context):
         num_vars = len(plot_list)
 
         # variable number in database
-        database_ids = "|".join([str(database_id) for database_id in kwargs["database_ids"]])
+        database_ids = "|".join(
+            [str(database_id) for database_id in kwargs["database_ids"]]
+        )
 
         # rows of matrix to subsample
         rows = kwargs["plot_selection"]
@@ -501,12 +633,17 @@ def register_slycat_plugin(context):
         zoom_x = []
         zoom_y = []
         for i in range(num_vars):
-            zoom_x.append([str2float(kwargs["zoom_x"][i][0]), str2float(kwargs["zoom_x"][i][1])])
-            zoom_y.append([str2float(kwargs["zoom_y"][i][0]), str2float(kwargs["zoom_y"][i][1])])
+            zoom_x.append(
+                [str2float(kwargs["zoom_x"][i][0]), str2float(kwargs["zoom_x"][i][1])]
+            )
+            zoom_y.append(
+                [str2float(kwargs["zoom_y"][i][0]), str2float(kwargs["zoom_y"][i][1])]
+            )
 
         # get time points for all variables
         time_points = slycat.web.server.get_model_arrayset_data(
-            database, model, "dac-time-points", "%s/0/..." % database_ids)
+            database, model, "dac-time-points", "%s/0/..." % database_ids
+        )
 
         # get desired rows of variable data from database (all at once)
         num_rows = len(rows)
@@ -518,13 +655,18 @@ def register_slycat_plugin(context):
             hyper_rows = "|".join(str_rows)
 
             # load desired rows using hyperchunks
-            hql_var_data = slycat.web.server.get_model_arrayset_data(database, model,
-                "dac-var-data", "%s/0/%s" % (database_ids, hyper_rows))
+            hql_var_data = slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-var-data", "%s/0/%s" % (database_ids, hyper_rows)
+            )
 
             # split variable data according to variable
-            split_hql = list(range(0, num_rows*num_vars, num_rows)) + [num_rows*num_vars]
-            for i in range(len(split_hql)-1):
-                var_data.append(numpy.array(hql_var_data[split_hql[i]:split_hql[i+1]]))
+            split_hql = list(range(0, num_rows * num_vars, num_rows)) + [
+                num_rows * num_vars
+            ]
+            for i in range(len(split_hql) - 1):
+                var_data.append(
+                    numpy.array(hql_var_data[split_hql[i] : split_hql[i + 1]])
+                )
 
         # get actual time (x) range for each variable
         time_points_range = []
@@ -561,8 +703,11 @@ def register_slycat_plugin(context):
             range_change.append(range_change_x[i] or range_change_y[i])
 
             # find indices within user selected range for each variable
-            range_inds = list(numpy.where((time_points[i] >= zoom_x[i][0]) & \
-                (time_points[i] <= zoom_x[i][1]))[0])
+            range_inds = list(
+                numpy.where(
+                    (time_points[i] >= zoom_x[i][0]) & (time_points[i] <= zoom_x[i][1])
+                )[0]
+            )
 
             # extend indices to include nans
             if range_inds:
@@ -570,12 +715,16 @@ def register_slycat_plugin(context):
 
             # make sure something was selected
             if len(range_inds) == 0:
-                range_inds_min = numpy.amax(numpy.where(time_points[i] < zoom_x[i][0])[0])
-                range_inds_max = numpy.amin(numpy.where(time_points[i] > zoom_x[i][1])[0])
-                range_inds = list(range(range_inds_min, range_inds_max+1))
+                range_inds_min = numpy.amax(
+                    numpy.where(time_points[i] < zoom_x[i][0])[0]
+                )
+                range_inds_max = numpy.amin(
+                    numpy.where(time_points[i] > zoom_x[i][1])[0]
+                )
+                range_inds = list(range(range_inds_min, range_inds_max + 1))
 
             # add to end of range, unless entire range selected
-            elif range_inds[-1] < (len(time_points[i])-1):
+            elif range_inds[-1] < (len(time_points[i]) - 1):
                 range_inds.append(range_inds[-1] + 1)
 
             # add indices just before and just after user selected range
@@ -586,9 +735,11 @@ def register_slycat_plugin(context):
 
             # compute step size for subsample
             num_samples = len(range_inds)
-            subsample_stepsize.append(max(1, int(numpy.ceil(float(num_samples) / num_subsample))))
-            sub_inds = range_inds[0::subsample_stepsize[i]]
-            
+            subsample_stepsize.append(
+                max(1, int(numpy.ceil(float(num_samples) / num_subsample)))
+            )
+            sub_inds = range_inds[0 :: subsample_stepsize[i]]
+
             # add in last index, if not already present
             if sub_inds[-1] != range_inds[-1]:
                 sub_inds = numpy.append(sub_inds, range_inds[-1])
@@ -596,16 +747,18 @@ def register_slycat_plugin(context):
             # get time points subsample (convert NaNs, if any, to Nones for JSON)
             time_points_subsample_i = time_points[i][sub_inds].tolist()
             time_points_subsample_nan = numpy.isnan(time_points_subsample_i)
-            time_points_subsample_none = numpy.where(time_points_subsample_nan, None,
-                                                     time_points_subsample_i)
+            time_points_subsample_none = numpy.where(
+                time_points_subsample_nan, None, time_points_subsample_i
+            )
             time_points_subsample.append(time_points_subsample_none.tolist())
 
             # also convert var_data_subsample
             if num_rows > 0:
                 var_data_subsample_i = var_data[i][:, sub_inds].tolist()
                 var_data_subsample_nan = numpy.isnan(var_data_subsample_i)
-                var_data_subsample_none = numpy.where(var_data_subsample_nan, None,
-                                                      var_data_subsample_i)
+                var_data_subsample_none = numpy.where(
+                    var_data_subsample_nan, None, var_data_subsample_i
+                )
                 var_data_subsample.append(var_data_subsample_none.tolist())
 
             # convert ranges to java-script returnable result
@@ -614,19 +767,23 @@ def register_slycat_plugin(context):
 
         # return data using content function
         def content():
-            yield json.dumps({"time_points": time_points_subsample,
-                              "var_data": var_data_subsample,
-                              "resolution": subsample_stepsize,
-                              "data_range_x": data_range_x,
-                              "data_range_y": data_range_y,
-                              "range_change": range_change,
-                              "plot_list": plot_list})
+            yield json.dumps(
+                {
+                    "time_points": time_points_subsample,
+                    "var_data": var_data_subsample,
+                    "resolution": subsample_stepsize,
+                    "data_range_x": data_range_x,
+                    "data_range_y": data_range_y,
+                    "range_change": range_change,
+                    "plot_list": plot_list,
+                }
+            )
 
         return content()
 
     # helper function for subsample_time_var
     # converts string number to numpy value, including +/- "Inf"
-    def str2float (str_val):
+    def str2float(str_val):
 
         if str_val == "-Inf":
             numpy_val = -float("Inf")
@@ -637,7 +794,7 @@ def register_slycat_plugin(context):
 
     # helper function for subsample_time_var
     # converts numpy value to string, including +/- "Inf"
-    def float2str (numpy_val):
+    def float2str(numpy_val):
 
         if numpy_val == -float("Inf"):
             str_val = "-Inf"
@@ -653,7 +810,7 @@ def register_slycat_plugin(context):
     # helper function for subsample_time_var
     # tests requested data range versus actual range
     # returns changed range and flag indicating change performed
-    def test_range (req_range, act_range):
+    def test_range(req_range, act_range):
 
         # test range for each variable
         num_vars = len(act_range)
@@ -677,17 +834,16 @@ def register_slycat_plugin(context):
                 # no -- reset max
                 req_max = float("Inf")
                 range_change_i = True
-            
+
             # update requested range
             req_range[i] = [req_min, req_max]
             range_change.append(range_change_i)
 
         return req_range, range_change
 
-
     # adds, removes, and updates the editable columns in the metadata table.
     # inputs are described below, if no inputs for a particular command, use -1 in call.
-    def manage_editable_cols (database, model, verb, type, command, **kwargs):
+    def manage_editable_cols(database, model, verb, type, command, **kwargs):
 
         # check if user is a reader (if so do not change table)
         project = database.get("project", model["project"])
@@ -721,51 +877,63 @@ def register_slycat_plugin(context):
 
         # get number of rows in meta data table
         meta_data = slycat.web.server.get_model_arrayset_metadata(
-            database, model, "dac-datapoints-meta")
+            database, model, "dac-datapoints-meta"
+        )
         num_rows = int(meta_data[0]["dimensions"][0]["end"])
 
         # initialize any existing editable columns
-        editable_cols = {"num_rows": num_rows,
-                         "attributes": [],
-                         "categories": [],
-                         "data": []}
-        if 'artifact:dac-editable-columns' in model:
+        editable_cols = {
+            "num_rows": num_rows,
+            "attributes": [],
+            "categories": [],
+            "data": [],
+        }
+        if "artifact:dac-editable-columns" in model:
 
             # load editable column attribute data
             editable_cols = slycat.web.server.get_model_parameter(
-                database, model, "dac-editable-columns")
+                database, model, "dac-editable-columns"
+            )
 
         # parse command
-        if col_cmd == 'add':
+        if col_cmd == "add":
 
             # add command, freetext or categorical?
-            if col_type == 'freetext':
+            if col_type == "freetext":
 
                 # add free text column to current editable columns
                 editable_cols["attributes"].append(dict(name=col_name, type="freetext"))
-                editable_cols["categories"].append([str('')])
-                editable_cols["data"].append([str('') for i in range(num_rows)])
+                editable_cols["categories"].append([str("")])
+                editable_cols["data"].append([str("") for i in range(num_rows)])
 
                 # update editable column categories
-                slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+                slycat.web.server.put_model_parameter(
+                    database, model, "dac-editable-columns", editable_cols
+                )
 
-            elif col_type == 'categorical':
+            elif col_type == "categorical":
 
                 # add categorical column
-                editable_cols["attributes"].append(dict(name=col_name, type="categorical"))
+                editable_cols["attributes"].append(
+                    dict(name=col_name, type="categorical")
+                )
                 editable_cols["categories"].append(col_cats)
                 editable_cols["data"].append(["No Value" for i in range(num_rows)])
 
                 # update editable column categories
-                slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+                slycat.web.server.put_model_parameter(
+                    database, model, "dac-editable-columns", editable_cols
+                )
 
             else:
 
                 # called with un-implemented column type (should never happen)
-                dac_error.log_dac_msg("Error: un-implemented column type for manage editable columns.")
+                dac_error.log_dac_msg(
+                    "Error: un-implemented column type for manage editable columns."
+                )
                 return json.dumps({"error": 0})
 
-        elif col_cmd == 'remove':
+        elif col_cmd == "remove":
 
             # remove columns in editable cols
             for id in reversed(col_id):
@@ -774,25 +942,30 @@ def register_slycat_plugin(context):
                 del editable_cols["data"][id]
 
             # update editable column categories
-            slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-editable-columns", editable_cols
+            )
 
-        elif col_cmd == 'update':
+        elif col_cmd == "update":
 
             # update column data
             editable_cols["data"][col_id[0]][row_id] = col_value
 
             # push to server
-            slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-editable-columns", editable_cols
+            )
 
         else:
 
             # called with invalid command (should never happen)
-            dac_error.log_dac_msg("Error: un-implemented command for manage editable columns.")
+            dac_error.log_dac_msg(
+                "Error: un-implemented command for manage editable columns."
+            )
             return json.dumps({"error": 0})
 
         # returns argument indicating success
         return json.dumps({"success": 1})
-
 
     # check compatibility for before combining models
     def check_compatible_models(database, model, verb, type, command, **kwargs):
@@ -813,85 +986,144 @@ def register_slycat_plugin(context):
 
         # check that model is not empty
         if "artifact:dac-variables-meta" not in model:
-            return json.dumps(["Error", 'original model "' + model["name"] +
-                               '" is invalid, cannot make a combination model. ' +
-                               'Quit this wizard and restart from a valid model.'])
+            return json.dumps(
+                [
+                    "Error",
+                    'original model "'
+                    + model["name"]
+                    + '" is invalid, cannot make a combination model. '
+                    + "Quit this wizard and restart from a valid model.",
+                ]
+            )
 
         # get variable name information for origin model
-        origin_var_names = slycat.web.server.get_model_arrayset_data(database, model,
-            "dac-variables-meta", "0/0/...")[0]
+        origin_var_names = slycat.web.server.get_model_arrayset_data(
+            database, model, "dac-variables-meta", "0/0/..."
+        )[0]
 
         # load time points for origin model from database
         origin_time_points = []
         for j in range(len(origin_var_names)):
-            origin_time_points.append(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-time-points", "%s/0/..." % j)[0])
+            origin_time_points.append(
+                slycat.web.server.get_model_arrayset_data(
+                    database, model, "dac-time-points", "%s/0/..." % j
+                )[0]
+            )
 
         # get metadata table information for origin model
-        origin_metadata = slycat.web.server.get_model_arrayset_metadata(database, model,
-                            "dac-datapoints-meta")[0]["attributes"]
+        origin_metadata = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "dac-datapoints-meta"
+        )[0]["attributes"]
 
         # check new models, one at a time
         for i in range(len(models_selected)):
 
             # check that model is not empty
             if "artifact:dac-variables-meta" not in models_selected[i]:
-                return json.dumps(["Error", 'model "' + model_names[i] + '" is invalid. ' +
-                                   'Select a different model.'])
+                return json.dumps(
+                    [
+                        "Error",
+                        'model "'
+                        + model_names[i]
+                        + '" is invalid. '
+                        + "Select a different model.",
+                    ]
+                )
 
             # get variable name information for new model
-            new_var_names = slycat.web.server.get_model_arrayset_data(database, models_selected[i],
-                "dac-variables-meta", "0/0/...")[0]
+            new_var_names = slycat.web.server.get_model_arrayset_data(
+                database, models_selected[i], "dac-variables-meta", "0/0/..."
+            )[0]
 
             # same number of variables?
             if len(origin_var_names) != len(new_var_names):
-                return json.dumps(["Error", 'model "' +
-                                   model_names[i] + '" variables do not match existing model ("' +
-                                   model["name"] + '"). Select a different model.'])
+                return json.dumps(
+                    [
+                        "Error",
+                        'model "'
+                        + model_names[i]
+                        + '" variables do not match existing model ("'
+                        + model["name"]
+                        + '"). Select a different model.',
+                    ]
+                )
 
             # same variable names?
             for j in range(len(origin_var_names)):
                 if origin_var_names[j] != new_var_names[j]:
-                    return json.dumps(["Error", 'model "' +
-                                       model_names[i] + '" variables do not match existing model ("' +
-                                       model["name"] + '"). Select a different model.'])
+                    return json.dumps(
+                        [
+                            "Error",
+                            'model "'
+                            + model_names[i]
+                            + '" variables do not match existing model ("'
+                            + model["name"]
+                            + '"). Select a different model.',
+                        ]
+                    )
 
             # check time points of new model against origin model
             for j in range(len(origin_var_names)):
 
                 # get new time points
                 new_time_points = slycat.web.server.get_model_arrayset_data(
-                    database, models_selected[i], "dac-time-points", "%s/0/..." % j)[0]
+                    database, models_selected[i], "dac-time-points", "%s/0/..." % j
+                )[0]
 
                 # check that the time points are the same
-                if not numpy.array_equal(origin_time_points[j], new_time_points) and not intersect_time:
-                    return json.dumps(["Error", 'model "' +
-                                       model_names[i] + '" time points do not match existing model ("' +
-                                       model["name"] + '").'])
+                if (
+                    not numpy.array_equal(origin_time_points[j], new_time_points)
+                    and not intersect_time
+                ):
+                    return json.dumps(
+                        [
+                            "Error",
+                            'model "'
+                            + model_names[i]
+                            + '" time points do not match existing model ("'
+                            + model["name"]
+                            + '").',
+                        ]
+                    )
 
             # check metadata table
-            new_metadata = slycat.web.server.get_model_arrayset_metadata(database, models_selected[i],
-                            "dac-datapoints-meta")[0]["attributes"]
+            new_metadata = slycat.web.server.get_model_arrayset_metadata(
+                database, models_selected[i], "dac-datapoints-meta"
+            )[0]["attributes"]
 
             # same number of columns?  (only check if user does not want to combine tables)
             if not combine_tables:
 
                 if len(origin_metadata) != len(new_metadata):
-                    return json.dumps(["Error", 'model "' +
-                                    model_names[i] + '" table columns do not match existing model ("' +
-                                    model["name"] + '").'])
+                    return json.dumps(
+                        [
+                            "Error",
+                            'model "'
+                            + model_names[i]
+                            + '" table columns do not match existing model ("'
+                            + model["name"]
+                            + '").',
+                        ]
+                    )
 
                 # compare type and name for metadata tables
                 for j in range(len(origin_metadata)):
-                    if (origin_metadata[j]["type"] != new_metadata[j]["type"]) or \
-                    (origin_metadata[j]["name"] != new_metadata[j]["name"]):
+                    if (origin_metadata[j]["type"] != new_metadata[j]["type"]) or (
+                        origin_metadata[j]["name"] != new_metadata[j]["name"]
+                    ):
 
-                        return json.dumps(["Error", 'model "' +
-                                        model_names[i] + '" table columns do not match existing model ("' +
-                                        model["name"] + '").'])
+                        return json.dumps(
+                            [
+                                "Error",
+                                'model "'
+                                + model_names[i]
+                                + '" table columns do not match existing model ("'
+                                + model["name"]
+                                + '").',
+                            ]
+                        )
 
         return json.dumps(["Success", 1])
-
 
     # combine models by recomputing
     def combine_models(database, model, verb, type, command, **kwargs):
@@ -915,32 +1147,53 @@ def register_slycat_plugin(context):
 
         # start thread to do actual work
         stop_event = threading.Event()
-        thread = threading.Thread(target=combine_models_thread,
-                                  args=(database, model, models_selected,
-                                        new_model_type, model_names, intersect_time, 
-                                        combine_tables, stop_event))
+        thread = threading.Thread(
+            target=combine_models_thread,
+            args=(
+                database,
+                model,
+                models_selected,
+                new_model_type,
+                model_names,
+                intersect_time,
+                combine_tables,
+                stop_event,
+            ),
+        )
         thread.start()
 
         return json.dumps(["Success", 1])
 
     # thread that does actual work for combine by recomputing
-    def combine_models_thread(database, model, models_selected, new_model_type,
-                                        model_names, intersect_time, combine_tables, stop_event):
+    def combine_models_thread(
+        database,
+        model,
+        models_selected,
+        new_model_type,
+        model_names,
+        intersect_time,
+        combine_tables,
+        stop_event,
+    ):
 
         # put entire thread into a try-except block in order
         # to log and report loading errors
         try:
 
             # init parse error log for UI
-            parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
+            parse_error_log = dac_error.update_parse_log(
+                database, model, [], "Progress", "Notes:"
+            )
 
             # init dac polling progress bar for UI
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Combining ...", 50.0])
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Combining ...", 50.0]
+            )
 
             # load table metadata
-            metadata = slycat.web.server.get_model_arrayset_metadata(database,
-                            models_selected[0], "dac-datapoints-meta")[0]["attributes"]
+            metadata = slycat.web.server.get_model_arrayset_metadata(
+                database, models_selected[0], "dac-datapoints-meta"
+            )[0]["attributes"]
 
             # get metadata column names/types
             meta_column_names = []
@@ -954,15 +1207,21 @@ def register_slycat_plugin(context):
             if combine_tables:
 
                 # record combination in log.
-                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                    'Combined tables columns.  Values not present will be marked "Not Present" or given ' +
-                    'nan (not a number) values.')
+                parse_error_log = dac_error.update_parse_log(
+                    database,
+                    model,
+                    parse_error_log,
+                    "Progress",
+                    'Combined tables columns.  Values not present will be marked "Not Present" or given '
+                    + "nan (not a number) values.",
+                )
 
                 # go through each model
                 for i in range(num_models):
 
-                    metadata = slycat.web.server.get_model_arrayset_metadata(database,
-                        models_selected[i], "dac-datapoints-meta")[0]["attributes"]
+                    metadata = slycat.web.server.get_model_arrayset_metadata(
+                        database, models_selected[i], "dac-datapoints-meta"
+                    )[0]["attributes"]
 
                     # if new column is found, add to end of list
                     for j in range(len(metadata)):
@@ -980,20 +1239,23 @@ def register_slycat_plugin(context):
             for i in range(num_models):
 
                 # get table metadata
-                metadata = slycat.web.server.get_model_arrayset_metadata(database,
-                    models_selected[i], "dac-datapoints-meta")[0]["attributes"]
+                metadata = slycat.web.server.get_model_arrayset_metadata(
+                    database, models_selected[i], "dac-datapoints-meta"
+                )[0]["attributes"]
 
                 # get table data
-                meta_table = slycat.web.server.get_model_arrayset_data(database,
-                             models_selected[i], "dac-datapoints-meta", "0/.../...")
+                meta_table = slycat.web.server.get_model_arrayset_data(
+                    database, models_selected[i], "dac-datapoints-meta", "0/.../..."
+                )
 
                 # check for existing model origin data
                 model_origin = []
-                if 'artifact:dac-model-origin' in models_selected[i]:
+                if "artifact:dac-model-origin" in models_selected[i]:
 
                     # load model origin data
                     model_origin = slycat.web.server.get_model_parameter(
-                        database, models_selected[i], "dac-model-origin")
+                        database, models_selected[i], "dac-model-origin"
+                    )
 
                 # convert to rows and append origin model
                 num_rows = len(meta_table[0])
@@ -1003,11 +1265,13 @@ def register_slycat_plugin(context):
                     # initialize empty row to "Not Present", or NaN values
                     meta_row_j = []
                     for k in range(num_cols):
-                        if meta_column_types[k] == 'string' or \
-                           meta_column_types[k] == b'string':
+                        if (
+                            meta_column_types[k] == "string"
+                            or meta_column_types[k] == b"string"
+                        ):
                             meta_row_j.append("Not Present")
                         else:
-                            meta_row_j.append(float('nan'))
+                            meta_row_j.append(float("nan"))
 
                     for k in range(len(metadata)):
 
@@ -1024,15 +1288,23 @@ def register_slycat_plugin(context):
                     meta_rows.append(meta_row_j)
 
             # save model origin column
-            slycat.web.server.put_model_parameter(database, model, "dac-model-origin", from_model)
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-model-origin", from_model
+            )
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                    "Added new table column for model origin.\n" +
-                    "Duplicate time series in different models will be duplicated in table, and " +
-                    "will be plotted on top of each other in scatter plot and waveform plots.")
+            parse_error_log = dac_error.update_parse_log(
+                database,
+                model,
+                parse_error_log,
+                "Progress",
+                "Added new table column for model origin.\n"
+                + "Duplicate time series in different models will be duplicated in table, and "
+                + "will be plotted on top of each other in scatter plot and waveform plots.",
+            )
 
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Combining ...", 53.0])
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Combining ...", 53.0]
+            )
 
             # get editable column data, if it exists
             editable_cols = [{} for i in range(num_models)]
@@ -1040,29 +1312,43 @@ def register_slycat_plugin(context):
             for i in range(num_models):
 
                 # check for editable columns in this model
-                if 'artifact:dac-editable-columns' in models_selected[i]:
+                if "artifact:dac-editable-columns" in models_selected[i]:
 
                     # load editable column attribute data
                     editable_cols[i] = slycat.web.server.get_model_parameter(
-                        database, models_selected[i], "dac-editable-columns")
+                        database, models_selected[i], "dac-editable-columns"
+                    )
 
                     found_editable_cols = True
 
             # report on absence of editable columns
             if not found_editable_cols:
-                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                                             "No editable columns found.")
+                parse_error_log = dac_error.update_parse_log(
+                    database,
+                    model,
+                    parse_error_log,
+                    "Progress",
+                    "No editable columns found.",
+                )
 
             # otherwise merge columns
             else:
                 merged_cols = merge_editable_cols(editable_cols, num_rows_per_model)
-                slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", merged_cols)
-                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                                             "Merged editable columns.")
+                slycat.web.server.put_model_parameter(
+                    database, model, "dac-editable-columns", merged_cols
+                )
+                parse_error_log = dac_error.update_parse_log(
+                    database,
+                    model,
+                    parse_error_log,
+                    "Progress",
+                    "Merged editable columns.",
+                )
 
             # get variable metadata table header
-            var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
-                            models_selected[0], "dac-variables-meta")[0]["attributes"]
+            var_table_meta = slycat.web.server.get_model_arrayset_metadata(
+                database, models_selected[0], "dac-variables-meta"
+            )[0]["attributes"]
 
             # convert table header to list
             meta_var_col_names = []
@@ -1072,8 +1358,14 @@ def register_slycat_plugin(context):
             # get variable table for new model
             var_table = []
             for i in range(len(meta_var_col_names)):
-                var_table.append(slycat.web.server.get_model_arrayset_data(database, models_selected[0],
-                    "dac-variables-meta", "0/%s/..." % i)[0])
+                var_table.append(
+                    slycat.web.server.get_model_arrayset_data(
+                        database,
+                        models_selected[0],
+                        "dac-variables-meta",
+                        "0/%s/..." % i,
+                    )[0]
+                )
 
             # convert variable table columns to rows
             meta_vars = []
@@ -1090,7 +1382,8 @@ def register_slycat_plugin(context):
 
                 # get time points from database (only from original model)
                 time_steps_i = slycat.web.server.get_model_arrayset_data(
-                    database, models_selected[0], "dac-time-points", "%s/0/..." % i)[0]
+                    database, models_selected[0], "dac-time-points", "%s/0/..." % i
+                )[0]
                 time_steps.append(time_steps_i)
 
             # check if we have mismatched time steps
@@ -1105,28 +1398,41 @@ def register_slycat_plugin(context):
 
                     # go through each model and intersect time steps
                     intersected_true = False
-                    for j in range(1,num_models):
+                    for j in range(1, num_models):
 
                         # get time points from database for model j
                         time_steps_i = slycat.web.server.get_model_arrayset_data(
-                            database, models_selected[j], "dac-time-points", "%s/0/..." % i)[0]
+                            database,
+                            models_selected[j],
+                            "dac-time-points",
+                            "%s/0/..." % i,
+                        )[0]
 
                         # intersect time steps
                         len_prev_time_steps = len(intersected_time_steps_i)
-                        intersected_time_steps_i = numpy.intersect1d(intersected_time_steps_i, time_steps_i)
+                        intersected_time_steps_i = numpy.intersect1d(
+                            intersected_time_steps_i, time_steps_i
+                        )
 
                         # note intersections
-                        if len(intersected_time_steps_i) < len_prev_time_steps or \
-                           len(intersected_time_steps_i) < len(time_steps_i):
+                        if len(intersected_time_steps_i) < len_prev_time_steps or len(
+                            intersected_time_steps_i
+                        ) < len(time_steps_i):
                             intersected_true = True
 
                     intersected_time_steps.append(intersected_time_steps_i)
 
                     # log any intersections
                     if intersected_true:
-                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                          "Progress", "Variable " + meta_vars[i][0] +
-                                          " had mismatched time steps and was truncated.")
+                        parse_error_log = dac_error.update_parse_log(
+                            database,
+                            model,
+                            parse_error_log,
+                            "Progress",
+                            "Variable "
+                            + meta_vars[i][0]
+                            + " had mismatched time steps and was truncated.",
+                        )
 
                 # replace time steps with intersected time steps
                 time_steps = intersected_time_steps
@@ -1134,24 +1440,37 @@ def register_slycat_plugin(context):
                 # check if any variables have been thrown out
                 for i in reversed(range(num_vars)):
                     if len(time_steps[i]) == 0:
-                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                          "Progress", "Variable " + meta_vars[i][0] +
-                                          " will be discarded due to empty time point intersection.")
+                        parse_error_log = dac_error.update_parse_log(
+                            database,
+                            model,
+                            parse_error_log,
+                            "Progress",
+                            "Variable "
+                            + meta_vars[i][0]
+                            + " will be discarded due to empty time point intersection.",
+                        )
                         keep_var_inds.remove(i)
                         meta_vars.pop(i)
 
                 # check if any variables are left
                 if len(keep_var_inds) == 0:
 
+                    parse_error_log = dac_error.update_parse_log(
+                        database,
+                        model,
+                        parse_error_log,
+                        "Progress",
+                        "All variables have been discarded -- empty data set.",
+                    )
 
-                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                        "Progress", "All variables have been discarded -- empty data set.")
-
-                    raise Exception("All variables have been discarded -- empty data set.")
+                    raise Exception(
+                        "All variables have been discarded -- empty data set."
+                    )
 
             # update progress
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Combining ...", 56.0])
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Combining ...", 56.0]
+            )
 
             # get PCA components
             use_PCA_comps = False
@@ -1159,19 +1478,27 @@ def register_slycat_plugin(context):
 
                 # load PCA comps flag (this should always be true)
                 use_PCA_comps = slycat.web.server.get_model_parameter(
-                    database, models_selected[0], "dac-use-PCA-comps")
+                    database, models_selected[0], "dac-use-PCA-comps"
+                )
 
                 # get number of components
                 if use_PCA_comps:
 
                     # get number of PCA components
-                    meta_dist = slycat.web.server.get_model_arrayset_metadata(database, 
-                        models_selected[0], "dac-var-dist")
+                    meta_dist = slycat.web.server.get_model_arrayset_metadata(
+                        database, models_selected[0], "dac-var-dist"
+                    )
                     num_PCA_comps = meta_dist[0]["shape"][1]
 
-                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                "Progress", "Using " + str(num_PCA_comps) + 
-                                " PCA components in combined model.")
+                    parse_error_log = dac_error.update_parse_log(
+                        database,
+                        model,
+                        parse_error_log,
+                        "Progress",
+                        "Using "
+                        + str(num_PCA_comps)
+                        + " PCA components in combined model.",
+                    )
 
             # merge the variable data for all models selected
             # and compute distance matrices
@@ -1188,17 +1515,25 @@ def register_slycat_plugin(context):
 
                         # get time points from database for model j
                         time_steps_i = slycat.web.server.get_model_arrayset_data(
-                            database, models_selected[j], "dac-time-points", "%s/0/..." % i)[0]
+                            database,
+                            models_selected[j],
+                            "dac-time-points",
+                            "%s/0/..." % i,
+                        )[0]
 
                         # find intersected indices into time steps
-                        int_time_steps_i, int_inds_i, int_inds_i_arr_2 = numpy.intersect1d(time_steps_i,
-                            time_steps[i], return_indices=True)
+                        int_time_steps_i, int_inds_i, int_inds_i_arr_2 = (
+                            numpy.intersect1d(
+                                time_steps_i, time_steps[i], return_indices=True
+                            )
+                        )
 
                         # get variable data
-                        var_data_j = slycat.web.server.get_model_arrayset_data(database,
-                                        models_selected[j], "dac-var-data", "%s/0/..." % i)[0]
+                        var_data_j = slycat.web.server.get_model_arrayset_data(
+                            database, models_selected[j], "dac-var-data", "%s/0/..." % i
+                        )[0]
 
-                        var_data_i.append(numpy.array(var_data_j)[:,int_inds_i])
+                        var_data_i.append(numpy.array(var_data_j)[:, int_inds_i])
 
                         # create pairwise distance matrix, or use PCA comps
                         if use_PCA_comps:
@@ -1206,15 +1541,19 @@ def register_slycat_plugin(context):
                             try:
                                 dist_i = pca.fit_transform(var_data_i[-1])
                             except ValueError:
-                                dac_error.quit_raise_exception(database, model, parse_error_log,
-                                    "Could not perform PCA, too few components.")
+                                dac_error.quit_raise_exception(
+                                    database,
+                                    model,
+                                    parse_error_log,
+                                    "Could not perform PCA, too few components.",
+                                )
 
                             # save each PCA projection separately
                             var_dist_i.append(dist_i)
 
                     # concatenate and put into list of variables
                     var_data.append(numpy.concatenate(tuple(var_data_i)))
-                    
+
                     # for PCA append distance matrices
                     if use_PCA_comps:
                         dist_i = numpy.concatenate(tuple(var_dist_i))
@@ -1222,7 +1561,7 @@ def register_slycat_plugin(context):
                     else:
                         dist_i = spatial.distance.pdist(var_data[-1])
                         dist_i = spatial.distance.squareform(dist_i)
-                    
+
                     # save distance matrix/PCA projection
                     var_dist.append(dist_i)
 
@@ -1236,40 +1575,70 @@ def register_slycat_plugin(context):
                     if "artifact:dac-landmarks" in models_selected[0]:
 
                         # load landmarks mask for origin model
-                        landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                            database, models_selected[0], "dac-landmarks", "0/0/..."))[0].astype(int)
+                        landmarks = numpy.array(
+                            slycat.web.server.get_model_arrayset_data(
+                                database, models_selected[0], "dac-landmarks", "0/0/..."
+                            )
+                        )[0].astype(int)
 
                         # convert landmarks to indices (1-based)
-                        landmarks = numpy.where(landmarks==1)[0] + 1
+                        landmarks = numpy.where(landmarks == 1)[0] + 1
 
-                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                    "Progress", 'Using landmarks from origin model.')
+                        parse_error_log = dac_error.update_parse_log(
+                            database,
+                            model,
+                            parse_error_log,
+                            "Progress",
+                            "Using landmarks from origin model.",
+                        )
 
                 # otherwise look for landmarks in other models
                 else:
 
                     landmarks = []
                     model_ind = 0
-                    for j in range(0,num_models):
+                    for j in range(0, num_models):
 
                         # if landmarks are present, use them
                         if "artifact:dac-landmarks" in models_selected[j]:
 
-                            landmarks_j = numpy.array(slycat.web.server.get_model_arrayset_data(
-                                database, models_selected[j], "dac-landmarks", "0/0/..."))[0].astype(int)
+                            landmarks_j = numpy.array(
+                                slycat.web.server.get_model_arrayset_data(
+                                    database,
+                                    models_selected[j],
+                                    "dac-landmarks",
+                                    "0/0/...",
+                                )
+                            )[0].astype(int)
 
                             # convert landmarks to indices (1-based)
-                            landmarks_j = numpy.where(landmarks_j==1)[0] + model_ind + 1
+                            landmarks_j = (
+                                numpy.where(landmarks_j == 1)[0] + model_ind + 1
+                            )
 
-                            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                "Progress", "Using landmarks from model " + model_names[j] + ".")
+                            parse_error_log = dac_error.update_parse_log(
+                                database,
+                                model,
+                                parse_error_log,
+                                "Progress",
+                                "Using landmarks from model " + model_names[j] + ".",
+                            )
 
                         # otherwise use all model data points
                         else:
-                            landmarks_j = numpy.arange(num_rows_per_model[j]) + model_ind + 1
+                            landmarks_j = (
+                                numpy.arange(num_rows_per_model[j]) + model_ind + 1
+                            )
 
-                            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                "Progress", "Using all data points as landmarks for " + model_names[j] + ".")
+                            parse_error_log = dac_error.update_parse_log(
+                                database,
+                                model,
+                                parse_error_log,
+                                "Progress",
+                                "Using all data points as landmarks for "
+                                + model_names[j]
+                                + ".",
+                            )
 
                         landmarks += landmarks_j.tolist()
 
@@ -1284,8 +1653,9 @@ def register_slycat_plugin(context):
                 if i not in keep_var_inds:
                     time_steps.pop(i)
 
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Combining ...", 58.0])
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Combining ...", 58.0]
+            )
 
             # write out model parameter in case of projection (assume no projection)
             num_tests = len(meta_rows)
@@ -1297,32 +1667,50 @@ def register_slycat_plugin(context):
                 proj += [0 for data_point in range(num_tests - num_rows_per_model[0])]
 
                 # store projection mask as artifact for use in computations
-                slycat.web.server.put_model_parameter(database, model, "dac-proj-mask", proj)
+                slycat.web.server.put_model_parameter(
+                    database, model, "dac-proj-mask", proj
+                )
 
             # summarize results for user
             parse_error_log.insert(0, "Summary:")
 
             # list models combined
             models_combined = ""
-            for i in range(num_models-1):
+            for i in range(num_models - 1):
                 models_combined += '"' + model_names[i] + '", '
             models_combined += '"' + model_names[-1] + '".'
             parse_error_log.insert(1, "Combined models " + models_combined)
 
             # list out final statistics
             parse_error_log.insert(2, "Total number of tests: " + str(num_tests) + ".")
-            parse_error_log.insert(3, "Each test has " + str(num_vars)
-                                   + " digitizer time series.\n")
+            parse_error_log.insert(
+                3, "Each test has " + str(num_vars) + " digitizer time series.\n"
+            )
 
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            slycat.web.server.put_model_parameter(
+                database,
+                model,
+                "dac-parse-log",
+                ["Progress", "\n".join(parse_error_log)],
+            )
 
             # finally, we upload the combined data
-            push.init_upload_model (database, model, dac_error, parse_error_log,
-                                    meta_column_names, meta_rows,
-                                    meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist, proj=proj, 
-                                    landmarks=landmarks, use_coordinates=use_PCA_comps)
+            push.init_upload_model(
+                database,
+                model,
+                dac_error,
+                parse_error_log,
+                meta_column_names,
+                meta_rows,
+                meta_var_col_names,
+                meta_vars,
+                var_data,
+                time_steps,
+                var_dist,
+                proj=proj,
+                landmarks=landmarks,
+                use_coordinates=use_PCA_comps,
+            )
 
             # done -- destroy the thread
             stop_event.set()
@@ -1330,28 +1718,29 @@ def register_slycat_plugin(context):
         except Exception as e:
 
             # log exception and inform user
-            dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+            dac_error.report_load_exception(
+                database, model, parse_error_log, traceback.format_exc()
+            )
 
             # done -- destroy the thread
             stop_event.set()
 
-
     # helper function for combine_models_thread which merges editable columns
-    def merge_editable_cols (editable_cols, num_rows_per_model):
+    def merge_editable_cols(editable_cols, num_rows_per_model):
 
         num_models = len(editable_cols)
 
         # convert number of rows per model into cumulative index
         models_row_index = list(numpy.cumsum(num_rows_per_model))
         num_rows = int(models_row_index.pop())
-        models_row_index.insert(0,0)
+        models_row_index.insert(0, 0)
 
         # merge existing headers into unique list
         editable_attributes = []
         editable_categories = []
 
         # keep track of models that contribute to unique headers
-        model_headers = [{'origin': [], 'merged': []} for i in range(num_models)]
+        model_headers = [{"origin": [], "merged": []} for i in range(num_models)]
 
         # go through each model, matching up headers and keeping track of data contributions
         for i in range(num_models):
@@ -1366,10 +1755,16 @@ def register_slycat_plugin(context):
                     for k in range(len(editable_attributes)):
 
                         # check name
-                        if editable_attributes[k]["name"] == editable_cols[i]["attributes"][j]["name"]:
+                        if (
+                            editable_attributes[k]["name"]
+                            == editable_cols[i]["attributes"][j]["name"]
+                        ):
 
                             # check type
-                            if editable_attributes[k]["type"] == editable_cols[i]["attributes"][j]["type"]:
+                            if (
+                                editable_attributes[k]["type"]
+                                == editable_cols[i]["attributes"][j]["type"]
+                            ):
 
                                 # if freetext then done
                                 if editable_attributes[k]["type"] == "freetext":
@@ -1381,12 +1776,17 @@ def register_slycat_plugin(context):
                                 else:
 
                                     # check for same number of categories
-                                    if len(editable_categories[k]) == len(editable_cols[i]["categories"][j]):
+                                    if len(editable_categories[k]) == len(
+                                        editable_cols[i]["categories"][j]
+                                    ):
 
                                         # check for same category names
                                         col_j_exists = True
                                         for cat in editable_categories[k]:
-                                            if not cat in editable_cols[i]["categories"][j]:
+                                            if (
+                                                not cat
+                                                in editable_cols[i]["categories"][j]
+                                            ):
                                                 col_j_exists = False
 
                                         # keep track of models that have this column
@@ -1410,9 +1810,9 @@ def register_slycat_plugin(context):
         # initialize data to empty
         for i in range(num_attr):
 
-            empty_val = ''
-            if editable_attributes[i]["type"] == 'categorical':
-                empty_val = 'No Value'
+            empty_val = ""
+            if editable_attributes[i]["type"] == "categorical":
+                empty_val = "No Value"
             editable_data[i] = [empty_val for row in range(num_rows)]
 
         # go through each model and fill in editable columns
@@ -1430,16 +1830,18 @@ def register_slycat_plugin(context):
                     # to row
                     merged_row = models_row_index[i] + k
 
-                    editable_data[merged_col][merged_row] = \
-                        editable_cols[i]["data"][origin_col][k]
+                    editable_data[merged_col][merged_row] = editable_cols[i]["data"][
+                        origin_col
+                    ][k]
 
-        merged_cols = {'num_rows': num_rows,
-                       'attributes': editable_attributes,
-                       'data': editable_data,
-                       'categories': editable_categories}
+        merged_cols = {
+            "num_rows": num_rows,
+            "attributes": editable_attributes,
+            "data": editable_data,
+            "categories": editable_categories,
+        }
 
         return merged_cols
-
 
     # filter model by recomputing
     def filter_model(database, model, verb, type, command, **kwargs):
@@ -1455,13 +1857,13 @@ def register_slycat_plugin(context):
 
         # start thread to do actual work
         stop_event = threading.Event()
-        thread = threading.Thread(target=filter_model_thread,
-                                  args=(database, model, origin_model,
-                                        time_filter, stop_event))
+        thread = threading.Thread(
+            target=filter_model_thread,
+            args=(database, model, origin_model, time_filter, stop_event),
+        )
         thread.start()
 
         return json.dumps(["Success", 1])
-
 
     # thread that does actual work for filtering by recomputing
     def filter_model_thread(database, model, origin_model, time_filter, stop_event):
@@ -1471,17 +1873,26 @@ def register_slycat_plugin(context):
         try:
 
             # init parse error log for UI
-            parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
+            parse_error_log = dac_error.update_parse_log(
+                database, model, [], "Progress", "Notes:"
+            )
 
             # init dac polling progress bar for UI
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                              "Progress", 'Creating time-filtered model from "' + origin_model["name"] + '".')
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Copying ...", 50.0])
+            parse_error_log = dac_error.update_parse_log(
+                database,
+                model,
+                parse_error_log,
+                "Progress",
+                'Creating time-filtered model from "' + origin_model["name"] + '".',
+            )
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Copying ...", 50.0]
+            )
 
             # load table metadata
-            metadata = slycat.web.server.get_model_arrayset_metadata(database,
-                            origin_model, "dac-datapoints-meta")[0]["attributes"]
+            metadata = slycat.web.server.get_model_arrayset_metadata(
+                database, origin_model, "dac-datapoints-meta"
+            )[0]["attributes"]
 
             # get metadata column names/types
             meta_column_names = []
@@ -1489,8 +1900,9 @@ def register_slycat_plugin(context):
                 meta_column_names.append(metadata[i]["name"])
 
             # get table data
-            meta_table = slycat.web.server.get_model_arrayset_data(database,
-                                origin_model, "dac-datapoints-meta", "0/.../...")
+            meta_table = slycat.web.server.get_model_arrayset_data(
+                database, origin_model, "dac-datapoints-meta", "0/.../..."
+            )
 
             # convert to rows
             num_rows = len(meta_table[0])
@@ -1504,12 +1916,18 @@ def register_slycat_plugin(context):
 
                 meta_rows.append(meta_row_j)
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                              "Progress", 'Copied metadata from original model.')
+            parse_error_log = dac_error.update_parse_log(
+                database,
+                model,
+                parse_error_log,
+                "Progress",
+                "Copied metadata from original model.",
+            )
 
             # get variable metadata table header
-            var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
-                            origin_model, "dac-variables-meta")[0]["attributes"]
+            var_table_meta = slycat.web.server.get_model_arrayset_metadata(
+                database, origin_model, "dac-variables-meta"
+            )[0]["attributes"]
 
             # convert table header to list
             meta_var_col_names = []
@@ -1519,8 +1937,11 @@ def register_slycat_plugin(context):
             # get variable table for new model
             var_table = []
             for i in range(len(meta_var_col_names)):
-                var_table.append(slycat.web.server.get_model_arrayset_data(database, origin_model,
-                    "dac-variables-meta", "0/%s/..." % i)[0])
+                var_table.append(
+                    slycat.web.server.get_model_arrayset_data(
+                        database, origin_model, "dac-variables-meta", "0/%s/..." % i
+                    )[0]
+                )
 
             # convert variable table columns to rows
             meta_vars = []
@@ -1531,11 +1952,17 @@ def register_slycat_plugin(context):
                     meta_row_i.append(var_table[j][i])
                 meta_vars.append(meta_row_i)
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                              "Progress", 'Copied variable labels from original model.')
+            parse_error_log = dac_error.update_parse_log(
+                database,
+                model,
+                parse_error_log,
+                "Progress",
+                "Copied variable labels from original model.",
+            )
 
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Filtering ...", 60.0])
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Filtering ...", 60.0]
+            )
 
             # get time steps from server
             time_steps = []
@@ -1544,25 +1971,40 @@ def register_slycat_plugin(context):
 
                 # get time points from database
                 time_steps_i = slycat.web.server.get_model_arrayset_data(
-                    database, origin_model, "dac-time-points", "%s/0/..." % i)[0]
+                    database, origin_model, "dac-time-points", "%s/0/..." % i
+                )[0]
 
                 # get filtered time step indices
-                time_inds_i = numpy.where((time_steps_i >= time_filter[i][0]) &
-                                          (time_steps_i <= time_filter[i][1]))
+                time_inds_i = numpy.where(
+                    (time_steps_i >= time_filter[i][0])
+                    & (time_steps_i <= time_filter[i][1])
+                )
 
                 # save filter indices and filtered time steps
                 time_step_inds.append(time_inds_i)
                 time_steps.append(time_steps_i[time_inds_i])
 
                 # document time filter for each variable
-                parse_error_log.append('Filtered "' + meta_vars[i][0] + '" to range ' +
-                                       str(time_filter[i][0]) + " - " + str(time_filter[i][1]) + ".")
+                parse_error_log.append(
+                    'Filtered "'
+                    + meta_vars[i][0]
+                    + '" to range '
+                    + str(time_filter[i][0])
+                    + " - "
+                    + str(time_filter[i][1])
+                    + "."
+                )
 
             # update progress report
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Computing ...", 65.0])
+            slycat.web.server.put_model_parameter(
+                database,
+                model,
+                "dac-parse-log",
+                ["Progress", "\n".join(parse_error_log)],
+            )
+            slycat.web.server.put_model_parameter(
+                database, model, "dac-polling-progress", ["Computing ...", 65.0]
+            )
 
             # are we using PCA?
             use_PCA_comps = False
@@ -1571,32 +2013,48 @@ def register_slycat_plugin(context):
 
                 # load PCA comps flag (this should always be true)
                 use_PCA_comps = slycat.web.server.get_model_parameter(
-                    database, origin_model, "dac-use-PCA-comps")
+                    database, origin_model, "dac-use-PCA-comps"
+                )
 
                 # get number of components
                 if use_PCA_comps:
 
                     # get number of PCA components
-                    meta_dist = slycat.web.server.get_model_arrayset_metadata(database, 
-                        origin_model, "dac-var-dist")
+                    meta_dist = slycat.web.server.get_model_arrayset_metadata(
+                        database, origin_model, "dac-var-dist"
+                    )
                     num_PCA_comps = meta_dist[0]["shape"][1]
 
-                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                "Progress", "Using " + str(num_PCA_comps) + 
-                                " PCA components in filtered model.")
+                    parse_error_log = dac_error.update_parse_log(
+                        database,
+                        model,
+                        parse_error_log,
+                        "Progress",
+                        "Using "
+                        + str(num_PCA_comps)
+                        + " PCA components in filtered model.",
+                    )
 
             # get landmarks, if available
             elif "artifact:dac-landmarks" in origin_model:
 
                 # load landmarks mask
-                landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                    database, origin_model, "dac-landmarks", "0/0/..."))[0].astype(int)
+                landmarks = numpy.array(
+                    slycat.web.server.get_model_arrayset_data(
+                        database, origin_model, "dac-landmarks", "0/0/..."
+                    )
+                )[0].astype(int)
 
                 # convert landmarks to indices (1-based)
-                landmarks = numpy.where(landmarks==1)[0] + 1
-                
-                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                              "Progress", 'Using landmarks from original model.')
+                landmarks = numpy.where(landmarks == 1)[0] + 1
+
+                parse_error_log = dac_error.update_parse_log(
+                    database,
+                    model,
+                    parse_error_log,
+                    "Progress",
+                    "Using landmarks from original model.",
+                )
 
             # get variables and compute distance matrices
             var_data = []
@@ -1604,11 +2062,14 @@ def register_slycat_plugin(context):
             for i in range(num_vars):
 
                 # get variable data for each variable
-                var_data_i = slycat.web.server.get_model_arrayset_data(database,
-                                    origin_model, "dac-var-data", "%s/0/..." % i)[0]
+                var_data_i = slycat.web.server.get_model_arrayset_data(
+                    database, origin_model, "dac-var-data", "%s/0/..." % i
+                )[0]
 
                 # filter and put into list of variables
-                var_data.append(numpy.concatenate(tuple(var_data_i[:,time_step_inds[i]])))
+                var_data.append(
+                    numpy.concatenate(tuple(var_data_i[:, time_step_inds[i]]))
+                )
 
                 # create pairwise distance matrix, using PCA or landmarks if available
                 if use_PCA_comps:
@@ -1616,40 +2077,70 @@ def register_slycat_plugin(context):
                     try:
                         dist_i = pca.fit_transform(var_data[-1])
                     except ValueError:
-                        dac_error.quit_raise_exception(database, model, parse_error_log,
-                            "Could not perform PCA, too few components.")
+                        dac_error.quit_raise_exception(
+                            database,
+                            model,
+                            parse_error_log,
+                            "Could not perform PCA, too few components.",
+                        )
 
                 elif landmarks is None:
-                    dist_i = spatial.distance.squareform(spatial.distance.pdist(var_data[-1]))
+                    dist_i = spatial.distance.squareform(
+                        spatial.distance.pdist(var_data[-1])
+                    )
 
                 else:
-                    dist_i = spatial.distance.cdist(var_data[-1], var_data[-1][landmarks-1,:])
+                    dist_i = spatial.distance.cdist(
+                        var_data[-1], var_data[-1][landmarks - 1, :]
+                    )
 
                 var_dist.append(dist_i)
 
             # final update of error log to reflect re-compute distance matrices
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                              "Progress", 'Recomputed model using time filters.')
+            parse_error_log = dac_error.update_parse_log(
+                database,
+                model,
+                parse_error_log,
+                "Progress",
+                "Recomputed model using time filters.",
+            )
 
             # summarize results for user
             parse_error_log.insert(0, "Summary:")
-            parse_error_log.insert(1, 'Created filtered model from "' + origin_model["name"] + '".')
+            parse_error_log.insert(
+                1, 'Created filtered model from "' + origin_model["name"] + '".'
+            )
 
             # list out final statistics
             num_tests = len(meta_rows)
             parse_error_log.insert(2, "Total number of tests: " + str(num_tests) + ".")
-            parse_error_log.insert(3, "Each test has " + str(num_vars)
-                                   + " digitizer time series.\n")
+            parse_error_log.insert(
+                3, "Each test has " + str(num_vars) + " digitizer time series.\n"
+            )
 
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            slycat.web.server.put_model_parameter(
+                database,
+                model,
+                "dac-parse-log",
+                ["Progress", "\n".join(parse_error_log)],
+            )
 
             # finally, we upload the combined data
-            push.init_upload_model(database, model, dac_error, parse_error_log,
-                                   meta_column_names, meta_rows,
-                                   meta_var_col_names, meta_vars,
-                                   var_data, time_steps, var_dist, 
-                                   landmarks=landmarks, use_coordinates=use_PCA_comps)
+            push.init_upload_model(
+                database,
+                model,
+                dac_error,
+                parse_error_log,
+                meta_column_names,
+                meta_rows,
+                meta_var_col_names,
+                meta_vars,
+                var_data,
+                time_steps,
+                var_dist,
+                landmarks=landmarks,
+                use_coordinates=use_PCA_comps,
+            )
 
             # done -- destroy the thread
             stop_event.set()
@@ -1657,76 +2148,149 @@ def register_slycat_plugin(context):
         except Exception as e:
 
             # log exception and inform user
-            dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+            dac_error.report_load_exception(
+                database, model, parse_error_log, traceback.format_exc()
+            )
 
             # done -- destroy the thread
             stop_event.set()
 
-
     # import dac modules from source by hand
-    dac = imp.load_source('dac_compute_coords',
-                          os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+    dac = imp.load_source(
+        "dac_compute_coords",
+        os.path.join(os.path.dirname(__file__), "py/dac_compute_coords.py"),
+    )
 
-    push = imp.load_source('dac_upload_model',
-                           os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+    push = imp.load_source(
+        "dac_upload_model",
+        os.path.join(os.path.dirname(__file__), "py/dac_upload_model.py"),
+    )
 
-    dac_error = imp.load_source('dac_error_handling',
-                                os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+    dac_error = imp.load_source(
+        "dac_error_handling",
+        os.path.join(os.path.dirname(__file__), "py/dac_error_handling.py"),
+    )
 
-    # register plugin with slycat           
+    # register plugin with slycat
     context.register_model("DAC", finish)
     context.register_page("DAC", page_html)
-    context.register_model_command("POST", "DAC", "update_mds_coords", update_mds_coords)
-    context.register_model_command("POST", "DAC", "update_alpha_clusters", update_alpha_clusters)
+    context.register_model_command(
+        "POST", "DAC", "update_mds_coords", update_mds_coords
+    )
+    context.register_model_command(
+        "POST", "DAC", "update_alpha_clusters", update_alpha_clusters
+    )
     context.register_model_command("POST", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
-    context.register_model_command("POST", "DAC", "subsample_time_var", subsample_time_var)
-    context.register_model_command("POST", "DAC", "manage_editable_cols", manage_editable_cols)
-    context.register_model_command("POST", "DAC", "check_compatible_models", check_compatible_models)
+    context.register_model_command(
+        "POST", "DAC", "subsample_time_var", subsample_time_var
+    )
+    context.register_model_command(
+        "POST", "DAC", "manage_editable_cols", manage_editable_cols
+    )
+    context.register_model_command(
+        "POST", "DAC", "check_compatible_models", check_compatible_models
+    )
     context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)
+    context.register_model_command("POST", "DAC", "compute_lof", compute_lof)
 
     # register input wizard with slycat
-    context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})
-    context.register_wizard_resource("DAC", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
-    context.register_wizard_resource("DAC", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-wizard.html"))
+    context.register_wizard(
+        "DAC",
+        "New Dial-A-Cluster Model",
+        require={"action": "create", "context": "project"},
+    )
+    context.register_wizard_resource(
+        "DAC", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js")
+    )
+    context.register_wizard_resource(
+        "DAC",
+        "ui.html",
+        os.path.join(os.path.dirname(__file__), "html/dac-wizard.html"),
+    )
 
     # register parse info menu item
-    context.register_wizard("dac-show-parse-log", "Model Parse Log",
-                            require={"action": "info", "context": "model", "model-type": ["DAC"]})
-    context.register_wizard_resource("dac-show-parse-log", "ui.js",
-                                     os.path.join(os.path.dirname(__file__), "js/dac-parse-log.js"))
-    context.register_wizard_resource("dac-show-parse-log", "ui.html",
-                                     os.path.join(os.path.dirname(__file__), "html/dac-parse-log.html"))
+    context.register_wizard(
+        "dac-show-parse-log",
+        "Model Parse Log",
+        require={"action": "info", "context": "model", "model-type": ["DAC"]},
+    )
+    context.register_wizard_resource(
+        "dac-show-parse-log",
+        "ui.js",
+        os.path.join(os.path.dirname(__file__), "js/dac-parse-log.js"),
+    )
+    context.register_wizard_resource(
+        "dac-show-parse-log",
+        "ui.html",
+        os.path.join(os.path.dirname(__file__), "html/dac-parse-log.html"),
+    )
 
     # register preferences menu item
-    context.register_wizard("dac-preferences-wizard", "Model Preferences",
-                            require={"action": "edit", "context": "model", "model-type": ["DAC"]})
-    context.register_wizard_resource("dac-preferences-wizard", "ui.js",
-                                     os.path.join(os.path.dirname(__file__), "js/dac-preferences-wizard.js"))
-    context.register_wizard_resource("dac-preferences-wizard", "ui.html",
-                                     os.path.join(os.path.dirname(__file__), "html/dac-preferences-wizard.html"))
+    context.register_wizard(
+        "dac-preferences-wizard",
+        "Model Preferences",
+        require={"action": "edit", "context": "model", "model-type": ["DAC"]},
+    )
+    context.register_wizard_resource(
+        "dac-preferences-wizard",
+        "ui.js",
+        os.path.join(os.path.dirname(__file__), "js/dac-preferences-wizard.js"),
+    )
+    context.register_wizard_resource(
+        "dac-preferences-wizard",
+        "ui.html",
+        os.path.join(os.path.dirname(__file__), "html/dac-preferences-wizard.html"),
+    )
 
     # register model table wizard
-    context.register_wizard("dac-table-wizard", "Model Table",
-                            require={"action": "edit", "context": "model", "model-type": ["DAC"]})
-    context.register_wizard_resource("dac-table-wizard", "ui.js",
-                                     os.path.join(os.path.dirname(__file__), "js/dac-table-wizard.js"))
-    context.register_wizard_resource("dac-table-wizard", "ui.html",
-                                     os.path.join(os.path.dirname(__file__), "html/dac-table-wizard.html"))
+    context.register_wizard(
+        "dac-table-wizard",
+        "Model Table",
+        require={"action": "edit", "context": "model", "model-type": ["DAC"]},
+    )
+    context.register_wizard_resource(
+        "dac-table-wizard",
+        "ui.js",
+        os.path.join(os.path.dirname(__file__), "js/dac-table-wizard.js"),
+    )
+    context.register_wizard_resource(
+        "dac-table-wizard",
+        "ui.html",
+        os.path.join(os.path.dirname(__file__), "html/dac-table-wizard.html"),
+    )
 
     # register add data wizard
-    context.register_wizard("dac-add-data-wizard", "Combined Model",
-                            require={"action": "create", "context": "model", "model-type": ["DAC"]})
-    context.register_wizard_resource("dac-add-data-wizard", "ui.js",
-                                     os.path.join(os.path.dirname(__file__), "js/dac-add-data-wizard.js"))
-    context.register_wizard_resource("dac-add-data-wizard", "ui.html",
-                                     os.path.join(os.path.dirname(__file__), "html/dac-add-data-wizard.html"))
+    context.register_wizard(
+        "dac-add-data-wizard",
+        "Combined Model",
+        require={"action": "create", "context": "model", "model-type": ["DAC"]},
+    )
+    context.register_wizard_resource(
+        "dac-add-data-wizard",
+        "ui.js",
+        os.path.join(os.path.dirname(__file__), "js/dac-add-data-wizard.js"),
+    )
+    context.register_wizard_resource(
+        "dac-add-data-wizard",
+        "ui.html",
+        os.path.join(os.path.dirname(__file__), "html/dac-add-data-wizard.html"),
+    )
 
     # register time filter wizard
-    context.register_wizard("dac-time-filter-wizard", "Time Filtered Model",
-                            require={"action": "create", "context": "model", "model-type": ["DAC"]})
-    context.register_wizard_resource("dac-time-filter-wizard", "ui.js",
-                                     os.path.join(os.path.dirname(__file__), "js/dac-time-filter-wizard.js"))
-    context.register_wizard_resource("dac-time-filter-wizard", "ui.html",
-                                     os.path.join(os.path.dirname(__file__), "html/dac-time-filter-wizard.html"))
+    context.register_wizard(
+        "dac-time-filter-wizard",
+        "Time Filtered Model",
+        require={"action": "create", "context": "model", "model-type": ["DAC"]},
+    )
+    context.register_wizard_resource(
+        "dac-time-filter-wizard",
+        "ui.js",
+        os.path.join(os.path.dirname(__file__), "js/dac-time-filter-wizard.js"),
+    )
+    context.register_wizard_resource(
+        "dac-time-filter-wizard",
+        "ui.html",
+        os.path.join(os.path.dirname(__file__), "html/dac-time-filter-wizard.html"),
+    )

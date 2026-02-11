@@ -14,9 +14,9 @@ import {
 } from "../actions";
 import React, { useState } from "react";
 import ControlsButton from "components/ControlsButton";
-import SlycatTableIngestion from "js/slycat-table-ingestion-react";
+import TableIngestion from "components/TableIngestion/TableIngestion";
 import VariableAliasLabels from "components/VariableAliasLabels";
-import ScatterplotOptions from "components/ScatterplotOptions";
+import ScatterplotOptions from "components/ScatterplotOptions/ScatterplotOptions";
 import VariableRanges from "components/VariableRanges";
 import "js/slycat-table-ingestion";
 import "../../css/controls-button-var-options.css";
@@ -452,26 +452,26 @@ class ControlsButtonVarOptions extends React.PureComponent {
                           </label>
                         </div>
                         <div className="col-auto">
-                        <div className="input-group input-group-sm">
-                          <input
-                            type="number"
-                            className="form-control form-control-sm border border-secondary"
-                            id="font-size"
-                            max="40"
-                            min="8"
-                            step="1"
-                            style={{ width: "70px" }}
-                            value={this.props.font_size}
-                            onChange={this.props.changeFontSize}
-                          />
-                          <button
-                            className="btn btn-outline-secondary"
-                            type="button"
-                            title="Reset font size to default"
-                            value={DEFAULT_FONT_SIZE}
-                            disabled={this.props.font_size == DEFAULT_FONT_SIZE}
-                            onClick={this.props.changeFontSize}
-                          >
+                          <div className="input-group input-group-sm">
+                            <input
+                              type="number"
+                              className="form-control form-control-sm border border-secondary"
+                              id="font-size"
+                              max="40"
+                              min="8"
+                              step="1"
+                              style={{ width: "70px" }}
+                              value={this.props.font_size}
+                              onChange={this.props.changeFontSize}
+                            />
+                            <button
+                              className="btn btn-outline-secondary"
+                              type="button"
+                              title="Reset font size to default"
+                              value={DEFAULT_FONT_SIZE}
+                              disabled={this.props.font_size == DEFAULT_FONT_SIZE}
+                              onClick={this.props.changeFontSize}
+                            >
                               <FontAwesomeIcon icon={faUndo} />
                             </button>
                           </div>
@@ -479,7 +479,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       </div>
                     </div>
                     <hr />
-                    <SlycatTableIngestion
+                    <TableIngestion
                       uniqueID="varOptions"
                       variables={axes_variables}
                       properties={axes_properties}
@@ -610,7 +610,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
           </div>
         </div>
         <ControlsButton
-          icon="fa-cog"
+          icon="gear"
           title={this.title}
           data_toggle="modal"
           data_target={"#" + this.modalId}

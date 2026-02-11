@@ -68,7 +68,7 @@ def cache_object(pid, key, content_type, content):
         "type": "cache-object",
         "project": pid,
         "key": key,
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
     }
     database.save(cache_object)
@@ -97,7 +97,7 @@ class Session(object):
     """
 
     def __init__(self, sid, client, username, hostname, ssh, sftp, agent=None):
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         self._client = client
         self._sid = sid
         self._username = username
@@ -705,8 +705,11 @@ class Session(object):
             return response
         except Exception as e:
             cherrypy.log.error(
-                "Exception reading remote file %s: %s %s" % (path, type(e), str(e))
+                "Exception reading remote file %s: %s, %s" % (path, type(e), str(e))
             )
+            if str(e) == "Socket is closed" or str(e) == "Server connection dropped: ":
+                delete_session(self._sid)
+                raise cherrypy.HTTPError("400 Socket closed")
 
             if str(e) == "Garbage packet received":
                 cherrypy.response.headers["x-slycat-message"] = (
@@ -939,7 +942,9 @@ class Session(object):
             cherrypy.log.error(
                 "Exception reading remote file %s: %s %s" % (path, type(e), str(e))
             )
-
+            if str(e) == "Socket is closed":
+                delete_session(self._sid)
+                raise cherrypy.HTTPError("400 Socket closed")
             if "Garbage packet received" in str(e):
                 cherrypy.response.headers["x-slycat-message"] = (
                     "Remote access failed: %s" % str(e)
@@ -1337,7 +1342,7 @@ def get_session(sid, calling_client=None):
             raise cherrypy.HTTPError("404 not a session")
 
         session = session_cache[sid]
-        session._accessed = datetime.datetime.utcnow()
+        session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return session
 
 
@@ -1382,7 +1387,7 @@ def get_session_server(client, sid):
             raise cherrypy.HTTPError("404 not a session")
 
         session = session_cache[sid]
-        session._accessed = datetime.datetime.utcnow()
+        session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return session
 
 
@@ -1408,7 +1413,7 @@ def check_session(sid):
             response = False
         if response:
             session = session_cache[sid]
-            session._accessed = datetime.datetime.utcnow()
+            session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return response
 
 
@@ -1443,7 +1448,7 @@ def _expire_session(sid):
     Assumes that the caller already holds session_cache_lock.
     """
     if sid in session_cache:
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc)
         session = session_cache[sid]
         if (
             now - session.accessed

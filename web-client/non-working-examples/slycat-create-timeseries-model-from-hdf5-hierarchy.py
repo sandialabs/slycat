@@ -131,7 +131,7 @@ try:
       connection.put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
 
   # Create a mapping from unique cluster names to timeseries attributes.
-  connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
+  connection.update_model(mid, state="running", started = datetime.datetime.now(datetime.timezone.utc).isoformat(), progress = 0.0, message="Mapping cluster names.")
 
   clusters = collections.defaultdict(list)
   timeseries_samples = numpy.zeros(shape=(timeseries_count))
@@ -315,16 +315,16 @@ try:
       slycat.web.client.log.debug("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
       connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
 
-  connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+  connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.now(datetime.timezone.utc).isoformat(), progress=1.0, message="")
 except IOError, err:
   import traceback
   slycat.web.client.log.error(traceback.format_exc())
   slycat.web.client.log.error("%s" % err)
-  connection.update_model(mid, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message="%s" % err)
+  connection.update_model(mid, state="finished", result="failed", finished=datetime.datetime.now(datetime.timezone.utc).isoformat(), message="%s" % err)
 except:
   import traceback
   slycat.web.client.log.error(traceback.format_exc())
-  connection.update_model(mid, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
+  connection.update_model(mid, state="finished", result="failed", finished=datetime.datetime.now(datetime.timezone.utc).isoformat(), message=traceback.format_exc())
 
 # Supply the user with a direct link to the new model.
 slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))

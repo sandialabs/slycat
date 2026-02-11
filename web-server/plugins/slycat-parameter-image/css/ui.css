@@ -361,34 +361,29 @@
 }
 .frame-button {
   float: right;
-  font-size: 14px;
+  font-size: 16px;
   color: #c8c8c8 !important;
-  padding: 2px 4px;
+  margin: 3px 2px 0px 2px;
 }
 .frame-button:hover {
   color: white !important;
   cursor: pointer;
 }
-.frame-button.download-button {
-  float: left;
-  font-size: 12px;
-  text-decoration: none !important;
-  padding: 5px 4px;
-}
 .frame-button.close-button {
   float: left;
-  padding: 3px 4px;
 }
 .frame-button.max-button {
   float: left;
-  padding: 5px 4px;
-  font-size: 12px;
 }
 .frame-button.min-button {
   float: left;
-  padding: 5px 4px;
-  font-size: 12px;
   display: none;
+}
+.frame-button.download-button {
+  float: left;
+  font-size: 14px;
+  text-decoration: none !important;
+  margin-top: 4px;
 }
 #scatterplot .image-frame.maximized .frame-button.max-button {
   display: none;
@@ -396,37 +391,46 @@
 #scatterplot .image-frame.maximized .frame-button.min-button {
   display: block;
 }
+.frame-button.clone-button {
+  font-size: 13px;
+  margin-top: 4px;
+}
+.frame-button.jump-button {
+  margin: 0;
+}
+.frame-button.jump-button.jump-button-container {
+  margin-left: 12px;
+  margin-right: 12px;
+}
+.frame-button.table-index {
+  margin-top: -1px;
+}
+.frame-button.arrow-button {
+  margin-top: 5px;
+  margin-right: -4px;
+  font-size: 9px;
+}
+.frame-button.table-button {
+  margin-top: 3px;
+  font-size: 15px;
+}
+.frame-button.jump-button:hover * {
+  color: white !important;
+}
 .frame-button.pin-button {
-  padding: 4px 22px 4px 4px;
+  margin-right: 22px;
+  font-size: 13px;
+  margin-top: 4px;
 }
 .frame-button.resize-handle {
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: 2px 3px;
+  padding: 4px 3px;
+  font-size: 14px;
 }
 .frame-button.resize-handle:hover {
   cursor: nwse-resize;
-}
-.frame-button.jump-button {
-  padding: 0;
-}
-.frame-button.clone-button {
-  padding-top: 4px;
-  font-weight: bold;
-}
-.frame-button.table-index {
-  padding: 0px 0px 0px 2px;
-}
-.frame-button.table-button {
-  padding: 4px 15px 4px 0px;
-}
-.frame-button.arrow-button {
-  padding: 3px 0px 4px 2px;
-  font-size: 9px;
-}
-.frame-button.jump-button:hover * {
-  color: white !important;
 }
 
 #scatterplot .media-layer .reload-button {
@@ -507,6 +511,7 @@
 
 #scatterplot .scatterplot-svg {
   position: absolute;
+  cursor: pointer;
 }
 
 /* Image Preview */
@@ -632,7 +637,7 @@
 .slycat-pim-filter .null-button {
   position: absolute;
 }
-.slycat-pim-filter .fa-arrows-v {
+.slycat-pim-filter .fa-arrows-up-down {
   left: 28px;
   bottom: 7px;
 }

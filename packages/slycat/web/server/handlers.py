@@ -195,9 +195,9 @@ def is_user_currently_active():
             session.doc["creator"]
             not in cherrypy.request.app.config["slycat"]["server-admins"]
             and (
-                datetime.datetime.utcnow()
+                datetime.datetime.now(datetime.timezone.utc)
                 - datetime.datetime.strptime(
-                    str(session.doc["last-active-time"]), "%Y-%m-%dT%H:%M:%S.%f"
+                    str(session.doc["last-active-time"]), "%Y-%m-%dT%H:%M:%S.%f%z"
                 )
             )
             < most_recent_time
@@ -205,8 +205,8 @@ def is_user_currently_active():
             most_recent_time = session.doc["last-active-time"]
 
     if (
-        datetime.datetime.utcnow()
-        - datetime.datetime.strptime(str(most_recent_time), "%Y-%m-%dT%H:%M:%S.%f")
+        datetime.datetime.now(datetime.timezone.utc)
+        - datetime.datetime.strptime(str(most_recent_time), "%Y-%m-%dT%H:%M:%S.%f%z")
     ) >= time_threshold:
         return True
     else:
@@ -256,7 +256,7 @@ def post_projects():
                 "writers": [],
                 "groups": [],
             },
-            "created": datetime.datetime.utcnow().isoformat(),
+            "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "creator": cherrypy.request.login,
             "description": cherrypy.request.json.get("description", ""),
             "name": cherrypy.request.json["name"],
@@ -622,7 +622,7 @@ def post_project_models(pid):
         "model-type": model_type,
         "marking": marking,
         "project": pid,
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
         "name": name,
         "description": description,
@@ -740,7 +740,7 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
         "data_table": "data-table",
         "project": pid,
         "mid": [""],
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
     }
 
@@ -826,7 +826,7 @@ def create_project_data(mid, aid, file):
                     "data_table": aid[0],
                     "project": pid,
                     "mid": [mid],
-                    "created": datetime.datetime.utcnow().isoformat(),
+                    "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                     "creator": cherrypy.request.login,
                 }
                 if "project_data" not in model:
@@ -934,7 +934,7 @@ def create_project_data(mid, aid, file):
                 "data_table": aid[0],
                 "project": pid,
                 "mid": [mid],
-                "created": datetime.datetime.utcnow().isoformat(),
+                "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "creator": cherrypy.request.login,
             }
             if "project_data" not in model:
@@ -1013,7 +1013,7 @@ def post_project_references(pid):
         "_id": rid,
         "type": "reference",
         "project": pid,
-        "created": datetime.datetime.utcnow().isoformat(),
+        "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "creator": cherrypy.request.login,
         "name": require_json_parameter("name"),
         "model-type": cherrypy.request.json.get("model-type", None),
@@ -1259,7 +1259,7 @@ def put_model(mid):
 
             if key in ["started", "finished"]:
                 try:
-                    datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                    datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f%z")
                 except:
                     cherrypy.log.error(
                         "slycat.web.server.handlers.py put_model",
@@ -1312,7 +1312,7 @@ def post_model_finish(mid):
         database,
         model,
         state="running",
-        started=datetime.datetime.utcnow().isoformat(),
+        started=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         progress=0.0,
     )
     slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](
@@ -1562,7 +1562,7 @@ def login():
     # try and decode the username and password
     user_name, password = slycat.web.server.decode_username_and_password()
 
-    # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
+    # cherrypy.log.error("login attempt started %s" % datetime.datetime.now(datetime.timezone.utc))
     # try and delete any outdated sessions for the user if they have the cookie for it
     slycat.web.server.clean_up_old_session(user_name)
 
@@ -2999,7 +2999,7 @@ def get_bookmark(bid):
     # Update last accessed
     bookmark = database.get("bookmark", bid)
     slycat.web.server.authentication.require_project_reader(project)
-    bookmark["last_accessed"] = datetime.datetime.utcnow().isoformat()
+    bookmark["last_accessed"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     database.save(bookmark)
 
     cherrypy.response.headers["content-type"] = accept
@@ -3064,52 +3064,64 @@ def get_model_statistics(mid):
     except:
         raise cherrypy.HTTPError("404 error: %s" % mid)
     slycat.web.server.authentication.require_project_reader(project)
-
+    delta_creation_time = 0
     # amount of time it took to make the model
     if "finished" in model and model["finished"] is not None:
-        delta_creation_time = (
-            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
-            - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f")
-        ).total_seconds()
-    else:
-        delta_creation_time = 0
+        try:
+            delta_creation_time = (
+                datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
+                - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
+            ).total_seconds()
+        except ValueError as e:
+            delta_running_time = 0
 
     if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
             datetime.datetime.strptime(
-                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
             - datetime.datetime.strptime(
-                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
             )
         ).total_seconds()
     else:
         delta_queue_time = 0
 
     if "job_completed_time" in model and "job_running_time" in model:
-        delta_running_time = (
-            datetime.datetime.strptime(
-                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f"
-            )
-            - datetime.datetime.strptime(
-                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f"
-            )
-        ).total_seconds()
-        delta_model_compute_time = (
-            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
-            - datetime.datetime.strptime(
-                model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f"
-            )
-        ).total_seconds()
+        try:
+            delta_running_time = (
+                datetime.datetime.strptime(
+                    model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+                - datetime.datetime.strptime(
+                    model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+            ).total_seconds()
+        except ValueError as e:
+            delta_running_time = 0
+        try:
+            delta_model_compute_time = (
+                datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z")
+                - datetime.datetime.strptime(
+                    model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+            ).total_seconds()
+        except ValueError as e:
+            delta_model_compute_time = 0
     elif "job_completed_time" in model:
-        delta_running_time = (
-            datetime.datetime.strptime(
-                model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f"
-            )
-            - datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")
-        ).total_seconds()
-        delta_model_compute_time = 0
-
+        try:
+            delta_running_time = (
+                datetime.datetime.strptime(
+                    model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+                - datetime.datetime.strptime(
+                    model["finished"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                )
+            ).total_seconds()
+            delta_model_compute_time = 0
+        except ValueError as e:
+            delta_running_time = 0
+            delta_model_compute_time = 0
     else:
         delta_running_time = 0
         delta_model_compute_time = 0
@@ -3447,6 +3459,12 @@ def post_browse_hdf5(path, pid, mid):
 
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
+        dimensions = ""
+        for path in obj:
+            if isinstance(obj[path], h5py.Dataset):
+                rows = obj[path].shape[0]
+                cols = obj[path].shape[1]
+                dimensions = str(rows) + " x " + str(cols)
         # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure["path"] = path
         tree_structure["name"] = []
@@ -3458,7 +3476,7 @@ def post_browse_hdf5(path, pid, mid):
         for key, value in all_items:
             # key will be all the sub groups and datasets in the current path
             tree_structure["name"].append(key)
-            tree_structure["sizes"].append(0)
+            tree_structure["sizes"].append(dimensions)
             tree_structure["mtimes"].append("2024")
             if isinstance(value, h5py.Group):
                 tree_structure["mime-types"].append("application/x-directory")
@@ -3774,7 +3792,6 @@ def get_remote_file(hostname, path, **kwargs):
     if session_type == "smb":
         with slycat.web.server.smb.get_session(sid) as session:
             split_list = path.split("/")
-            del split_list[1]
             del split_list[0]
             content_type, encoding = slycat.mime_type.guess_type(path)
             if content_type is None:

@@ -1,6 +1,7 @@
 import * as React from "react";
 import styles from "./FileBrowser.module.scss";
 import { FileMetaData } from "./FileBrowserTypes";
+import Icon from "components/Icons/Icon";
 
 interface FileBrowserTableProps {
   files: FileMetaData[];
@@ -23,9 +24,9 @@ export default function FileBrowserTable(props: FileBrowserTableProps) {
     >
       <td data-bind-fail="html:icon">
         {file.mimeType === "application/x-directory" ? (
-          <span className="fa fa-folder"></span>
+          <Icon type="folder" />
         ) : (
-          <span className="fa fa-file-o"></span>
+          <Icon type="file" />
         )}
       </td>
       <td data-bind-fail="text:name">{file.name}</td>

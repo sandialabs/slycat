@@ -25,8 +25,8 @@ import { FileMetaData } from "./FileBrowserTypes";
 export interface RemoteFileBrowserProps {
   hostname: string;
   onSelectFileCallBack: Function;
-  onSelectParserCallBack: Function;
-  onReauthCallBack: Function;
+  onSelectParserCallBack?: Function;
+  onReauthCallBack?: Function;
   selectedOption?: string;
   showSelector?: boolean;
   useSMB?: boolean;
@@ -91,7 +91,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         }
       }
     },
-    [browseAPI, fileBrowser, props.hostname, props.useSMB, props.onReauthCallBack],
+    [browseAPI, props, fileBrowser],
   );
 
   /**
@@ -118,7 +118,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       fileBrowser.setSelected(index);
       props.onSelectFileCallBack(fullPath, file.type, file);
     },
-    [fileBrowser, pathNav, props.onSelectFileCallBack],
+    [fileBrowser, pathNav, props],
   );
 
   /**
@@ -143,6 +143,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       // Fall back to default path when nothing is stored
       browse(fileBrowser.pathInput);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array means this runs once on mount
 
   // Parser options
@@ -159,10 +160,6 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
       {
         text: "Comma separated values (CSV)",
         value: "slycat-csv-parser",
-      },
-      {
-        text: "Dakota tabular",
-        value: "slycat-dakota-parser",
       },
     ];
   }
@@ -189,7 +186,7 @@ export default function RemoteFileBrowser(props: RemoteFileBrowserProps) {
         onDoubleClick={handleFileNavigation}
       />
 
-      {props.showSelector !== false && props.selectedOption && (
+      {props.showSelector !== false && props.onSelectParserCallBack && props.selectedOption && (
         <SlycatSelector
           onSelectCallBack={props.onSelectParserCallBack}
           label={"Filetype"}

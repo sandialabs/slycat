@@ -18,10 +18,15 @@ import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--number", type=int, default=1, help="number to be printed")
-parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
+parser.add_argument(
+    "--profile", default=None, help="Name of the IPython profile to use"
+)
 arguments = parser.parse_args()
 
-print("++ trrc starting with arg: %s and profile: %s" % (arguments.number, arguments.profile))
+print(
+    "++ trrc starting with arg: %s and profile: %s"
+    % (arguments.number, arguments.profile)
+)
 
 try:
     if arguments.profile is None:
@@ -29,21 +34,36 @@ try:
     else:
         client = ipyparallel.Client(profile=arguments.profile)
 except:
-    raise Exception("A running IPython parallel cluster is required to run this script.")
+    raise Exception(
+        "A running IPython parallel cluster is required to run this script."
+    )
 
 print("++ trrc sees %s client-engine pairs ready for work" % str(len(client)))
 # creat a Direct View on the engines
 view = client[:]
-#view.block = True  #when the call is blocking only a list is rtn'd, otherwise an AsyncResult is rtn'd
+# view.block = True  #when the call is blocking only a list is rtn'd, otherwise an AsyncResult is rtn'd
 
-def myIDfunction( x ):
+
+def myIDfunction(x):
     import os, socket, datetime, uuid
+
     fname = str(uuid.uuid4()) + ".txt"
-    fh = open(fname, 'w')
-    output = "iPy, Arg is: "+str(x)+", host: "+socket.gethostname()+", PID: "+str(os.getpid())+" at "+datetime.datetime.now().isoformat()+"\n"
+    fh = open(fname, "w")
+    output = (
+        "iPy, Arg is: "
+        + str(x)
+        + ", host: "
+        + socket.gethostname()
+        + ", PID: "
+        + str(os.getpid())
+        + " at "
+        + datetime.datetime.now(datetime.timezone.utc).isoformat()
+        + "\n"
+    )
     fh.write(output)
     fh.close()
     return output
+
 
 print("++ trrc is calling apply() on engines")
 asyncResult = view.apply(myIDfunction, arguments.number)

@@ -42,7 +42,7 @@ services:
         && NODE_TLS_REJECT_UNAUTHORIZED=0 npm install \
         && npm run dev
     ports:
-      - 9000:9000
+      - 9001:9001
     networks:
       - sly-net
     volumes:
@@ -94,7 +94,7 @@ services:
       COUCHDB_PASSWORD: password
     networks:
       - sly-net
-    #uncomment to expose cherrypy @http://localhost:5984/_utils
+    # uncomment to expose cherrypy @http://localhost:5984/_utils
     # ports:
     #   - "5984:5984"
     volumes:

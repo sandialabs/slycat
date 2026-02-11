@@ -22,9 +22,9 @@ export default class SlycatRemoteControls extends Component {
     const display = this.populateDisplay();
     this.state = {
       remote_hosts: [],
-      hostname: display.hostname ? display.hostname : null,
-      username: display.username ? display.username : null,
-      session_exists: null,
+      hostname: display.hostname ? display.hostname : "",
+      username: display.username ? display.username : "",
+      session_exists: this.props.sessionExists ? this.props.sessionExists : false,
       password: "",
       hostnames: [],
       loadingData: this.props.loadingData,
@@ -38,10 +38,34 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   checkRemoteStatus = async (hostname) => {
-    return client.get_remotes_fetch(hostname).then((json) => {
+    if (
+      hostname !== "" &&
+      hostname != null &&
+      !hostname.includes("\\") &&
+      !hostname.includes("/") &&
+      !hostname.includes(" ")
+    ) {
+      return client.get_remotes_fetch(hostname).then((json) => {
+        this.setState(
+          {
+            session_exists: json.status,
+            initialLoad: true,
+            loadingData: false,
+          },
+          () => {
+            this.props.callBack(
+              this.state.hostname,
+              this.state.username,
+              this.state.password,
+              this.state.session_exists,
+            );
+          },
+        );
+      });
+    } else {
       this.setState(
         {
-          session_exists: json.status,
+          session_exists: false,
           initialLoad: true,
           loadingData: false,
         },
@@ -54,7 +78,7 @@ export default class SlycatRemoteControls extends Component {
           );
         },
       );
-    });
+    }
   };
 
   /**
@@ -65,10 +89,17 @@ export default class SlycatRemoteControls extends Component {
    */
   getRemoteHosts = async () => {
     return client.get_configuration_remote_hosts_fetch().then((json) => {
-      this.setState({ hostnames: json });
+      this.setState({ hostnames: json, initialLoad: true });
     });
   };
-
+  componentDidUpdate() {
+    if (this.props.sessionExists !== this.state.session_exists) {
+      this.setState({ session_exists: this.props.sessionExists });
+    }
+    if (this.props.loadingData !== this.state.loadingData) {
+      this.setState({ loadingData: this.props.loadingData });
+    }
+  }
   async componentDidMount() {
     await this.checkRemoteStatus(this.state.hostname);
     await this.getRemoteHosts();
@@ -81,16 +112,10 @@ export default class SlycatRemoteControls extends Component {
    */
   populateDisplay = () => {
     const display = {};
-    if (localStorage.getItem("slycat-remote-controls-hostname")) {
-      display.hostname = localStorage.getItem("slycat-remote-controls-hostname")
-        ? localStorage.getItem("slycat-remote-controls-hostname")
-        : null;
-    }
-    if (localStorage.getItem("slycat-remote-controls-username")) {
-      display.username = localStorage.getItem("slycat-remote-controls-username")
-        ? localStorage.getItem("slycat-remote-controls-username")
-        : null;
-    }
+    const storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
+    display.hostname = storedHostname && storedHostname !== "null" ? storedHostname : undefined;
+    const storedUsername = localStorage.getItem("slycat-remote-controls-username");
+    display.username = storedUsername && storedUsername !== "null" ? storedUsername : undefined;
     return display;
   };
 
@@ -104,7 +129,14 @@ export default class SlycatRemoteControls extends Component {
     switch (type) {
       case "username":
         localStorage.setItem("slycat-remote-controls-username", value);
-        this.setState({ username: value });
+        this.setState({ username: value }, () => {
+          this.props.callBack(
+            this.state.hostname,
+            this.state.username,
+            this.state.password,
+            this.state.session_exists,
+          );
+        });
         break;
       case "hostname":
         localStorage.setItem("slycat-remote-controls-hostname", value);
@@ -136,10 +168,10 @@ export default class SlycatRemoteControls extends Component {
     const state = {
       remote_hosts: [],
       enable: true,
-      hostname: display.hostname ? display.hostname : null,
-      username: display.username ? display.username : null,
+      hostname: display.hostname ? display.hostname : "",
+      username: display.username ? display.username : "",
       session_exists: false,
-      password: null,
+      password: "",
       initialLoad: false,
     };
     this.setState(state);
@@ -153,7 +185,7 @@ export default class SlycatRemoteControls extends Component {
    */
   handleKeyDown = (e) => {
     if (e.key === "Enter") {
-        document.getElementById("connect-button")?.click();
+      document.getElementById("connect-button")?.click();
     }
   };
 
@@ -163,7 +195,7 @@ export default class SlycatRemoteControls extends Component {
     if (elementExists !== null) {
       document.getElementById("continue-button")?.click();
     }
-  }
+  };
 
   /**
    * creates JSX form input if a session does not already exist for the given hostname

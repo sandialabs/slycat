@@ -36,7 +36,6 @@ export default class SlycatNumberInput extends React.Component<
   }
 
   onValueChange = (value: number) => {
-    // localStorage.setItem("slycat-remote-controls-username", value);
     if (value === "") {
       value = 1;
     }
@@ -46,12 +45,11 @@ export default class SlycatNumberInput extends React.Component<
 
   public render() {
     const inputId = this.props.id || `number-input-${Math.random().toString(36).substr(2, 9)}`;
-    
     return (
       <div className="form-floating mb-3">
         <input
           id={inputId}
-          className={`form-control ${this.props.warning ? 'is-invalid' : ''}`}
+          className={`form-control ${this.props.warning ? "is-invalid" : ""}`}
           type="number"
           min={1}
           value={this.state.value}
@@ -59,9 +57,7 @@ export default class SlycatNumberInput extends React.Component<
           placeholder={this.props.label}
         />
         <label htmlFor={inputId}>{this.props.label}</label>
-        {this.props.warning && (
-          <div className="invalid-feedback">{this.props.warning}</div>
-        )}
+        {this.props.warning && <div className="invalid-feedback">{this.props.warning}</div>}
       </div>
     );
   }

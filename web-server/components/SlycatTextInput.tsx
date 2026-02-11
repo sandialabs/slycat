@@ -43,23 +43,26 @@ export default class SlycatTextInput extends React.Component<
     this.props.callBack(value);
   };
 
+  isInputInvalid = () => {
+    return this.props.warning && this.state.value === "";
+  };
+
   public render() {
     const inputId = this.props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return (
       <div className="form-floating mb-3">
         <input
           id={inputId}
-          className={`form-control ${this.props.warning ? 'is-invalid' : ''}`}
+          className={`form-control ${this.isInputInvalid() ? "is-invalid" : ""}`}
           type="text"
           value={this.state.value}
           onChange={(e) => this.onValueChange(e.target.value)}
           placeholder={this.props.label}
         />
         <label htmlFor={inputId}>{this.props.label}</label>
-        {this.props.warning && (
-          <div className="invalid-feedback">{this.props.warning}</div>
-        )}
+        {/* Only show warning if the input is empty */}
+        {this.isInputInvalid() && <div className="invalid-feedback">{this.props.warning}</div>}
       </div>
     );
   }

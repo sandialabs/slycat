@@ -8,7 +8,7 @@ import {
   DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
   DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
   DEFAULT_SCATTERPLOT_MARGIN_LEFT,
-} from "components/ScatterplotOptions";
+} from "components/ScatterplotOptions/ScatterplotOptions";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import {
   SLICE_NAME as SCATTERPLOT_SLICE_NAME,

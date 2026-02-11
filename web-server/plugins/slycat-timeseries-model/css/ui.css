@@ -196,6 +196,9 @@ a
 #waveform-pane:hover #waveform-selector-progress-wrapper {
   display: block;
 }
+#waveform-pane canvas {
+  cursor: pointer;
+}
 /* Use these colors for the dark night mode */
 #waveform-viewer.nightMode,
 .nightMode rect.selectionMask
@@ -243,6 +246,7 @@ a
 }
 #dendrogram-viewer g.sparkline path {
   stroke-linecap: round;
+  cursor: pointer;
 }
 #dendrogram-viewer g.sparkline path:hover,
 #dendrogram-viewer g.sparkline path.highlight

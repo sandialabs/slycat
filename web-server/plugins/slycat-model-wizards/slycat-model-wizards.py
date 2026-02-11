@@ -9,7 +9,7 @@ def register_slycat_plugin(context):
   context.register_wizard("slycat-create-template", "Template", require={"action":"create", "context":"model"})
   # Alex commenting this out and instead using the line below because the Save As functionality is not ready yet.
   # context.register_wizard("slycat-create-saved-bookmark", "Save As", require={"action":"create", "context":"model"})
-  context.register_wizard("slycat-create-saved-bookmark", "Create New", require={"action":"create", "context":"model"})
+  context.register_wizard("slycat-create-saved-bookmark", "Add Bookmark", require={"action":"create", "context":"model"})
   context.register_wizard("slycat-apply-template", "Apply Template", require={"action":"edit", "context":"model"})
   context.register_wizard("slycat-info-model", "Model Details", require={"action":"info", "context":"model"})
   context.register_wizard("slycat-share-model", "Share Model", require={"action":"info", "context":"model", "model-type":["cca", "parameter-image"]})

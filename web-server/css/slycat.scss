@@ -2,34 +2,42 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-@use "slycat-bootstrap-custom";
+@use "slycat-bootstrap-default-overrides" as boot-overrides;
+@use "slycat-bootstrap-variables" as boot-vars;
+@use "slycat-variables" as vars;
 
 html {
   font-family: sans-serif;
   font-size: 16px;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
 }
 
 body {
   color: #333333;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.42857;
   margin: 0;
   display: flex;
   flex-direction: column;
 }
+
 html#slycat-model-page,
 html#slycat-model-page body {
   height: 100%;
 }
 
+.bootstrap-styles .navbar,
+footer {
+  background-color: boot-vars.$slycat-navbar-bg;
+}
+
 .bootstrap-styles .navbar {
-  background-color: rgb(215, 215, 215);
   border: 0;
   border-radius: 0;
   margin: 0;
 }
+
 .bootstrap-styles .navbar.model .container {
   width: auto !important;
 }
@@ -43,61 +51,38 @@ html#slycat-model-page body {
   padding-left: 110px;
   color: #353535 !important;
 }
+
 .bootstrap-styles .navbar > .container .navbar-brand {
   margin-left: 0;
 }
+
 .bootstrap-styles .navbar .breadcrumb {
   margin-bottom: 0;
   background-color: transparent;
 }
+
 .bootstrap-styles .navbar .breadcrumb a {
   color: rgb(136, 0, 0);
   text-decoration: none;
 }
+
 .bootstrap-styles .navbar .breadcrumb a:hover {
   text-decoration: underline;
 }
+
 .bootstrap-styles .navbar-btn {
   margin-left: 0;
   margin-right: 15px;
 }
+
 .bootstrap-styles .input-xs {
   height: 22px;
   padding: 2px 5px;
   font-size: 12px;
-  line-height: 1.5; /* If Placeholder of the input is moved up, rem/modify this. */
+  line-height: 1.5;
+  /* If Placeholder of the input is moved up, rem/modify this. */
   border-radius: 3px;
 }
-.nav-bookmarks ul.dropdown-menu {
-  max-height: 500px;
-  overflow-y: auto;
-}
-.nav-bookmarks .bookmark-new {
-  font-weight: bold !important;
-}
-.nav-bookmarks .bookmark-new .fa {
-  margin-right: 3px;
-}
-.nav-bookmarks .bookmark-link {
-  position: relative;
-  padding-right: 95px !important;
-}
-.nav-bookmarks .bookmark-delete,
-.nav-bookmarks .bookmark-edit {
-  /*position: absolute;*/
-  padding: 0.15rem 0.4rem;
-  font-size: 0.775rem;
-  line-height: 1.4;
-}
-
-/*
-.nav-bookmarks .bookmark-delete {
-  right: 20px;
-}
-.nav-bookmarks .bookmark-edit {
-  right: 49px;
-}
-*/
 
 .bootstrap-styles .modal .jumbotron {
   padding: 48px;
@@ -110,15 +95,18 @@ slycat-navbar nav .alert {
 slycat-navbar nav .alert pre {
   margin: 12px 0 0 0;
 }
+
 #slycat-wizard .slycat-remote-browser .path .alert {
   margin-top: 47px;
   margin-bottom: 0;
   display: none;
   clear: both;
 }
+
 #slycat-wizard .nav-pills a {
   cursor: default;
 }
+
 #slycat-wizard .nav-tabs,
 #slycat-wizard .nav-pills {
   margin-bottom: 24px;
@@ -176,23 +164,29 @@ slycat-navbar nav .alert pre {
   background: transparent;
   border-color: transparent;
 }
+
 .bootstrap-styles #slycat-wizard input[type="file"] {
   padding: 6px 0;
 }
+
 .bootstrap-styles #slycat-wizard .nav:not(.share-model-tabs) > li > a {
   color: #333333;
 }
+
 .bootstrap-styles #slycat-wizard .nav > li > a:hover {
   background-color: transparent;
 }
+
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a,
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover {
   color: black;
   background-color: #d7d7d7;
 }
+
 .bootstrap-styles #slycat-wizard .modal-footer button i {
   display: none;
 }
+
 .bootstrap-styles #slycat-wizard .modal-footer button.disabled i {
   display: inline-block;
 }
@@ -200,7 +194,7 @@ slycat-navbar nav .alert pre {
 .slycat-content {
   position: relative;
   flex: 1;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
   display: flex;
   flex-direction: column;
 }
@@ -236,8 +230,8 @@ slycat-navbar nav .alert pre {
 
 /* Customize bootstrap's hover colors for .table-active selectedrows to make them match the non-hover selected row colors. */
 .slycat-remote-browser .table-hover > tbody > tr.table-active:hover > * {
-  background-color: slycat-bootstrap-custom.$table-active-bg;
-  color: slycat-bootstrap-custom.$table-active-color;
+  background-color: boot-overrides.$table-active-bg;
+  color: boot-overrides.$table-active-color;
 }
 
 .slycat-remote-browser td:first-child {
@@ -251,6 +245,7 @@ slycat-navbar nav .alert pre {
   flex-flow: column;
   height: 100%;
 }
+
 .slycat-remote-browser-flex-layout slycat-remote-browser {
   flex-grow: 1;
   flex-shrink: 1;
@@ -258,13 +253,16 @@ slycat-navbar nav .alert pre {
   height: 100px;
   margin-bottom: 15px;
 }
+
 .slycat-remote-browser-flex-layout slycat-remote-browser:last-child {
   margin-bottom: 0px;
 }
+
 .slycat-remote-browser-flex-layout slycat-parser-controls {
   flex-grow: 0;
   flex-shrink: 0;
 }
+
 .slycat-remote-browser-flex-layout slycat-parser-controls > .form-group {
   margin-bottom: 0;
 }
@@ -287,7 +285,7 @@ slycat-navbar nav .alert pre {
 }
 
 .slycat-scrollbar .thumb {
-  background: lightgray;
+  background: rgb(211, 211, 211);
   border-radius: 6px;
   transition: background 0.25s ease-in-out;
 }
@@ -300,21 +298,21 @@ slycat-navbar nav .alert pre {
 
 /* slycat-range-slider component */
 .slycat-range-slider .domain {
-  background: #ddd;
-  border: 1px solid #ccc;
+  background: vars.$range-slider-domain-bg;
+  border: 1px solid vars.$range-slider-domain-border;
   border-radius: 6px;
 }
 
 .slycat-range-slider.invert .domain {
-  background: #aabbff;
-  border: 1px solid #aabbff;
+  background: vars.$range-slider-range-bg;
+  border: 1px solid vars.$range-slider-range-bg;
   border-radius: 6px;
 }
 
 .slycat-range-slider.invert:hover .domain,
 .slycat-range-slider.dragging.invert .domain {
-  background: #7788ff;
-  border-color: #7788ff;
+  background: vars.$range-slider-hover-bg;
+  border-color: vars.$range-slider-hover-bg;
   transition: all 0.25s ease-in-out;
 }
 
@@ -333,23 +331,23 @@ slycat-navbar nav .alert pre {
 }
 
 .slycat-range-slider .range {
-  background: #aabbff;
+  background: vars.$range-slider-range-bg;
 }
 
 .slycat-range-slider.invert .range {
-  background: #ddd;
-  border: 1px solid #ccc;
+  background: vars.$range-slider-domain-bg;
+  border: 1px solid vars.$range-slider-domain-border;
 }
 
 .slycat-range-slider:hover .range,
 .slycat-range-slider.dragging .range {
-  background: #7788ff;
+  background: vars.$range-slider-hover-bg;
   transition: background 0.25s ease-in-out;
 }
 
 .slycat-range-slider.invert:hover .range,
 .slycat-range-slider.dragging.invert .range {
-  background: #ddd;
+  background: vars.$range-slider-domain-bg;
   transition: none;
 }
 
@@ -374,7 +372,7 @@ slycat-navbar nav .alert pre {
 }
 
 .slycat-range-slider .thumb {
-  background: #aabbff;
+  background: vars.$range-slider-range-bg;
   border-radius: 6px;
   transition: background 0.25s ease-in-out;
 }
@@ -382,7 +380,7 @@ slycat-navbar nav .alert pre {
 .slycat-range-slider .thumb:hover,
 .slycat-range-slider.dragging .thumb,
 .slycat-range-slider:hover .thumb {
-  background: #7788ff;
+  background: vars.$range-slider-hover-bg;
 }
 
 .slycat-clickable {
@@ -393,6 +391,7 @@ slycat-navbar nav .alert pre {
 .slycat-unclickable a {
   cursor: default;
 }
+
 .slycat-unclickable a:hover {
   text-decoration: none;
 }
@@ -402,32 +401,39 @@ slycat-navbar nav .alert pre {
 .slycat-table-ingestion table {
   width: 100%;
 }
+
 .slycat-table-ingestion thead th .select-all-button {
-  display: block;
   cursor: pointer;
 }
+
 .slycat-table-ingestion thead th .select-all-button.disabled {
   color: #cccccc;
   cursor: default;
 }
+
 .slycat-table-ingestion thead th,
 .slycat-table-ingestion td {
   text-align: center;
 }
+
 .slycat-table-ingestion td.property-start {
   border-left: 1px solid #ddd;
 }
+
 .slycat-table-ingestion td.property-end {
   border-right: 1px solid #ddd;
 }
+
 .slycat-table-ingestion tbody th {
   padding-left: 5px;
   user-select: none;
   cursor: pointer;
 }
+
 .slycat-table-ingestion tbody tr.disabled th {
   cursor: default;
 }
+
 .slycat-table-ingestion tbody tr:nth-child(odd) {
   background-color: #f2f2f2;
 }
@@ -435,6 +441,7 @@ slycat-navbar nav .alert pre {
 .slycat-table-ingestion tbody tr.selected {
   background-color: #337ab7;
 }
+
 .slycat-table-ingestion tbody tr.selected th {
   color: white;
 }
@@ -447,6 +454,7 @@ slycat-navbar nav .alert pre {
   color: #777777;
   font-weight: normal;
 }
+
 textarea,
 input {
   resize: none;
@@ -494,18 +502,19 @@ label.bottom-margin {
   content: " *";
   color: red;
 }
+
 #unrecognized-marking-warning {
   position: absolute;
-  background-color: #f2f2f2;
+  background-color: boot-vars.$slycat-default-bg;
   z-index: 3;
 }
 
-/* Needed to make bookmarks dropdown scrollable when it becomes too long */
+/* Needed to make bookmarks dropdown scrollable when it becomes too long or wide. */
 .dropdown-menu-bookmarks {
   overflow-y: auto;
   overflow-x: auto;
   max-height: 80vh;
-  max-width: 70vw;
+  max-width: 80vw;
 }
 
 .slycat-big-scrolling-alert {
@@ -519,6 +528,7 @@ label.bottom-margin {
 #controls-pane .dropdown-menu .dropdown-item {
   max-width: 70vw;
 }
+
 /* Attempting to force long menu items to wrap, but doesn't seem to be working. */
 #controls-pane .dropdown-menu .dropdown-item {
   overflow-wrap: anywhere;
@@ -527,6 +537,11 @@ label.bottom-margin {
 .no-wrap {
   white-space: nowrap;
 }
+
 .force-wrap {
   overflow-wrap: anywhere;
+}
+
+.text-pre-line {
+  white-space: pre-line;
 }

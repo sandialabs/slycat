@@ -6,7 +6,7 @@
         <!-- ko foreach: properties -->
           <!-- ko if: type == 'bool' -->
             <th class="bool property-start property-end">
-              <span data-bind="text: name"></span>
+              <div data-bind="text: name"></div>
               <i class="fa fa-toggle-on select-all-button button" data-bind="
                 attr: { title: $parent.selected() ? 'Toggle selected rows' : 'No rows selected' },
                 css: { 'disabled': ! $parent.selected() },
@@ -23,7 +23,7 @@
                   'property-end': $index() == ($parent.values.length - 1)
                 }
               ">
-                <span data-bind="text: $data"></span>
+                <div data-bind="text: $data"></div>
                 <i class="fa fa-toggle-on select-all-button button" data-bind="
                   attr: { title: $parents[1].selected() ? 'Set selected rows' : 'No rows selected' },
                   css: { 'disabled': ! $parents[1].selected() },
@@ -36,8 +36,9 @@
       </tr>
     </thead>
     <tbody data-bind="foreach: { data: variables, as: 'variable' }">
+      <!-- Don't render hidden rows -->
+      <!-- ko if: !hidden() -->
       <tr data-bind="
-        visible: !hidden(),
         css: {
           'selected': selected(),
           'lastSelected': lastSelected(),
@@ -90,6 +91,7 @@
           <!-- /ko -->
         <!-- /ko -->
       </tr>
+      <!-- /ko -->
     </tbody>
   </table>
 </div>

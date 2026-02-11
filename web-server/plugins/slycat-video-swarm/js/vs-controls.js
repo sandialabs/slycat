@@ -37,7 +37,7 @@ $.widget("mp.controls", {
     this.color_control = $('<div class="btn-group"></div>').appendTo(scatterplot_controls);
     this.color_button = $(
       '\
-      <button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="color-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Change Point Color"> \
+      <button class="btn dropdown-toggle btn-sm btn-slycat-controls" type="button" id="color-dropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Change Point Color"> \
         Point Color \
       </button> \
       ',
@@ -51,7 +51,7 @@ $.widget("mp.controls", {
     setupDropdownMenuHeight(self.color_control, self.color_items);
 
     this.pin_selected_button = $(
-      '<button type="button" title="Show selected videos" class="btn btn-sm btn-outline-dark">Pin Selected</button>',
+      '<button type="button" title="Show selected videos" class="btn btn-sm btn-slycat-controls">Pin Selected</button>',
     )
       .click(function () {
         var menu_item = $(this).parent();
@@ -79,7 +79,7 @@ $.widget("mp.controls", {
       .appendTo(selection_controls);
 
     this.close_all_button = $(
-      '<button type="button" class="btn btn-sm btn-outline-dark">Close All Pins</button>',
+      '<button type="button" class="btn btn-sm btn-slycat-controls">Close All Pins</button>',
     )
       .click(function () {
         self.element.trigger("pinned_simulations_changed", [[]]);
@@ -88,7 +88,7 @@ $.widget("mp.controls", {
 
     this.csv_button = $(
       "\
-      <button class='btn btn-sm btn-outline-dark' title='Download Data Table'> \
+      <button class='btn btn-sm btn-slycat-controls' title='Download Data Table'> \
         <span class='fa fa-download' aria-hidden='true'></span> \
       </button> \
       ",
@@ -104,8 +104,8 @@ $.widget("mp.controls", {
 
     this.video_sync_button = $(
       "\
-        <button class='btn btn-sm btn-outline-dark slycatControlsButtonToggle' data-bs-toggle='button'> \
-          <span class='fa fa-video-camera' aria-hidden='true'></span> \
+        <button class='btn btn-sm btn-slycat-controls slycatControlsButtonToggle' data-bs-toggle='button'> \
+          <span class='fas fa-video' aria-hidden='true'></span> \
         </button> \
       ",
     )
@@ -135,8 +135,8 @@ $.widget("mp.controls", {
 
     this.jump_to_start_button = $(
       "\
-      <button class='btn btn-sm btn-outline-dark' title='Jump to beginning'> \
-        <span class='fa fa-fast-backward' aria-hidden='true'></span> \
+      <button class='btn btn-sm btn-slycat-controls' title='Jump to beginning'> \
+        <span class='fa fa-backward-fast' aria-hidden='true'></span> \
       </button> \
       ",
     )
@@ -147,7 +147,7 @@ $.widget("mp.controls", {
 
     this.frame_back_button = $(
       "\
-      <button class='btn btn-sm btn-outline-dark' title='Skip one frame back'> \
+      <button class='btn btn-sm btn-slycat-controls' title='Skip one frame back'> \
         <span class='fa fa-backward' aria-hidden='true'></span> \
       </button> \
       ",
@@ -159,7 +159,7 @@ $.widget("mp.controls", {
 
     this.play_button = $(
       "\
-      <button class='btn btn-sm btn-outline-dark play-button' title='Play'> \
+      <button class='btn btn-sm btn-slycat-controls play-button' title='Play'> \
         <span class='fa fa-play' aria-hidden='true'></span> \
       </button> \
       ",
@@ -173,7 +173,7 @@ $.widget("mp.controls", {
 
     this.pause_button = $(
       "\
-      <button class='btn btn-sm btn-outline-dark pause-button' title='Pause'> \
+      <button class='btn btn-sm btn-slycat-controls pause-button' title='Pause'> \
         <span class='fa fa-pause' aria-hidden='true'></span> \
       </button> \
       ",
@@ -188,7 +188,7 @@ $.widget("mp.controls", {
 
     this.frame_forward = $(
       "\
-      <button class='btn btn-sm btn-outline-dark' title='Skip one frame forward'> \
+      <button class='btn btn-sm btn-slycat-controls' title='Skip one frame forward'> \
         <span class='fa fa-forward' aria-hidden='true'></span> \
       </button> \
       ",
@@ -200,8 +200,8 @@ $.widget("mp.controls", {
 
     this.jump_to_end_button = $(
       "\
-      <button class='btn btn-sm btn-outline-dark' title='Jump to end'> \
-        <span class='fa fa-fast-forward' aria-hidden='true'></span> \
+      <button class='btn btn-sm btn-slycat-controls' title='Jump to end'> \
+        <span class='fa fa-forward-fast' aria-hidden='true'></span> \
       </button> \
       ",
     )

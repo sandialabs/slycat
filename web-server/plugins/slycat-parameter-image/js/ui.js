@@ -5,7 +5,7 @@ import "jquery-ui/themes/base/all.css";
 import "slickgrid/dist/styles/sass/slick.grid.scss";
 import "slickgrid/dist/styles/sass/slick-default-theme.scss";
 import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
-import "css/slick-slycat-theme.css";
+import "css/slick-slycat-theme.scss";
 import "css/slycat-additions.css";
 import "../css/stickies.css";
 import "../css/ui.css";
@@ -84,7 +84,7 @@ import {
   DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
   DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
   DEFAULT_SCATTERPLOT_MARGIN_LEFT,
-} from "components/ScatterplotOptions";
+} from "components/ScatterplotOptions/ScatterplotOptions";
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";

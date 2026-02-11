@@ -1,0 +1,36 @@
+<li data-bind="attr: {class: ' ' + classNames}">
+  <a data-bind="attr: {href: uri}" class="text-decoration-none">
+    <div class="d-flex flex-row align-items-center">
+      <h5
+        class="d-inline-block text-truncate flex-fill mb-1 link-secondary"
+        data-bind="text: model_name"
+      >
+        [Model Name]
+      </h5>
+
+      <slycat-model-type-badge
+        params="model_type: model_type, classNames: 'ms-4 mt-1 mb-1'"
+      ></slycat-model-type-badge>
+    </div>
+    <div class="d-flex flex-row align-items-center">
+      <span
+        class="bookmark-link project-bookmark fw-bold link-dark d-inline-block text-truncate flex-fill"
+        data-bind="text: name"
+      >
+      </span>
+      <!-- ko if: showControls -->
+      <button type="button" class="btn btn-sm btn-warning" data-bind="click: onEdit">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-danger bookmark-delete"
+        title="Delete bookmark"
+        data-bind="click: onDelete"
+      >
+        <i class="fa-regular fa-trash-can"></i>
+      </button>
+      <!-- /ko -->
+    </div>
+  </a>
+</li>

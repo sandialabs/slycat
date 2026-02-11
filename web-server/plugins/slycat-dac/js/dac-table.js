@@ -9,7 +9,7 @@ import "jquery-ui/themes/base/all.css";
 import "slickgrid/dist/styles/sass/slick.grid.scss";
 import "slickgrid/dist/styles/sass/slick-default-theme.scss";
 import "slickgrid/dist/styles/sass/slick.headerbuttons.scss";
-import "css/slick-slycat-theme.css";
+import "css/slick-slycat-theme.scss";
 import "../css/slick-dac-theme.css";
 
 import selections from "./dac-manage-selections.js";
@@ -1123,7 +1123,7 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename) {
   if (filters_applied) {
     txt =
       txt +
-      '<br><br><i class="text-warning fa fa-exclamation-triangle"></i> Filters ' +
+      '<br><br><i class="text-warning fa fa-triangle-exclamation"></i> Filters ' +
       "have been applied and the entire table may not be visible!  To use entire table " +
       "close this dialog and clear the filters.";
   }

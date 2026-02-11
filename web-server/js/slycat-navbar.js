@@ -5,7 +5,7 @@
 
 // Global css resources loaded here
 import "css/slycat-bootstrap.scss";
-import "font-awesome/css/font-awesome.css";
+import "@fortawesome/fontawesome-free/css/all.css";
 import "css/slycat.scss";
 
 import server_root from "js/slycat-server-root";
@@ -19,6 +19,8 @@ import "@asielick/knockout-projections";
 import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import "js/slycat-nag";
 import slycatNavbar from "templates/slycat-navbar.html";
+import slycatBookmarkItem from "templates/slycat-bookmark-item.html";
+import slycatModelTypeBadge from "templates/slycat-model-type-badge.html";
 import "js/slycat-plugins";
 // Under Bootstrap 3, we couldn't import bootstrap here because it broke models,
 // which are dynamically imported and also contain bootstrap, and it seemed to clash with this one.
@@ -29,6 +31,9 @@ import "bootstrap";
 import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 
 import config from "config.json";
+
+import { DOCS_URL, GITHUB_URL, ABOUT_MODAL_ID, RANDD100_URL } from "components/Footer/Footer";
+import { COPYRIGHT_TEXT, LICENSE_TEXT_HTML_FORMATTED } from "utils/copyright";
 
 export function renderNavBar() {
   // Let's check to see if we have a session by trying to retrieve the projects list.
@@ -45,6 +50,30 @@ export function renderNavBar() {
     ispasswordrequired.slycat_passwordrequired()
       ? (window.location.href = "/login/slycat-login.html?from=" + window.location.href)
       : (window.location.href = "/projects");
+  });
+
+  // Register model type badge component for reuse
+  ko.components.register("slycat-model-type-badge", {
+    viewModel: function (params) {
+      this.model_type = params.model_type;
+      this.classNames = params.classNames || "";
+    },
+    template: slycatModelTypeBadge,
+  });
+
+  // Register bookmark item component for reuse
+  ko.components.register("slycat-bookmark-item", {
+    viewModel: function (params) {
+      this.name = params.name;
+      this.model_name = params.model_name;
+      this.model_type = params.model_type;
+      this.uri = params.uri;
+      this.onEdit = params.onEdit || function () {};
+      this.onDelete = params.onDelete || function () {};
+      this.showControls = params.showControls || false;
+      this.classNames = params.classNames || "";
+    },
+    template: slycatBookmarkItem,
   });
 
   ko.components.register("slycat-navbar", {
@@ -98,6 +127,13 @@ export function renderNavBar() {
       component.slycatAuthLabelPassword = SLYCAT_AUTH_LABELS.password;
       component.slycatAuthLabelSignIn = SLYCAT_AUTH_LABELS.signIn;
       component.slycatAuthLabelSignOut = SLYCAT_AUTH_LABELS.signOut;
+
+      component.ABOUT_MODAL_ID = ABOUT_MODAL_ID;
+      component.RANDD100_URL = RANDD100_URL;
+      component.GITHUB_URL = GITHUB_URL;
+
+      component.COPYRIGHT_TEXT = COPYRIGHT_TEXT;
+      component.LICENSE_TEXT_FORMATTED = LICENSE_TEXT_HTML_FORMATTED;
 
       // Retrieve current project, if any.
       if (component.project_id()) {
@@ -433,7 +469,7 @@ export function renderNavBar() {
           },
         });
 
-        $("#slycat-about").modal("show");
+        $("#" + component.ABOUT_MODAL_ID).modal("show");
       };
 
       component.support_request = function () {
@@ -445,7 +481,7 @@ export function renderNavBar() {
       };
 
       component.open_documentation = function () {
-        window.open("/docs/index.html");
+        window.open(DOCS_URL);
       };
 
       var references = mapping.fromJS([]);
@@ -499,10 +535,10 @@ export function renderNavBar() {
           value: name,
           buttons: [
             { className: "btn-light", label: "Cancel" },
-            { className: "btn-danger", label: "OK" },
+            { className: "btn-primary", label: "Save" },
           ],
           callback: function (button) {
-            if (!button || button.label != "OK") {
+            if (!button || button.label != "Save") {
               return;
             }
             client.put_reference({
@@ -523,11 +559,11 @@ export function renderNavBar() {
           message:
             "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
           buttons: [
-            { className: "btn-primary", label: "Cancel" },
-            { className: "btn-danger", label: "OK" },
+            { className: "btn-light", label: "Cancel" },
+            { className: "btn-danger", label: "Delete" },
           ],
           callback: function (button) {
-            if (!button || button.label != "OK") return;
+            if (!button || button.label != "Delete") return;
             client.delete_reference({
               rid: reference._id(),
               success: function () {
