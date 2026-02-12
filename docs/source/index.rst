@@ -53,7 +53,7 @@ interface for analyses that have broad appeal.
   manual/user-manual.rst
 
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 1
   :caption: Developer Documentation
 
   QuickStart.rst
