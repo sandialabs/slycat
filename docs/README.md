@@ -4,9 +4,9 @@
 
 ## Python environment
 
-- `conda create --name slycat python==3.11`
-- `pip install sphinx`
-- `pip install sphinx-rtd-theme`
+- `conda create --name slycat-docs python==3.11`
+- `conda activate slycat-docs`
+- `pip install -r requirements.txt`
 
 ## Install make
 
@@ -44,6 +44,10 @@ If no version shows up install it with `apt`
 From `/docs` in the slycat repo run the following command
 
 - `make html`
+
+Or, in windows:
+
+- `.\make.bat html`.
 
 This should create a `_build` directory with the resulting sphynx documentation created from the build files.
 

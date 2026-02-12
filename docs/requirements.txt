@@ -1,3 +1,5 @@
 cherrypy
-sphinx_rtd_theme
+pysmb
+sphinx
+sphinx-rtd-theme
 sphinxcontrib-httpdomain
