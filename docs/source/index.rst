@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome!!
-=========
+Welcome!
+========
 
 This is Slycat™ - a web-based data science analysis and visualization platform,
 created at `Sandia National Laboratories <http://www.sandia.gov>`_.
@@ -46,19 +46,16 @@ Slycat™ incorporates several components:
 The Slycat™ Web Server provides easy collaboration and a graphical user
 interface for analyses that have broad appeal.
 
-User Manual
-===========
+.. toctree::
+  :maxdepth: 2
+  :caption: User Documentation
 
-The User Manual link will go here.
-
-
-Developer Documentation
-========================
+  manual/user-manual.rst
 
 .. toctree::
   :maxdepth: 2
+  :caption: Developer Documentation
 
-  manual/user-manual.rst
   QuickStart.rst
   design.rst
   coding-guidelines.rst
