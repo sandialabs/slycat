@@ -17,6 +17,12 @@ configuration, so they are specific to the institution that hosts the server.  T
 labeling of data sensitivity through explicit choice of marking.  The marking appears as part of the model description on the 
 Project page list, plus it is shown in both header and footer bars when visualizing the model.
 
+Source Data for Models
+======================
+
+Slycat models are created from a variety of data formats however, the primary format is CSV. CCA and Parameter Space models only require a single CSV file for creation. The file is expected to follow the standard CSV format where each row is a set of comma-delimited values, and a single header row labels each column. See the full documentation page on :ref:`csv-ref-label` for the details and options.
+
+
 Creating Models
 ===============
 

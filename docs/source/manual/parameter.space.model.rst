@@ -8,7 +8,7 @@ images, videos, and other media-based ensemble data.
   :maxdepth: 4
   
   TAISDataSet.rst
+  data.table.rst
   CreatingPSModel.rst
   PSModelVis.rst
-  DatatableCreation.rst
   
