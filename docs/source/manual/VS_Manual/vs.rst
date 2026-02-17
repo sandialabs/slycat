@@ -5,6 +5,11 @@ Often it is useful to produce videos rendered from multiple viewpoints when gene
 
 Given a set of simulation videos, several questions arise: How can we compare and contrast videos in our ensemble?  Where in time are the videos similar and where do they diverge?  Do the videos cluster?  Can we identify interesting behavior in the videos and when it occurs?  In other words, without actually watching every video, how can we digest the full content of the data?  To answer these questions, we have developed a Slycat model for analyzing simulation video ensembles, called VideoSwarm.
 
+.. figure:: figures/Slycat_VideoswarmModel1.png
+   :align: center
+
+   **Figure 1: VideoSwarm model example.  SAND2026-17305O.**
+
 Reference
 ^^^^^^^^^
 
