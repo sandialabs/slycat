@@ -42,6 +42,7 @@ function RemoteLoginTab(props: RemoteLoginTabProps) {
         Hostname is the HPC system where the timeseries job will be submitted.
       </div>
       <SlycatRemoteControls
+        agent={true}
         loadingData={props.loadingData}
         callBack={props.callBack}
         sessionExists={props.sessionExists}
