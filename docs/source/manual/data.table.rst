@@ -1,13 +1,18 @@
 .. _csv-ref-label:
 
-Source Data Table
-=================
+Source Data, CSV Format Data Table
+================================================
+
+**Source Data Formats for Slycat Models**
+
+The most common format required to create Slycat™ analysis models is a simple CSV file.  The CCA and Parameter Space models are created solely by supplying a CSV file.  The Timeseries model and the VideoSwarm model requires foo.  See the xxx page for that stuff.  The Dial-A-Cluster model requires foo.  See this page for that stuff.
+
 
 **CSV Format, Specification, Options**
 
-Slycat relies on a CSV-format data table to create most of its analysis models. Often this table already exists as a product or artifact of completing an ensemble of simulation runs.  Supplementing the table with file system paths to images, animations, PDF documents, and 3D model files (such as STL and VTP) will produce an enhanced Parameter Space model.  An enhanced Parameter Space model enables a user to connect features in a plotted numerical domain to explanatory images or artifacts that convey physical intuition about why particular samples have similar features in a quantitative space.
+Slycat™ relies on a CSV-format data table to create most of its analysis models. Often this table already exists as a product or artifact of completing an ensemble of simulation runs.  Supplementing the table with file system paths to images, animations, PDF documents, and 3D model files (such as STL and VTP) will produce an enhanced Parameter Space model.  An enhanced Parameter Space model enables a user to connect features in a plotted numerical domain to explanatory images or artifacts that convey physical intuition about why particular samples have similar features in a quantitative space.
 
-The CCA and Parameter Space models are created solely by supplying a CSV file. The file is expected to follow the standard CSV format where each row is a set of comma-delimited values from a single sample. A header row should name the values contained in the columns, and the delimiters must be commas. Columns may contain integers, real numbers, or strings. Columns must be type-consistent and missing data should be represented with an appropriate entry, such as “” for empty string or NAN for missing number.
+The CSV file is expected to follow the standard CSV format where each row is a set of comma-delimited values from a single sample. A header row should name the values contained in the columns, and the delimiters must be commas. Columns may contain integers, real numbers, or strings. Columns must be type-consistent and missing data should be represented with an appropriate entry, such as “” for empty string or NAN for missing number.
 
 Here is a simple CSV file example:
 

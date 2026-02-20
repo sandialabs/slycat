@@ -35,6 +35,7 @@ states to be labeled and saved.
   :maxdepth: 3
   
   GettingStarted.rst
+  data.table.rst
   Navbar.rst
   Projects.rst
   Models.rst
