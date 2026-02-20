@@ -4,15 +4,17 @@ import SlycatSelector from "components/SlycatSelector";
 import SlycatNumberInput from "components/SlycatNumberInput";
 
 interface TimeseriesParametersTabProps {
-  delimiter: string;
-  delimiterCallback: Function;
-  columnNames: any;
-  columnCallback: Function;
-  bincountCallback: Function;
-  resamplingCallback: Function;
-  linkageCallback: Function;
-  metricCallback: Function;
-  fileType: string;
+    delimiter: string
+    delimiterCallback: Function
+    columnNames: any
+    allColumnNames: any
+    indexColumnCallback: Function
+    columnCallback: Function
+    bincountCallback: Function
+    resamplingCallback: Function
+    linkageCallback: Function
+    metricCallback: Function
+    fileType: string
 }
 
 function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
@@ -31,6 +33,11 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
             label={"Timeseries Column Name"}
             options={props.columnNames}
             onSelectCallBack={props.columnCallback}
+          />
+          <SlycatSelector
+            label={'Index Column Name'}
+            options={props.allColumnNames}
+            onSelectCallBack={props.indexColumnCallback}
           />
         </div>
       ) : null}

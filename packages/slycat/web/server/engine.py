@@ -89,6 +89,7 @@ def start(root_path, config_file):
   #### GET METHODS ####
   #####################
   dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-all-column-names", "/remotes/:hostname/column_names/file{path:.*}", slycat.web.server.handlers.get_all_column_names, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
   dispatcher.connect("get-selectable-configuration-markings", "/configuration/selectable-markings", slycat.web.server.handlers.get_selectable_configuration_markings, conditions={"method" : ["GET"]})
