@@ -47,7 +47,7 @@ The Slycat™ Web Server provides easy collaboration and a graphical user
 interface for analyses that have broad appeal.
 
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 3
   :caption: User Documentation
 
   manual/user-manual.rst
