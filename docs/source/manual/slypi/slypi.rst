@@ -28,7 +28,7 @@ If you are working behind a proxy, you might also need, e.g.
 User Authentication
 ^^^^^^^^^^^^^^^^^^^
 
-The Slycat server requires user authentication.  The slypi module provides options for the authentication process.
+The Slycat server may require user authentication.  The slypi module provides options for the authentication process.
 
 For example, to use standard password authentication for a Slycat server running on https://localhost:9000 without a security certificate, use:
 
@@ -36,12 +36,12 @@ For example, to use standard password authentication for a Slycat server running
 
     python -m slypi.util.list_markings.py --user slycat --port 9000 --no-verify
 
-Or, to access a Kerberos authenticated server running at slycat.sandia.gov,
+Or, to access a Kerberos authenticated server running at slycat.datacats.org,
 use:
 
 .. code-block:: python
 
-    python -m slypi.util.list_markings.py --host https://slycat.sandia.gov --kerberos
+    python -m slypi.util.list_markings.py --host https://slycat.datacats.org --kerberos
 
 Kerberos
 ^^^^^^^^
