@@ -12,6 +12,25 @@ Given a set of simulation videos, several questions arise: How can we compare an
 
    **Figure 1: VideoSwarm model example.  SAND2026-17305O.**
 
+Data Format
+^^^^^^^^^^^
+
+The VideoSwarm format consists of four files, which can be provided by the user, generated on the Slycat server, or produced using the :ref:`slypi-ref-label`.  The four files are:
+
+* Meta-Data Table, e.g. `movies.csv`: This is a standard Slycat style .csv file containing meta data and (importantly) URL links to the movies to be shown in the resulting VideoSwarm model.  See :ref:`csv-ref-label`.
+* .xcoords File, e.g. `movies.xcoords`: These are the x-coordinates per time step of the VideoSwarm dimension reduction for each movie, listed as a comma separted matrix per row by time step.
+* .ycoords File, e.g. `movies.ycoords`: These are the y-coordinates per time step of the VideoSwarm dimension reduction for each movie, listed as a comma separted matrix per row by time step.
+* .trajectories Files, e.g. `movies.trajectories`: These are the trajectory traces shown in the VideoSwarm model below the scatter plot of the dimension reduction, listed as a comma separated matrix per row by video.
+
+A VideoSwarm example dataset can be found in the slycat-data repository at: https://github.com/sandialabs/slycat-data/tree/master/vs/spinodal/vs-local.
+
+These files are the same files requested by the VS creation wizard if you choose `Create` -> `New VideoSwarm Model` -> `Local (pre-computed VideoSwarm format)` from a Slycat project page.
+
+.. figure:: figures/Slycat_VS_Files_Wizard.png
+   :align: center
+
+   **Figure 2: Files expected from the VideoSwarm creation wizard.  The `movies.csv` file would be input to the "Upload meta-data table" field and the `movies.xcoords`, `movies.ycoords`, and `movies.trajectories` files would be input to the "Upload .xcoords, .ycoords, and .trajectories files" field.**
+
 Reference
 ^^^^^^^^^
 
