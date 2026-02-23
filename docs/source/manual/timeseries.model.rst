@@ -1,3 +1,5 @@
+.. _timeseries-ref-label:
+
 Timeseries Model
 ================
 

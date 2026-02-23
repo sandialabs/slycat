@@ -5,8 +5,9 @@ Source Data, CSV Format Data Table
 
 **Source Data Formats for Slycat Models**
 
-The most common format required to create Slycat™ analysis models is a simple CSV file.  The CCA and Parameter Space models are created solely by supplying a CSV file.  The Timeseries model and the VideoSwarm model requires foo.  See the xxx page for that stuff.  The Dial-A-Cluster model requires foo.  See this page for that stuff.
+The most common file format required for data to create a Slycat™ analysis is a simple Comma-Separated Values (CSV) file.  The CCA and Parameter Space models are created solely by supplying a CSV file.  The Timeseries model requires the timeseries to be written to CSV or PRN files, and be accompanied by a table that supplies the input parameters.  See the :ref:`timeseries-ref-label` page for these details.  The VideoSwarm model has several creation options. The essential set of required data is multiple videos and the set of matrices output from the VideoSwarm dimensionality reduction algorithm.  See the :ref:`vs-ref-label` page for these details.  The Dial-A-Cluster model accepts several different but specialized data formats.  See the :ref:`dac-ref-label` Data Formats page for these details and examples. 
 
+The SlyPI library offers methods to create these data formats and to integrate an automated analysis step into mod-sim workflows.  See the :ref:`slypi-ref-label` page for more information. 
 
 **CSV Format, Specification, Options**
 
@@ -23,6 +24,12 @@ Here is a simple CSV file example:
   1, 2.6, 5
   2, 2.5, 2
 
+File or simulation artifact paths may be included to facilitate exploration in Slycat™.  The format for a Linux file system URL or media path is:
+
+.. code-block:: bash
+
+  file://hostname/path/to/image.jpg
+
 Here is a CSV example for a Linux remote system that includes one media column:
 
 .. code-block:: bash
@@ -31,12 +38,6 @@ Here is a CSV example for a Linux remote system that includes one media column:
   0, 2.7, 3, file://hostname/tmp/sim1/stress.jpg
   1, 2.6, 5, file://hostname/tmp/sim2/stress.jpg
   2, 2.5, 2, file://hostname/tmp/sim3/stress.jpg
-
-The format for a Linux file system URL or media path is:
-
-.. code-block:: bash
-
-  file://hostname/path/to/image.jpg
 
 To include a reference to a media file on a Windows file system, use this format:
 

@@ -1,3 +1,5 @@
+.. _vs-ref-label:
+
 VideoSwarm Model
 ================
 
