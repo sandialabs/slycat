@@ -36,6 +36,7 @@ is row 133, which is highlighted in both the scatterplot (enlarged point) and th
   
   Filter.rst
   Axes.rst
+  Axes.XYpairs.rst
   PointColor.rst
   MediaSet.rst
   AutoScale.rst
