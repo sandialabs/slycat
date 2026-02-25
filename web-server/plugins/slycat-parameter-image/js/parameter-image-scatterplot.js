@@ -2013,31 +2013,6 @@ $.widget("parameter_image.scatterplot", {
         .on("click", handlers["pin"]);
     };
 
-    var add_jump_button = function (fh, index) {
-      var container = fh
-        .append("span")
-        .attr("class", "jump-button frame-button jump-button-container")
-        .on("click", handlers["jump"]);
-      container
-        .append("i")
-        .attr("class", "table-button jump-button frame-button fa-solid fa-table")
-        .attr("title", "Jump to row " + index + " in table")
-        .attr("aria-hidden", "true");
-
-      container
-        .append("i")
-        .attr("class", "arrow-button jump-button frame-button fa-solid fa-arrow-right")
-        .attr("title", "Jump to row " + index + " in table")
-        .attr("aria-hidden", "true");
-
-      container
-        .append("span")
-        .attr("class", "table-index jump-button frame-button")
-        .attr("title", "Index of current media. Click to jump to row " + index + " in table.")
-        .attr("aria-hidden", "true")
-        .text(index);
-    };
-
     var add_type_button = function (fh, media_type) {
       console.debug(`Adding type button for ${fh.attr("data-uri")}`);
       let typeButton = fh
@@ -2476,9 +2451,10 @@ $.widget("parameter_image.scatterplot", {
         video_sync_time_changed(self);
       },
 
-      jump: function () {
+      jump: function (event) {
         // console.log("jump event handler running");
-        var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
+        let target = event ? event.target : d3.event.target;
+        var index = d3.select(target.closest(".image-frame")).attr("data-index");
         self.element.trigger("jump_to_simulation", index);
       },
 
@@ -2976,9 +2952,6 @@ $.widget("parameter_image.scatterplot", {
       // Create a pin button ...
       add_pin_button(footer);
 
-      // Create jump control
-      add_jump_button(footer, image.index);
-
       // Create a TypeButton in React
       let typeButton = add_type_button(footer, media_type);
       const root = createRoot(typeButton.node());
@@ -2988,6 +2961,8 @@ $.widget("parameter_image.scatterplot", {
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
           onClone={isVtp ? (event) => handlers["clone"](event) : undefined}
+          onJump={(event) => handlers["jump"](event)}
+          tableIndex={image.index}
           downloadUrl={!link ? image_url : undefined}
           downloadFilename={!link ? image.uri.split("/").pop() : undefined}
         />,

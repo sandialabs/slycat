@@ -372,28 +372,6 @@
 .frame-button.close-button {
   float: left;
 }
-.frame-button.jump-button {
-  margin: 0;
-}
-.frame-button.jump-button.jump-button-container {
-  margin-left: 12px;
-  margin-right: 12px;
-}
-.frame-button.table-index {
-  margin-top: -1px;
-}
-.frame-button.arrow-button {
-  margin-top: 5px;
-  margin-right: -4px;
-  font-size: 9px;
-}
-.frame-button.table-button {
-  margin-top: 3px;
-  font-size: 15px;
-}
-.frame-button.jump-button:hover * {
-  color: white !important;
-}
 .frame-button.pin-button {
   margin-right: 22px;
   font-size: 13px;

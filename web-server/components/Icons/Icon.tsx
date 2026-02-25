@@ -38,6 +38,7 @@ export const ICON_NAME_MAP = {
   "window-maximize": { icon: { prefix: "far", iconName: "window-maximize" } },
   "window-minimize": { icon: { prefix: "far", iconName: "window-minimize" } },
   clone: { icon: { prefix: "far", iconName: "clone" } },
+  table: { icon: { prefix: "fas", iconName: "table" } },
 } satisfies Record<string, FontAwesomeIconProps>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;

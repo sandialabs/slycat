@@ -9,6 +9,8 @@ interface TypeButtonProps {
   onMaximize?: (event: Event) => void;
   onMinimize?: (event: Event) => void;
   onClone?: (event: Event) => void;
+  onJump?: (event: Event) => void;
+  tableIndex?: number | string;
   downloadUrl?: string;
   downloadFilename?: string;
 }
@@ -47,6 +49,8 @@ const TypeButton: React.FC<TypeButtonProps> = ({
   onMaximize,
   onMinimize,
   onClone,
+  onJump,
+  tableIndex,
   downloadUrl,
   downloadFilename,
 }) => {
@@ -100,6 +104,15 @@ const TypeButton: React.FC<TypeButtonProps> = ({
             onClick={(e) => onClone(e.nativeEvent)}
           >
             <Icon type="clone" /> Clone
+          </button>
+        )}
+        {onJump && (
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={(e) => onJump(e.nativeEvent)}
+          >
+            <Icon type="table" /> Jump to row {tableIndex}
           </button>
         )}
         {downloadUrl && (
