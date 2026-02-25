@@ -2955,16 +2955,20 @@ $.widget("parameter_image.scatterplot", {
       // Create a TypeButton in React
       let typeButton = add_type_button(footer, media_type);
       const root = createRoot(typeButton.node());
-      const vtkContainer = frame_html.node().querySelector(".vtp");
+      const is3D = media_type === MEDIA_TYPES.VTP || media_type === MEDIA_TYPES.STL;
       root.render(
         <TypeButton
           mediaType={media_type}
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
-          onClone={isVtp ? (event) => handlers["clone"](event) : undefined}
+          onClone={media_type === MEDIA_TYPES.VTP ? (event) => handlers["clone"](event) : undefined}
           onSetCenterOfRotation={
-            vtkContainer
-              ? () => vtkContainer.dispatchEvent(new Event("vtkarmcenterofrotation"))
+            is3D
+              ? () =>
+                  frame_html
+                    .node()
+                    .querySelector(".vtp")
+                    .dispatchEvent(new Event("vtkarmcenterofrotation"))
               : undefined
           }
           onJump={(event) => handlers["jump"](event)}
