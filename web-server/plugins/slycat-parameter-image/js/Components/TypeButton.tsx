@@ -8,6 +8,8 @@ interface TypeButtonProps {
   className?: string;
   onMaximize?: (event: Event) => void;
   onMinimize?: (event: Event) => void;
+  downloadUrl?: string;
+  downloadFilename?: string;
 }
 
 // Map media types to their corresponding icons
@@ -43,6 +45,8 @@ const TypeButton: React.FC<TypeButtonProps> = ({
   className = "",
   onMaximize,
   onMinimize,
+  downloadUrl,
+  downloadFilename,
 }) => {
   const icon = MEDIA_TYPE_ICON_MAP[mediaType] || MEDIA_TYPE_ICON_MAP.unknown;
   const label = MEDIA_TYPE_LABEL_MAP[mediaType] || MEDIA_TYPE_LABEL_MAP.unknown;
@@ -83,6 +87,11 @@ const TypeButton: React.FC<TypeButtonProps> = ({
         >
           <Icon type="window-minimize" /> Minimize
         </button>
+        {downloadUrl && (
+          <a className="dropdown-item" href={downloadUrl} download={downloadFilename}>
+            <Icon type="download" /> Download
+          </a>
+        )}
       </div>
     </div>
   );

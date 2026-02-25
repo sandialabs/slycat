@@ -3007,9 +3007,6 @@ $.widget("parameter_image.scatterplot", {
       // Create a pin button ...
       add_pin_button(footer);
 
-      // Create a download button for non-links ...
-      if (!link) add_download_button(footer, image_url, image.uri.split("/").pop());
-
       // Create jump control
       add_jump_button(footer, image.index);
 
@@ -3026,6 +3023,8 @@ $.widget("parameter_image.scatterplot", {
           mediaType={media_type}
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
+          downloadUrl={!link ? image_url : undefined}
+          downloadFilename={!link ? image.uri.split("/").pop() : undefined}
         />,
       );
       rootsByPopupEl.set(frame_html.node(), root);

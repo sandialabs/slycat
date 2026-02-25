@@ -372,12 +372,6 @@
 .frame-button.close-button {
   float: left;
 }
-.frame-button.download-button {
-  float: left;
-  font-size: 14px;
-  text-decoration: none !important;
-  margin-top: 4px;
-}
 .frame-button.clone-button {
   font-size: 13px;
   margin-top: 4px;
