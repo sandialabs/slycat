@@ -2404,8 +2404,8 @@ $.widget("parameter_image.scatterplot", {
         $(window).trigger("resize");
       },
 
-      minimize: function () {
-        let target = d3.event.target;
+      minimize: function (event) {
+        let target = event ? event.target : d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
 
         // Remove maximized class from frame
@@ -3007,9 +3007,6 @@ $.widget("parameter_image.scatterplot", {
       // Create a pin button ...
       add_pin_button(footer);
 
-      // Create a minimize button (shown only when frame is maximized) ...
-      add_min_button(footer);
-
       // Create a download button for non-links ...
       if (!link) add_download_button(footer, image_url, image.uri.split("/").pop());
 
@@ -3028,6 +3025,7 @@ $.widget("parameter_image.scatterplot", {
         <TypeButton
           mediaType={media_type}
           onMaximize={(event) => handlers["maximize"](event)}
+          onMinimize={(event) => handlers["minimize"](event)}
         />,
       );
       rootsByPopupEl.set(frame_html.node(), root);

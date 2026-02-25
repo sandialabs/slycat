@@ -7,6 +7,7 @@ interface TypeButtonProps {
   title?: string;
   className?: string;
   onMaximize?: (event: Event) => void;
+  onMinimize?: (event: Event) => void;
 }
 
 // Map media types to their corresponding icons
@@ -36,7 +37,13 @@ const MEDIA_TYPE_LABEL_MAP: Record<MediaType, string> = {
  * Used in image frames to indicate what type of media is being displayed.
  * Renders as a Bootstrap dropup since it sits in the frame footer at the bottom.
  */
-const TypeButton: React.FC<TypeButtonProps> = ({ mediaType, title, className = "", onMaximize }) => {
+const TypeButton: React.FC<TypeButtonProps> = ({
+  mediaType,
+  title,
+  className = "",
+  onMaximize,
+  onMinimize,
+}) => {
   const icon = MEDIA_TYPE_ICON_MAP[mediaType] || MEDIA_TYPE_ICON_MAP.unknown;
   const label = MEDIA_TYPE_LABEL_MAP[mediaType] || MEDIA_TYPE_LABEL_MAP.unknown;
   const buttonTitle = title || `Media type: ${label}`;
@@ -68,6 +75,13 @@ const TypeButton: React.FC<TypeButtonProps> = ({ mediaType, title, className = "
           onClick={(e) => onMaximize?.(e.nativeEvent)}
         >
           <Icon type="window-maximize" /> Maximize
+        </button>
+        <button
+          type="button"
+          className="dropdown-item"
+          onClick={(e) => onMinimize?.(e.nativeEvent)}
+        >
+          <Icon type="window-minimize" /> Minimize
         </button>
       </div>
     </div>

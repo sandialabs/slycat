@@ -372,24 +372,11 @@
 .frame-button.close-button {
   float: left;
 }
-.frame-button.max-button {
-  float: left;
-}
-.frame-button.min-button {
-  float: left;
-  display: none;
-}
 .frame-button.download-button {
   float: left;
   font-size: 14px;
   text-decoration: none !important;
   margin-top: 4px;
-}
-#scatterplot .image-frame.maximized .frame-button.max-button {
-  display: none;
-}
-#scatterplot .image-frame.maximized .frame-button.min-button {
-  display: block;
 }
 .frame-button.clone-button {
   font-size: 13px;
