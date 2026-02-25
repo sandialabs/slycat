@@ -9,6 +9,7 @@ interface TypeButtonProps {
   onMaximize?: (event: Event) => void;
   onMinimize?: (event: Event) => void;
   onClone?: (event: Event) => void;
+  onSetCenterOfRotation?: () => void;
   onJump?: (event: Event) => void;
   tableIndex?: number | string;
   downloadUrl?: string;
@@ -49,6 +50,7 @@ const TypeButton: React.FC<TypeButtonProps> = ({
   onMaximize,
   onMinimize,
   onClone,
+  onSetCenterOfRotation,
   onJump,
   tableIndex,
   downloadUrl,
@@ -104,6 +106,15 @@ const TypeButton: React.FC<TypeButtonProps> = ({
             onClick={(e) => onClone(e.nativeEvent)}
           >
             <Icon type="clone" /> Clone
+          </button>
+        )}
+        {onSetCenterOfRotation && (
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={() => onSetCenterOfRotation()}
+          >
+            <Icon type="crosshairs" /> Set center of rotation
           </button>
         )}
         {onJump && (

@@ -475,7 +475,7 @@ export function load(container, buffer, uri, uid, type) {
   interactor.setInteractorStyle(interactorStyle);
 
   // ----------------------------------------------------------------------------
-  // Double-click handler to set the center of rotation
+  // Set center of rotation via armed click
   // ----------------------------------------------------------------------------
 
   const picker = vtkCellPicker.newInstance();
@@ -484,25 +484,28 @@ export function load(container, buffer, uri, uid, type) {
   picker.addPickList(actor);
 
   container.addEventListener(
-    "dblclick",
-    (event) => {
-      const rect = container.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const viewHeight = openglRenderWindow.getSize()[1];
-      const displayY = viewHeight - y;
-      picker.pick([x, displayY, 0], renderer);
-      const pickedPositions = picker.getPickedPositions();
-      if (picker.getActors().length > 0 && pickedPositions.length > 0) {
-        interactorStyle.setCenterOfRotation(pickedPositions[0]);
-        window.store.dispatch(updateThreeDCameras([{ uid, camera, interactorStyle }]));
-        // console.debug("vtk geometry double-clicked shape", {
-        //   uri,
-        //   uid,
-        //   pickedPosition: pickedPositions[0],
-        //   cellId: picker.getCellId(),
-        // });
+    "vtkarmcenterofrotation",
+    () => {
+      container.style.cursor = "crosshair";
+
+      function pickOnClick(event) {
+        container.style.cursor = "";
+        container.removeEventListener("click", pickOnClick, true);
+
+        const rect = container.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const viewHeight = openglRenderWindow.getSize()[1];
+        const displayY = viewHeight - y;
+        picker.pick([x, displayY, 0], renderer);
+        const pickedPositions = picker.getPickedPositions();
+        if (picker.getActors().length > 0 && pickedPositions.length > 0) {
+          interactorStyle.setCenterOfRotation(pickedPositions[0]);
+          window.store.dispatch(updateThreeDCameras([{ uid, camera, interactorStyle }]));
+        }
       }
+
+      container.addEventListener("click", pickOnClick, true);
     },
     false,
   );
