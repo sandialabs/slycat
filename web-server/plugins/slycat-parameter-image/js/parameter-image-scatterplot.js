@@ -2013,30 +2013,6 @@ $.widget("parameter_image.scatterplot", {
         .on("click", handlers["pin"]);
     };
 
-    var add_max_button = function (fh) {
-      fh.append("i")
-        .attr("class", "max-button frame-button fa-regular fa-window-maximize")
-        .attr("title", "Maximize")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["maximize"]);
-    };
-
-    var add_min_button = function (fh) {
-      fh.append("i")
-        .attr("class", "min-button frame-button fa-regular fa-window-minimize")
-        .attr("title", "Minimize")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["minimize"]);
-    };
-
-    var add_download_button = function (fh, uri, filename) {
-      fh.append("a")
-        .attr("href", uri)
-        .attr("class", "download-button frame-button fa-solid fa-download")
-        .attr("title", "Download media file")
-        .attr("download", filename);
-    };
-
     var add_jump_button = function (fh, index) {
       var container = fh
         .append("span")
