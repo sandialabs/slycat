@@ -8,6 +8,7 @@ interface TypeButtonProps {
   className?: string;
   onMaximize?: (event: Event) => void;
   onMinimize?: (event: Event) => void;
+  onClone?: (event: Event) => void;
   downloadUrl?: string;
   downloadFilename?: string;
 }
@@ -45,6 +46,7 @@ const TypeButton: React.FC<TypeButtonProps> = ({
   className = "",
   onMaximize,
   onMinimize,
+  onClone,
   downloadUrl,
   downloadFilename,
 }) => {
@@ -91,6 +93,15 @@ const TypeButton: React.FC<TypeButtonProps> = ({
         >
           <Icon type="window-minimize" /> Minimize
         </button>
+        {onClone && (
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={(e) => onClone(e.nativeEvent)}
+          >
+            <Icon type="clone" /> Clone
+          </button>
+        )}
         {downloadUrl && (
           <a className="dropdown-item" href={downloadUrl} download={downloadFilename}>
             <Icon type="download" /> Download

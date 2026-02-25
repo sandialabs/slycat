@@ -2062,15 +2062,6 @@ $.widget("parameter_image.scatterplot", {
         .text(index);
     };
 
-    var add_clone_button = function (fh) {
-      // console.log(`Adding clone button for 3D media...`);
-      fh.append("i")
-        .attr("class", "clone-button frame-button fa-solid fa-clone")
-        .attr("title", "Clone")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["clone"]);
-    };
-
     var add_type_button = function (fh, media_type) {
       console.debug(`Adding type button for ${fh.attr("data-uri")}`);
       let typeButton = fh
@@ -2515,9 +2506,10 @@ $.widget("parameter_image.scatterplot", {
         self.element.trigger("jump_to_simulation", index);
       },
 
-      clone: function () {
+      clone: function (event) {
         // console.log(`About to clone this frame...`);
-        const frame = d3.select(d3.event.target.closest(".image-frame"));
+        let target = event ? event.target : d3.event.target;
+        const frame = d3.select(target.closest(".image-frame"));
         const width = frame.node().offsetWidth;
         const height = frame.node().offsetHeight;
         const index = frame.attr("data-index");
@@ -3011,11 +3003,6 @@ $.widget("parameter_image.scatterplot", {
       // Create jump control
       add_jump_button(footer, image.index);
 
-      // Create clone button for 3D media ...
-      if (isVtp) {
-        add_clone_button(footer, image.uri);
-      }
-
       // Create a TypeButton in React
       let typeButton = add_type_button(footer, media_type);
       const root = createRoot(typeButton.node());
@@ -3024,6 +3011,7 @@ $.widget("parameter_image.scatterplot", {
           mediaType={media_type}
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
+          onClone={isVtp ? (event) => handlers["clone"](event) : undefined}
           downloadUrl={!link ? image_url : undefined}
           downloadFilename={!link ? image.uri.split("/").pop() : undefined}
         />,

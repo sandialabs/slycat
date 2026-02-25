@@ -372,10 +372,6 @@
 .frame-button.close-button {
   float: left;
 }
-.frame-button.clone-button {
-  font-size: 13px;
-  margin-top: 4px;
-}
 .frame-button.jump-button {
   margin: 0;
 }
