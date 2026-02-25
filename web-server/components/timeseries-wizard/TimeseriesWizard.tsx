@@ -126,27 +126,27 @@ export default class TimeseriesWizard extends React.Component<
           </li>
           {this.state.selectedOption != "hdf5" ? (
             <li className={this.state.visibleTab == "1" ? "nav-item active" : "nav-item"}>
-              <a className="nav-link">Select Table File</a>
+              <a className="nav-link">Select Table</a>
             </li>
           ) : null}
           <li className={this.state.visibleTab == "2" ? "nav-item active" : "nav-item"}>
-            <a className="nav-link">Timeseries Parameters</a>
+            <a className="nav-link">Timeseries Params</a>
           </li>
           {this.state.selectedOption == "xyce" ? (
             <li className={this.state.visibleTab == "3" ? "nav-item active" : "nav-item"}>
-              <a className="nav-link">Select Timeseries File</a>
+              <a className="nav-link">Timeseries File</a>
             </li>
           ) : null}
           {this.state.selectedOption == "hdf5" ? (
             <li className={this.state.visibleTab == "4" ? "nav-item active" : "nav-item"}>
-              <a className="nav-link">Select HDF5 Directory</a>
+              <a className="nav-link">HDF5 Directory</a>
             </li>
           ) : null}
           <li className={this.state.visibleTab == "5" ? "nav-item active" : "nav-item"}>
-            <a className="nav-link">HPC Parameters</a>
+            <a className="nav-link">HPC Params</a>
           </li>
           <li className={this.state.visibleTab == "6" ? "nav-item active" : "nav-item"}>
-            <a className="nav-link">Name Model</a>
+            <a className="nav-link">Model</a>
           </li>
         </ul>
         {this.state.visibleTab === "0" ? (
@@ -183,6 +183,15 @@ export default class TimeseriesWizard extends React.Component<
         ) : null}
         {this.state.visibleTab === "1" ? (
           <div>
+
+            {this.state.selectedOption === "csv" ? (
+              <div className="alert alert-primary" role="alert">
+                Select the composite Slycat format CSV table.
+              </div>) : 
+              <div className="alert alert-primary" role="alert">
+                Select the Dakota tabular file (*.dat).
+              </div> }
+
             <RemoteFileBrowser
               selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTableFile}
@@ -221,6 +230,9 @@ export default class TimeseriesWizard extends React.Component<
         ) : null}
         {this.state.visibleTab === "3" ? (
           <div>
+            <div className="alert alert-primary" role="alert">
+              Select one of the Xyce format timeseries files (*.prn).
+            </div>
             <RemoteFileBrowser
               selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTimeseriesFile}
