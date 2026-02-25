@@ -58,7 +58,11 @@ const TypeButton: React.FC<TypeButtonProps> = ({
     mediaType === "pdf" ? { fontSize: "0.9em", transform: "translateY(-1px)" } : undefined;
 
   return (
-    <div className={`dropup type-button frame-button ${className}`}>
+    <div
+      className={`dropup type-button frame-button ${className}`}
+      // Stop event propagation to prevent frame from being dragged when interacting with the button and dropdown
+      onMouseDown={(e) => e.stopPropagation()}
+    >
       <button
         type="button"
         className="btn btn-sm type-button-toggle dropdown-toggle"
