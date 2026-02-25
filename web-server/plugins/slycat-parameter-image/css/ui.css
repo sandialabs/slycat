@@ -450,6 +450,15 @@
   font-size: 13px;
   min-width: 120px;
 }
+.frame-button.type-button .minimize-item {
+  display: none;
+}
+#scatterplot .image-frame.maximized .frame-button.type-button .maximize-item {
+  display: none;
+}
+#scatterplot .image-frame.maximized .frame-button.type-button .minimize-item {
+  display: block;
+}
 
 #scatterplot .media-layer .reload-button {
   position: absolute;

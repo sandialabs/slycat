@@ -75,14 +75,14 @@ const TypeButton: React.FC<TypeButtonProps> = ({
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
         <button
           type="button"
-          className="dropdown-item"
+          className="dropdown-item maximize-item"
           onClick={(e) => onMaximize?.(e.nativeEvent)}
         >
           <Icon type="window-maximize" /> Maximize
         </button>
         <button
           type="button"
-          className="dropdown-item"
+          className="dropdown-item minimize-item"
           onClick={(e) => onMinimize?.(e.nativeEvent)}
         >
           <Icon type="window-minimize" /> Minimize

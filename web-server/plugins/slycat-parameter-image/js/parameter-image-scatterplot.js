@@ -2327,6 +2327,7 @@ $.widget("parameter_image.scatterplot", {
       },
 
       maximize: function (event) {
+        console.debug(`Maximizing frame at ${event ? event.target : d3.event.target}`);
         let target = event ? event.target : d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
 
