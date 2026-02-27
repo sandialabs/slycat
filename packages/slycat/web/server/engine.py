@@ -783,14 +783,6 @@ def start(root_path, config_file):
         directory_type
     ]["user"]
 
-    # Expand remote host aliases.
-    # configuration["slycat-web-server"]["remote-hosts"] = {
-    #     hostname["name"]: remote
-    #     for remote in configuration["slycat-web-server"]["remote-hosts"]
-    #     for hostname in remote.get("hostnames", {})
-    #     if "agent"in hostname and hostname["agent"] is True:
-    #       return remote
-    # }
     updated_remote_hosts = {}
     for remote in configuration["slycat-web-server"]["remote-hosts"]:
         for hostname in remote.get("hostnames", {}):
