@@ -393,7 +393,7 @@
 /* TypeButton dropdown styles */
 .frame-button.type-button.dropup {
   display: inline-block;
-  float: right;
+  float: left;
 }
 .frame-button.type-button .type-button-toggle {
   background: none;

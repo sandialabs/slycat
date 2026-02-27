@@ -33,9 +33,9 @@ const MEDIA_TYPE_LABEL_MAP: Record<MediaType, string> = {
   image: "Image",
   video: "Video",
   pdf: "PDF",
-  vtp: "3D (VTP)",
-  stl: "3D (STL)",
-  unknown: "Unknown",
+  vtp: "3D",
+  stl: "3D",
+  unknown: "Unknown type",
 };
 
 /**
