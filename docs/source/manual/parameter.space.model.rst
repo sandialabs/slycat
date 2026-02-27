@@ -9,6 +9,7 @@ images, videos, and other media-based ensemble data.
   
   TAISDataSet.rst
   data.table.rst
+  media.support.rst
   CreatingPSModel.rst
   PSModelVis.rst
   

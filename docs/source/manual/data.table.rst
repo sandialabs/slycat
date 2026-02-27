@@ -55,9 +55,14 @@ Here is a CSV example for a remote Windows file system, that includes one media 
   2, 2.5, 2, smb://host.example.com/collab/sim3/stress.jpg
 
 
+**Media Formats**
+
+The Slycat™ Parameter Space model supports many media formats.  See :ref:`mediasupport-ref-label` for the full specification.
+
+
 **XY Pairs**
 
-The Parameter Space model recognizes pairs of columns in the data table, such as pairs of (x, y) coordinates.  When XY pairs are present Slycat allows a user to visualize that pair with a single selection in the Navbar, instead of individually selecting the X-axis variable and the Y-axis variable.  To enable this feature and mark the pair of columns, the 2 column labels are prefaced with [XYpair X] and [XYpair Y]. The column label string is placed after the preface, and the label is closed with an X or a Y. When both labels are combined in the Navbar control the final X or Y character is dropped.
+The Parameter Space model recognizes pairs of columns in the data table, such as pairs of (x, y) coordinates.  When XY pairs are present Slycat™ allows a user to visualize that pair with a single selection in the Navbar, instead of individually selecting the X-axis variable and the Y-axis variable.  To enable this feature and mark the pair of columns, the 2 column labels are prefaced with [XYpair X] and [XYpair Y]. The column label string is placed after the preface, and the label is closed with an X or a Y. When both labels are combined in the Navbar control the final X or Y character is dropped.
 
 Here are several examples of valid XY pair column labels:
 

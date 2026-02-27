@@ -7,6 +7,8 @@ The CSV file is expected to follow the standard CSV format where each row is a s
 
 See the :ref:`csv-ref-label` page for a complete description of the Slycat™ CSV format requirements and options.
 
+See the :ref:`mediasupport-ref-label` page for a complete description of the media formats supported in the Slycat™ Parameter Space model.
+
 Up until the stage where inputs and outputs for the model are selected, the model creation steps are identical to CCA (see Creating a CCA Model).  Instead of initializing all variables as *Input*, the variables default to being assigned as *Neither*.  As with CCA, group selection operations using 
 shift-click and/or control-click allow rapid assignment of variable types (see Select Columns).  However, a central difference 
 in the Parameter Space model is that variables can also be designated as being *Categorical* and/or *Editable*.
