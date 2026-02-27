@@ -2014,7 +2014,6 @@ $.widget("parameter_image.scatterplot", {
     };
 
     var add_type_button = function (fh, media_type) {
-      console.debug(`Adding type button for ${fh.attr("data-uri")}`);
       let typeButton = fh
         .append("div")
         .attr("class", "react-component-type-button")

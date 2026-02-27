@@ -412,11 +412,6 @@
 .frame-button.type-button .type-button-toggle:focus {
   color: white;
 }
-.frame-button.type-button .type-button-toggle::after {
-  /* Bootstrap dropdown caret */
-  vertical-align: middle;
-  font-size: 10px;
-}
 .frame-button.type-button .type-button-label {
   white-space: nowrap;
 }

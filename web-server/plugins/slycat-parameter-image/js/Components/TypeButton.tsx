@@ -73,7 +73,7 @@ const TypeButton: React.FC<TypeButtonProps> = ({
     >
       <button
         type="button"
-        className="btn btn-sm type-button-toggle dropdown-toggle"
+        className="btn btn-sm type-button-toggle"
         id={dropdownId}
         data-bs-toggle="dropdown"
         aria-haspopup="true"
@@ -83,6 +83,7 @@ const TypeButton: React.FC<TypeButtonProps> = ({
       >
         <Icon type={icon} style={iconStyle} />
         <span className="type-button-label">{label}</span>
+        <Icon type="ellipsis-vertical" />
       </button>
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
         <button
