@@ -10,7 +10,6 @@ import cherrypy
 import numpy
 import paramiko
 import traceback
-import json
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.web.server.hdf5
@@ -22,6 +21,8 @@ import threading
 import base64
 import six
 import time
+import importlib
+import sys
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
@@ -46,6 +47,53 @@ def base64_decode(n, encoding="ISO-8859-1"):
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""
     return ((1.0 - amount) * a) + (amount * b)
+
+
+def find_and_load_module(
+    module_name: str, module_path: str, plugin_directory: str
+) -> any:
+    """
+    Dynamically finds and loads a Python module.
+
+    Args:
+        module_name (str): The name of the module to load.
+        module_path (str): The path of the module file.
+        plugin_directory (str): The directory path where plugin modules are located.
+
+    Returns:
+        any: The loaded module.
+
+    Raises:
+        ImportError: If the module is not found or fails to load.
+
+    Notes:
+        This function uses importlib to load a module from a file location.
+        It allows for flexible module loading by specifying the search path and plugin directory.
+
+    Example:
+        >>> find_and_load_module("my_module", "/path/to/modules/my_module", "/path/to/plugins")
+    """
+
+    # Locate the module spec, providing the plugin directory as a place to search for sub‑modules
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        module_path,
+        submodule_search_locations=[plugin_directory],
+    )
+    if spec is None:
+
+        raise ImportError(f"Module '{module_name}' not found at '{module_path}'")
+
+    # Create a new module object from the spec
+    module = importlib.util.module_from_spec(spec)
+
+    # Execute the module code, propagating any errors as ImportError
+    try:
+        spec.loader.exec_module(module)  # type: ignore[arg-type]
+    except Exception as e:
+        raise ImportError(f"Failed to load module '{module_name}': {e}") from e
+
+    return module
 
 
 # @cache_it

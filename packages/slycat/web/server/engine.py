@@ -187,6 +187,12 @@ def start(root_path, config_file):
         conditions={"method": ["GET"]},
     )
     dispatcher.connect(
+        "get-all-column-names",
+        "/remotes/:hostname/column_names/file{path:.*}",
+        slycat.web.server.handlers.get_all_column_names,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
         "get-bookmark",
         "/bookmarks/:bid",
         slycat.web.server.handlers.get_bookmark,
