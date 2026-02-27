@@ -10,7 +10,7 @@ Given a set of simulation videos, several questions arise: How can we compare an
 .. figure:: figures/Slycat_VideoswarmModel1.png
    :align: center
 
-   **Figure 1: VideoSwarm model example.  SAND2026-17305O.**
+   **Figure 1: VideoSwarm model example illustrating clustered similarity results, a similarity timeline, and exemplar videos.**
 
 Data Format
 ^^^^^^^^^^^
