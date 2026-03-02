@@ -122,7 +122,12 @@ a Parameter Space model from a python script, use the SlyPI module as follows:
 More Advanced Usage
 ^^^^^^^^^^^^^^^^^^^
 
-In addition to using SlyPI to create Slycat models, SlyPI can also: be used to interact with the Slycat server to query projects, models, and user authentication information; be used to manage the numerous files generated when creating an ensemble of numerical simulations; be used to perform dimension reduction and other analysis methods on datasets; and be extended with user defined algorithms and data formats.
+In addition to using SlyPI to create Slycat models, SlyPI can also:
+
+* interact with the Slycat server to query projects, models, and user authentication information;
+* manage the numerous files generated when creating an ensemble of numerical simulations;
+* perform dimension reduction and other analysis methods on datasets;
+* be extended with user defined algorithms and data formats.
 
 .. _slypi-further-information:
 
