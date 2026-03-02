@@ -31,22 +31,17 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
             options={props.columnNames}
             onSelectCallBack={props.columnCallback}
           />
+          <SlycatSelector
+            label={'Index Column Name'}
+            options={props.allColumnNames}
+            onSelectCallBack={props.indexColumnCallback}
+          />
           <SlycatTextInput
             id={"delimiter"}
             label={"Table File Delimeter"}
             value={props.delimiter ? props.delimiter : ","}
             warning="Please enter a table file delimiter."
             callBack={props.delimiterCallback}
-          />
-          <SlycatSelector
-            label={"Timeseries Column Name"}
-            options={props.columnNames}
-            onSelectCallBack={props.columnCallback}
-          />
-          <SlycatSelector
-            label={'Index Column Name'}
-            options={props.allColumnNames}
-            onSelectCallBack={props.indexColumnCallback}
           />
         </div>
       ) : null}

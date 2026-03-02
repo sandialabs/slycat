@@ -84,13 +84,6 @@ function HPCParametersTab(props: HPCParametersTabProps) {
         warning=""
         callBack={props.licenseCallback}
       />
-      <SlycatTextInput
-        id={"work-dir"}
-        label={"Working Directory"}
-        value={props.workDir ? props.workDir : ""}
-        warning="Please enter a working directory."
-        callBack={props.workDirCallback}
-      />
     </div>
   );
 }
