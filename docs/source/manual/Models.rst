@@ -2,8 +2,8 @@
 Models
 ------
 
-In Slycat™, models combine analysis and visualization.  Slycat™ provides three different types of models: Canonical Correlation 
-Analysis (CCA), Parameter Space, and Time Series.  The heart of every model is a data table.  For each model type, there are 
+In Slycat™, models combine analysis and visualization.  Slycat™ provides five different types of models: Canonical Correlation 
+Analysis (CCA), Parameter Space, Time Series, VideoSwarm, and Dial-A-Cluster.  The heart of every model is a data table.  For each model type, there are 
 predefined sets of linked views that provide different representations of the analysis results.  Generally, the visualization 
 for each model consists of three different representations, each showing the ensemble at a different level of abstraction.  The 
 highest-level view seeks to display the ensemble in a holistic manner.   It seeks to show what high-level behaviors or trends 
@@ -15,7 +15,7 @@ view enables you to drill down to the raw data values, both to input parameters 
 Each model has a *Name*, a *Marking*, and an optional *Description*.  Marking choices are defined as part of the server 
 configuration, so they are specific to the institution that hosts the server.  The intent is for Slycat™ to facilitate clear 
 labeling of data sensitivity through explicit choice of marking.  The marking appears as part of the model description on the 
-Project page list, plus it is shown in both header and footer bars when visualizing the model.
+Project page list and it is shown in the header bar when visualizing the model.
 
 Source Data for Models
 ======================

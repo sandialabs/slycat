@@ -2,19 +2,15 @@
 
 Getting Started
 ---------------
-Slycat™ is accessed through a web browser from your desktop computer.  Slycat™ currently supports Firefox, Chrome, and Safari 
-browsers.  We do not support Internet Explorer.    
+Slycat™ is typically accessed through a web browser. Firefox, Chrome, and Safari are supported browsers. MicroSoft Edge appears to support Slycat™ visualization features but is not tested.
 
-Since multiple Slycat™ servers are already in existence, you will need to obtain the URL for the Slycat™ server that you want 
-to use.  Enter this URL into the address bar of the browser.  If the authentication mechanism for your institution relies on username and password, you will be taken to the Slycat™ login page, shown in Figure 2, where you will be prompted for your 
-username and password.  If your institution uses single sign-on, login will happen automatically and you will skip this step.  
-Once your identity has been established, you will find yourself on the main Projects page.  
+Since multiple Slycat™ servers exist, you will need to find the URL for the environment or network you're on and paste it into your browser's address field. If your institution uses single sign-on, login will happen automatically and you will find yourself on the main Projects page. If the authentication mechanism for your institution relies on username and password, you will be taken to the Slycat™ login page shown in Figure 2.
 
 .. figure:: LoginPage.png
    :scale: 75
    :align: center
    
-   **Figure 2: Slycat login page.**
+   **Figure 2: Slycat password-authentication login page.**
 
 Slycat™ pages exist at one of three levels: the main Projects page, an individual project page, and an individual model page.  
 The main Projects page displays all projects which you are authorized to access.  This list of projects is unique to you.  
