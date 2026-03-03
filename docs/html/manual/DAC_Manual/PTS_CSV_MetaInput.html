@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PTS CSV/META Zip Input &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -64,9 +67,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -104,15 +112,16 @@
            <div itemprop="articleBody">
              
   <section id="pts-csv-meta-zip-input">
-<h1>PTS CSV/META Zip Input<a class="headerlink" href="#pts-csv-meta-zip-input" title="Permalink to this heading"></a></h1>
+<h1>PTS CSV/META Zip Input<a class="headerlink" href="#pts-csv-meta-zip-input" title="Link to this heading"></a></h1>
 <p>The PTS CSV/META Zip Format option operates in a manner similar to the DAC Generic Zip format, though the internal format
 of the files within the zip file are different (see <a class="reference internal" href="PTS_CSV_MetaFormat.html#pts-csv-metaformat"><span class="std std-ref">PTS CSV/META Zip Format</span></a> for details on the formatting of the PTS
 CSV/META zip file contents).  Click <em>Browse</em> in the <em>Locate Data</em> tab shown in Figure 7, then using the popup file browser,
 navigate to the location of the zip file and select it.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../../_images/locate-pts-with-hover.png"><img alt="../../_images/locate-pts-with-hover.png" src="../../_images/locate-pts-with-hover.png" style="width: 635.2px; height: 467.20000000000005px;" /></a>
+<a class="reference internal image-reference" href="../../_images/locate-pts-with-hover.png"><img alt="../../_images/locate-pts-with-hover.png" height="467" src="../../_images/locate-pts-with-hover.png" width="635" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 7: Locate Data tab to select the single zip file used in the PTS CSV/META Zip Format.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 7: Locate Data tab to select the single zip file used in the PTS CSV/META Zip Format.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The PTS version of the <em>Locate Data</em> tab also allows the user to specify two parameters for filtering the imported data.
@@ -120,9 +129,9 @@ The first parameter is “Minimum number of time points in a CSV file”.  Any .
 number of time points will be ignored.  The second parameter is “Minimum number of digitizers in a test”.  A digitizer is
 synonymous with a variable in this context.  This parameter will ignore any ensemble member having less than the specified
 number of variables.  The parameters have defaults of 10 and 3, respectively.</p>
-<p>In the <em>Locate Data</em> tab, notice the <a class="reference internal" href="../../_images/help.png"><img alt="Help" src="../../_images/help.png" style="width: 15.0px; height: 15.5px;" /></a> icon.  If you hover over the <a class="reference internal" href="../../_images/help.png"><img alt="Help" src="../../_images/help.png" style="width: 15.0px; height: 15.5px;" /></a> icon, help is provided in the form of a
+<p>In the <em>Locate Data</em> tab, notice the <a class="reference internal" href="../../_images/help.png"><img alt="Help" height="16" src="../../_images/help.png" width="15" /></a> icon.  If you hover over the <a class="reference internal" href="../../_images/help.png"><img alt="Help" height="16" src="../../_images/help.png" width="15" /></a> icon, help is provided in the form of a
 description of the use of the mechanism used to select the TDMS suffixes using the “Include” column.  In general,
-whenever you see the <a class="reference internal" href="../../_images/help.png"><img alt="Help" src="../../_images/help.png" style="width: 15.0px; height: 15.5px;" /></a> icon, hovering over that icon will provide a description of the functionality of a provided
+whenever you see the <a class="reference internal" href="../../_images/help.png"><img alt="Help" height="16" src="../../_images/help.png" width="15" /></a> icon, hovering over that icon will provide a description of the functionality of a provided
 feature in the DAC user interface.</p>
 <p>The <em>Continue</em> button will advance to the <em>Name Model</em> tab.</p>
 </section>
@@ -138,9 +147,9 @@ feature in the DAC user interface.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

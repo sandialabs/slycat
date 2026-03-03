@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.darray &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,8 +42,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -118,7 +124,7 @@
            <div itemprop="articleBody">
              
   <section id="module-slycat.darray">
-<span id="slycat-darray"></span><h1>slycat.darray<a class="headerlink" href="#module-slycat.darray" title="Permalink to this heading"></a></h1>
+<span id="slycat-darray"></span><h1>slycat.darray<a class="headerlink" href="#module-slycat.darray" title="Link to this heading"></a></h1>
 <p>Slycat makes extensive use of <cite>darray</cite> objects - dense, multi-dimension,
 multi-attribute arrays - as its fundamental unit of storage and organization.
 In the abstract, a darray can be modeled as follows:</p>
@@ -142,24 +148,24 @@ their size - most applications will work with <em>slices</em> of a darray to kee
 memory use manageable.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="slycat.darray.MemArray">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.darray.</span></span><span class="sig-name descname"><span class="pre">MemArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slycat.darray.</span></span><span class="sig-name descname"><span class="pre">MemArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#slycat.darray.Stub" title="slycat.darray.Stub"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stub</span></code></a></p>
 <p>darray implementation that holds the full array contents in memory.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.darray.MemArray.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray.get_data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray.get_data" title="Link to this definition"></a></dt>
 <dd><p>Return a data slice from one attribute.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.darray.MemArray.get_statistics">
-<span class="sig-name descname"><span class="pre">get_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray.get_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray.get_statistics" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray.get_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray.get_statistics" title="Link to this definition"></a></dt>
 <dd><p>Return statistics describing one attribute.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.darray.MemArray.set_data">
-<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray.set_data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#MemArray.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.MemArray.set_data" title="Link to this definition"></a></dt>
 <dd><p>Write a data slice to one attribute.</p>
 </dd></dl>
 
@@ -167,54 +173,54 @@ memory use manageable.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="slycat.darray.Prototype">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.darray.</span></span><span class="sig-name descname"><span class="pre">Prototype</span></span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slycat.darray.</span></span><span class="sig-name descname"><span class="pre">Prototype</span></span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract interface for all darray implementations.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.attributes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#slycat.darray.Prototype.attributes" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#slycat.darray.Prototype.attributes" title="Link to this definition"></a></dt>
 <dd><p>Return a description of the array attributes.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.dimensions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dimensions</span></span><a class="headerlink" href="#slycat.darray.Prototype.dimensions" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dimensions</span></span><a class="headerlink" href="#slycat.darray.Prototype.dimensions" title="Link to this definition"></a></dt>
 <dd><p>Return a description of the array dimensions.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype.get_data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype.get_data" title="Link to this definition"></a></dt>
 <dd><p>Return data from one attribute.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.get_statistics">
-<span class="sig-name descname"><span class="pre">get_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype.get_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype.get_statistics" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype.get_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype.get_statistics" title="Link to this definition"></a></dt>
 <dd><p>Return statistics describing one attribute.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.ndim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ndim</span></span><a class="headerlink" href="#slycat.darray.Prototype.ndim" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ndim</span></span><a class="headerlink" href="#slycat.darray.Prototype.ndim" title="Link to this definition"></a></dt>
 <dd><p>Return the number of dimensions in the array.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.set_data">
-<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype.set_data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Prototype.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Prototype.set_data" title="Link to this definition"></a></dt>
 <dd><p>Write data to one attribute.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.shape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#slycat.darray.Prototype.shape" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#slycat.darray.Prototype.shape" title="Link to this definition"></a></dt>
 <dd><p>Return the shape (size along each dimension) of the array.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Prototype.size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#slycat.darray.Prototype.size" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#slycat.darray.Prototype.size" title="Link to this definition"></a></dt>
 <dd><p>Return the size (total number of elements) of the array.</p>
 </dd></dl>
 
@@ -222,36 +228,36 @@ memory use manageable.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="slycat.darray.Stub">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.darray.</span></span><span class="sig-name descname"><span class="pre">Stub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Stub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Stub" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slycat.darray.</span></span><span class="sig-name descname"><span class="pre">Stub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/darray.html#Stub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.darray.Stub" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#slycat.darray.Prototype" title="slycat.darray.Prototype"><code class="xref py py-class docutils literal notranslate"><span class="pre">Prototype</span></code></a></p>
 <p>darray implementation that only stores array metadata (dimensions and attributes).</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Stub.attributes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#slycat.darray.Stub.attributes" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#slycat.darray.Stub.attributes" title="Link to this definition"></a></dt>
 <dd><p>Return a description of the array attributes.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Stub.dimensions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dimensions</span></span><a class="headerlink" href="#slycat.darray.Stub.dimensions" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dimensions</span></span><a class="headerlink" href="#slycat.darray.Stub.dimensions" title="Link to this definition"></a></dt>
 <dd><p>Return a description of the array dimensions.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Stub.ndim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ndim</span></span><a class="headerlink" href="#slycat.darray.Stub.ndim" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ndim</span></span><a class="headerlink" href="#slycat.darray.Stub.ndim" title="Link to this definition"></a></dt>
 <dd><p>Return the number of dimensions in the array.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Stub.shape">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#slycat.darray.Stub.shape" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#slycat.darray.Stub.shape" title="Link to this definition"></a></dt>
 <dd><p>Return the shape (size along each dimension) of the array.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="slycat.darray.Stub.size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#slycat.darray.Stub.size" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#slycat.darray.Stub.size" title="Link to this definition"></a></dt>
 <dd><p>Return the size (total number of elements) of the array.</p>
 </dd></dl>
 
@@ -270,9 +276,9 @@ memory use manageable.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

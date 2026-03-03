@@ -1,24 +1,26 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Slycat™ Navbar &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Projects" href="Projects.html" />
-    <link rel="prev" title="Getting Started" href="GettingStarted.html" /> 
+    <link rel="prev" title="Source Data, CSV Format Data Table" href="data.table.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,10 +42,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="slycat.overview.html">Overview</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.table.html">Source Data, CSV Format Data Table</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Slycat™ Navbar</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Projects.html">Projects</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Models.html">Models</a></li>
@@ -55,9 +59,14 @@
 <li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -93,25 +102,25 @@
            <div itemprop="articleBody">
              
   <section id="slycat-navbar">
-<span id="navbar"></span><h1>Slycat™ Navbar<a class="headerlink" href="#slycat-navbar" title="Permalink to this heading"></a></h1>
+<span id="navbar"></span><h1>Slycat™ Navbar<a class="headerlink" href="#slycat-navbar" title="Link to this heading"></a></h1>
 <p>At the top of every Slycat™ page is the Navbar.  Working from left to right, we see the Slycat™ logo, a breadcrumb navigation path, and a set of colored buttons providing dropdown lists categorized by function.  Depending on the type of page currently being viewed, the buttons and the contents of the dropdowns will vary.  As shown in Figure 3, the Navbar for the main Projects page, the only button available is the green <em>Create</em> button for creating new projects.  Since the main Projects page lies outside and above any projects, the breadcrumb navigation path points to the current page, which is simply labeled as <em>Slycat</em>.  Figure 4 shows that for Navbars within a project or model page, there can be up to five buttons, including: <em>Create, Edit, Info, Bookmarks,</em> and <em>Delete</em>.</p>
 <figure class="align-center" id="id1">
 <img alt="../_images/Figure3.png" src="../_images/Figure3.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 3: Slycat Navbar as seen on the main Projects page.  At this level, the Navbar displays the title Slycat because we have yet to move to an individual project page.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 3: Slycat Navbar as seen on the main Projects page.  At this level, the Navbar displays the title Slycat because we have yet to move to an individual project page.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id2">
 <img alt="../_images/Figure4.png" src="../_images/Figure4.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 4: Navbar at the individual project page level.  Here the name of the project is ‘My Project’.  Note that the Bookmarks button is hidden until at least one bookmark has been created.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 4: Navbar at the individual project page level.  Here the name of the project is ‘My Project’.  Note that the Bookmarks button is hidden until at least one bookmark has been created.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>As you move between pages at various levels, the breadcrumb path in the Navbar will change to reflect your current location.  The path has the format <em>Project Name / Model Name</em>.  The path can be used to navigate within the hierarchy.  Clicking on the <em>Project Name</em> will take you to that project’s page with its list of associated models.  Hovering over the <em>Project Name</em> will display the project description, the project members, the date of creation, and who created it (Figure 5).  Similarly, hovering over the <em>Model Name</em> will display the model description, the date of creation, and who created it.</p>
 <figure class="align-center" id="id3">
 <img alt="../_images/Figure5.png" src="../_images/Figure5.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 5: Hovering over the project name will display more detailed project information.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 5: Hovering over the project name will display more detailed project information.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
@@ -120,16 +129,16 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="GettingStarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data.table.html" class="btn btn-neutral float-left" title="Source Data, CSV Format Data Table" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="Projects.html" class="btn btn-neutral float-right" title="Projects" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

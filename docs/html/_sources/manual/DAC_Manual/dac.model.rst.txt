@@ -1,3 +1,5 @@
+.. _dac-ref-label:
+
 Dial-A-Cluster Model
 ====================
 

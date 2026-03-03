@@ -26,7 +26,23 @@ The *CSV* format (such as *heartbeat.dat* files produced by Sierra, or *.csv* ou
 the *Xyce* format.  The individual time series files need not be stored in the same directory hierarchy as the data table, nor 
 does the directory structure need to follow any structure or naming conventions.  Instead, the data table is a *CSV* file, 
 which contains a column of URIs providing full paths to each of the time series files, which must also be *CSV* files (no 
-*.prn* files).  Each URI must have the format: file://machine/absolute_directory_path/timeseries_filename.csv. 
+*.prn* files).  Each URI must have the format:
+
+.. code-block:: bash
+
+  file://machine/absolute_directory_path/timeseries_filename.csv
+
+
+Here is a CSV data table example that includes a path to one time series file (accel_TS):
+
+.. code-block:: bash
+
+  index, speed, angle, max_temp, accel_TS
+  0, 2.7, 40, 422, /scratch/sim1/accel.csv
+  1, 2.6, 40, 401, /scratch/sim2/accel.csv
+  2, 2.5, 40, 397, /scratch/sim3/accel.csv
+  . . .
+
 
 Time Series Files
 -----------------
@@ -40,6 +56,17 @@ At least one column must be a time value (typically the first column).
 If your data is not currently in one of these two formats, Excel can be used to create *CSV* files from most common table 
 formats.  Note that if output metrics have been created separately in a post-processing step, they will need to be 
 integrated with the inputs to form a single file prior to model creation.  
+
+Here is a CSV example of an individual time series file that includes time and x,y,z acceleration values:
+
+.. code-block:: bash
+
+  time, node13_accel_x, node13_accel_y, node13_accel_z
+  0.00000e+00,  1.07467e-10, -3.86400e+02, -3.05677e-11
+  1.00575e-05, -1.49045e-09, -3.86400e+02, -3.51361e-08
+  2.00475e-05, -1.10586e-08, -3.86400e+02,  7.26048e-09
+  . . . 
+
 
 HDF5 Intermediary Format
 ------------------------

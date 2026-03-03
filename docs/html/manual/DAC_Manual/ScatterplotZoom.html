@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scatterplot Zoom &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -62,9 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -102,16 +110,17 @@
            <div itemprop="articleBody">
              
   <section id="scatterplot-zoom-zoomicon">
-<h1>Scatterplot Zoom <a class="reference internal" href="../../_images/zoom-icon.png"><img alt="ZoomIcon" src="../../_images/zoom-icon.png" style="width: 31.0px; height: 30.5px;" /></a><a class="headerlink" href="#scatterplot-zoom-zoomicon" title="Permalink to this heading"></a></h1>
+<h1>Scatterplot Zoom <a class="reference internal" href="../../_images/zoom-icon.png"><img alt="ZoomIcon" height="30" src="../../_images/zoom-icon.png" width="31" /></a><a class="headerlink" href="#scatterplot-zoom-zoomicon" title="Link to this heading"></a></h1>
 <p>Alternatively, you may need to simply zoom in on a subset of points to see a region of the broader analysis set in more detail.  Click on the
-<a class="reference internal" href="../../_images/zoom-icon.png"><img alt="ZoomIcon2" src="../../_images/zoom-icon.png" style="width: 24.8px; height: 24.400000000000002px;" /></a> icon shown in Figure 29, then select a region within the <em>Scatterplot</em> by clicking and holding the mouse button until the shaded
+<a class="reference internal" href="../../_images/zoom-icon.png"><img alt="ZoomIcon2" height="24" src="../../_images/zoom-icon.png" width="25" /></a> icon shown in Figure 29, then select a region within the <em>Scatterplot</em> by clicking and holding the mouse button until the shaded
 region defines the area to be zoomed.  Releasing the mouse button redraws the selected region, scaling point positions to fill the <em>Scatterplot</em>
-view.  The icon is now yellowed <a class="reference internal" href="../../_images/zoom-icon-yellow.png"><img alt="ZoomIconYellow" src="../../_images/zoom-icon-yellow.png" style="width: 24.8px; height: 24.8px;" /></a>, indicating that the view is zoomed.  Zooming in further can be accomplished by repeating the
+view.  The icon is now yellowed <a class="reference internal" href="../../_images/zoom-icon-yellow.png"><img alt="ZoomIconYellow" height="25" src="../../_images/zoom-icon-yellow.png" width="25" /></a>, indicating that the view is zoomed.  Zooming in further can be accomplished by repeating the
 zoom selection process.  At any point, you can return to the originally scaled view by clicking anywhere in the background.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../../_images/zoom-with-filter.png"><img alt="../../_images/zoom-with-filter.png" src="../../_images/zoom-with-filter.png" style="width: 369.59999999999997px; height: 43.199999999999996px;" /></a>
+<a class="reference internal image-reference" href="../../_images/zoom-with-filter.png"><img alt="../../_images/zoom-with-filter.png" height="43" src="../../_images/zoom-with-filter.png" width="370" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 29: Zoom icon.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 29: Zoom icon.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Unlike the analysis subset operation, set membership remains constant, irrespective of whether selected points are visible in the zoom or not.
@@ -129,9 +138,9 @@ Consequently, the <em>Time Series Plots</em> and the <em>Metadata Table</em> row
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

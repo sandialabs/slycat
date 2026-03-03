@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Combining Models &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -61,9 +64,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -100,14 +108,15 @@
            <div itemprop="articleBody">
              
   <section id="combining-models">
-<h1>Combining Models<a class="headerlink" href="#combining-models" title="Permalink to this heading"></a></h1>
+<h1>Combining Models<a class="headerlink" href="#combining-models" title="Link to this heading"></a></h1>
 <p>Two or more existing models can be combined to create a new larger model.  From an existing model, select Create &gt; Combined Model
 from the green <em>Create</em> pulldown in the upper right of Slycat™ user interface.  This pulldown option is shown in Figure 44.  Note
 that this must be done from within an existing model.  The pulldown menu options will be different at the project level.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../../_images/create-combined.png"><img alt="../../_images/create-combined.png" src="../../_images/create-combined.png" style="width: 203.0px; height: 191.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/create-combined.png"><img alt="../../_images/create-combined.png" height="191" src="../../_images/create-combined.png" width="203" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 44: Combining multiple existing models to create a new model.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 44: Combining multiple existing models to create a new model.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Selecting Create &gt; Combined Model will open a wizard for creating a combined model, as shown in Figure 45.  The first step in
@@ -116,9 +125,10 @@ model data will be projected onto the current model (the model used to launch th
 <em>Scatterplot</em> coordinates using all model data equally, select “Re-compute new model” and press <em>Continue</em>.  To use the current
 model as a basis for the <em>Scatterplot</em> coordinates, select “Project onto this model” and press <em>Continue</em>.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../../_images/combination-type.png"><img alt="../../_images/combination-type.png" src="../../_images/combination-type.png" style="width: 633.6px; height: 238.4px;" /></a>
+<a class="reference internal image-reference" href="../../_images/combination-type.png"><img alt="../../_images/combination-type.png" height="238" src="../../_images/combination-type.png" width="634" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 45: Initial dialog for creating a combined model.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 45: Initial dialog for creating a combined model.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The next dialog in the combined model wizard is shown in Figure 46.  In this dialog, the user is presented with a list of
@@ -129,9 +139,10 @@ numbers of time points for a given time series.  Otherwise they must also have i
 series.  If you select an incompatible model, the wizard will prompt you and continue only when all selected models are verified to
 be compatible.</p>
 <figure class="align-center" id="id3">
-<a class="reference internal image-reference" href="../../_images/select-combined.png"><img alt="../../_images/select-combined.png" src="../../_images/select-combined.png" style="width: 633.6px; height: 392.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/select-combined.png"><img alt="../../_images/select-combined.png" height="392" src="../../_images/select-combined.png" width="634" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 46: Selecting models to use for creating a combined model.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 46: Selecting models to use for creating a combined model.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Once compatible models have been selected, push the <em>Continue</em> button to advance the wizard.  The final dialog allows you to name
@@ -151,9 +162,9 @@ indicator and accompanying message window will be presented to show progress and
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

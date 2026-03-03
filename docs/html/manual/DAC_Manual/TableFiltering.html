@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Table Filtering &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -62,9 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -102,13 +110,13 @@
            <div itemprop="articleBody">
              
   <section id="table-filtering">
-<span id="tablefiltering"></span><h1>Table Filtering<a class="headerlink" href="#table-filtering" title="Permalink to this heading"></a></h1>
+<span id="tablefiltering"></span><h1>Table Filtering<a class="headerlink" href="#table-filtering" title="Link to this heading"></a></h1>
 <p>The rows in the <em>Metadata Table</em> can be filtered using the filter boxes below each column header, as shown in
 Figure 37.</p>
 <figure class="align-center" id="id1">
 <img alt="../../_images/column-filtering.png" src="../../_images/column-filtering.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 37: Filtering the Metadata Table entries using the filter boxes below the column headers.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 37: Filtering the Metadata Table entries using the filter boxes below the column headers.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The table filters use case insensitive substring search of the column entries to filter the rows of
@@ -128,7 +136,7 @@ only the rows that you desire, the <em>Scatterplot</em> and <em>Time Series Plot
 button (see <a class="reference internal" href="FilterPlots.html#filterplots"><span class="std std-ref">Filter Plots </span></a>) above the <em>Scatterplot</em>.  The points in the <em>Scatterplot</em> will then be restricted to
 display only those ensemble members in the filtered version of the table.  In addition, the plots in the <em>Time Series Plots</em>
 will also be restricted to those shown in the table.</p>
-<p>After pushing the filter plots button, it will be turned yellow <a class="reference internal" href="../../_images/filter-plots-on.png"><img alt="YellowFilterIcon" src="../../_images/filter-plots-on.png" style="width: 27.200000000000003px; height: 29.6px;" /></a> to indicate that you are viewing a
+<p>After pushing the filter plots button, it will be turned yellow <a class="reference internal" href="../../_images/filter-plots-on.png"><img alt="YellowFilterIcon" height="30" src="../../_images/filter-plots-on.png" width="27" /></a> to indicate that you are viewing a
 restricted set of the data.  Any colored selections not in the filtered table will also be hidden, although the selections
 are not forgotten.  Pushing the filter plots button again will restore the points and plots, and the selections will be
 unaffected.</p>
@@ -145,9 +153,9 @@ unaffected.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plot Resolution Indicators &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -62,9 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -102,18 +110,18 @@
            <div itemprop="articleBody">
              
   <section id="plot-resolution-indicators-numplotsgoodicon-resolutiongoodicon">
-<span id="plotresolutionindicators"></span><h1>Plot Resolution Indicators <a class="reference internal" href="../../_images/number-plots-good.png"><img alt="NumPlotsGoodIcon" src="../../_images/number-plots-good.png" style="width: 43.199999999999996px; height: 38.4px;" /></a> <a class="reference internal" href="../../_images/plot-resolution-good.png"><img alt="ResolutionGoodIcon" src="../../_images/plot-resolution-good.png" style="width: 33.6px; height: 33.6px;" /></a><a class="headerlink" href="#plot-resolution-indicators-numplotsgoodicon-resolutiongoodicon" title="Permalink to this heading"></a></h1>
+<span id="plotresolutionindicators"></span><h1>Plot Resolution Indicators <a class="reference internal" href="../../_images/number-plots-good.png"><img alt="NumPlotsGoodIcon" height="38" src="../../_images/number-plots-good.png" width="43" /></a> <a class="reference internal" href="../../_images/plot-resolution-good.png"><img alt="ResolutionGoodIcon" height="34" src="../../_images/plot-resolution-good.png" width="34" /></a><a class="headerlink" href="#plot-resolution-indicators-numplotsgoodicon-resolutiongoodicon" title="Link to this heading"></a></h1>
 <figure class="align-center" id="id1">
 <img alt="../../_images/rgb-plots-pulldown.png" src="../../_images/rgb-plots-pulldown.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 31: Dropdown temporal variable selection in Time Series Plot.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 31: Dropdown temporal variable selection in Time Series Plot.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>As shown in Figure 31, there are two green icons to the left of the variable name pulldown.  These icons provide information about the
-resolution of the rendering in the plot.  The <a class="reference internal" href="../../_images/number-plots-good.png"><img alt="NumPlotsGoodIcon2" src="../../_images/number-plots-good.png" style="width: 28.8px; height: 25.6px;" /></a> indicates that every selected point has been drawn as a line in the plot.
-Once the selected points exceed the <em>maximum number of plots</em>, the <a class="reference internal" href="../../_images/number-plots-good.png"><img alt="NumPlotsGoodIcon2" src="../../_images/number-plots-good.png" style="width: 28.8px; height: 25.6px;" /></a> icon changes to <a class="reference internal" href="../../_images/number-plots-bad.png"><img alt="NumPlotsBadIcon" src="../../_images/number-plots-bad.png" style="width: 24.0px; height: 24.0px;" /></a>, signaling that not
-all lines are being drawn.  The <a class="reference internal" href="../../_images/plot-resolution-good.png"><img alt="ResolutionGoodIcon2" src="../../_images/plot-resolution-good.png" style="width: 22.400000000000002px; height: 22.400000000000002px;" /></a> indicates that each line is being drawn at full resolution.  If the sampling in the
-time series data exceeds the <em>maximum plot resolution</em>, the icon changes to <a class="reference internal" href="../../_images/plot-resolution-bad.png"><img alt="ResolutionBadIcon" src="../../_images/plot-resolution-bad.png" style="width: 24.0px; height: 24.0px;" /></a>, alerting you that lines are not being drawn
+resolution of the rendering in the plot.  The <a class="reference internal" href="../../_images/number-plots-good.png"><img alt="NumPlotsGoodIcon2" height="26" src="../../_images/number-plots-good.png" width="29" /></a> indicates that every selected point has been drawn as a line in the plot.
+Once the selected points exceed the <em>maximum number of plots</em>, the <a class="reference internal" href="../../_images/number-plots-good.png"><img alt="NumPlotsGoodIcon2" height="26" src="../../_images/number-plots-good.png" width="29" /></a> icon changes to <a class="reference internal" href="../../_images/number-plots-bad.png"><img alt="NumPlotsBadIcon" height="24" src="../../_images/number-plots-bad.png" width="24" /></a>, signaling that not
+all lines are being drawn.  The <a class="reference internal" href="../../_images/plot-resolution-good.png"><img alt="ResolutionGoodIcon2" height="22" src="../../_images/plot-resolution-good.png" width="22" /></a> indicates that each line is being drawn at full resolution.  If the sampling in the
+time series data exceeds the <em>maximum plot resolution</em>, the icon changes to <a class="reference internal" href="../../_images/plot-resolution-bad.png"><img alt="ResolutionBadIcon" height="24" src="../../_images/plot-resolution-bad.png" width="24" /></a>, alerting you that lines are not being drawn
 using the full number of samples.</p>
 <p>The threshold values for both the <em>maximum number of plots</em> and the <em>maximum plot resolution</em> are user adjustable through
 <a class="reference internal" href="ModelPreferences.html#modelpreferences"><span class="std std-ref">Model Preferences</span></a>.  The default values for these variables are 33 and 500, respectively.</p>
@@ -130,9 +138,9 @@ using the full number of samples.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

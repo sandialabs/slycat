@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sliders &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -62,9 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -102,11 +110,12 @@
            <div itemprop="articleBody">
              
   <section id="sliders">
-<span id="id1"></span><h1>Sliders<a class="headerlink" href="#sliders" title="Permalink to this heading"></a></h1>
+<span id="id1"></span><h1>Sliders<a class="headerlink" href="#sliders" title="Link to this heading"></a></h1>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../../_images/sliders-with-hover.png"><img alt="../../_images/sliders-with-hover.png" src="../../_images/sliders-with-hover.png" style="width: 214.79999999999998px; height: 462.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/sliders-with-hover.png"><img alt="../../_images/sliders-with-hover.png" height="462" src="../../_images/sliders-with-hover.png" width="215" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 17: Temporal variables and their associated sliders, with each variable’s slider set to a differing weight.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 17: Temporal variables and their associated sliders, with each variable’s slider set to a differing weight.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>All the temporal variables in the data set are listed in the <em>Slider</em> view, shown in Figure 17.  If the full list of temporal
@@ -119,7 +128,7 @@ the <em>Scatterplot</em>.</p>
 <figure class="align-center" id="id3">
 <img alt="../../_images/slider-buttons.png" src="../../_images/slider-buttons.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 18: Slider controls are (1) download table, (2) set all sliders to 0, (3) set all sliders to 1, and (4) optimize sliders for selected Metadata Table column.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 18: Slider controls are (1) download table, (2) set all sliders to 0, (3) set all sliders to 1, and (4) optimize sliders for selected Metadata Table column.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The controls shown in Figure 18 appear at the bottom of the <em>Slider</em> view.  From left to right, the buttons perform the
@@ -131,9 +140,10 @@ following functions:</p>
 <li><p>Set the slider weights to optimize the <em>Scatterplot</em> for the selected <em>Metadata Table</em> column (selected from the dropdown list in the upper right above the <em>Scatterplot</em>, as shown in Figure 20).</p></li>
 </ul>
 <figure class="align-center" id="id4">
-<a class="reference internal image-reference" href="../../_images/color-by-pulldown-context.png"><img alt="../../_images/color-by-pulldown-context.png" src="../../_images/color-by-pulldown-context.png" style="width: 335.0px; height: 246.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/color-by-pulldown-context.png"><img alt="../../_images/color-by-pulldown-context.png" height="246" src="../../_images/color-by-pulldown-context.png" width="335" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 20: Weather data scalar variables for color-coding Scatterplot points.  The default is ‘Do Not Color’.</strong></span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 20: Weather data scalar variables for color-coding Scatterplot points.  The default is ‘Do Not Color’.</strong></span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <div class="toctree-wrapper compound">
@@ -155,9 +165,9 @@ following functions:</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

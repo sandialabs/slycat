@@ -1,6 +1,6 @@
 Parameter Space Model
 =====================
-Unlike the CCA and Time Series models, the Parameter Space model does not perform an analysis step.  Instead, the Parameter 
+Unlike the CCA and Time Series models, the Parameter Space model does not perform a computational analysis step.  Instead, the Parameter 
 Space model is an exploratory visual interface that combines a filterable scatterplot representation with remote access to 
 images, videos, and other media-based ensemble data.  
 
@@ -8,7 +8,8 @@ images, videos, and other media-based ensemble data.
   :maxdepth: 4
   
   TAISDataSet.rst
+  data.table.rst
+  media.support.rst
   CreatingPSModel.rst
   PSModelVis.rst
-  DatatableCreation.rst
   
