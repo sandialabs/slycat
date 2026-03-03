@@ -89,7 +89,7 @@ Here is a CSV file example that illustrates numerical values, string values, mis
 
 .. code-block:: bash
 
-  index, value1, value2, value3, rank, [XYpair X]x_coord, [XYpair Y]y_coord, media1, media2
+  index, value1, value2, value3, rank, [XYpair X]x_coord X, [XYpair Y]y_coord Y, media1, media2
   0, 2.7, 3, 0.056, low,  0.72, 0.31, file://hostname/tmp/sim1/stress.jpg, file://hostname/tmp/sim1/veloc.jpg
   1, 2.6, 3, 0.103, low,  0.77, 0.52, file://hostname/tmp/sim2/stress.jpg, file://hostname/tmp/sim2/veloc.jpg
   2, 2.5, 4, 0.087,  “”,  0.44, 0.35, file://hostname/tmp/sim3/stress.jpg, file://hostname/tmp/sim3/veloc.jpg
