@@ -39,13 +39,13 @@ Here is a CSV example for a Linux remote system that includes one media column:
   1, 2.6, 5, file://hostname/tmp/sim2/stress.jpg
   2, 2.5, 2, file://hostname/tmp/sim3/stress.jpg
 
-To include a reference to a media file on a Windows file system, use this format:
+Media that is stored on a Windows file system must be referenced with an "smb" indentifier to denote the Samba protocol. To include a reference to a media file on a Windows file system, use this format:
 
 .. code-block:: bash
 
   smb://somehost.example.com/drive/path/to/image.jpg
 
-Here is a CSV example for a remote Windows file system, that includes one media column:
+Here is a CSV example for a remote Windows file system (Samba protocol), that includes one media column:
 
 .. code-block:: bash
 
