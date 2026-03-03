@@ -545,3 +545,17 @@ label.bottom-margin {
 .text-pre-line {
   white-space: pre-line;
 }
+
+// Adjusting cursors for layout resizers and togglers
+.ui-layout-resizer-west-open,
+.ui-layout-resizer-east-open,
+.ui-layout-toggler-west-open,
+.ui-layout-toggler-east-open {
+  cursor: ew-resize !important;
+}
+.ui-layout-resizer-north-open,
+.ui-layout-resizer-south-open,
+.ui-layout-toggler-north-open,
+.ui-layout-toggler-south-open {
+  cursor: ns-resize !important;
+}

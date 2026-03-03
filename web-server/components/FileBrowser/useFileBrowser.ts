@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { FileMetaData, FileBrowserConfig } from "./FileBrowserTypes";
+import { savePath as storageSavePath, loadPath as storageLoadPath } from "utils/pathStorage";
 
 /**
  * Return type for useFileBrowser hook
@@ -45,8 +46,6 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
   const [browserUpdating, setBrowserUpdating] = useState(false);
   const [selected, setSelected] = useState(-1);
 
-  const persistenceId = config.persistenceId ?? "";
-
   /**
    * Resets error states
    */
@@ -76,13 +75,13 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
       setPathInput(newPath);
       setBrowserUpdating(false);
 
-      // Store path in localStorage
-      localStorage.setItem(
-        "slycat-remote-browser-path-" + persistenceId + config.hostname,
-        newPath,
-      );
+      // Store path in localstorage with discrimination based on browser type and protocol (for remote)
+      if (config.type === "remote") {
+        const protocol = config.protocol ?? "ssh";
+        storageSavePath({ kind: "remote", hostname: config.hostname, protocol }, newPath);
+      }
     },
-    [persistenceId, config.hostname],
+    [config.type, config.hostname, config.protocol],
   );
 
   /**
@@ -163,15 +162,22 @@ export function useFileBrowser(config: FileBrowserConfig): UseFileBrowserReturn 
    * Loads stored path from localStorage
    */
   const loadStoredPath = useCallback((): string | null => {
-    return localStorage.getItem("slycat-remote-browser-path-" + persistenceId + config.hostname);
-  }, [persistenceId, config.hostname]);
+    if (config.type === "remote") {
+      const protocol = config.protocol ?? "ssh";
+      return storageLoadPath({ kind: "remote", hostname: config.hostname, protocol });
+    }
+    return null;
+  }, [config.type, config.hostname, config.protocol]);
 
   /**
    * Determines if current path is at root
    */
-  const isAtRoot = useCallback((isHDF5 = false): boolean => {
-    return isHDF5 ? path === "//" : path === "/";
-  }, [path]);
+  const isAtRoot = useCallback(
+    (isHDF5 = false): boolean => {
+      return isHDF5 ? path === "//" : path === "/";
+    },
+    [path],
+  );
 
   return {
     // State
