@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loading Data and Progress Indicators &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -64,9 +67,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -103,15 +111,16 @@
            <div itemprop="articleBody">
              
   <section id="loading-data-and-progress-indicators">
-<span id="loadingdataandprogressindicators"></span><h1>Loading Data and Progress Indicators<a class="headerlink" href="#loading-data-and-progress-indicators" title="Permalink to this heading"></a></h1>
+<span id="loadingdataandprogressindicators"></span><h1>Loading Data and Progress Indicators<a class="headerlink" href="#loading-data-and-progress-indicators" title="Link to this heading"></a></h1>
 <p>At this point, the wizard will return to the Locate Data tab where you selected the input files and provide a progress
 indicator for each of the uploads.  For instance, if you selected a single DAC Generic Zip file, the progress indicator
 would look like the one shown in Figure 12.  At this point you must wait for the selected file(s) to upload before closing
 the browser.  If you close the browser, the file upload will be terminated and no data will be uploaded to the model.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../../_images/data-loading.png"><img alt="../../_images/data-loading.png" src="../../_images/data-loading.png" style="width: 634.4000000000001px; height: 513.6px;" /></a>
+<a class="reference internal image-reference" href="../../_images/data-loading.png"><img alt="../../_images/data-loading.png" height="514" src="../../_images/data-loading.png" width="634" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 12: Uploading data in DAC model creation wizard.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 12: Uploading data in DAC model creation wizard.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Once the data is uploaded, the wizard provides a different progress indicator, as shown in Figure 13, to reflect the
@@ -124,7 +133,7 @@ present the finished model.</p>
 <figure class="align-center" id="id2">
 <img alt="../../_images/upload-messages.png" src="../../_images/upload-messages.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 13: Data processing and model creation progress indicator.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 13: Data processing and model creation progress indicator.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>During the processing phase, DAC will parse files and upload data to the model.  For the DAC Generic Format, distance
@@ -139,7 +148,7 @@ zero and one, with a value of zero excluding a variable, and a value of one prov
 <figure class="align-center" id="id3">
 <img alt="../../_images/weather-initial-mac.png" src="../../_images/weather-initial-mac.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 14: Initial DAC model configuration for the Weather Data.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 14: Initial DAC model configuration for the Weather Data.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Once processing is complete, Slycat™ will take you to a rendering of the new DAC model.  The initial view of the Weather
@@ -157,9 +166,9 @@ model is shown in Figure 14.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

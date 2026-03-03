@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Canonical Correlation Analysis Model &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Canonical Correlation Analysis Model</a><ul>
@@ -52,9 +55,14 @@
 <li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -89,7 +97,7 @@
            <div itemprop="articleBody">
              
   <section id="canonical-correlation-analysis-model">
-<h1>Canonical Correlation Analysis Model<a class="headerlink" href="#canonical-correlation-analysis-model" title="Permalink to this heading"></a></h1>
+<h1>Canonical Correlation Analysis Model<a class="headerlink" href="#canonical-correlation-analysis-model" title="Link to this heading"></a></h1>
 <p>Canonical Correlation Analysis (CCA) was first proposed by Hotelling in 1936 <a class="footnote-reference brackets" href="#id5" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.  Because CCA finds correlations between
 two multivariate data sets, CCA data structures are a good fit for exploring relationships between the input and output
 variables found in ensemble data sets (such as those generated for sensitivity studies, uncertainty quantification, model
@@ -127,9 +135,10 @@ variables.  The structure coefficients are given by the correlations between the
 (e.g. corr (<strong>a</strong><sup>T</sup><em>X</em>, <em>X</em>) and corr (<strong>a</strong><sup>T</sup><em>Y</em>, <em>Y</em>)).  These are calculated using Pearson’s correlation
 between each column of <em>X</em> or <em>Y</em> and the corresponding canonical variable.</p>
 <figure class="align-center" id="id9">
-<a class="reference internal image-reference" href="../_images/Figure23.png"><img alt="../_images/Figure23.png" src="../_images/Figure23.png" style="width: 1131.0px; height: 672.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure23.png"><img alt="../_images/Figure23.png" height="672" src="../_images/Figure23.png" width="1131" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Canonical components are shown in the Correlation View in the upper left.</strong></span><a class="headerlink" href="#id9" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Canonical components are shown in the Correlation View in the upper left.</strong></span><a class="headerlink" href="#id9" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <div class="toctree-wrapper compound">
@@ -162,19 +171,19 @@ between each column of <em>X</em> or <em>Y</em> and the corresponding canonical 
 </div>
 <p class="rubric">Footnotes</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id5" role="note">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>Hotelling, H., Relations Between Two Sets of Variates.  <em>Biometrika</em>, 28, 321-377 (1936).</p>
 </aside>
-<aside class="footnote brackets" id="id6" role="note">
+<aside class="footnote brackets" id="id6" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
 <p>Adams, B.M., Ebeida, M.S., Eldred, M.S., Jakeman, J.D., Swiler, L.P., Bohnhoff, W.J., Dalbey,K.R., Eddy, J.P., Hu, K.T., Vigil, D.M., Bauman, L.E., and Hough, P.D., <em>Dakota, a Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.3.1 User’s Manual</em>. Tech. Rep. SAND2010-2183, Sandia National Laboratories (2013).</p>
 </aside>
-<aside class="footnote brackets" id="id7" role="note">
+<aside class="footnote brackets" id="id7" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
 <p>Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., <em>ParaView Catalyst: Enabling In Situ Data Analysis and Visualization</em>, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).</p>
 </aside>
-<aside class="footnote brackets" id="id8" role="note">
+<aside class="footnote brackets" id="id8" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
 <p>Krzanowski, W. J., <em>Principles of Multivariate Analysis.  A User’s Perspective</em>.  Oxford University Press, London (1988).</p>
 </aside>
@@ -192,9 +201,9 @@ between each column of <em>X</em> or <em>Y</em> and the corresponding canonical 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

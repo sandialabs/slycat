@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scatterplot View &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,26 +42,33 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.table.html">Source Data, CSV Format Data Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="media.support.html">Supported Media Formats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="CreatingPSModel.html">Creating a Parameter Space Model</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#">Scatterplot View</a></li>
 <li class="toctree-l4"><a class="reference internal" href="PSVariableTable.html">Variable Table</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="DatatableCreation.html">Data Table Creation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -96,15 +105,16 @@
            <div itemprop="articleBody">
              
   <section id="scatterplot-view">
-<h1>Scatterplot View<a class="headerlink" href="#scatterplot-view" title="Permalink to this heading"></a></h1>
+<h1>Scatterplot View<a class="headerlink" href="#scatterplot-view" title="Link to this heading"></a></h1>
 <p>The <em>Scatterplot View</em> represents each ensemble member as a point in a two-dimensional plot, where the variables that are used
 for the x-axis, y-axis, and point color-coding are interactively selected.  As with the CCA Model, when individual points or
 groups of points are selected within the plot (see Selecting Points), corresponding rows in the <em>Variable Table</em> are
 simultaneously selected, and vice versa.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../_images/Figure27B.PNG"><img alt="../_images/Figure27B.PNG" src="../_images/Figure27B.PNG" style="width: 1202.0px; height: 703.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure27B.PNG"><img alt="../_images/Figure27B.PNG" height="703" src="../_images/Figure27B.PNG" width="1202" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 27: Parameter Space Model visualization of the Cars data set.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 27: Parameter Space Model visualization of the Cars data set.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>However, the Parameter Space Model’s <em>Scatterplot View</em> possesses additional capabilities that the CCA Model’s <em>Simulation View</em>
@@ -113,9 +123,10 @@ point with the mouse can be used to retrieve media items from remote HPC systems
 through a <em>Media Set</em> dropdown list, which only appears in the controls (as shown in Figure 28) when media columns are present in
 the table.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../_images/Figure28.png"><img alt="../_images/Figure28.png" src="../_images/Figure28.png" style="width: 732.0px; height: 26.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure28.png"><img alt="../_images/Figure28.png" height="26" src="../_images/Figure28.png" width="732" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 28: Full set of Parameter Space model-specific controls.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 28: Full set of Parameter Space model-specific controls.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Another key feature in the <em>Scatterplot View</em> is the ability to reduce the number of visible points through filtering or point
@@ -133,6 +144,7 @@ is row 133, which is highlighted in both the scatterplot (enlarged point) and th
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Axes.html">Axis Controls</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Axes.XYpairs.html">XY Pair Control</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PointColor.html">Point Color</a></li>
 <li class="toctree-l1"><a class="reference internal" href="MediaSet.html">Media Set</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="MediaSet.html#video-source-files">Video Source Files</a></li>
@@ -159,9 +171,9 @@ is row 133, which is highlighted in both the scatterplot (enlarged point) and th
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

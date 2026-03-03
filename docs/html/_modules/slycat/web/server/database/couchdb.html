@@ -1,18 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.web.server.database.couchdb &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-        <script src="../../../../../_static/doctools.js"></script>
-        <script src="../../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" /> 
@@ -37,8 +39,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -84,58 +90,86 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="kn">import</span> <span class="nn">cherrypy</span>
-<span class="kn">import</span> <span class="nn">couchdb.client</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cherrypy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">couchdb.client</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 
 
 <span class="n">db_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 <span class="n">session_locks</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="get_session_lock"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.get_session_lock">[docs]</a><span class="k">def</span> <span class="nf">get_session_lock</span><span class="p">(</span><span class="n">sid</span><span class="p">):</span>
+<div class="viewcode-block" id="get_session_lock">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.get_session_lock">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_session_lock</span><span class="p">(</span><span class="n">sid</span><span class="p">):</span>
   <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">session_locks</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">session_locks</span><span class="p">[</span><span class="n">sid</span><span class="p">]</span>
   <span class="n">session_locks</span><span class="p">[</span><span class="n">sid</span><span class="p">]</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
   <span class="k">return</span> <span class="n">session_locks</span><span class="p">[</span><span class="n">sid</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Database"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database">[docs]</a><span class="k">class</span> <span class="nc">Database</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Database">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Database</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions.&quot;&quot;&quot;</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="o">=</span> <span class="n">database</span>
 
-  <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Database.changes"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.changes">[docs]</a>  <span class="k">def</span> <span class="nf">changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+<div class="viewcode-block" id="Database.changes">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.changes">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">changes</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Database.delete"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.delete">[docs]</a>  <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.delete">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.delete">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Database.get_attachment"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.get_attachment">[docs]</a>  <span class="k">def</span> <span class="nf">get_attachment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.get_attachment">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.get_attachment">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_attachment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">get_attachment</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Database.put_attachment"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.put_attachment">[docs]</a>  <span class="k">def</span> <span class="nf">put_attachment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.put_attachment">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.put_attachment">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_attachment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">put_attachment</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Database.save"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.save">[docs]</a>  <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.save">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.save">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
       <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">couchdb</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">ServerError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
       <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.database.couchdb.py save&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
       <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Database.view"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.view">[docs]</a>  <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.view">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.view">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Database.scan"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.scan">[docs]</a>  <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.scan">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.scan">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">include_docs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
       <span class="n">document</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;doc&quot;</span><span class="p">]</span>
       <span class="k">yield</span> <span class="n">document</span></div>
 
-<div class="viewcode-block" id="Database.get"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.get">[docs]</a>  <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.get">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.get">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
       <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span>
     <span class="k">except</span> <span class="n">couchdb</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">ResourceNotFound</span><span class="p">:</span>
@@ -145,19 +179,26 @@
       <span class="k">raise</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">document</span></div>
 
-<div class="viewcode-block" id="Database.write_file"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.write_file">[docs]</a>  <span class="k">def</span> <span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">content_type</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Database.write_file">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.Database.write_file">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">document</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">content_type</span><span class="p">):</span>
     <span class="n">fid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">put_attachment</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">fid</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fid</span></div>
 
-  <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    adding this so we can use the cache decorator</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;&lt;slycat.web.server.database.couchdb.Database instance&gt;&quot;</span></div>
 
-<div class="viewcode-block" id="connect"><a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.connect">[docs]</a><span class="k">def</span> <span class="nf">connect</span><span class="p">():</span>
+
+<div class="viewcode-block" id="connect">
+<a class="viewcode-back" href="../../../../../slycat-packages/slycat.web.server.database.couchdb.html#slycat.web.server.database.couchdb.connect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">():</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Connect to a CouchDB database.</span>
 
 <span class="sd">  Returns</span>
@@ -167,6 +208,7 @@
   <span class="n">server</span> <span class="o">=</span> <span class="n">couchdb</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">apps</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;slycat&quot;</span><span class="p">][</span><span class="s2">&quot;couchdb-host&quot;</span><span class="p">])</span>
   <span class="n">database</span> <span class="o">=</span> <span class="n">Database</span><span class="p">(</span><span class="n">server</span><span class="p">[</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">apps</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;slycat&quot;</span><span class="p">][</span><span class="s2">&quot;couchdb-database&quot;</span><span class="p">]])</span>
   <span class="k">return</span> <span class="n">database</span></div>
+
 </pre></div>
 
            </div>
@@ -176,9 +218,9 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

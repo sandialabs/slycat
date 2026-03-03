@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.web.client &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,8 +42,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -151,10 +157,10 @@
            <div itemprop="articleBody">
              
   <section id="module-slycat.web.client">
-<span id="slycat-web-client"></span><h1>slycat.web.client<a class="headerlink" href="#module-slycat.web.client" title="Permalink to this heading"></a></h1>
+<span id="slycat-web-client"></span><h1>slycat.web.client<a class="headerlink" href="#module-slycat.web.client" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="slycat.web.client.ArgumentParser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">ArgumentParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#ArgumentParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.ArgumentParser" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">ArgumentParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#ArgumentParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.ArgumentParser" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ArgumentParser</span></code></p>
 <p>Return an instance of argparse.ArgumentParser, pre-configured with arguments to
 connect to a Slycat server.</p>
@@ -176,7 +182,7 @@ connect to a Slycat server.</p>
 </div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.ArgumentParser.parse_args">
-<span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#ArgumentParser.parse_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.ArgumentParser.parse_args" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#ArgumentParser.parse_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.ArgumentParser.parse_args" title="Link to this definition"></a></dt>
 <dd><p>Overrides argparse parse_args command.  Parses slycat.web.client arguments
 in addition to any arguments added by users of the class.  Can also be used to
 parse a list of arguments passed from a Python function, such as</p>
@@ -190,7 +196,7 @@ parse a list of arguments passed from a Python function, such as</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="slycat.web.client.Connection">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kerberos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_slice_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kerberos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_slice_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Provides a class to facilitate communication with the Slycat web server.
 To use, open a connection and submit requests.  For example:</p>
@@ -202,7 +208,7 @@ To use, open a connection and submit requests.  For example:</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.delete_model">
-<span class="sig-name descname"><span class="pre">delete_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_model" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">delete_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_model" title="Link to this definition"></a></dt>
 <dd><p>Delete an existing model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -217,7 +223,7 @@ To use, open a connection and submit requests.  For example:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.delete_project">
-<span class="sig-name descname"><span class="pre">delete_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_project" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">delete_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_project" title="Link to this definition"></a></dt>
 <dd><p>Delete an existing project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -232,7 +238,7 @@ To use, open a connection and submit requests.  For example:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.delete_project_cache_object">
-<span class="sig-name descname"><span class="pre">delete_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_project_cache_object" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">delete_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_project_cache_object" title="Link to this definition"></a></dt>
 <dd><p>Delete an existing project cache object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -250,7 +256,7 @@ To use, open a connection and submit requests.  For example:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.delete_reference">
-<span class="sig-name descname"><span class="pre">delete_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_reference" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">delete_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_reference" title="Link to this definition"></a></dt>
 <dd><p>Delete an existing reference.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -265,7 +271,7 @@ To use, open a connection and submit requests.  For example:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.delete_remote">
-<span class="sig-name descname"><span class="pre">delete_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_remote" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">delete_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_remote" title="Link to this definition"></a></dt>
 <dd><p>Delete an existing remote session.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -280,7 +286,7 @@ To use, open a connection and submit requests.  For example:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.delete_upload">
-<span class="sig-name descname"><span class="pre">delete_upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_upload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_upload" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">delete_upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.delete_upload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.delete_upload" title="Link to this definition"></a></dt>
 <dd><p>Delete uploaded files from Slycat server</p>
 <p>Delete an upload session used to upload files for storage as model artifacts.
 This function must be called once the client no longer needs the session,
@@ -315,7 +321,7 @@ parsed by Slycat.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.find_or_create_project">
-<span class="sig-name descname"><span class="pre">find_or_create_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.find_or_create_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.find_or_create_project" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">find_or_create_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.find_or_create_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.find_or_create_project" title="Link to this definition"></a></dt>
 <dd><p>Return a project identified by name, or newly created.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -342,7 +348,7 @@ parsed by Slycat.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.find_project">
-<span class="sig-name descname"><span class="pre">find_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.find_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.find_project" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">find_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.find_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.find_project" title="Link to this definition"></a></dt>
 <dd><p>Return a project identified by name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -366,7 +372,7 @@ parsed by Slycat.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_bookmark">
-<span class="sig-name descname"><span class="pre">get_bookmark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_bookmark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_bookmark" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_bookmark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_bookmark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_bookmark" title="Link to this definition"></a></dt>
 <dd><p>Retrieve an existing bookmark.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -388,7 +394,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_markings">
-<span class="sig-name descname"><span class="pre">get_configuration_markings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_markings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_markings" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_configuration_markings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_markings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_markings" title="Link to this definition"></a></dt>
 <dd><p>Retrieve marking information from the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -406,7 +412,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_parsers">
-<span class="sig-name descname"><span class="pre">get_configuration_parsers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_parsers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_parsers" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_configuration_parsers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_parsers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_parsers" title="Link to this definition"></a></dt>
 <dd><p>Retrieve parser plugin information from the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -424,7 +430,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_remote_hosts">
-<span class="sig-name descname"><span class="pre">get_configuration_remote_hosts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_remote_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_remote_hosts" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_configuration_remote_hosts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_remote_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_remote_hosts" title="Link to this definition"></a></dt>
 <dd><p>Retrieve remote host information from the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -442,7 +448,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_support_email">
-<span class="sig-name descname"><span class="pre">get_configuration_support_email</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_support_email"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_support_email" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_configuration_support_email</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_support_email"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_support_email" title="Link to this definition"></a></dt>
 <dd><p>Retrieve support email information from the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -460,7 +466,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_version">
-<span class="sig-name descname"><span class="pre">get_configuration_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_version" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_configuration_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_version" title="Link to this definition"></a></dt>
 <dd><p>Retrieve version information from the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -478,7 +484,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_configuration_wizards">
-<span class="sig-name descname"><span class="pre">get_configuration_wizards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_wizards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_wizards" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_configuration_wizards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_configuration_wizards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_configuration_wizards" title="Link to this definition"></a></dt>
 <dd><p>Retrieve wizard plugin information from the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -496,7 +502,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_model">
-<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model" title="Link to this definition"></a></dt>
 <dd><p>Retrieve an existing model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -518,7 +524,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_model_arrayset_metadata">
-<span class="sig-name descname"><span class="pre">get_model_arrayset_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_arrayset_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_arrayset_metadata" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_model_arrayset_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_arrayset_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_arrayset_metadata" title="Link to this definition"></a></dt>
 <dd><p>Retrieve metadata describing an existing model arrayset artifact.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -546,7 +552,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_model_file">
-<span class="sig-name descname"><span class="pre">get_model_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_file" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_model_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_file" title="Link to this definition"></a></dt>
 <dd><p>Retrieves the file corresponding to a given model and artifacts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -570,7 +576,7 @@ JSON-compatible data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_model_parameter">
-<span class="sig-name descname"><span class="pre">get_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_parameter" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_model_parameter" title="Link to this definition"></a></dt>
 <dd><p>Retrieve a model parameter artifact.</p>
 <p>Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
 as part of its database record, so they should be limited in size (larger data should be stored using
@@ -597,7 +603,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_project">
-<span class="sig-name descname"><span class="pre">get_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project" title="Link to this definition"></a></dt>
 <dd><p>Retrieve an existing project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -618,7 +624,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_project_cache_object">
-<span class="sig-name descname"><span class="pre">get_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_cache_object" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_project_cache_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_cache_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_cache_object" title="Link to this definition"></a></dt>
 <dd><p>Retrieve an object from a project cache.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -642,7 +648,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_project_models">
-<span class="sig-name descname"><span class="pre">get_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_models" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_models" title="Link to this definition"></a></dt>
 <dd><p>Retrieve every model in a oroject.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -663,7 +669,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_project_references">
-<span class="sig-name descname"><span class="pre">get_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_references" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_project_references" title="Link to this definition"></a></dt>
 <dd><p>Returns every reference in a project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -684,7 +690,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_projects">
-<span class="sig-name descname"><span class="pre">get_projects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_projects" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_projects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_projects" title="Link to this definition"></a></dt>
 <dd><p>Retrieve all projects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -702,7 +708,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_remote_file">
-<span class="sig-name descname"><span class="pre">get_remote_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_remote_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_remote_file" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_remote_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_remote_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_remote_file" title="Link to this definition"></a></dt>
 <dd><p>Retrieve a file using a remote session.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -729,7 +735,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_remote_image">
-<span class="sig-name descname"><span class="pre">get_remote_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_remote_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_remote_image" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_remote_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_remote_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_remote_image" title="Link to this definition"></a></dt>
 <dd><p>Retrieve an image using a remote session.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -756,7 +762,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.get_user">
-<span class="sig-name descname"><span class="pre">get_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_user" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_user</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.get_user"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.get_user" title="Link to this definition"></a></dt>
 <dd><p>Retrieve directory information about an existing user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -777,7 +783,7 @@ arraysets or files).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.join_model">
-<span class="sig-name descname"><span class="pre">join_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.join_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.join_model" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">join_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.join_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.join_model" title="Link to this definition"></a></dt>
 <dd><p>Wait for a model to complete before returning.</p>
 <p>A Slycat model goes through several distinct phases over its lifetime:</p>
 <ol class="arabic simple">
@@ -806,7 +812,7 @@ join_model().</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_events">
-<span class="sig-name descname"><span class="pre">post_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_events" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_events" title="Link to this definition"></a></dt>
 <dd><p>Post event to be logged on Slycat server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -824,7 +830,7 @@ join_model().</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_model_files">
-<span class="sig-name descname"><span class="pre">post_model_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_model_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_model_files" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_model_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_model_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_model_files" title="Link to this definition"></a></dt>
 <dd><p>Stores model file artifacts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -846,7 +852,7 @@ join_model().</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_model_finish">
-<span class="sig-name descname"><span class="pre">post_model_finish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_model_finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_model_finish" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_model_finish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_model_finish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_model_finish" title="Link to this definition"></a></dt>
 <dd><p>Notify the server that a model is fully initialized.</p>
 <p>When called, the server will perform one-time computation
 for the given model type.</p>
@@ -863,7 +869,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_project_bookmarks">
-<span class="sig-name descname"><span class="pre">post_project_bookmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bookmark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_bookmarks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_bookmarks" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_project_bookmarks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bookmark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_bookmarks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_bookmarks" title="Link to this definition"></a></dt>
 <dd><p>Store a bookmark.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -887,7 +893,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_project_models">
-<span class="sig-name descname"><span class="pre">post_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marking</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_models" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_project_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marking</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_models" title="Link to this definition"></a></dt>
 <dd><p>Creates a new model, returning the model ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -914,7 +920,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_project_references">
-<span class="sig-name descname"><span class="pre">post_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_references" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_project_references</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_project_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_project_references" title="Link to this definition"></a></dt>
 <dd><p>Store a project reference.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -937,7 +943,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_projects">
-<span class="sig-name descname"><span class="pre">post_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_projects" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_projects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_projects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_projects" title="Link to this definition"></a></dt>
 <dd><p>Creates a new project, returning the project ID.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -961,7 +967,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_remote_browse">
-<span class="sig-name descname"><span class="pre">post_remote_browse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_allow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_allow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_remote_browse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_remote_browse" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_remote_browse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_allow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_allow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_remote_browse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_remote_browse" title="Link to this definition"></a></dt>
 <dd><p>Uses an existing remote session to retrieve remote filesystem information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -989,7 +995,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_remotes">
-<span class="sig-name descname"><span class="pre">post_remotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_remotes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_remotes" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_remotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_remotes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_remotes" title="Link to this definition"></a></dt>
 <dd><p>Creates a new remote connection from the Slycat server to another host.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1015,7 +1021,7 @@ for the given model type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_upload_finished">
-<span class="sig-name descname"><span class="pre">post_upload_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_parts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_upload_finished"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_upload_finished" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_upload_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_parts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_upload_finished"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_upload_finished" title="Link to this definition"></a></dt>
 <dd><p>Notify Slycat server that file upload is finished</p>
 <p>Notify the server that all files have been uploaded for the given upload
 session, and processing can begin. The request must include the uploaded
@@ -1039,7 +1045,7 @@ with each entry number of slices for that file.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.post_uploads">
-<span class="sig-name descname"><span class="pre">post_uploads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_uploads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_uploads" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_uploads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.post_uploads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.post_uploads" title="Link to this definition"></a></dt>
 <dd><p>Create Slycat file upload session.</p>
 <p>Create an upload session used to upload files for storage as model artifacts.
 Once an upload session has been created, use upload_file put_upload_file_part
@@ -1068,7 +1074,7 @@ to upload files directly from the client to the server.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_model">
-<span class="sig-name descname"><span class="pre">put_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model" title="Link to this definition"></a></dt>
 <dd><p>Modify a Slycat model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1096,7 +1102,7 @@ to upload files directly from the client to the server.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_arrayset">
-<span class="sig-name descname"><span class="pre">put_model_arrayset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_model_arrayset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset" title="Link to this definition"></a></dt>
 <dd><p>Starts a new model array set artifact, ready to receive data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1115,7 +1121,7 @@ to upload files directly from the client to the server.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_arrayset_array">
-<span class="sig-name descname"><span class="pre">put_model_arrayset_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset_array" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_model_arrayset_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset_array" title="Link to this definition"></a></dt>
 <dd><p>Starts a new array set array, ready to receive data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1136,7 +1142,7 @@ to upload files directly from the client to the server.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_arrayset_data">
-<span class="sig-name descname"><span class="pre">put_model_arrayset_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperchunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset_data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_model_arrayset_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyperchunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_arrayset_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_arrayset_data" title="Link to this definition"></a></dt>
 <dd><p>Write data to an arrayset artifact on the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1158,7 +1164,7 @@ data chunks must match the number implied by the <cite>hyperchunks</cite> parame
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_inputs">
-<span class="sig-name descname"><span class="pre">put_model_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_inputs" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_model_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_inputs" title="Link to this definition"></a></dt>
 <dd><p>Copies the input artifacts from one model to another. Both models
 must be part of the same project. By default, array artifacts are copied
 by reference instead of value for efficiency.</p>
@@ -1178,7 +1184,7 @@ by reference instead of value for efficiency.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_model_parameter">
-<span class="sig-name descname"><span class="pre">put_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_parameter" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_model_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_model_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_model_parameter" title="Link to this definition"></a></dt>
 <dd><p>Store a model parameter artifact.</p>
 <p>Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model
 as part of its database record, so they should be limited in size (larger data should be stored using
@@ -1204,7 +1210,7 @@ record as <cite>model[“artifact:foo”]</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_project">
-<span class="sig-name descname"><span class="pre">put_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_project" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_project" title="Link to this definition"></a></dt>
 <dd><p>Modifies a project.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1230,7 +1236,7 @@ record as <cite>model[“artifact:foo”]</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.put_upload_file_part">
-<span class="sig-name descname"><span class="pre">put_upload_file_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_upload_file_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_upload_file_part" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">put_upload_file_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.put_upload_file_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.put_upload_file_part" title="Link to this definition"></a></dt>
 <dd><p>Upload a file or part of a file to Slycat.</p>
 <p>Upload a file (or part of a file) as part of an upload session created with
 post_uploads.</p>
@@ -1254,7 +1260,7 @@ for part M of file N. To upload a file from the client, specify the “file” p
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.request">
-<span class="sig-name descname"><span class="pre">request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.request" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.request"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.request" title="Link to this definition"></a></dt>
 <dd><p>Basic request to Slycat server using open session.  To make a request
 provide the HTTP method and path, and this method will return the body of
 the response.  Additional keyword arguments must be compatible with the
@@ -1277,7 +1283,7 @@ Python requests library.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.update_model">
-<span class="sig-name descname"><span class="pre">update_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.update_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.update_model" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">update_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.update_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.update_model" title="Link to this definition"></a></dt>
 <dd><p>Update model state.</p>
 <p>This function provides a more convenient alternative to <a class="reference internal" href="#slycat.web.client.Connection.put_model" title="slycat.web.client.Connection.put_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">put_model()</span></code></a>.</p>
 <div class="admonition seealso">
@@ -1288,7 +1294,7 @@ Python requests library.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.client.Connection.upload_files">
-<span class="sig-name descname"><span class="pre">upload_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser_parms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.upload_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.upload_files" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">upload_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parser_parms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#Connection.upload_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.Connection.upload_files" title="Link to this definition"></a></dt>
 <dd><p>Upload a list of files for a given model to the Slycat server.
 The files will be parsed by specified parser.  This is not a direct call
 to the API, but rather a convenience call to load/parse a list of files.</p>
@@ -1312,7 +1318,7 @@ be logged to the log file).</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="slycat.web.client.connect">
-<span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.connect" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">slycat.web.client.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/client.html#connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.client.connect" title="Link to this definition"></a></dt>
 <dd><p>Factory function for client connections that takes an option parser as input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1343,9 +1349,9 @@ be logged to the log file).</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

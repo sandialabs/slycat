@@ -1,18 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.web.client &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -37,8 +39,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -78,57 +84,59 @@
 
 <span class="c1"># This module supports interacting with the Slycat server from Python and the command line.</span>
 
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;4.5.2&quot;</span>
+
 <span class="c1"># standard libraries</span>
 
 <span class="c1"># parse arguments</span>
-<span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
 
 <span class="c1"># authenticate to server</span>
-<span class="kn">import</span> <span class="nn">getpass</span>
-<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
 <span class="c1"># encode/decode functions for string data (for http communication)</span>
-<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
 
 <span class="c1"># miscellaneous utilities</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
 <span class="c1"># stream to server</span>
-<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 
 <span class="c1"># logging</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="c1"># url/IP</span>
-<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
-<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
 
 <span class="c1"># 3rd party libraries</span>
 
 <span class="c1"># http requests &amp; kerberos</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">requests.exceptions</span> <span class="k">as</span> <span class="nn">exceptions</span>
-<span class="kn">from</span> <span class="nn">requests_kerberos</span> <span class="kn">import</span> <span class="n">HTTPKerberosAuth</span><span class="p">,</span> <span class="n">OPTIONAL</span>
-<span class="kn">from</span> <span class="nn">requests_kerberos.exceptions</span> <span class="kn">import</span> <span class="n">KerberosExchangeError</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests.exceptions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">exceptions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests_kerberos</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPKerberosAuth</span><span class="p">,</span> <span class="n">OPTIONAL</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests_kerberos.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">KerberosExchangeError</span>
 
 <span class="c1"># turn off warning for insecure connections</span>
-<span class="kn">from</span> <span class="nn">requests.packages.urllib3.exceptions</span> <span class="kn">import</span> <span class="n">InsecureRequestWarning</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests.packages.urllib3.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InsecureRequestWarning</span>
 <span class="n">requests</span><span class="o">.</span><span class="n">packages</span><span class="o">.</span><span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">(</span><span class="n">InsecureRequestWarning</span><span class="p">)</span>
 
 <span class="c1"># handle arrays for Slycat requests</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
 
 <span class="c1"># web server interaction</span>
-<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cherrypy</span>
 
 <span class="c1"># local libraries</span>
 
 <span class="c1"># handle arrays for Slycat requests</span>
-<span class="kn">import</span> <span class="nn">slycat.darray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">slycat.darray</span>
 
 <span class="c1"># set up logging</span>
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;slycat.web.client&quot;</span><span class="p">)</span>
@@ -144,7 +152,7 @@
 <span class="n">HOST_DEFAULT</span> <span class="o">=</span> <span class="s2">&quot;https://localhost&quot;</span>
 
 <span class="c1"># private function (denoted by _name)</span>
-<span class="k">def</span> <span class="nf">_require_array_ranges</span><span class="p">(</span><span class="n">ranges</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_require_array_ranges</span><span class="p">(</span><span class="n">ranges</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Validates a range object (hyperslice) for transmission to the server.&quot;&quot;&quot;</span>
 
   <span class="k">if</span> <span class="n">ranges</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -161,7 +169,7 @@
 
 <span class="c1"># print iterations progress bar -- from stack overflow</span>
 <span class="c1"># https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console</span>
-<span class="k">def</span> <span class="nf">_print_progress_bar</span> <span class="p">(</span><span class="n">iteration</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">_print_progress_bar</span> <span class="p">(</span><span class="n">iteration</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> 
   <span class="n">decimals</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">fill</span> <span class="o">=</span> <span class="s1">&#39;█&#39;</span><span class="p">,</span> <span class="n">printEnd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">):</span>
     
     <span class="c1"># Call in a loop to create terminal progress bar</span>
@@ -184,7 +192,9 @@
     <span class="k">if</span> <span class="n">iteration</span> <span class="o">==</span> <span class="n">total</span><span class="p">:</span> 
         <span class="nb">print</span><span class="p">()</span>
 
-<div class="viewcode-block" id="ArgumentParser"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.ArgumentParser">[docs]</a><span class="k">class</span> <span class="nc">ArgumentParser</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
+<div class="viewcode-block" id="ArgumentParser">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.ArgumentParser">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArgumentParser</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Return an instance of argparse.ArgumentParser, pre-configured with arguments to</span>
 <span class="sd">  connect to a Slycat server.</span>
 
@@ -203,7 +213,7 @@
 <span class="sd">    * **-\\-log-level** -- log detail to display.</span>
 <span class="sd">  &quot;&quot;&quot;</span>
 
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
 
     <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span>
 
@@ -238,7 +248,9 @@
       <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="s2">&quot;critical&quot;</span><span class="p">],</span> 
       <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Log level.  Default: &#39;</span><span class="si">%(default)s</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ArgumentParser.parse_args"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.ArgumentParser.parse_args">[docs]</a>  <span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_input</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ArgumentParser.parse_args">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.ArgumentParser.parse_args">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_input</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Overrides argparse parse_args command.  Parses slycat.web.client arguments</span>
 <span class="sd">    in addition to any arguments added by users of the class.  Can also be used to</span>
 <span class="sd">    parse a list of arguments passed from a Python function, such as</span>
@@ -265,9 +277,13 @@
     <span class="k">elif</span> <span class="n">arguments</span><span class="o">.</span><span class="n">log_level</span> <span class="o">==</span> <span class="s2">&quot;critical&quot;</span><span class="p">:</span>
       <span class="n">log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">arguments</span></div></div>
+    <span class="k">return</span> <span class="n">arguments</span></div>
+</div>
 
-<div class="viewcode-block" id="Connection"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection">[docs]</a><span class="k">class</span> <span class="nc">Connection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Connection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Provides a class to facilitate communication with the Slycat web server.  </span>
 <span class="sd">  To use, open a connection and submit requests.  For example:</span>
 
@@ -277,7 +293,7 @@
 <span class="sd">  &gt;&gt;&gt; projects = connection.get_projects()</span>
 <span class="sd">  &quot;&quot;&quot;</span>
 
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">HOST_DEFAULT</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kerberos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">HOST_DEFAULT</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kerberos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                <span class="n">file_slice_size</span><span class="o">=</span><span class="n">FILE_SLICE_DEFAULT</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
     
     <span class="c1"># proxies default to &quot;&quot;</span>
@@ -368,7 +384,9 @@
         <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s1">&#39;bad username or password:</span><span class="si">%s</span><span class="s1">, for username:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> 
           <span class="p">(</span><span class="n">user_name</span><span class="p">,</span> <span class="n">password</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Connection.request"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.request">[docs]</a>  <span class="k">def</span> <span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+<div class="viewcode-block" id="Connection.request">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.request">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic request to Slycat server using open session.  To make a request </span>
 <span class="sd">    provide the HTTP method and path, and this method will return the body of</span>
 <span class="sd">    the response.  Additional keyword arguments must be compatible with the</span>
@@ -423,11 +441,14 @@
       <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.client.__init__.py request&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">log_message</span><span class="p">)</span>
       <span class="k">raise</span></div>
 
+
   <span class="c1">#######################################################################</span>
   <span class="c1"># Low-level functions that map directly to the underlying RESTful API #</span>
   <span class="c1">#######################################################################</span>
 
-<div class="viewcode-block" id="Connection.delete_model"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_model">[docs]</a>  <span class="k">def</span> <span class="nf">delete_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
+<div class="viewcode-block" id="Connection.delete_model">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_model">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete an existing model.</span>
 
 <span class="sd">    Parameters</span>
@@ -442,7 +463,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;DELETE&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.delete_project"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_project">[docs]</a>  <span class="k">def</span> <span class="nf">delete_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.delete_project">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_project">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete an existing project.</span>
 
 <span class="sd">    Parameters</span>
@@ -457,7 +481,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;DELETE&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.delete_project_cache_object"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_project_cache_object">[docs]</a>  <span class="k">def</span> <span class="nf">delete_project_cache_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.delete_project_cache_object">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_project_cache_object">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete_project_cache_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete an existing project cache object.</span>
 
 <span class="sd">    Parameters</span>
@@ -474,7 +501,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;DELETE&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/cache/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.delete_reference"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_reference">[docs]</a>  <span class="k">def</span> <span class="nf">delete_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.delete_reference">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_reference">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete an existing reference.</span>
 
 <span class="sd">    Parameters</span>
@@ -489,7 +519,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;DELETE&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/references/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.delete_remote"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_remote">[docs]</a>  <span class="k">def</span> <span class="nf">delete_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.delete_remote">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_remote">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete an existing remote session.</span>
 
 <span class="sd">    Parameters</span>
@@ -504,7 +537,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;DELETE&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/remotes/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.get_bookmark"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_bookmark">[docs]</a>  <span class="k">def</span> <span class="nf">get_bookmark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_bookmark">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_bookmark">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_bookmark</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve an existing bookmark.</span>
 
 <span class="sd">    Parameters</span>
@@ -525,7 +561,10 @@
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/bookmarks/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.get_configuration_markings"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_markings">[docs]</a>  <span class="k">def</span> <span class="nf">get_configuration_markings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_configuration_markings">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_markings">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_markings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve marking information from the server.</span>
 
 <span class="sd">    Returns</span>
@@ -540,7 +579,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/configuration/markings&quot;</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_configuration_parsers"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_parsers">[docs]</a>  <span class="k">def</span> <span class="nf">get_configuration_parsers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_configuration_parsers">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_parsers">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_parsers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve parser plugin information from the server.</span>
 
 <span class="sd">    Returns</span>
@@ -555,7 +597,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/configuration/parsers&quot;</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_configuration_remote_hosts"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_remote_hosts">[docs]</a>  <span class="k">def</span> <span class="nf">get_configuration_remote_hosts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_configuration_remote_hosts">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_remote_hosts">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_remote_hosts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve remote host information from the server.</span>
 
 <span class="sd">    Returns</span>
@@ -570,7 +615,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/configuration/remote-hosts&quot;</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_configuration_support_email"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_support_email">[docs]</a>  <span class="k">def</span> <span class="nf">get_configuration_support_email</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_configuration_support_email">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_support_email">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_support_email</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve support email information from the server.</span>
 
 <span class="sd">    Returns</span>
@@ -585,7 +633,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/configuration/support-email&quot;</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_configuration_version"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_version">[docs]</a>  <span class="k">def</span> <span class="nf">get_configuration_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_configuration_version">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_version">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve version information from the server.</span>
 
 <span class="sd">    Returns</span>
@@ -600,7 +651,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/configuration/version&quot;</span><span class="p">,</span>
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_configuration_wizards"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_wizards">[docs]</a>  <span class="k">def</span> <span class="nf">get_configuration_wizards</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_configuration_wizards">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_configuration_wizards">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_wizards</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve wizard plugin information from the server.</span>
 
 <span class="sd">    Returns</span>
@@ -615,6 +669,7 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/configuration/wizards&quot;</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
+
   <span class="c1"># the following three calls seem to be defunct</span>
 
   <span class="c1"># def get_global_resource(self, resource):</span>
@@ -626,7 +681,9 @@
   <span class="c1"># def get_wizard_resource(self, wtype, resource):</span>
   <span class="c1">#   return self.request(&quot;GET&quot;, &quot;/resources/wizards/%s/%s&quot; % (wtype, resource))</span>
 
-<div class="viewcode-block" id="Connection.get_model"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model">[docs]</a>  <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
+<div class="viewcode-block" id="Connection.get_model">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve an existing model.</span>
 
 <span class="sd">    Parameters</span>
@@ -648,7 +705,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mid</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_model_arrayset_metadata"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model_arrayset_metadata">[docs]</a>  <span class="k">def</span> <span class="nf">get_model_arrayset_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">arrays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_model_arrayset_metadata">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model_arrayset_metadata">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_model_arrayset_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">arrays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve metadata describing an existing model arrayset artifact.</span>
 
 <span class="sd">    Parameters</span>
@@ -685,7 +745,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/arraysets/</span><span class="si">%s</span><span class="s2">/metadata&quot;</span> <span class="o">%</span> 
       <span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_model_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model_file">[docs]</a>  <span class="k">def</span> <span class="nf">get_model_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_model_file">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model_file">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_model_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves the file corresponding to a given model and artifacts.</span>
 
 <span class="sd">    Parameters</span>
@@ -706,7 +769,10 @@
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/files/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.get_model_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model_parameter">[docs]</a>  <span class="k">def</span> <span class="nf">get_model_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_model_parameter">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_model_parameter">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_model_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve a model parameter artifact.</span>
 
 <span class="sd">    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model</span>
@@ -732,7 +798,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/parameters/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
       <span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_project_models"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project_models">[docs]</a>  <span class="k">def</span> <span class="nf">get_project_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_project_models">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project_models">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_project_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve every model in a oroject.</span>
 
 <span class="sd">    Parameters</span>
@@ -752,7 +821,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/models&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_project_references"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project_references">[docs]</a>  <span class="k">def</span> <span class="nf">get_project_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_project_references">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project_references">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_project_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns every reference in a project.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -772,7 +844,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/references&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_project"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project">[docs]</a>  <span class="k">def</span> <span class="nf">get_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_project">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve an existing project.</span>
 
 <span class="sd">    Parameters</span>
@@ -792,7 +867,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_project_cache_object"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project_cache_object">[docs]</a>  <span class="k">def</span> <span class="nf">get_project_cache_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_project_cache_object">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_project_cache_object">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_project_cache_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve an object from a project cache.</span>
 
 <span class="sd">    Parameters</span>
@@ -813,7 +891,10 @@
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/cache/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.get_projects"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_projects">[docs]</a>  <span class="k">def</span> <span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_projects">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_projects">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all projects.</span>
 
 <span class="sd">    Returns</span>
@@ -827,7 +908,10 @@
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects_list&quot;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_remote_file"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_remote_file">[docs]</a>  <span class="k">def</span> <span class="nf">get_remote_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_remote_file">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_remote_file">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_remote_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve a file using a remote session.</span>
 
 <span class="sd">    Parameters</span>
@@ -855,7 +939,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/remotes/</span><span class="si">%s</span><span class="s2">/file</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> 
       <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cache&quot;</span><span class="p">:</span> <span class="n">cache</span><span class="p">,</span> <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">project</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_remote_image"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_remote_image">[docs]</a>  <span class="k">def</span> <span class="nf">get_remote_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_remote_image">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_remote_image">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_remote_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve an image using a remote session.</span>
 
 <span class="sd">    Parameters</span>
@@ -883,7 +970,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/remotes/</span><span class="si">%s</span><span class="s2">/image</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> 
       <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cache&quot;</span><span class="p">:</span> <span class="n">cache</span><span class="p">,</span> <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">project</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.get_user"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_user">[docs]</a>  <span class="k">def</span> <span class="nf">get_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.get_user">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.get_user">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve directory information about an existing user.</span>
 
 <span class="sd">    Parameters</span>
@@ -903,7 +993,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/users/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="k">if</span> <span class="n">uid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">uid</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;accept&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">})</span></div>
 
-<div class="viewcode-block" id="Connection.post_events"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_events">[docs]</a>  <span class="k">def</span> <span class="nf">post_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{}):</span>
+
+<div class="viewcode-block" id="Connection.post_events">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_events">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{}):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Post event to be logged on Slycat server.</span>
 
 <span class="sd">    Parameters</span>
@@ -920,7 +1013,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/events/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Connection.post_model_files"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_model_files">[docs]</a>  <span class="k">def</span> <span class="nf">post_model_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aids</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{}):</span>
+
+<div class="viewcode-block" id="Connection.post_model_files">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_model_files">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_model_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aids</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{}):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores model file artifacts.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -955,7 +1051,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/files&quot;</span> <span class="o">%</span> <span class="n">mid</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Connection.post_model_finish"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_model_finish">[docs]</a>  <span class="k">def</span> <span class="nf">post_model_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_model_finish">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_model_finish">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_model_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Notify the server that a model is fully initialized.</span>
 
 <span class="sd">    When called, the server will perform one-time computation</span>
@@ -973,7 +1072,10 @@
 
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/finish&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.post_project_bookmarks"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_project_bookmarks">[docs]</a>  <span class="k">def</span> <span class="nf">post_project_bookmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">bookmark</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_project_bookmarks">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_project_bookmarks">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_project_bookmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">bookmark</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Store a bookmark.</span>
 
 <span class="sd">    Parameters</span>
@@ -996,7 +1098,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/bookmarks&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pid</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">bookmark</span><span class="p">))[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Connection.post_project_models"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_project_models">[docs]</a>  <span class="k">def</span> <span class="nf">post_project_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">mtype</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">marking</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_project_models">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_project_models">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_project_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">mtype</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">marking</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a new model, returning the model ID.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -1027,7 +1132,10 @@
       <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;model-type&quot;</span><span class="p">:</span><span class="n">mtype</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;marking&quot;</span><span class="p">:</span><span class="n">marking</span><span class="p">,</span> 
         <span class="s2">&quot;description&quot;</span><span class="p">:</span><span class="n">description</span><span class="p">}))[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Connection.post_project_references"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_project_references">[docs]</a>  <span class="k">def</span> <span class="nf">post_project_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_project_references">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_project_references">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_project_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Store a project reference.</span>
 
 <span class="sd">    Parameters</span>
@@ -1053,7 +1161,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">/references&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pid</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;model-type&quot;</span><span class="p">:</span><span class="n">mtype</span><span class="p">,</span> <span class="s2">&quot;mid&quot;</span><span class="p">:</span><span class="n">mid</span><span class="p">,</span> <span class="s2">&quot;bid&quot;</span><span class="p">:</span><span class="n">bid</span><span class="p">}))[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Connection.post_projects"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_projects">[docs]</a>  <span class="k">def</span> <span class="nf">post_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_projects">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_projects">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a new project, returning the project ID.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -1076,7 +1187,10 @@
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> 
       <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span><span class="n">description</span><span class="p">}))[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Connection.post_remotes"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_remotes">[docs]</a>  <span class="k">def</span> <span class="nf">post_remotes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">agent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_remotes">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_remotes">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_remotes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">agent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a new remote connection from the Slycat server to another host. </span>
 
 <span class="sd">    Parameters</span>
@@ -1104,7 +1218,10 @@
       <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;hostname&quot;</span><span class="p">:</span><span class="n">hostname</span><span class="p">,</span> <span class="s2">&quot;username&quot;</span><span class="p">:</span><span class="n">username</span><span class="p">,</span> 
                        <span class="s2">&quot;password&quot;</span><span class="p">:</span><span class="n">password</span><span class="p">,</span> <span class="s2">&quot;agent&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="p">}))[</span><span class="s2">&quot;sid&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Connection.post_remote_browse"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_remote_browse">[docs]</a>  <span class="k">def</span> <span class="nf">post_remote_browse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">file_reject</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_allow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+
+<div class="viewcode-block" id="Connection.post_remote_browse">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_remote_browse">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_remote_browse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">file_reject</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_allow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                          <span class="n">directory_allow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">directory_reject</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Uses an existing remote session to retrieve remote filesystem information.</span>
 
@@ -1145,7 +1262,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/remotes/&quot;</span> <span class="o">+</span> <span class="n">sid</span> <span class="o">+</span> <span class="s2">&quot;/browse&quot;</span> <span class="o">+</span> <span class="n">path</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">body</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.put_model"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model">[docs]</a>  <span class="k">def</span> <span class="nf">put_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_model">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify a Slycat model.</span>
 
 <span class="sd">    Parameters</span>
@@ -1168,7 +1288,10 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">model</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Connection.put_model_arrayset_data"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_arrayset_data">[docs]</a>  <span class="k">def</span> <span class="nf">put_model_arrayset_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">hyperchunks</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">force_json</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_model_arrayset_data">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_arrayset_data">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_model_arrayset_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">hyperchunks</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">force_json</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write data to an arrayset artifact on the server.</span>
 
 <span class="sd">    Parameters</span>
@@ -1234,7 +1357,10 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/arraysets/</span><span class="si">%s</span><span class="s2">/data&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">),</span> 
       <span class="n">data</span><span class="o">=</span><span class="n">request_data</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span><span class="n">request_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()})</span></div>
 
-<div class="viewcode-block" id="Connection.put_model_arrayset_array"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_arrayset_array">[docs]</a>  <span class="k">def</span> <span class="nf">put_model_arrayset_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_model_arrayset_array">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_arrayset_array">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_model_arrayset_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts a new array set array, ready to receive data.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -1260,7 +1386,10 @@
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> 
       <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;dimensions&quot;</span><span class="p">:</span><span class="n">stub</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="s2">&quot;attributes&quot;</span><span class="p">:</span><span class="n">stub</span><span class="o">.</span><span class="n">attributes</span><span class="p">}))</span></div>
 
-<div class="viewcode-block" id="Connection.put_model_arrayset"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_arrayset">[docs]</a>  <span class="k">def</span> <span class="nf">put_model_arrayset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_model_arrayset">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_arrayset">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_model_arrayset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts a new model array set artifact, ready to receive data.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -1280,7 +1409,10 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/arraysets/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;input&quot;</span><span class="p">:</span><span class="nb">input</span><span class="p">}))</span></div>
 
-<div class="viewcode-block" id="Connection.put_model_inputs"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_inputs">[docs]</a>  <span class="k">def</span> <span class="nf">put_model_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_model_inputs">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_inputs">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_model_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Copies the input artifacts from one model to another. Both models </span>
 <span class="sd">    must be part of the same project. By default, array artifacts are copied </span>
 <span class="sd">    by reference instead of value for efficiency.</span>
@@ -1300,7 +1432,10 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/inputs&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">target</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;sid&quot;</span><span class="p">:</span><span class="n">source</span><span class="p">}))</span></div>
 
-<div class="viewcode-block" id="Connection.put_model_parameter"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_parameter">[docs]</a>  <span class="k">def</span> <span class="nf">put_model_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_model_parameter">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_model_parameter">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_model_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Store a model parameter artifact.</span>
 
 <span class="sd">    Model parameters are JSON objects of arbitrary complexity.  They are stored directly within the model</span>
@@ -1330,7 +1465,10 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/models/</span><span class="si">%s</span><span class="s2">/parameters/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">aid</span><span class="p">),</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;value&quot;</span><span class="p">:</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">:</span><span class="nb">input</span><span class="p">}))</span></div>
 
-<div class="viewcode-block" id="Connection.put_project"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_project">[docs]</a>  <span class="k">def</span> <span class="nf">put_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_project">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_project">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifies a project.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -1351,11 +1489,14 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/projects/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">,</span> 
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">project</span><span class="p">))</span></div>
 
+
   <span class="c1">##################################################################################</span>
   <span class="c1"># Convenience functions that layer additional functionality atop the RESTful API #</span>
   <span class="c1">##################################################################################</span>
 
-<div class="viewcode-block" id="Connection.find_project"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.find_project">[docs]</a>  <span class="k">def</span> <span class="nf">find_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="Connection.find_project">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.find_project">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">find_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a project identified by name.</span>
 
 <span class="sd">    Parameters</span>
@@ -1391,7 +1532,10 @@
         <span class="s2">&quot;No project matched the given name.&quot;</span><span class="p">)</span>
       <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No project matched the given name.&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Connection.find_or_create_project"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.find_or_create_project">[docs]</a>  <span class="k">def</span> <span class="nf">find_or_create_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.find_or_create_project">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.find_or_create_project">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">find_or_create_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a project identified by name, or newly created.</span>
 
 <span class="sd">    Parameters</span>
@@ -1430,7 +1574,10 @@
     <span class="k">else</span><span class="p">:</span>
       <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_projects</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Connection.update_model"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.update_model">[docs]</a>  <span class="k">def</span> <span class="nf">update_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.update_model">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.update_model">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">update_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update model state.</span>
 
 <span class="sd">    This function provides a more convenient alternative to :func:`put_model`.</span>
@@ -1443,7 +1590,10 @@
     <span class="n">model</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">put_model</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Connection.join_model"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.join_model">[docs]</a>  <span class="k">def</span> <span class="nf">join_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.join_model">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.join_model">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">join_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for a model to complete before returning.</span>
 
 <span class="sd">    A Slycat model goes through several distinct phases over its lifetime:</span>
@@ -1480,11 +1630,14 @@
         <span class="k">return</span>
       <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span></div>
 
+
   <span class="c1">##############################################################</span>
   <span class="c1"># Functions that manage file uploading using the RESTful API #</span>
   <span class="c1">##############################################################</span>
 
-<div class="viewcode-block" id="Connection.post_uploads"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_uploads">[docs]</a>  <span class="k">def</span> <span class="nf">post_uploads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">aids</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Connection.post_uploads">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_uploads">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_uploads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">aids</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create Slycat file upload session.</span>
 
 <span class="sd">    Create an upload session used to upload files for storage as model artifacts. </span>
@@ -1515,7 +1668,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/uploads&quot;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span>
       <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;mid&quot;</span><span class="p">:</span><span class="n">mid</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">:</span><span class="nb">input</span><span class="p">,</span> <span class="s2">&quot;parser&quot;</span><span class="p">:</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;aids&quot;</span><span class="p">:</span><span class="n">aids</span><span class="p">}))[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Connection.put_upload_file_part"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_upload_file_part">[docs]</a>  <span class="k">def</span> <span class="nf">put_upload_file_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">fid</span><span class="p">,</span> <span class="n">file_slice</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.put_upload_file_part">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.put_upload_file_part">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">put_upload_file_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">fid</span><span class="p">,</span> <span class="n">file_slice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Upload a file or part of a file to Slycat.</span>
 
 <span class="sd">    Upload a file (or part of a file) as part of an upload session created with </span>
@@ -1543,7 +1699,10 @@
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;/api/uploads/</span><span class="si">%s</span><span class="s2">/files/</span><span class="si">%s</span><span class="s2">/parts/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">fid</span><span class="p">,</span> <span class="n">pid</span><span class="p">),</span>
       <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">file_slice</span><span class="p">)})</span></div>
 
-<div class="viewcode-block" id="Connection.post_upload_finished"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_upload_finished">[docs]</a>  <span class="k">def</span> <span class="nf">post_upload_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">file_parts</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.post_upload_finished">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.post_upload_finished">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">post_upload_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">file_parts</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Notify Slycat server that file upload is finished</span>
 
 <span class="sd">    Notify the server that all files have been uploaded for the given upload </span>
@@ -1569,7 +1728,10 @@
       <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content-type&quot;</span><span class="p">:</span><span class="s2">&quot;application/json&quot;</span><span class="p">},</span>
       <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;uploaded&#39;</span><span class="p">:</span> <span class="n">file_parts</span><span class="p">}))</span></div>
 
-<div class="viewcode-block" id="Connection.delete_upload"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_upload">[docs]</a>  <span class="k">def</span> <span class="nf">delete_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.delete_upload">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.delete_upload">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">delete_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete uploaded files from Slycat server</span>
 
 <span class="sd">    Delete an upload session used to upload files for storage as model artifacts. </span>
@@ -1606,7 +1768,10 @@
     <span class="c1"># return code</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span></div>
 
-<div class="viewcode-block" id="Connection.upload_files"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.upload_files">[docs]</a>  <span class="k">def</span> <span class="nf">upload_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">file_list</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">parser_parms</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Connection.upload_files">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.Connection.upload_files">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">upload_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">file_list</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">parser_parms</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Upload a list of files for a given model to the Slycat server.</span>
 <span class="sd">    The files will be parsed by specified parser.  This is not a direct call</span>
 <span class="sd">    to the API, but rather a convenience call to load/parse a list of files.</span>
@@ -1676,9 +1841,13 @@
       <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete_upload</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span> <span class="o">==</span> <span class="mi">409</span><span class="p">:</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
       <span class="k">else</span><span class="p">:</span>
-        <span class="k">break</span></div></div>
+        <span class="k">break</span></div>
+</div>
 
-<div class="viewcode-block" id="connect"><a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.connect">[docs]</a><span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
+
+<div class="viewcode-block" id="connect">
+<a class="viewcode-back" href="../../../slycat-packages/slycat.web.client.html#slycat.web.client.connect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Factory function for client connections that takes an option parser as input.</span>
 <span class="sd">  </span>
 <span class="sd">  Parameters</span>
@@ -1706,6 +1875,7 @@
     <span class="n">host</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">kerberos</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">kerberos</span><span class="p">,</span>
     <span class="n">proxies</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;http&quot;</span><span class="p">:</span><span class="n">arguments</span><span class="o">.</span><span class="n">http_proxy</span><span class="p">,</span> <span class="s2">&quot;https&quot;</span><span class="p">:</span><span class="n">arguments</span><span class="o">.</span><span class="n">https_proxy</span><span class="p">},</span> 
     <span class="n">file_slice_size</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">file_slice_size</span><span class="p">,</span> <span class="o">**</span><span class="n">keywords</span><span class="p">)</span></div>
+
 </pre></div>
 
            </div>
@@ -1715,9 +1885,9 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
