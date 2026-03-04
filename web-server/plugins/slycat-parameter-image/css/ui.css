@@ -378,7 +378,7 @@
 }
 .frame-button.close-button {
   padding-top: 1px;
-
+}
 .frame-button.resize-handle:hover {
   cursor: nwse-resize;
 }
