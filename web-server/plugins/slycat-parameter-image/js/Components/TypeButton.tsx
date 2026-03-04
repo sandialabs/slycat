@@ -83,6 +83,7 @@ const TypeButton: React.FC<TypeButtonProps> = ({
       >
         <Icon type={icon} style={iconStyle} />
         <span className="type-button-label">{label}</span>
+        {tableIndex != null && <span className="type-button-index">{tableIndex}</span>}
         <Icon type="ellipsis-vertical" />
       </button>
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
