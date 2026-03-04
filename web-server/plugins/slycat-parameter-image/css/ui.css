@@ -364,7 +364,6 @@
 .frame-button {
   font-size: 16px;
   color: #c8c8c8 !important;
-  margin: 3px 2px 0px 2px;
 }
 .frame-button:hover {
   color: white !important;
@@ -380,7 +379,7 @@
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: 4px 3px;
+  padding: 1px 3px 0px 0px;
   font-size: 14px;
 }
 .frame-button.resize-handle:hover {
