@@ -120,14 +120,14 @@ export const FrameMenu: React.FC<FrameMenuProps> = ({
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
         {items.map((item) =>
           item.href ? (
-            <a key={item.label} className="dropdown-item" href={item.href} download={item.download}>
+            <a key={item.label} className="dropdown-item px-3" href={item.href} download={item.download}>
               <Icon type={item.icon} /> {item.label}
             </a>
           ) : (
             <button
               key={item.label}
               type="button"
-              className={`dropdown-item ${item.className || ""}`}
+              className={`dropdown-item px-3 ${item.className || ""}`}
               onClick={item.onClick}
             >
               <Icon type={item.icon} /> {item.label}
