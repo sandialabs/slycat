@@ -21,7 +21,7 @@ const MEDIA_TYPE_LABEL_MAP: Record<MediaType, string> = {
   pdf: "PDF",
   vtp: "3D",
   stl: "3D",
-  unknown: "Unknown type",
+  unknown: "Unknown Type",
 };
 
 interface TypeLabelProps {
@@ -45,7 +45,7 @@ export const TypeLabel: React.FC<TypeLabelProps> = ({ mediaType, tableIndex, cla
     <span className={`type-label ${className}`}>
       {/* <Icon type={icon} style={iconStyle} /> */}
       <span className="type-label-text">{label}</span>
-      {tableIndex != null && <span className="type-label-index">index {tableIndex}</span>}
+      {tableIndex != null && <span className="type-label-index">Row {tableIndex}</span>}
     </span>
   );
 };
@@ -135,7 +135,7 @@ export const FrameMenu: React.FC<FrameMenuProps> = ({
             className="dropdown-item"
             onClick={() => onSetCenterOfRotation()}
           >
-            <Icon type="crosshairs" /> Set center of rotation
+            <Icon type="crosshairs" /> Set Center of Rotation
           </button>
         )}
         {onJump && (
@@ -144,7 +144,7 @@ export const FrameMenu: React.FC<FrameMenuProps> = ({
             className="dropdown-item"
             onClick={(e) => onJump(e.nativeEvent)}
           >
-            <Icon type="table" /> Jump to row {tableIndex}
+            <Icon type="table" /> Jump to Row {tableIndex}
           </button>
         )}
         {downloadUrl && (
