@@ -2005,14 +2005,6 @@ $.widget("parameter_image.scatterplot", {
         );
     };
 
-    var add_pin_button = function (fh) {
-      fh.append("i")
-        .attr("class", "pin-button frame-button fa-solid fa-thumbtack")
-        .attr("title", "Pin")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["pin"]);
-    };
-
     var add_type_button = function (fh, media_type) {
       let typeButton = fh
         .append("div")
@@ -2378,10 +2370,11 @@ $.widget("parameter_image.scatterplot", {
         $(window).trigger("resize");
       },
 
-      pin: function () {
+      pin: function (event) {
         // console.log("pin event handler running");
         var frame, imageHeight, imageWidth, target_width, target_height, x, y;
-        frame = d3.select(d3.event.target.closest(".image-frame"));
+        let target = event ? event.target : d3.event.target;
+        frame = d3.select(target.closest(".image-frame"));
         self._cancel_hover_state(frame, image);
 
         // Remove maximized class from frame
@@ -2948,9 +2941,6 @@ $.widget("parameter_image.scatterplot", {
       // Create a resize handle
       add_resize_handle(frame_html);
 
-      // Create a pin button ...
-      add_pin_button(footer);
-
       // Create a TypeButton in React
       let typeButton = add_type_button(footer, media_type);
       const root = createRoot(typeButton.node());
@@ -2960,6 +2950,7 @@ $.widget("parameter_image.scatterplot", {
           mediaType={media_type}
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
+          onPin={(event) => handlers["pin"](event)}
           onClone={media_type === MEDIA_TYPES.VTP ? (event) => handlers["clone"](event) : undefined}
           onSetCenterOfRotation={
             is3D

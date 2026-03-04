@@ -9,6 +9,7 @@ interface TypeButtonProps {
   onMaximize?: (event: Event) => void;
   onMinimize?: (event: Event) => void;
   onClone?: (event: Event) => void;
+  onPin?: (event: Event) => void;
   onSetCenterOfRotation?: () => void;
   onJump?: (event: Event) => void;
   tableIndex?: number | string;
@@ -50,6 +51,7 @@ const TypeButton: React.FC<TypeButtonProps> = ({
   onMaximize,
   onMinimize,
   onClone,
+  onPin,
   onSetCenterOfRotation,
   onJump,
   tableIndex,
@@ -81,12 +83,19 @@ const TypeButton: React.FC<TypeButtonProps> = ({
         title={buttonTitle}
         aria-label={buttonTitle}
       >
-        <Icon type={icon} style={iconStyle} />
+        {/* <Icon type={icon} style={iconStyle} /> */}
         <span className="type-button-label">{label}</span>
         {tableIndex != null && <span className="type-button-index">{tableIndex}</span>}
         <Icon type="ellipsis-vertical" />
       </button>
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
+        <button
+          type="button"
+          className="dropdown-item"
+          onClick={(e) => onPin?.(e.nativeEvent)}
+        >
+          <Icon type="thumbtack" /> Pin
+        </button>
         <button
           type="button"
           className="dropdown-item maximize-item"

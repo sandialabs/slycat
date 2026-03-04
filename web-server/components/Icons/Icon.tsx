@@ -41,6 +41,7 @@ export const ICON_NAME_MAP = {
   table: { icon: { prefix: "fas", iconName: "table" } },
   crosshairs: { icon: { prefix: "fas", iconName: "crosshairs" } },
   "ellipsis-vertical": { icon: { prefix: "fas", iconName: "ellipsis-vertical" } },
+  thumbtack: { icon: { prefix: "fas", iconName: "thumbtack" } },
 } satisfies Record<string, FontAwesomeIconProps>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;

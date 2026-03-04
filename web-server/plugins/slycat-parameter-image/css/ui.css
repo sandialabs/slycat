@@ -369,12 +369,6 @@
   color: white !important;
   cursor: pointer;
 }
-.frame-button.pin-button {
-  order: 1;
-  margin-left: auto;
-  margin-right: 22px;
-  font-size: 13px;
-}
 .frame-button.resize-handle {
   position: absolute;
   right: 0;
