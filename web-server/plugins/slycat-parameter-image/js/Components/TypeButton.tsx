@@ -67,6 +67,15 @@ interface FrameMenuProps {
  * Ellipsis menu button that opens a dropdown with frame actions.
  * Renders as a Bootstrap dropup since it sits in the frame footer at the bottom.
  */
+type MenuItem = {
+  icon: IconName;
+  label: string;
+  className?: string;
+  href?: string;
+  download?: string;
+  onClick?: (e: React.MouseEvent) => void;
+};
+
 export const FrameMenu: React.FC<FrameMenuProps> = ({
   className = "",
   onMaximize,
@@ -80,6 +89,16 @@ export const FrameMenu: React.FC<FrameMenuProps> = ({
   downloadFilename,
 }) => {
   const dropdownId = useId();
+
+  const items: MenuItem[] = [
+    { icon: "thumbtack", label: "Pin", onClick: (e) => onPin?.(e.nativeEvent) },
+    { icon: "window-maximize", label: "Maximize", className: "maximize-item", onClick: (e) => onMaximize?.(e.nativeEvent) },
+    { icon: "window-minimize", label: "Minimize", className: "minimize-item", onClick: (e) => onMinimize?.(e.nativeEvent) },
+    ...(onClone ? [{ icon: "clone" as IconName, label: "Clone", onClick: (e: React.MouseEvent) => onClone(e.nativeEvent) }] : []),
+    ...(onSetCenterOfRotation ? [{ icon: "crosshairs" as IconName, label: "Set Center of Rotation", onClick: () => onSetCenterOfRotation() }] : []),
+    ...(onJump ? [{ icon: "table" as IconName, label: `Jump to Row ${tableIndex}`, onClick: (e: React.MouseEvent) => onJump(e.nativeEvent) }] : []),
+    ...(downloadUrl ? [{ icon: "download" as IconName, label: "Download", href: downloadUrl, download: downloadFilename }] : []),
+  ];
 
   return (
     <div
@@ -99,58 +118,21 @@ export const FrameMenu: React.FC<FrameMenuProps> = ({
         <Icon type="ellipsis-vertical" />
       </button>
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
-        <button
-          type="button"
-          className="dropdown-item"
-          onClick={(e) => onPin?.(e.nativeEvent)}
-        >
-          <Icon type="thumbtack" /> Pin
-        </button>
-        <button
-          type="button"
-          className="dropdown-item maximize-item"
-          onClick={(e) => onMaximize?.(e.nativeEvent)}
-        >
-          <Icon type="window-maximize" /> Maximize
-        </button>
-        <button
-          type="button"
-          className="dropdown-item minimize-item"
-          onClick={(e) => onMinimize?.(e.nativeEvent)}
-        >
-          <Icon type="window-minimize" /> Minimize
-        </button>
-        {onClone && (
-          <button
-            type="button"
-            className="dropdown-item"
-            onClick={(e) => onClone(e.nativeEvent)}
-          >
-            <Icon type="clone" /> Clone
-          </button>
-        )}
-        {onSetCenterOfRotation && (
-          <button
-            type="button"
-            className="dropdown-item"
-            onClick={() => onSetCenterOfRotation()}
-          >
-            <Icon type="crosshairs" /> Set Center of Rotation
-          </button>
-        )}
-        {onJump && (
-          <button
-            type="button"
-            className="dropdown-item"
-            onClick={(e) => onJump(e.nativeEvent)}
-          >
-            <Icon type="table" /> Jump to Row {tableIndex}
-          </button>
-        )}
-        {downloadUrl && (
-          <a className="dropdown-item" href={downloadUrl} download={downloadFilename}>
-            <Icon type="download" /> Download
-          </a>
+        {items.map((item) =>
+          item.href ? (
+            <a key={item.label} className="dropdown-item" href={item.href} download={item.download}>
+              <Icon type={item.icon} /> {item.label}
+            </a>
+          ) : (
+            <button
+              key={item.label}
+              type="button"
+              className={`dropdown-item ${item.className || ""}`}
+              onClick={item.onClick}
+            >
+              <Icon type={item.icon} /> {item.label}
+            </button>
+          ),
         )}
       </div>
     </div>
