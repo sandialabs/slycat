@@ -87,7 +87,7 @@ exports[`when using the slycat search wrapper we should have a full initializati
           },
         ]
       }
-      two_columns = {true}
+      two_columns={true}
     >
       <Spinner>
         <div
@@ -262,7 +262,7 @@ exports[`when using the slycat search wrapper we should see a message displayed 
     </div>
     <ModelsList
       models={Array []}
-      two_columns=true
+      two_columns={true}
     >
       <Spinner>
         <div
