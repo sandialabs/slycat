@@ -193,6 +193,9 @@ export default function ps_reducer(state = initialState, action) {
           focalPoint: camera.camera.getFocalPoint(),
           viewUp: camera.camera.getViewUp(),
           clippingRange: camera.camera.getClippingRange(),
+          centerOfRotation: camera.interactorStyle?.getCenterOfRotation
+            ? camera.interactorStyle.getCenterOfRotation()
+            : undefined,
         };
       }
 

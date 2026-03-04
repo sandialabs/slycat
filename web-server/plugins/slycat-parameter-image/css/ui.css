@@ -358,79 +358,82 @@
   width: 100%;
   height: 20px;
   background: black;
+  display: flex;
+  align-items: center;
 }
 .frame-button {
-  float: right;
   font-size: 16px;
   color: #c8c8c8 !important;
-  margin: 3px 2px 0px 2px;
 }
 .frame-button:hover {
   color: white !important;
   cursor: pointer;
 }
-.frame-button.close-button {
-  float: left;
-}
-.frame-button.max-button {
-  float: left;
-}
-.frame-button.min-button {
-  float: left;
-  display: none;
-}
-.frame-button.download-button {
-  float: left;
-  font-size: 14px;
-  text-decoration: none !important;
-  margin-top: 4px;
-}
-#scatterplot .image-frame.maximized .frame-button.max-button {
-  display: none;
-}
-#scatterplot .image-frame.maximized .frame-button.min-button {
-  display: block;
-}
-.frame-button.clone-button {
-  font-size: 13px;
-  margin-top: 4px;
-}
-.frame-button.jump-button {
-  margin: 0;
-}
-.frame-button.jump-button.jump-button-container {
-  margin-left: 12px;
-  margin-right: 12px;
-}
-.frame-button.table-index {
-  margin-top: -1px;
-}
-.frame-button.arrow-button {
-  margin-top: 5px;
-  margin-right: -4px;
-  font-size: 9px;
-}
-.frame-button.table-button {
-  margin-top: 3px;
-  font-size: 15px;
-}
-.frame-button.jump-button:hover * {
-  color: white !important;
-}
-.frame-button.pin-button {
-  margin-right: 22px;
-  font-size: 13px;
-  margin-top: 4px;
-}
 .frame-button.resize-handle {
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: 4px 3px;
+  padding: 1px 3px 0px 0px;
   font-size: 14px;
+}
+.frame-button.close-button {
+  padding-top: 1px;
 }
 .frame-button.resize-handle:hover {
   cursor: nwse-resize;
+}
+/* TypeLabel styles */
+.type-label {
+  color: #c8c8c8;
+  font-size: 12px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  white-space: nowrap;
+  margin-left: 3px;
+}
+.type-label .type-label-index {
+  margin-left: 5px;
+}
+/* FrameMenu styles */
+.react-component-frame-menu {
+  order: 1;
+  margin-left: auto;
+  margin-right: 19px;
+}
+.frame-button.frame-menu {
+  margin: 0;
+}
+.frame-button.frame-menu .frame-menu-toggle {
+  background: none;
+  border: none;
+  color: #c8c8c8;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 20px;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.frame-button.frame-menu .frame-menu-toggle:hover,
+.frame-button.frame-menu .frame-menu-toggle:focus {
+  color: white;
+}
+.frame-button.frame-menu .dropdown-menu {
+  font-size: 13px;
+  min-width: 120px;
+}
+.frame-button.frame-menu .minimize-item {
+  display: none;
+}
+#scatterplot .image-frame.maximized .frame-button.frame-menu .maximize-item {
+  display: none;
+}
+#scatterplot .image-frame.maximized .frame-button.frame-menu .minimize-item {
+  display: block;
 }
 
 #scatterplot .media-layer .reload-button {

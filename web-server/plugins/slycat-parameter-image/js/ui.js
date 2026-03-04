@@ -366,7 +366,7 @@ $(document).ready(function () {
           }
 
           // Adding Index column
-          table_metadata["column-names"].push("Index");
+          table_metadata["column-names"].push("Row");
           table_metadata["column-types"].push("int64");
 
           filter_manager.set_table_metadata(table_metadata);
