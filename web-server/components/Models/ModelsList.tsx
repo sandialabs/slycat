@@ -11,6 +11,7 @@ import Spinner from "../Spinner";
  */
 export interface ModelsListProps {
   models: any[];
+  two_columns: boolean;
 }
 /**
  * @param markings
@@ -74,11 +75,14 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
         />
       );
     });
-
+    
+    // list models in one or two columns
+    const num_columns = this.props.two_columns ? "2" : "1";
+    const model_list_style = `row row-cols-${num_columns} g-5`;
     if (models.length > 0) {
       return (
         <div className="container pt-0">
-          <div className="row row-cols-2 g-5">{models}</div>
+          <div className={model_list_style}>{models}</div>
         </div>
       );
     }
