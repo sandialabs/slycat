@@ -379,41 +379,53 @@
 .frame-button.resize-handle:hover {
   cursor: nwse-resize;
 }
-.frame-button.type-button {
+/* TypeLabel styles */
+.type-label {
+  color: #c8c8c8;
+  font-size: 12px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+/* FrameMenu styles */
+.react-component-frame-menu {
+  order: 1;
+  margin-left: auto;
+  margin-right: 19px;
+}
+.frame-button.frame-menu {
   margin: 0;
 }
-/* TypeButton dropdown styles */
-.frame-button.type-button .type-button-toggle {
+.frame-button.frame-menu .frame-menu-toggle {
   background: none;
   border: none;
   color: #c8c8c8;
-  font-size: 12px;
+  font-size: 14px;
   padding: 0 4px;
   line-height: 20px;
   height: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
 }
-.frame-button.type-button .type-button-toggle:hover,
-.frame-button.type-button .type-button-toggle:focus {
+.frame-button.frame-menu .frame-menu-toggle:hover,
+.frame-button.frame-menu .frame-menu-toggle:focus {
   color: white;
 }
-.frame-button.type-button .type-button-label {
-  white-space: nowrap;
-}
-.frame-button.type-button .dropdown-menu {
+.frame-button.frame-menu .dropdown-menu {
   font-size: 13px;
   min-width: 120px;
 }
-.frame-button.type-button .minimize-item {
+.frame-button.frame-menu .minimize-item {
   display: none;
 }
-#scatterplot .image-frame.maximized .frame-button.type-button .maximize-item {
+#scatterplot .image-frame.maximized .frame-button.frame-menu .maximize-item {
   display: none;
 }
-#scatterplot .image-frame.maximized .frame-button.type-button .minimize-item {
+#scatterplot .image-frame.maximized .frame-button.frame-menu .minimize-item {
   display: block;
 }
 

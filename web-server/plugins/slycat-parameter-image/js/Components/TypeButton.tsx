@@ -2,21 +2,6 @@ import React, { useId } from "react";
 import Icon, { type IconName } from "components/Icons/Icon";
 import { type MediaType } from "../constants/media-types";
 
-interface TypeButtonProps {
-  mediaType: MediaType;
-  title?: string;
-  className?: string;
-  onMaximize?: (event: Event) => void;
-  onMinimize?: (event: Event) => void;
-  onClone?: (event: Event) => void;
-  onPin?: (event: Event) => void;
-  onSetCenterOfRotation?: () => void;
-  onJump?: (event: Event) => void;
-  tableIndex?: number | string;
-  downloadUrl?: string;
-  downloadFilename?: string;
-}
-
 // Map media types to their corresponding icons
 const MEDIA_TYPE_ICON_MAP: Record<MediaType, IconName> = {
   link: "link",
@@ -39,53 +24,78 @@ const MEDIA_TYPE_LABEL_MAP: Record<MediaType, string> = {
   unknown: "Unknown type",
 };
 
+interface TypeLabelProps {
+  mediaType: MediaType;
+  tableIndex?: number | string;
+  className?: string;
+}
+
 /**
- * A dropdown button component that displays an icon and label for the media type.
- * Used in image frames to indicate what type of media is being displayed.
- * Renders as a Bootstrap dropup since it sits in the frame footer at the bottom.
+ * Displays the media type label and row index in the frame footer.
  */
-const TypeButton: React.FC<TypeButtonProps> = ({
-  mediaType,
-  title,
-  className = "",
-  onMaximize,
-  onMinimize,
-  onClone,
-  onPin,
-  onSetCenterOfRotation,
-  onJump,
-  tableIndex,
-  downloadUrl,
-  downloadFilename,
-}) => {
+export const TypeLabel: React.FC<TypeLabelProps> = ({ mediaType, tableIndex, className = "" }) => {
   const icon = MEDIA_TYPE_ICON_MAP[mediaType] || MEDIA_TYPE_ICON_MAP.unknown;
   const label = MEDIA_TYPE_LABEL_MAP[mediaType] || MEDIA_TYPE_LABEL_MAP.unknown;
-  const buttonTitle = title || `Media type: ${label}`;
-  const dropdownId = useId();
 
   // PDF icon is slightly taller, so we reduce its size and shift it up a bit
   const iconStyle =
     mediaType === "pdf" ? { fontSize: "0.9em", transform: "translateY(-1px)" } : undefined;
 
   return (
+    <span className={`type-label ${className}`}>
+      {/* <Icon type={icon} style={iconStyle} /> */}
+      <span className="type-label-text">{label}</span>
+      {tableIndex != null && <span className="type-label-index">index {tableIndex}</span>}
+    </span>
+  );
+};
+
+interface FrameMenuProps {
+  className?: string;
+  onMaximize?: (event: Event) => void;
+  onMinimize?: (event: Event) => void;
+  onPin?: (event: Event) => void;
+  onClone?: (event: Event) => void;
+  onSetCenterOfRotation?: () => void;
+  onJump?: (event: Event) => void;
+  tableIndex?: number | string;
+  downloadUrl?: string;
+  downloadFilename?: string;
+}
+
+/**
+ * Ellipsis menu button that opens a dropdown with frame actions.
+ * Renders as a Bootstrap dropup since it sits in the frame footer at the bottom.
+ */
+export const FrameMenu: React.FC<FrameMenuProps> = ({
+  className = "",
+  onMaximize,
+  onMinimize,
+  onPin,
+  onClone,
+  onSetCenterOfRotation,
+  onJump,
+  tableIndex,
+  downloadUrl,
+  downloadFilename,
+}) => {
+  const dropdownId = useId();
+
+  return (
     <div
-      className={`dropup type-button frame-button ${className}`}
-      // Stop event propagation to prevent frame from being dragged when interacting with the button and dropdown
+      className={`dropup frame-menu frame-button ${className}`}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <button
         type="button"
-        className="btn btn-sm type-button-toggle"
+        className="btn btn-sm frame-menu-toggle"
         id={dropdownId}
         data-bs-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
-        title={buttonTitle}
-        aria-label={buttonTitle}
+        title="Frame actions"
+        aria-label="Frame actions"
       >
-        {/* <Icon type={icon} style={iconStyle} /> */}
-        <span className="type-button-label">{label}</span>
-        {tableIndex != null && <span className="type-button-index">{tableIndex}</span>}
         <Icon type="ellipsis-vertical" />
       </button>
       <div className="dropdown-menu" aria-labelledby={dropdownId}>
@@ -146,5 +156,3 @@ const TypeButton: React.FC<TypeButtonProps> = ({
     </div>
   );
 };
-
-export default TypeButton;

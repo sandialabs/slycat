@@ -56,7 +56,7 @@ import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
 } from "components/ScatterplotOptions/ScatterplotOptionsCategoricalAxisLabels";
-import TypeButton from "./Components/TypeButton";
+import { TypeLabel, FrameMenu } from "./Components/TypeButton";
 import { MEDIA_TYPES } from "./constants/media-types";
 
 // Events for vtk viewer
@@ -2005,12 +2005,8 @@ $.widget("parameter_image.scatterplot", {
         );
     };
 
-    var add_type_button = function (fh, media_type) {
-      let typeButton = fh
-        .append("div")
-        .attr("class", "react-component-type-button")
-        .attr("data-media-type", media_type);
-      return typeButton;
+    var add_react_mount = function (fh, className) {
+      return fh.append("div").attr("class", className);
     };
 
     var build_frame_html = function (img) {
@@ -2941,13 +2937,19 @@ $.widget("parameter_image.scatterplot", {
       // Create a resize handle
       add_resize_handle(frame_html);
 
-      // Create a TypeButton in React
-      let typeButton = add_type_button(footer, media_type);
-      const root = createRoot(typeButton.node());
+      // Create TypeLabel and FrameMenu in React
       const is3D = media_type === MEDIA_TYPES.VTP || media_type === MEDIA_TYPES.STL;
-      root.render(
-        <TypeButton
-          mediaType={media_type}
+
+      let typeLabelMount = add_react_mount(footer, "react-component-type-label");
+      const typeLabelRoot = createRoot(typeLabelMount.node());
+      typeLabelRoot.render(
+        <TypeLabel mediaType={media_type} tableIndex={image.index} />,
+      );
+
+      let frameMenuMount = add_react_mount(footer, "react-component-frame-menu");
+      const frameMenuRoot = createRoot(frameMenuMount.node());
+      frameMenuRoot.render(
+        <FrameMenu
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
           onPin={(event) => handlers["pin"](event)}
@@ -2967,7 +2969,7 @@ $.widget("parameter_image.scatterplot", {
           downloadFilename={!link ? image.uri.split("/").pop() : undefined}
         />,
       );
-      rootsByPopupEl.set(frame_html.node(), root);
+      rootsByPopupEl.set(frame_html.node(), frameMenuRoot);
 
       if (!image.no_sync) self._sync_open_media();
 
