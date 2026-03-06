@@ -25,7 +25,8 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
           <div className="alert alert-primary" role="alert">
             Select a particular timeseries and clustering parameters.
           </div>
-          Slycat Table File Selections
+          <strong>Slycat Table File Selections</strong>
+          <hr className="mt-1 mb-3"></hr>
           <SlycatSelector
             label={"Column Name of Timeseries Path"}
             options={props.columnNames}
@@ -43,6 +44,8 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
             warning="Please enter a table file delimiter."
             callBack={props.delimiterCallback}
           />
+          <strong>Timeseries Clustering Parameters</strong>
+          <hr className="mt-1 mb-3"></hr>
         </div>
       ) : null}
       <div>
