@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dendrogram Expansion/Contraction &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -57,9 +60,14 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -97,15 +105,16 @@
            <div itemprop="articleBody">
              
   <section id="dendrogram-expansion-contraction">
-<h1>Dendrogram Expansion/Contraction<a class="headerlink" href="#dendrogram-expansion-contraction" title="Permalink to this heading"></a></h1>
+<h1>Dendrogram Expansion/Contraction<a class="headerlink" href="#dendrogram-expansion-contraction" title="Link to this heading"></a></h1>
 <p>The expansion or contraction of each node is individually controlled through the ‘+’ or ‘-‘ icons that appear to the left of
 each node, respectively above or below the line connecting the node to its parent.  In Figure 57, the subtree with 58 nodes
 in Figure 56 has been expanded by clicking the ‘+’.  Each expansion adds two levels of the tree to the dendrogram.  Note that
 leaf-level nodes are drawn as dots.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../_images/Figure57.png"><img alt="../_images/Figure57.png" src="../_images/Figure57.png" style="width: 1032.0px; height: 646.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure57.png"><img alt="../_images/Figure57.png" height="646" src="../_images/Figure57.png" width="1032" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 57: Expansion of second subtree from the top (previously shown as the subtree with 58 nodes in Figure 56).  Each expansion adds two additional levels.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 57: Expansion of second subtree from the top (previously shown as the subtree with 58 nodes in Figure 56).  Each expansion adds two additional levels.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>To expand a subtree all the way down to the leaves in a single action, click on the subtree triangle itself.   In Figure 58,
@@ -114,15 +123,17 @@ operation.  Caution should be exercised when doing a full subtree expansion for 
 dendrogram can become cluttered and largely unintelligible.   Figure 59 demonstrates the results of clicking on the subtree
 with 110 nodes at the bottom of the dendrogram in Figure 56.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../_images/Figure58.png"><img alt="../_images/Figure58.png" src="../_images/Figure58.png" style="width: 1034.0px; height: 648.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure58.png"><img alt="../_images/Figure58.png" height="648" src="../_images/Figure58.png" width="1034" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 58: Subtree with 9 nodes expanded to leaf level by clicking triangular subtree icon.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 58: Subtree with 9 nodes expanded to leaf level by clicking triangular subtree icon.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id3">
-<a class="reference internal image-reference" href="../_images/Figure59.png"><img alt="../_images/Figure59.png" src="../_images/Figure59.png" style="width: 1035.0px; height: 647.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure59.png"><img alt="../_images/Figure59.png" height="647" src="../_images/Figure59.png" width="1035" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 59: One-click expansion of subtree with 110 nodes.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 59: One-click expansion of subtree with 110 nodes.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The operation of collapsing nodes reduces all of the nodes below the designated node (the node whose ‘-‘ icon is clicked)
@@ -131,9 +142,10 @@ the dendrogram in Figure 57 has been collapsed into a single subtree with 166 no
 sections of the dendrogram controls the level of detail, maximizing the rendered portion of the tree around areas of
 interest.</p>
 <figure class="align-center" id="id4">
-<a class="reference internal image-reference" href="../_images/Figure60.png"><img alt="../_images/Figure60.png" src="../_images/Figure60.png" style="width: 1033.0px; height: 649.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure60.png"><img alt="../_images/Figure60.png" height="649" src="../_images/Figure60.png" width="1033" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 60: Collapsed subtree that combines the 4 subtrees from the lower half of the dendrogram in Figure 57.</strong></span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 60: Collapsed subtree that combines the 4 subtrees from the lower half of the dendrogram in Figure 57.</strong></span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
@@ -149,9 +161,9 @@ interest.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

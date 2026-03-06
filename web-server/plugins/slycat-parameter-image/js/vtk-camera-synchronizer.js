@@ -16,6 +16,11 @@ function handleModifiedCamera(sourceCamera, allCameras) {
   // Make sure we have a source camera. It doesn't exist sometimes when opening new pins.
   if(sourceCamera)
   {
+    const sourceEntry = allCameras.find((entry) => entry.camera === sourceCamera);
+    const sourceCenter =
+      sourceEntry && sourceEntry.interactorStyle && sourceEntry.interactorStyle.getCenterOfRotation
+        ? sourceEntry.interactorStyle.getCenterOfRotation()
+        : null;
     for(let targetCamera of allCameras) {
       if(syncCameras && (targetCamera.camera != sourceCamera))
       {
@@ -23,6 +28,10 @@ function handleModifiedCamera(sourceCamera, allCameras) {
         targetCamera.camera.setPosition(...sourceCamera.getPosition());
         targetCamera.camera.setFocalPoint(...sourceCamera.getFocalPoint());
         targetCamera.camera.setViewUp(...sourceCamera.getViewUp());
+        // Sync the center of rotation
+        if (sourceCenter && targetCamera.interactorStyle?.setCenterOfRotation) {
+          targetCamera.interactorStyle.setCenterOfRotation(sourceCenter);
+        }
         // Trying to reset clipping range instead of setting it to see if it helps with issue #986
         // targetCamera.camera.setClippingRange(...sourceCamera.getClippingRange());
         targetCamera.renderer.resetCameraClippingRange();
@@ -46,13 +55,17 @@ export function setSyncCameras(syncCamerasBool) {
   }
 }
 
-export function addCamera(camera, container, interactor, uid, renderer) {
+export function addCamera(camera, container, interactor, uid, renderer, interactorStyle) {
   // When we are adding a new camera and sync is on, we need to set it up like the others
   if(syncCameras && cameras.length)
   {
     camera.setPosition(...cameras[0].camera.getPosition());
     camera.setFocalPoint(...cameras[0].camera.getFocalPoint());
     camera.setViewUp(...cameras[0].camera.getViewUp());
+    // Set the center of rotation
+    if (interactorStyle?.setCenterOfRotation && cameras[0].interactorStyle?.getCenterOfRotation) {
+      interactorStyle.setCenterOfRotation(cameras[0].interactorStyle.getCenterOfRotation());
+    }
     // Trying to reset clipping range instead of setting it to see if it helps with issue #986
     // camera.setClippingRange(...cameras[0].camera.getClippingRange());
     renderer.resetCameraClippingRange();
@@ -66,6 +79,7 @@ export function addCamera(camera, container, interactor, uid, renderer) {
     interactor: interactor, 
     uid: uid, 
     renderer: renderer,
+    interactorStyle: interactorStyle,
   });
 
   // Listen for the selected event and add an onModified handler to the selected camera

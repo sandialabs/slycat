@@ -3258,15 +3258,16 @@ def post_remotes_smb():
     it to the users session
     :return: {"sid":sid, "status":boolean, msg:""}
     user_name password
-
-    encode with in js
-
-      b64EncodeUnicode(str) {
-          return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-              return String.fromCharCode('0x' + p1);
-          }));
-      }
     """
+    
+    # encode with in js
+
+    #   b64EncodeUnicode(str) {
+    #       return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    #           return String.fromCharCode('0x' + p1);
+    #       }));
+    #   }
+
     # try and decode the username and password
     username, password = slycat.web.server.decode_username_and_password()
     server = cherrypy.request.json["server"]

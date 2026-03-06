@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Models &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,13 +42,16 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="slycat.overview.html">Overview</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.table.html">Source Data, CSV Format Data Table</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Navbar.html">Slycat™ Navbar</a></li>
 <li class="toctree-l3"><a class="reference internal" href="Projects.html">Projects</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#source-data-for-models">Source Data for Models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#creating-models">Creating Models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#editing-models">Editing Models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#reset-model">Reset Model</a></li>
@@ -64,9 +69,14 @@
 <li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -102,9 +112,9 @@
            <div itemprop="articleBody">
              
   <section id="models">
-<h1>Models<a class="headerlink" href="#models" title="Permalink to this heading"></a></h1>
-<p>In Slycat™, models combine analysis and visualization.  Slycat™ provides three different types of models: Canonical Correlation
-Analysis (CCA), Parameter Space, and Time Series.  The heart of every model is a data table.  For each model type, there are
+<h1>Models<a class="headerlink" href="#models" title="Link to this heading"></a></h1>
+<p>In Slycat™, models combine analysis and visualization.  Slycat™ provides five different types of models: Canonical Correlation
+Analysis (CCA), Parameter Space, Time Series, VideoSwarm, and Dial-A-Cluster.  The heart of every model is a data table.  For each model type, there are
 predefined sets of linked views that provide different representations of the analysis results.  Generally, the visualization
 for each model consists of three different representations, each showing the ensemble at a different level of abstraction.  The
 highest-level view seeks to display the ensemble in a holistic manner.   It seeks to show what high-level behaviors or trends
@@ -115,9 +125,13 @@ view enables you to drill down to the raw data values, both to input parameters 
 <p>Each model has a <em>Name</em>, a <em>Marking</em>, and an optional <em>Description</em>.  Marking choices are defined as part of the server
 configuration, so they are specific to the institution that hosts the server.  The intent is for Slycat™ to facilitate clear
 labeling of data sensitivity through explicit choice of marking.  The marking appears as part of the model description on the
-Project page list, plus it is shown in both header and footer bars when visualizing the model.</p>
+Project page list and it is shown in the header bar when visualizing the model.</p>
+<section id="source-data-for-models">
+<h2>Source Data for Models<a class="headerlink" href="#source-data-for-models" title="Link to this heading"></a></h2>
+<p>Slycat models are created from a variety of data formats however, the primary format is CSV. CCA and Parameter Space models only require a single CSV file for creation. The file is expected to follow the standard CSV format where each row is a set of comma-delimited values, and a single header row labels each column. See the full documentation page on <a class="reference internal" href="data.table.html#csv-ref-label"><span class="std std-ref">Source Data, CSV Format Data Table</span></a> for the details and options.</p>
+</section>
 <section id="creating-models">
-<h2>Creating Models<a class="headerlink" href="#creating-models" title="Permalink to this heading"></a></h2>
+<h2>Creating Models<a class="headerlink" href="#creating-models" title="Link to this heading"></a></h2>
 <p>Models are created by clicking the green <em>Create</em> button from within a project page and selecting one of the model types from
 the dropdown list.  The information needed to create a model varies depending on which model you choose, so a popup dialog
 specific to the selected model will step you through entering the necessary information for that type (the details for each are
@@ -125,12 +139,12 @@ covered below).  Model creation can be aborted at any stage by clicking the <em>
 <figure class="align-center" id="id4">
 <img alt="../_images/Figure7.png" src="../_images/Figure7.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 7:</strong> <em>Create</em> <strong>dropdown list of model choices, as seen from a project page.</strong></span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 7:</strong> <em>Create</em> <strong>dropdown list of model choices, as seen from a project page.</strong></span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
 <section id="editing-models">
-<h2>Editing Models<a class="headerlink" href="#editing-models" title="Permalink to this heading"></a></h2>
+<h2>Editing Models<a class="headerlink" href="#editing-models" title="Link to this heading"></a></h2>
 <p>Clicking on the yellow <em>Edit</em> button on a model page and selecting Name Model from the dropdown list allows you to change the
 model <em>Name, Description,</em> and <em>Marking</em>.  A <em>Name Model</em> dialog will popup with the current model information.  Click
 <em>Save Changes</em> to modify the model description on the server, or click the <em>X</em> button in the upper right of the popup to abort
@@ -138,12 +152,12 @@ the operation.</p>
 <figure class="align-center" id="id5">
 <img alt="../_images/Figure8.png" src="../_images/Figure8.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 8:</strong> <em>Edit</em> <strong>dropdown list, as seen from a model page.</strong></span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 8:</strong> <em>Edit</em> <strong>dropdown list, as seen from a model page.</strong></span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
 <section id="reset-model">
-<h2>Reset Model<a class="headerlink" href="#reset-model" title="Permalink to this heading"></a></h2>
+<h2>Reset Model<a class="headerlink" href="#reset-model" title="Link to this heading"></a></h2>
 <p>As you interact with a model and change various aspects of the visualization, Slycat™ keeps track of the current model state.
 If you leave that model and return to it later, Slycat™ will resume with the model rendered according to the most recent
 configuration state.  Note that this is only true if you are returning to a model on the same computer using the same browser
@@ -152,14 +166,14 @@ initial visualization.  Clicking on the yellow <em>Edit</em> button on a model p
 return the model state to its initial configuration.</p>
 </section>
 <section id="deleting-models">
-<h2>Deleting Models<a class="headerlink" href="#deleting-models" title="Permalink to this heading"></a></h2>
+<h2>Deleting Models<a class="headerlink" href="#deleting-models" title="Link to this heading"></a></h2>
 <p>To remove a model and ALL ITS DATA, click the red <em>Delete</em> button from within the model page of the model that you wish to
 delete.  Select <em>Delete Model</em> from the dropdown.  Model deletion is an irreversible operation, so deletion requires
 confirmation through a popup asking if you really want to delete that model.  Press the red Delete Model button to confirm
 deletion, or click the <em>X</em> button in the upper right of the popup to abort the operation and keep the model.</p>
 </section>
 <section id="view-regions">
-<h2>View Regions<a class="headerlink" href="#view-regions" title="Permalink to this heading"></a></h2>
+<h2>View Regions<a class="headerlink" href="#view-regions" title="Link to this heading"></a></h2>
 <p>The inner part of each model’s visualization is subdivided into several views or regions, each separated from adjacent regions
 by a thick gray line.  As you move the mouse over one of these region dividers, a double-headed arrow cursor perpendicular to
 the divider replaces the normal arrow cursor, the line extent (all but a darker gray center section) highlights in yellow, and
@@ -172,7 +186,7 @@ the two adjacent regions.  It collapses the region that is closer to the edge of
 that same divider (now positioned along the edge of the model visualization) will restore the previous layout.</p>
 </section>
 <section id="download-data-table-download">
-<h2>Download Data Table <img alt="Download" src="../_images/DownloadIcon.png" /><a class="headerlink" href="#download-data-table-download" title="Permalink to this heading"></a></h2>
+<h2>Download Data Table <img alt="Download" src="../_images/DownloadIcon.png" /><a class="headerlink" href="#download-data-table-download" title="Link to this heading"></a></h2>
 <p>Since data tables are at the core of each model type, all models provide a table download operation.  The download can take one
 of several forms: download the entire table, download only selected items, or download only visible items.  As will be described
 later (see <a class="reference internal" href="SimulationView.html#selecting-points"><span class="std std-ref">Selecting Points</span></a> and <a class="reference internal" href="Filter.html#filtering"><span class="std std-ref">Filtering</span></a>), selection and filtering can be used to divide the data into sets using
@@ -185,14 +199,14 @@ runs are not biasing the analysis results.  Or alternately, you could download t
 create a Parameter Space model to explore what the failures have in common.</p>
 </section>
 <section id="color-themes">
-<span id="id1"></span><h2>Color Themes<a class="headerlink" href="#color-themes" title="Permalink to this heading"></a></h2>
+<span id="id1"></span><h2>Color Themes<a class="headerlink" href="#color-themes" title="Link to this heading"></a></h2>
 <p>Color is used extensively in Slycat™ to encode information of various types.  In the table views that appear within each model,
 green columns are associated with input variables, lavender designates output variables, and unspecified variables are not
 colored (they are rendered using an off-white).</p>
 <figure class="align-center" id="id6">
 <img alt="../_images/Figure9.png" src="../_images/Figure9.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 9: Dropdown list of color theme choices from the</strong> <em>Colors</em> <strong>button.</strong></span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 9: Dropdown list of color theme choices from the</strong> <em>Colors</em> <strong>button.</strong></span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Slycat™ provides a set of predefined color themes, which are individually assigned to each model.  A color theme consists of a
@@ -207,7 +221,7 @@ and a conventional rainbow palette.  <em>Rainbow Day</em> has a white background
 provide <em>Rainbow</em> themes, we discourage their use since color order in the middle of the range is not intuitive.</p>
 <p class="rubric">Footnotes</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="note">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
 <p>Moreland, K., Diverging Color Maps for Scientific Visualization.  Advances in Visual Computing, vol. 5876, pp. 92-103.  Springer, Berlin (2009).</p>
 </aside>
@@ -226,9 +240,9 @@ provide <em>Rainbow</em> themes, we discourage their use since color order in th
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dial-A-Cluster Generic Format &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -62,9 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -101,7 +109,7 @@
            <div itemprop="articleBody">
              
   <section id="dial-a-cluster-generic-format">
-<span id="dacgenericformat"></span><h1>Dial-A-Cluster Generic Format<a class="headerlink" href="#dial-a-cluster-generic-format" title="Permalink to this heading"></a></h1>
+<span id="dacgenericformat"></span><h1>Dial-A-Cluster Generic Format<a class="headerlink" href="#dial-a-cluster-generic-format" title="Link to this heading"></a></h1>
 <p>This is a multi-file format consisting of a zipped set of directories and comma separated value (CSV) files, where
 each directory provides a different type of information.  The CSV files are grouped using a naming convention that
 relies on file extensions to differentiate the data types: .dac, .meta, .var, .time, and .dist.  Other than the .dac
@@ -113,20 +121,21 @@ variable_1.time, variable_2.time, …, variable_<em>n</em>.time; and the <em>var
 variable_2.var, …, variable_<em>n</em>.var.  In addition, the <em>var</em> directory must contain the variables.meta file.  The
 directory structure is shown in Figure 2.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../../_images/dac-gen-zip-file-structure.png"><img alt="../../_images/dac-gen-zip-file-structure.png" src="../../_images/dac-gen-zip-file-structure.png" style="width: 550.0px; height: 325.6px;" /></a>
+<a class="reference internal image-reference" href="../../_images/dac-gen-zip-file-structure.png"><img alt="../../_images/dac-gen-zip-file-structure.png" height="326" src="../../_images/dac-gen-zip-file-structure.png" width="550" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 2: The directory structure for the DAC generic input format, using a dataset with only three data points.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 2: The directory structure for the DAC generic input format, using a dataset with only three data points.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <section id="dac">
-<h2>.dac<a class="headerlink" href="#dac" title="Permalink to this heading"></a></h2>
+<h2>.dac<a class="headerlink" href="#dac" title="Link to this heading"></a></h2>
 <p>Scalar data for the <em>Metadata Table</em> is contained in a single file with the .dac extension.  The first row contains
 header information (variable names) for the table columns.  The remaining rows are the values for these variables
 for each ensemble member.  Each row is comma separated and ends with a new line (a CSV file).  This file is at the
 same level as the directories <em>dist</em>, <em>time</em>, and <em>var</em>.</p>
 </section>
 <section id="dist">
-<h2>.dist<a class="headerlink" href="#dist" title="Permalink to this heading"></a></h2>
+<h2>.dist<a class="headerlink" href="#dist" title="Link to this heading"></a></h2>
 <p>In the <em>dist</em> folder, there are variable_1.dist, variable_2.dist, …, variable_<em>n</em>.dist files.  Each .dist file contains
 the all-to-all distance matrix comparing every ensemble member to each of the others, calculated using the correspond
 time series variable.  These matrices are used to compute the visualization in the <em>Scatterplot</em> pane.  The file
@@ -135,7 +144,7 @@ files have no header row.  Given <em>k</em> ensemble members, the file will cons
 distance values.  The rows and columns in these matrices are ordered according to order of the data points in the .dac file.</p>
 </section>
 <section id="time">
-<h2>.time<a class="headerlink" href="#time" title="Permalink to this heading"></a></h2>
+<h2>.time<a class="headerlink" href="#time" title="Link to this heading"></a></h2>
 <p>In the <em>time</em> folder, there are variable_1.time, variable_2.time, …, variable_<em>n</em>.time files.  These files contain the
 times when the corresponding temporal variables were sampled.  For example the file variable_1.time contains the
 <em>x</em>-axis values for graphing the time sequence associated with the first variable in the variables.meta file.  These
@@ -143,14 +152,14 @@ files have no header row, consisting of just a single row of comma delimited val
 values are defined in the .meta file in the “Time Units” column.</p>
 </section>
 <section id="var">
-<h2>.var<a class="headerlink" href="#var" title="Permalink to this heading"></a></h2>
+<h2>.var<a class="headerlink" href="#var" title="Link to this heading"></a></h2>
 <p>In the <em>var</em> folder, there are variable_1.var, variable_2.var, …, variable_<em>n</em>.var files.  Here, the file variable_1.var
 contains the values (amplitudes in the <em>Time Series Plot</em>) for the first variable in the variables.meta.  The .var
 files have no header row, containing a single row with comma delimited values for each data point, ordered according
 to the order given in the .dac fille.  The units for these values are defined in the .meta file in the “Units” column.</p>
 </section>
 <section id="meta">
-<h2>.meta<a class="headerlink" href="#meta" title="Permalink to this heading"></a></h2>
+<h2>.meta<a class="headerlink" href="#meta" title="Link to this heading"></a></h2>
 <p>The <em>var</em> folder also contains a file variables.meta, which defines the time series variable names shown in the
 <em>Slider</em> panel.  The first row should consist of the headers: “Name,Time Units,Units,Plot Type”.  The remaining
 rows define each of the time series variables (one per row), providing variable name, units for labeling the x
@@ -158,7 +167,7 @@ and y axes in the time series plots, and the type of plot.  “Curve” is the o
 “Plot Type”.</p>
 </section>
 <section id="archiving-in-windows">
-<span id="archiving-windows"></span><h2>Archiving in Windows<a class="headerlink" href="#archiving-in-windows" title="Permalink to this heading"></a></h2>
+<span id="archiving-windows"></span><h2>Archiving in Windows<a class="headerlink" href="#archiving-in-windows" title="Link to this heading"></a></h2>
 <p>The files and subdirectories described above must be archived in a .zip file before import into the DAC model
 creation wizard.  When creating the .zip file on Windows, do not zip from the level of an enclosing directory,
 but instead perform the zip with the three directories and the .dac file as the input elements.  Also note that
@@ -168,12 +177,12 @@ The correct method for creating the archive is shown in Figure 3.</p>
 <figure class="align-center" id="id2">
 <img alt="../../_images/compression-windows.png" src="../../_images/compression-windows.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 3: Archiving a DAC Generic Format directory into a .zip file on Windows.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 3: Archiving a DAC Generic Format directory into a .zip file on Windows.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 </section>
 <section id="archiving-on-mac">
-<span id="archiving-mac"></span><h2>Archiving on Mac<a class="headerlink" href="#archiving-on-mac" title="Permalink to this heading"></a></h2>
+<span id="archiving-mac"></span><h2>Archiving on Mac<a class="headerlink" href="#archiving-on-mac" title="Link to this heading"></a></h2>
 <p>On a Mac, it is easiest to archive the files from the command line.  This avoids the inclusion of the Mac OS files
 .DS_store and __MACOSX, which will trigger errors when importing into the DAC model creation wizard.  From the
 directory containing the .dac file and the <em>dist</em>, <em>time</em>, and <em>var</em> folders, use the command:</p>
@@ -194,9 +203,9 @@ directory containing the .dac file and the <em>dist</em>, <em>time</em>, and <em
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

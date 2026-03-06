@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Time Series Data &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -58,9 +61,14 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -96,7 +104,7 @@
            <div itemprop="articleBody">
              
   <section id="time-series-data">
-<h1>Time Series Data<a class="headerlink" href="#time-series-data" title="Permalink to this heading"></a></h1>
+<h1>Time Series Data<a class="headerlink" href="#time-series-data" title="Link to this heading"></a></h1>
 <p>Slycat™ accepts two different time series data formats, which we will call <em>Xyce</em> and <em>CSV</em>.  Each input format consists of
 two parts, a table file describing the entire ensemble, and a time series data file for each simulation in the ensemble.  Like
 the CCA and Parameter Space models, the table is at the heart of the model.  For each simulation (for each row in the data
@@ -105,7 +113,7 @@ one or more output variables over the course of the simulation.   It is not nece
 number of samples into their time series files, but it is required that each simulation have a corresponding data file with
 matching output variables that cover the same time range.</p>
 <section id="xyce-format-file-structure">
-<h2>Xyce Format File Structure<a class="headerlink" href="#xyce-format-file-structure" title="Permalink to this heading"></a></h2>
+<h2>Xyce Format File Structure<a class="headerlink" href="#xyce-format-file-structure" title="Link to this heading"></a></h2>
 <p>The <em>Xyce</em> format consists of Xyce-generated time series files stored within a fixed directory hierarchy.  The hierarchy is
 rooted within a single high-level directory where there must be a <em>dakota_tabular.dat</em> file (providing the data table).  It is
 not that the file must be named <em>dakota_tabular.dat</em>, but rather the file format must correspond to the <em>dakota_tabular.dat</em>
@@ -116,15 +124,26 @@ time series files must all be named identically (the subdirectory defines which 
 contain a shared set of time series variables (columns with matching headers within each of the <em>.prn</em> files).</p>
 </section>
 <section id="csv-format-file-structure">
-<h2>CSV Format File Structure<a class="headerlink" href="#csv-format-file-structure" title="Permalink to this heading"></a></h2>
+<h2>CSV Format File Structure<a class="headerlink" href="#csv-format-file-structure" title="Link to this heading"></a></h2>
 <p>The <em>CSV</em> format (such as <em>heartbeat.dat</em> files produced by Sierra, or <em>.csv</em> outputs from Catalyst), is less structured than
 the <em>Xyce</em> format.  The individual time series files need not be stored in the same directory hierarchy as the data table, nor
 does the directory structure need to follow any structure or naming conventions.  Instead, the data table is a <em>CSV</em> file,
 which contains a column of URIs providing full paths to each of the time series files, which must also be <em>CSV</em> files (no
-<em>.prn</em> files).  Each URI must have the format: <a class="reference external" href="file://machine/absolute_directory_path/timeseries_filename.csv">file://machine/absolute_directory_path/timeseries_filename.csv</a>.</p>
+<em>.prn</em> files).  Each URI must have the format:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>file://machine/absolute_directory_path/timeseries_filename.csv
+</pre></div>
+</div>
+<p>Here is a CSV data table example that includes a path to one time series file (accel_TS):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>index,<span class="w"> </span>speed,<span class="w"> </span>angle,<span class="w"> </span>max_temp,<span class="w"> </span>accel_TS
+<span class="m">0</span>,<span class="w"> </span><span class="m">2</span>.7,<span class="w"> </span><span class="m">40</span>,<span class="w"> </span><span class="m">422</span>,<span class="w"> </span>/scratch/sim1/accel.csv
+<span class="m">1</span>,<span class="w"> </span><span class="m">2</span>.6,<span class="w"> </span><span class="m">40</span>,<span class="w"> </span><span class="m">401</span>,<span class="w"> </span>/scratch/sim2/accel.csv
+<span class="m">2</span>,<span class="w"> </span><span class="m">2</span>.5,<span class="w"> </span><span class="m">40</span>,<span class="w"> </span><span class="m">397</span>,<span class="w"> </span>/scratch/sim3/accel.csv
+.<span class="w"> </span>.<span class="w"> </span>.
+</pre></div>
+</div>
 </section>
 <section id="time-series-files">
-<h2>Time Series Files<a class="headerlink" href="#time-series-files" title="Permalink to this heading"></a></h2>
+<h2>Time Series Files<a class="headerlink" href="#time-series-files" title="Link to this heading"></a></h2>
 <p>Whether we are using <em>.prn</em> files or <em>CSV</em> files, both formats are essentially tables in which each column is a separate
 variable and each row is a set of concurrent samples for each of the variable columns.  The first line of a time series file
 contains headers, which provide the names of the time series output variables.  Note that in a <em>CSV</em> file, we expect to see
@@ -134,9 +153,17 @@ At least one column must be a time value (typically the first column).</p>
 <p>If your data is not currently in one of these two formats, Excel can be used to create <em>CSV</em> files from most common table
 formats.  Note that if output metrics have been created separately in a post-processing step, they will need to be
 integrated with the inputs to form a single file prior to model creation.</p>
+<p>Here is a CSV example of an individual time series file that includes time and x,y,z acceleration values:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>time,<span class="w"> </span>node13_accel_x,<span class="w"> </span>node13_accel_y,<span class="w"> </span>node13_accel_z
+<span class="m">0</span>.00000e+00,<span class="w">  </span><span class="m">1</span>.07467e-10,<span class="w"> </span>-3.86400e+02,<span class="w"> </span>-3.05677e-11
+<span class="m">1</span>.00575e-05,<span class="w"> </span>-1.49045e-09,<span class="w"> </span>-3.86400e+02,<span class="w"> </span>-3.51361e-08
+<span class="m">2</span>.00475e-05,<span class="w"> </span>-1.10586e-08,<span class="w"> </span>-3.86400e+02,<span class="w">  </span><span class="m">7</span>.26048e-09
+.<span class="w"> </span>.<span class="w"> </span>.
+</pre></div>
+</div>
 </section>
 <section id="hdf5-intermediary-format">
-<h2>HDF5 Intermediary Format<a class="headerlink" href="#hdf5-intermediary-format" title="Permalink to this heading"></a></h2>
+<h2>HDF5 Intermediary Format<a class="headerlink" href="#hdf5-intermediary-format" title="Link to this heading"></a></h2>
 <p>In the time series creation wizard, both formats are rewritten as <em>HDF5</em> files in a temporary Slycat™ directory (we have
 found that this significantly speeds up our processing compared to working with the originally-formatted files).  If you
 opt to keep these <em>HDF5</em> files, they constitute a third data format that the wizard will accept, though be aware that
@@ -155,9 +182,9 @@ opt to keep these <em>HDF5</em> files, they constitute a third data format that 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

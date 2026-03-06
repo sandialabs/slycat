@@ -9,4 +9,6 @@ Slycat User Manual
    parameter.space.model.rst
    timeseries.model.rst
    DAC_Manual/dac.model.rst
+   VS_Manual/vs.rst
+   slypi/slypi.rst
    Acknowledgements.rst

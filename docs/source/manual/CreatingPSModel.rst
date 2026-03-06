@@ -1,9 +1,15 @@
 Creating a Parameter Space Model
 --------------------------------
 
-Like the CCA model, the core of the Parameter Space model is table data.  Up until the stage where inputs and outputs for the 
-model are selected, the model creation steps are identical to CCA (see Creating a CCA Model).  Instead of initializing all 
-variables as *Input*, the variables default to being assigned as *Neither*.  As with CCA, group selection operations using 
+Like the CCA model, the core of the Parameter Space model is table data ingested from a Comma-Separate Values (CSV) file.
+
+The CSV file is expected to follow the standard CSV format where each row is a set of comma-delimited values from a single sample. A header row should name the values contained in the columns, and the delimiters must be commas. Columns may contain integers, real numbers, or strings. Columns must be type-consistent and missing data should be represented with an appropriate entry, such as “” for empty string or NAN for missing number.
+
+See the :ref:`csv-ref-label` page for a complete description of the Slycat™ CSV format requirements and options.
+
+See the :ref:`mediasupport-ref-label` page for a complete description of the media formats supported in the Slycat™ Parameter Space model.
+
+Up until the stage where inputs and outputs for the model are selected, the model creation steps are identical to CCA (see Creating a CCA Model).  Instead of initializing all variables as *Input*, the variables default to being assigned as *Neither*.  As with CCA, group selection operations using 
 shift-click and/or control-click allow rapid assignment of variable types (see Select Columns).  However, a central difference 
 in the Parameter Space model is that variables can also be designated as being *Categorical* and/or *Editable*.
 

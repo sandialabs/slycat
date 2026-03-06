@@ -1,0 +1,165 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VideoSwarm Model &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="SlyPI Library" href="../slypi/slypi.html" />
+    <link rel="prev" title="Acknowledgements" href="../DAC_Manual/Acknowledgements.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">VideoSwarm Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reference">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../user-manual.html">Slycat User Manual</a></li>
+      <li class="breadcrumb-item active">VideoSwarm Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/manual/VS_Manual/vs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="videoswarm-model">
+<span id="vs-ref-label"></span><h1>VideoSwarm Model<a class="headerlink" href="#videoswarm-model" title="Link to this heading"></a></h1>
+<p>Often it is useful to produce videos rendered from multiple viewpoints when generating an ensemble of numerical simulations.  Videos are commonly used to understand simulation results and have the added advantage of being generic for any type of simulation.  Videos have a smaller storage requirement than full simulation results, and may contain more information than summary statistics or location-based samples.</p>
+<p>Given a set of simulation videos, several questions arise: How can we compare and contrast videos in our ensemble?  Where in time are the videos similar and where do they diverge?  Do the videos cluster?  Can we identify interesting behavior in the videos and when it occurs?  In other words, without actually watching every video, how can we digest the full content of the data?  To answer these questions, we have developed a Slycat model for analyzing simulation video ensembles, called VideoSwarm.</p>
+<figure class="align-center" id="id1">
+<img alt="../../_images/Slycat_VideoswarmModel1.png" src="../../_images/Slycat_VideoswarmModel1.png" />
+<figcaption>
+<p><span class="caption-text"><strong>Figure 1: VideoSwarm model example illustrating clustered similarity results, a similarity timeline, and exemplar videos.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="data-format">
+<h2>Data Format<a class="headerlink" href="#data-format" title="Link to this heading"></a></h2>
+<p>The VideoSwarm format consists of four files, which can be provided by the user, generated on the Slycat server, or produced using the <a class="reference internal" href="../slypi/slypi.html#slypi-ref-label"><span class="std std-ref">SlyPI Library</span></a>.  The four files are:</p>
+<ul class="simple">
+<li><p>Meta-Data Table, e.g. <cite>movies.csv</cite>: This is a standard Slycat style .csv file containing meta data and (importantly) URL links to the movies to be shown in the resulting VideoSwarm model.  See <a class="reference internal" href="../data.table.html#csv-ref-label"><span class="std std-ref">Source Data, CSV Format Data Table</span></a>.</p></li>
+<li><p>.xcoords File, e.g. <cite>movies.xcoords</cite>: These are the x-coordinates per time step of the VideoSwarm dimension reduction for each movie, listed as a comma separted matrix per row by time step.</p></li>
+<li><p>.ycoords File, e.g. <cite>movies.ycoords</cite>: These are the y-coordinates per time step of the VideoSwarm dimension reduction for each movie, listed as a comma separted matrix per row by time step.</p></li>
+<li><p>.trajectories Files, e.g. <cite>movies.trajectories</cite>: These are the trajectory traces shown in the VideoSwarm model below the scatter plot of the dimension reduction, listed as a comma separated matrix per row by video.</p></li>
+</ul>
+<p>A VideoSwarm example dataset can be found in the slycat-data repository at: <a class="reference external" href="https://github.com/sandialabs/slycat-data/tree/master/vs/spinodal/vs-local">https://github.com/sandialabs/slycat-data/tree/master/vs/spinodal/vs-local</a>.</p>
+<p>These files are the same files requested by the VS creation wizard if you choose <cite>Create</cite> -&gt; <cite>New VideoSwarm Model</cite> -&gt; <cite>Local (pre-computed VideoSwarm format)</cite> from a Slycat project page.</p>
+<figure class="align-center" id="id2">
+<img alt="../../_images/Slycat_VS_Files_Wizard.png" src="../../_images/Slycat_VS_Files_Wizard.png" />
+<figcaption>
+<p><span class="caption-text"><strong>Figure 2: Files expected from the VideoSwarm creation wizard.  The `movies.csv` file would be input to the “Upload meta-data table” field and the `movies.xcoords`, `movies.ycoords`, and `movies.trajectories` files would be input to the “Upload .xcoords, .ycoords, and .trajectories files” field.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Link to this heading"></a></h2>
+<p>Shawn Martin, Milosz A Sielicki, Jaxon Gittinger, Matthew Letter, Warren L Hunt, Patricia J Crossno, “VideoSwarm: Analyzing Video Ensembles”  in Proc. IS&amp;T Int’l. Symp. on Electronic Imaging: Visualization and Data Analysis,  2019,  pp 685-1 - 685-12,  <a class="reference external" href="https://doi.org/10.2352/ISSN.2470-1173.2019.1.VDA-685">https://doi.org/10.2352/ISSN.2470-1173.2019.1.VDA-685</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../DAC_Manual/Acknowledgements.html" class="btn btn-neutral float-left" title="Acknowledgements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../slypi/slypi.html" class="btn btn-neutral float-right" title="SlyPI Library" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

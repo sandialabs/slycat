@@ -1,18 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.web.server.engine &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" /> 
@@ -37,8 +39,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -77,32 +83,40 @@
 <span class="c1"># DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government</span>
 <span class="c1"># retains certain rights in this software.</span>
 
-<span class="kn">import</span> <span class="nn">cherrypy</span>
-<span class="kn">import</span> <span class="nn">configparser</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cherrypy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="c1"># datetime is required to parse the config file</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 
-<span class="kn">import</span> <span class="nn">slycat.web.server.cleanup</span>
-<span class="kn">import</span> <span class="nn">slycat.web.server.handlers</span>
-<span class="kn">import</span> <span class="nn">slycat.web.server.plugin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">slycat.web.server.cleanup</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">slycat.web.server.handlers</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">slycat.web.server.plugin</span>
 
 
-<div class="viewcode-block" id="SessionIdFilter"><a class="viewcode-back" href="../../../../slycat-packages/slycat.web.server.engine.html#slycat.web.server.engine.SessionIdFilter">[docs]</a><span class="k">class</span> <span class="nc">SessionIdFilter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
+<div class="viewcode-block" id="SessionIdFilter">
+<a class="viewcode-back" href="../../../../slycat-packages/slycat.web.server.engine.html#slycat.web.server.engine.SessionIdFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SessionIdFilter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Python log filter to keep session ids out of logfiles.&quot;&quot;&quot;</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_remote_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;/remotes/[^/]+/&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SessionIdFilter.filter"><a class="viewcode-back" href="../../../../slycat-packages/slycat.web.server.engine.html#slycat.web.server.engine.SessionIdFilter.filter">[docs]</a>  <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+<div class="viewcode-block" id="SessionIdFilter.filter">
+<a class="viewcode-back" href="../../../../slycat-packages/slycat.web.server.engine.html#slycat.web.server.engine.SessionIdFilter.filter">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
     <span class="n">record</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_pattern</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;/remotes/----/&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kc">True</span></div></div>
+    <span class="k">return</span> <span class="kc">True</span></div>
+</div>
 
-<div class="viewcode-block" id="start"><a class="viewcode-back" href="../../../../slycat-packages/slycat.web.server.engine.html#slycat.web.server.engine.start">[docs]</a><span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">):</span>
 
-  <span class="k">def</span> <span class="nf">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<div class="viewcode-block" id="start">
+<a class="viewcode-back" href="../../../../slycat-packages/slycat.web.server.engine.html#slycat.web.server.engine.start">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">):</span>
+
+  <span class="k">def</span><span class="w"> </span><span class="nf">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
       <span class="k">return</span> <span class="n">path</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
@@ -233,6 +247,9 @@
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-remotes&quot;</span><span class="p">,</span> <span class="s2">&quot;/remotes&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_remotes</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-remotes-smb&quot;</span><span class="p">,</span> <span class="s2">&quot;/remotes/smb&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_remotes_smb</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-smb-browse&quot;</span><span class="p">,</span> <span class="s2">&quot;/smb/remotes/:hostname/browse{path:.*}&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_smb_browse</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
+  <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-hdf5-browse&quot;</span><span class="p">,</span> <span class="s2">&quot;/hdf5/browse/:path/:pid/:mid&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_browse_hdf5</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
+  <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-hdf5-table&quot;</span><span class="p">,</span> <span class="s2">&quot;/hdf5/table/:path/:pid/:mid&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_hdf5_table</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
+  <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-combine-hdf5-tables&quot;</span><span class="p">,</span> <span class="s2">&quot;/hdf5/combine/:mid&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_combine_hdf5_tables</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;put-model-arrayset-array&quot;</span><span class="p">,</span> <span class="s2">&quot;/models/:mid/arraysets/:aid/arrays/:array&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">put_model_arrayset_array</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PUT&quot;</span><span class="p">]})</span>
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;put-model-arrayset-data&quot;</span><span class="p">,</span> <span class="s2">&quot;/models/:mid/arraysets/:aid/data&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">put_model_arrayset_data</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PUT&quot;</span><span class="p">]})</span>
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;put-model-arrayset&quot;</span><span class="p">,</span> <span class="s2">&quot;/models/:mid/arraysets/:aid&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">put_model_arrayset</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;PUT&quot;</span><span class="p">]})</span>
@@ -251,7 +268,7 @@
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;post-upload-finished&quot;</span><span class="p">,</span> <span class="s2">&quot;/uploads/:uid/finished&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">post_upload_finished</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
   <span class="n">dispatcher</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;login&quot;</span><span class="p">,</span> <span class="s2">&quot;/login&quot;</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">login</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;method&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">]})</span>
 
-  <span class="k">def</span> <span class="nf">log_configuration</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">log_configuration</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    logs the configuration when starting up the cherrypy server</span>
 <span class="sd">    &#39;&#39;&#39;</span>
@@ -341,6 +358,7 @@
 
   <span class="c1"># Start the web server.</span>
   <span class="n">cherrypy</span><span class="o">.</span><span class="n">quickstart</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">configuration</span><span class="p">)</span></div>
+
   <span class="c1"># wsgi: for actual wsgi - don&#39;t call quickstart just rtn config below</span>
   <span class="c1">#return configuration</span>
 </pre></div>
@@ -352,9 +370,9 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
