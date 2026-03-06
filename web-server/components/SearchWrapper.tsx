@@ -1,6 +1,8 @@
 import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faColumns } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * @param items list of item objects
@@ -15,11 +17,13 @@ export interface SearchWrapperProps {
  * @param initialItems list of Item objects
  * @param items list of Item objects
  * @param searchQuery string to regex on
+ * @param two_columns one or two columns
  */
 export interface SearchWrapperState {
   initialItems: Item[];
   items: Item[];
   searchQuery: string;
+  two_columns: boolean;
 }
 /**
  * @param {name} string name
@@ -36,7 +40,7 @@ interface Item {
 }
 
 /**
- * class that filters on item objects and search term
+ * class that filters on item objects and search term, switches between one and two columns
  */
 // eslint-disable-next-line import/no-default-export
 export default class SearchWrapper extends React.Component<SearchWrapperProps, SearchWrapperState> {
@@ -46,6 +50,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       initialItems: this.props.items,
       items: [],
       searchQuery: "",
+      two_columns: true,
     };
   }
 
@@ -105,6 +110,29 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     ) : null;
   };
 
+  // toggle between one and two columns
+  private readonly changeColumnState = (): JSX.Element | null => {
+    this.setState((prevState) => {return {two_columns: !prevState.two_columns}})
+  }
+
+  /**
+   * creates the one/two column input field
+   *
+   * @memberof SearchWrapper
+   */
+    private readonly getColumnField = (): JSX.Element | null => {
+      return this.props.items.length > 0 ? (
+        <button
+          className="btn btn-light mb-3 me-2"
+          title="Toggle between one and two column model list."
+          type="button"
+          onClick={() => this.changeColumnState()}
+        >
+         <FontAwesomeIcon icon={faColumns} />
+        </button>
+      ) : null;
+    };
+
   /**
    * populate the model or projects list depending on the type passed to props
    *
@@ -112,7 +140,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    */
   private readonly getList = (): JSX.Element => {
     return this.props.type === "models" ? (
-      <ModelsList models={this.state.items} />
+      <ModelsList models={this.state.items} two_columns={this.state.two_columns}/>
     ) : (
       <ProjectsList projects={this.state.items as any} />
     );
@@ -169,7 +197,10 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         <div className="container mt-4">
           <div className="d-flex justify-content-between">
             <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
-            {this.getSearchField()}
+            <div className="btn-toolbar me-2">
+              {this.getColumnField()}
+              {this.getSearchField()}
+            </div>
           </div>
         </div>
         {this.getList()}
