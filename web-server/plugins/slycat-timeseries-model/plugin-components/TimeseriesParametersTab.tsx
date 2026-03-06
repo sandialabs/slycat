@@ -4,17 +4,17 @@ import SlycatSelector from "components/SlycatSelector";
 import SlycatNumberInput from "components/SlycatNumberInput";
 
 interface TimeseriesParametersTabProps {
-    delimiter: string
-    delimiterCallback: Function
-    columnNames: any
-    allColumnNames: any
-    indexColumnCallback: Function
-    columnCallback: Function
-    bincountCallback: Function
-    resamplingCallback: Function
-    linkageCallback: Function
-    metricCallback: Function
-    fileType: string
+  delimiter: string
+  delimiterCallback: Function
+  columnNames: any
+  allColumnNames: any
+  indexColumnCallback: Function
+  columnCallback: Function
+  bincountCallback: Function
+  resamplingCallback: Function
+  linkageCallback: Function
+  metricCallback: Function
+  fileType: string
 }
 
 function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
@@ -47,7 +47,10 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
           <strong>Timeseries Clustering Parameters</strong>
           <hr className="mt-1 mb-3"></hr>
         </div>
-      ) : null}
+      ) :
+        <div className="alert alert-primary" role="alert">
+          Select the timeseries clustering parameters.
+        </div>}
       <div>
         <SlycatNumberInput
           label={"Timeseries Bin Count"}
