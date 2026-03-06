@@ -81,12 +81,6 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
           ]}
           onSelectCallBack={props.linkageCallback}
         />
-        {/* <SlycatSelector
-          label={"Cluster Metric"}
-          options={[{ text: "euclidean", value: "euclidean" }]}
-          disabled={true}
-          onSelectCallBack={props.metricCallback}
-        /> */}
         Cluster Metric: Euclidean
       </div>
     </div>
