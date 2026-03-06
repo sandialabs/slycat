@@ -29,15 +29,7 @@ function HPCParametersTab(props: HPCParametersTabProps) {
         <div className="alert alert-primary" role="alert">
           Select a working directory and HPC submission details.
         </div>
-        {/* <input
-          id="job-host"
-          className="form-control"
-          value={props.hostName}
-          disabled
-          placeholder="Job Host"
-        /> */}
         Job Host: {props.hostName}
-        {/* <label htmlFor="job-host">Job Host</label> */}
       </div>
       <SlycatTextInput
         id={"work-dir"}
