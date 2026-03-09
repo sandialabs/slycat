@@ -31,7 +31,7 @@ export const CCATableIngestion = (props: { hidden?: boolean }) => {
   return (
     <div hidden={hidden}>
       {stringColumns.length > 0 && (
-        <div className="alert alert-primary" role="alert">
+        <div className="alert alert-primary" role="alert" style={{overflowWrap: "break-word"}}>
           Slycat has detected non-numeric data columns in the given data table. The CCA calculation
           is only valid for numeric data so the following non-numeric columns are not displayed:
           <br />

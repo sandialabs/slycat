@@ -14,14 +14,6 @@
   background-color: #fc6;
 }
 
-.alert {
-  overflow-wrap: break-word
-}
-
-.alert-primary {
-  overflow-wrap: break-word
-}
-
 .ui-layout-pane,
 .ui-layout-container {
   background: white;
