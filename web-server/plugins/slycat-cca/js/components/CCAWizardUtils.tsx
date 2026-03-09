@@ -573,7 +573,9 @@ export const useHandleLocalFileSubmit = (): [
   const fileUploadSuccess = useFileUploadSuccess();
   const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
-      const fileExtension = file.name.split(".")[1];
+      const fileNameSplit = file.name.split(".");
+      const fileExtension = fileNameSplit[fileNameSplit.length - 1];
+
       let autoParser: string | undefined = "";
 
       if (fileExtension == "csv") {
