@@ -489,10 +489,13 @@ export const useHandleRemoteFileSubmit = () => {
           dispatch(setProgressStatus(input));
         };
 
+        // Parse out file extension from the file path
         const splitFilePath = fileDescriptor?.path?.split("/");
         const splitFilePathLength = splitFilePath.length;
         const fileName = splitFilePath[splitFilePathLength - 1];
-        const fileExtension = fileName.split(".")[1];
+        const fileNameSplit = fileName.split(".");
+        const fileNameSplitLength = fileNameSplit.length;
+        const fileExtension = fileNameSplit[fileNameSplitLength - 1];
 
         // Automatically detect file type from the file name, and select the parser accordingly
         if (fileExtension == "csv") {
@@ -506,8 +509,6 @@ export const useHandleRemoteFileSubmit = () => {
           dispatch(setParser("slycat-hdf5-parser"));
         } 
 
-        const filePath = fileDescriptor.path.split("/");
-        const fileNameFromPath = filePath[filePath.length - 1];
         const fileObject = {
           pid,
           mid,
@@ -515,7 +516,7 @@ export const useHandleRemoteFileSubmit = () => {
           parser,
           hostname,
           paths: fileDescriptor.path,
-          aids: [["data-table"], fileNameFromPath],
+          aids: [["data-table"], fileName],
           progress: progressCallback,
           progress_status: progressStatusCallback,
           progress_final: 90,
@@ -572,7 +573,9 @@ export const useHandleLocalFileSubmit = (): [
   const fileUploadSuccess = useFileUploadSuccess();
   const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
-      const fileExtension = file.name.split(".")[1];
+      const fileNameSplit = file.name.split(".");
+      const fileExtension = fileNameSplit[fileNameSplit.length - 1];
+
       let autoParser: string | undefined = "";
 
       if (fileExtension == "csv") {
