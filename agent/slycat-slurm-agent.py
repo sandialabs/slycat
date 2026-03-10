@@ -73,7 +73,7 @@ class Agent(agent.Agent):
             time_hours = command["hpc"]["parameters"]["time_hours"]
             time_minutes = command["hpc"]["parameters"]["time_minutes"]
             time_seconds = command["hpc"]["parameters"]["time_seconds"]
-            license = command["hpc"]["parameters"]["time_seconds"]
+            license = command["hpc"]["parameters"]["license"]
             working_dir = command["hpc"]["parameters"]["working_dir"]
             output = ["running batch job", "running batch job"]
             try:
