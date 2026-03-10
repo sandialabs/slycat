@@ -3928,7 +3928,6 @@ def get_configuration_remote_hosts():
     for hostname, remote in list(
         cherrypy.request.app.config["slycat-web-server"]["remote-hosts"].items()
     ):
-        cherrypy.log.error("slycat.web.server.remote.py remote %s" % str(remote))
         agent = True if remote.get("agent", False) else False
         remote_hosts.append({"hostname": hostname, "agent": agent})
     return remote_hosts
