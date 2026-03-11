@@ -3379,13 +3379,51 @@ def post_combine_hdf5_tables(mid):
     # Getting indices for input/output columns
     unformatted_input = list(h5[input_path])
     unformatted_output = list(h5[output_path])
-    output_column_headers_indices = [
-        i
-        for i in range(
-            len(unformatted_input[0]),
-            (len(unformatted_input[0]) + len(unformatted_output[0])),
-        )
-    ]
+
+    # If model type is CCA, perform validation before combining tables
+    if model["model-type"] == "cca":
+
+        # Helper function to validate string and constant columns
+        # Returns: list of bad column indices
+        def validate_column(item_tuple):
+            index, column = item_tuple
+            constant_column_found = False
+            string_column_found = False
+            column_unique_count = len(set(column))
+            if column_unique_count == 1:
+                constant_column_found = True
+            elif any(isinstance(item, str) for item in column):
+                string_column_found = True
+            if constant_column_found or string_column_found:
+                return index
+
+        unformatted_input_column_stack = numpy.column_stack(unformatted_input).tolist()
+        unformatted_output_column_stack = numpy.column_stack(unformatted_output).tolist()
+
+        # Map validation helper function to each column
+        bad_columns_map_inputs = map(validate_column, enumerate(unformatted_input_column_stack))
+        bad_columns_map_outputs = map(validate_column, enumerate(unformatted_output_column_stack))
+
+        # Convert the map object to a list for viewing
+        bad_columns_inputs = list(bad_columns_map_inputs)
+        bad_columns_outputs = list(bad_columns_map_outputs)
+
+        input_column_headers_indices = [i for i in range(0, len(unformatted_input[0]))]
+        output_column_headers_indices = [
+            i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))
+        ]
+
+        # Remove bad columns from the combined data
+        for input_idx in bad_columns_inputs:
+            if input_idx is not None:
+                # Remove column from unformatted_input
+                del input_column_headers_indices[input_idx]
+
+        for output_idx in bad_columns_outputs:
+            if output_idx is not None:
+                # Remove column from unformatted_output
+                del output_column_headers_indices[output_idx]
+    else:
         input_column_headers_indices = [i for i in range(0, len(unformatted_input[0]))]
         output_column_headers_indices = [
             i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))
