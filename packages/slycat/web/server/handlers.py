@@ -288,6 +288,14 @@ def get_project(pid):
 
 
 def get_remote_host_dict():
+    """
+    Retrieves a list of remote hosts from the CherryPy application configuration.
+
+    Returns:
+        list: A list of dictionaries, each containing information about a remote host.
+              Each dictionary has a 'name' key with the host's name as its value.
+              If a 'message' is configured for the host, the dictionary also has a 'message' key.
+    """
     remote_host_dict = cherrypy.request.app.config["slycat-web-server"]["remote-hosts"]
     remote_host_list = []
     for host in remote_host_dict:

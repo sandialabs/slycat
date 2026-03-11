@@ -42,6 +42,7 @@ function RemoteLoginTab(props: RemoteLoginTabProps) {
         </div>
       )}
       <SlycatRemoteControls
+        agent={true}
         loadingData={props.loadingData}
         callBack={props.callBack}
         sessionExists={props.sessionExists}
