@@ -1204,6 +1204,8 @@ $(document).ready(function () {
     if (v_index == table_metadata["column-count"] - 1) {
       var count = table_metadata["row-count"];
       for (var i = 0; i != count; ++i) v[i] = i;
+      // Dispatch update to v values in Redux
+      window.store.dispatch(setVValues(v));
       update_widgets_after_color_variable_change();
     } else {
       update_v(variable);
