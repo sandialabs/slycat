@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.web.server.plugin &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,8 +42,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -111,15 +117,15 @@
            <div itemprop="articleBody">
              
   <section id="module-slycat.web.server.plugin">
-<span id="slycat-web-server-plugin"></span><h1>slycat.web.server.plugin<a class="headerlink" href="#module-slycat.web.server.plugin" title="Permalink to this heading"></a></h1>
+<span id="slycat-web-server-plugin"></span><h1>slycat.web.server.plugin<a class="headerlink" href="#module-slycat.web.server.plugin" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">slycat.web.server.plugin.</span></span><span class="sig-name descname"><span class="pre">Manager</span></span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager" title="Permalink to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">slycat.web.server.plugin.</span></span><span class="sig-name descname"><span class="pre">Manager</span></span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Manages server plugin modules.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.load">
-<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.load" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.load" title="Link to this definition"></a></dt>
 <dd><p>Load plugin modules from a filesystem.</p>
 <p>If the the given path is a directory, loads all .py files in the directory
 (non-recursive).  Otherwise, assumes the path is a module and loads it.</p>
@@ -127,7 +133,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_directory">
-<span class="sig-name descname"><span class="pre">register_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_directory" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_directory" title="Link to this definition"></a></dt>
 <dd><p>Register a new directory type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -144,7 +150,7 @@ a dictionary containing user metadata.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_marking">
-<span class="sig-name descname"><span class="pre">register_marking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">badge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_after</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_marking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_marking" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_marking</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">badge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_after</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_marking"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_marking" title="Link to this definition"></a></dt>
 <dd><p>Register a new marking type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -158,9 +164,9 @@ inline CSS styles.</p></li>
 If left unspecified, the badge representation will be used instead.</p></li>
 <li><p><strong>page_after</strong> (<em>string</em><em>, </em><em>optional</em>) – HTML representation used to display the marking at the bottom of an HTML page.
 If left unspecified, the badge representation will be used instead.</p></li>
-<li><p><strong>self-contained</strong> (<em>Note that the page_before and page_after markup need not be</em>) – </p></li>
-<li><p><strong>they</strong> (<em>i.e.</em>) – </p></li>
-<li><p><strong>markup.</strong> (<em>may be used together to define a &quot;container&quot; that encloses the page</em>) – </p></li>
+<li><p><strong>self-contained</strong> (<em>Note that the page_before and page_after markup need not be</em>)</p></li>
+<li><p><strong>they</strong> (<em>i.e.</em>)</p></li>
+<li><p><strong>markup.</strong> (<em>may be used together to define a &quot;container&quot; that encloses the page</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -168,7 +174,7 @@ If left unspecified, the badge representation will be used instead.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_model">
-<span class="sig-name descname"><span class="pre">register_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">finish</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_model" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">finish</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_model" title="Link to this definition"></a></dt>
 <dd><p>Register a new model type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -184,7 +190,7 @@ viewing the model.  Defaults to the same string as the model type.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_model_command">
-<span class="sig-name descname"><span class="pre">register_model_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_model_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_model_command" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_model_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_model_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_model_command" title="Link to this definition"></a></dt>
 <dd><p>Register a custom request handler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -200,7 +206,7 @@ viewing the model.  Defaults to the same string as the model type.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_page">
-<span class="sig-name descname"><span class="pre">register_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">html</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_page"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_page</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">html</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_page"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page" title="Link to this definition"></a></dt>
 <dd><p>Register a new page type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -214,12 +220,12 @@ viewing the model.  Defaults to the same string as the model type.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_page_bundle">
-<span class="sig-name descname"><span class="pre">register_page_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_page_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page_bundle" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_page_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_page_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page_bundle" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_page_resource">
-<span class="sig-name descname"><span class="pre">register_page_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_page_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page_resource" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_page_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_page_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page_resource" title="Link to this definition"></a></dt>
 <dd><p>Register a custom resource associated with a page type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -235,7 +241,7 @@ The resource may be a single file, or a directory.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_parser">
-<span class="sig-name descname"><span class="pre">register_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_parser" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_parser" title="Link to this definition"></a></dt>
 <dd><p>Register a new parser type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -254,7 +260,7 @@ successful, otherwise False.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_password_check">
-<span class="sig-name descname"><span class="pre">register_password_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_password_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_password_check" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_password_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_password_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_password_check" title="Link to this definition"></a></dt>
 <dd><p>Register a new password check function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -271,13 +277,13 @@ groups to which the user belongs.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_plugins">
-<span class="sig-name descname"><span class="pre">register_plugins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_plugins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_plugins" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_plugins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_plugins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_plugins" title="Link to this definition"></a></dt>
 <dd><p>Called to register plugins after all plugin modules have been loaded.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_tool">
-<span class="sig-name descname"><span class="pre">register_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_tool" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_tool" title="Link to this definition"></a></dt>
 <dd><p>Register a new cherrypy tool.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -292,7 +298,7 @@ groups to which the user belongs.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_utility">
-<span class="sig-name descname"><span class="pre">register_utility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_utility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_utility" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_utility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_utility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_utility" title="Link to this definition"></a></dt>
 <dd><p>Register a server utility handler.
 :param command: Unique command name.
 :type command: string, required
@@ -302,7 +308,7 @@ groups to which the user belongs.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_wizard">
-<span class="sig-name descname"><span class="pre">register_wizard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_wizard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_wizard" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_wizard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_wizard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_wizard" title="Link to this definition"></a></dt>
 <dd><p>Register a wizard for creating new entities.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -328,7 +334,7 @@ include:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="slycat.web.server.plugin.Manager.register_wizard_resource">
-<span class="sig-name descname"><span class="pre">register_wizard_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_wizard_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_wizard_resource" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">register_wizard_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slycat/web/server/plugin.html#Manager.register_wizard_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_wizard_resource" title="Link to this definition"></a></dt>
 <dd><p>Register a custom resource associated with a wizard.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -356,9 +362,9 @@ include:</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

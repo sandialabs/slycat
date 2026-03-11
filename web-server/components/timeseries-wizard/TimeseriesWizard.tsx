@@ -39,7 +39,9 @@ export interface TimeseriesWizardState {
   inputDirectory: string;
   parserType: string;
   columnNames: { text: string; value: string }[];
+  allColumnNames: { text: string; value: string }[];
   timeseriesColumn: string;
+  indexColumn: string;
   binCount: number;
   resamplingAlg: string;
   clusterLinkageMeasure: string;
@@ -60,6 +62,7 @@ export interface TimeseriesWizardState {
   validForms: boolean;
   marking: { text: string; value: string }[];
   selectedMarking: { text: string; value: string }[];
+  license: string;
 }
 
 /**
@@ -92,6 +95,7 @@ export default class TimeseriesWizard extends React.Component<
       parserType: "",
       columnNames: [],
       timeseriesColumn: "",
+      indexColumn: "",
       binCount: 500,
       resamplingAlg: "uniform-paa",
       clusterLinkageMeasure: "average",
@@ -126,27 +130,27 @@ export default class TimeseriesWizard extends React.Component<
           </li>
           {this.state.selectedOption != "hdf5" ? (
             <li className={this.state.visibleTab == "1" ? "nav-item active" : "nav-item"}>
-              <a className="nav-link">Select Table File</a>
+              <a className="nav-link">Select Table</a>
             </li>
           ) : null}
           <li className={this.state.visibleTab == "2" ? "nav-item active" : "nav-item"}>
-            <a className="nav-link">Timeseries Parameters</a>
+            <a className="nav-link">Timeseries Params</a>
           </li>
           {this.state.selectedOption == "xyce" ? (
             <li className={this.state.visibleTab == "3" ? "nav-item active" : "nav-item"}>
-              <a className="nav-link">Select Timeseries File</a>
+              <a className="nav-link">Timeseries File</a>
             </li>
           ) : null}
           {this.state.selectedOption == "hdf5" ? (
             <li className={this.state.visibleTab == "4" ? "nav-item active" : "nav-item"}>
-              <a className="nav-link">Select HDF5 Directory</a>
+              <a className="nav-link">HDF5 Directory</a>
             </li>
           ) : null}
           <li className={this.state.visibleTab == "5" ? "nav-item active" : "nav-item"}>
-            <a className="nav-link">HPC Parameters</a>
+            <a className="nav-link">HPC Params</a>
           </li>
           <li className={this.state.visibleTab == "6" ? "nav-item active" : "nav-item"}>
-            <a className="nav-link">Name Model</a>
+            <a className="nav-link">Model</a>
           </li>
         </ul>
         {this.state.visibleTab === "0" ? (
@@ -183,6 +187,15 @@ export default class TimeseriesWizard extends React.Component<
         ) : null}
         {this.state.visibleTab === "1" ? (
           <div>
+
+            {this.state.selectedOption === "csv" ? (
+              <div className="alert alert-primary" role="alert">
+                Select the composite Slycat format CSV table.
+              </div>) : 
+              <div className="alert alert-primary" role="alert">
+                Select the Dakota tabular file (*.dat).
+              </div> }
+
             <RemoteFileBrowser
               selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTableFile}
@@ -198,6 +211,10 @@ export default class TimeseriesWizard extends React.Component<
               fileType={this.state.selectedOption}
               delimiter={this.state.delimiter}
               columnNames={this.state.columnNames}
+              allColumnNames={this.state.allColumnNames}
+              indexColumnCallback={(col: string) => {
+                this.setState({indexColumn: col});
+              }}
               delimiterCallback={(delim: string) => {
                 this.setState({ delimiter: delim });
               }}
@@ -221,6 +238,9 @@ export default class TimeseriesWizard extends React.Component<
         ) : null}
         {this.state.visibleTab === "3" ? (
           <div>
+            <div className="alert alert-primary" role="alert">
+              Select one of the Xyce format timeseries files (*.prn).
+            </div>
             <RemoteFileBrowser
               selectedOption={this.state.selectedOption}
               onSelectFileCallBack={this.onSelectTimeseriesFile}
@@ -273,6 +293,9 @@ export default class TimeseriesWizard extends React.Component<
               }}
               workDirCallback={(dir: string) => {
                 this.setState({ workDir: dir });
+              }}
+              licenseCallback={(license: string) => {
+                this.setState({ license: license});
               }}
             />
           </div>
@@ -538,7 +561,17 @@ export default class TimeseriesWizard extends React.Component<
       this.setState({ selectedTablePath: selectedPath });
       this.setState({ inputDirectory: inputDirectory });
     }
-    if (selectedPathType === "f" && this.state.selectedOption === "csv") {
+    if (selectedPathType === "f" && this.state.selectedOption === "csv" && selectedPath.includes('.csv')) {
+      client
+      .get_all_column_names_fetch({
+        hostname: this.state.hostname,
+        path: selectedPath,
+      })
+      .then((result) => {
+        console.log(result);
+        this.handleAllColumnNames(result);
+      });
+
       client
         .get_time_series_names_fetch({
           hostname: this.state.hostname,
@@ -547,6 +580,17 @@ export default class TimeseriesWizard extends React.Component<
         .then((result) => {
           this.handleColumnNames(result);
         });
+    }
+    if (selectedPathType === "f" && this.state.selectedOption === "xyce") {
+      client
+      .get_all_column_names_fetch({
+        hostname: this.state.hostname,
+        path: selectedPath,
+      })
+      .then((result) => {
+        console.log(result);
+        this.handleAllColumnNames(result);
+      });
     }
   };
 
@@ -566,6 +610,15 @@ export default class TimeseriesWizard extends React.Component<
 
   onSelectParser = (selectedParser: string) => {
     this.setState({ parserType: selectedParser });
+  };
+
+  handleAllColumnNames = (names: []) => {
+    const allColumnNames = [];
+    for (let i = 0; i < names.length; i++) {
+      allColumnNames.push({ text: names[i], value: names[i] });
+    }
+    this.setState({ allColumnNames: allColumnNames });
+    this.setState({indexColumn: allColumnNames[0].text});
   };
 
   handleColumnNames = (names: []) => {
@@ -599,9 +652,9 @@ export default class TimeseriesWizard extends React.Component<
   };
 
   generateUniqueId = () => {
-    var d = Date.now();
-    var uid = "xxxxxxxx".replace(/[xy]/g, function (c) {
-      var r = ((d + Math.random() * 16) % 16) | 0;
+    let d = Date.now();
+    const uid = "xxxxxxxx".replace(/[xy]/g, function (c) {
+      const r = ((d + Math.random() * 16) % 16) | 0;
       d = Math.floor(d / 16);
       return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });
@@ -610,14 +663,14 @@ export default class TimeseriesWizard extends React.Component<
   };
 
   on_slycat_fn = () => {
-    let agent_function = "timeseries-model";
-    let uid = this.generateUniqueId();
+    // const agent_function = "timeseries-model";
+    const uid = this.generateUniqueId();
 
-    let fn_params = {
+    const fn_params = {
       timeseries_type: this.state.selectedOption,
       inputs_file: this.state.selectedTablePath,
       input_directory: this.state.inputDirectory,
-      id_column: this.state.idCol,
+      id_column: this.state.indexColumn,
       inputs_file_delimiter: this.state.delimiter,
       xyce_timeseries_file: this.state.selectedXycePath,
       timeseries_name: this.state.timeseriesColumn,
@@ -630,14 +683,14 @@ export default class TimeseriesWizard extends React.Component<
       retain_hdf5: true,
     };
 
-    var fn_params_copy = $.extend(true, {}, fn_params);
+    const fn_params_copy = $.extend(true, {}, fn_params);
 
     if (fn_params.timeseries_type !== "csv") {
       // Blank out timeseries_name
       fn_params_copy.timeseries_name = "";
     }
 
-    let json_payload: any = {
+    const json_payload: any = {
       scripts: [],
       hpc: {
         is_hpc_job: true,
@@ -649,13 +702,14 @@ export default class TimeseriesWizard extends React.Component<
           time_hours: this.state.jobHours,
           time_minutes: this.state.jobMin,
           time_seconds: 0,
+          license: this.state.license,
           working_dir: fn_params.workdir + "/slycat/",
         },
       },
     };
 
-    var hdf5_dir = fn_params.workdir + "/slycat/" + uid + "/" + "hdf5";
-    var pickle_dir = fn_params.workdir + "/slycat/" + uid + "/" + "pickle";
+    const hdf5_dir = fn_params.workdir + "/slycat/" + uid + "/" + "hdf5";
+    const pickle_dir = fn_params.workdir + "/slycat/" + uid + "/" + "pickle";
 
     if (fn_params.timeseries_type === "csv") {
       json_payload.scripts.push({

@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Select Columns &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a><ul class="current">
@@ -58,9 +61,14 @@
 <li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -97,7 +105,7 @@
            <div itemprop="articleBody">
              
   <section id="select-columns">
-<h1>Select Columns<a class="headerlink" href="#select-columns" title="Permalink to this heading"></a></h1>
+<h1>Select Columns<a class="headerlink" href="#select-columns" title="Link to this heading"></a></h1>
 <p>Once the table has been read, either from a <em>Local</em> or a <em>Remote</em> source, the <em>Select Columns</em> page displays a list of the
 table’s variable (column) names and asks you to categorize them as <em>Input</em>, <em>Output</em>, or <em>Neither</em> for the CCA analysis.
 Variables marked as <em>Neither</em> are omitted from the analysis altogether.  Since CCA requires numeric values, strings are
@@ -108,9 +116,10 @@ Although <em>Origin</em> is a numeric variable, the numbers are encoding categor
 (US = 1, Europe = 2, Asia =3).  Because the values have no ordinal interpretation, <em>Origin</em> should also be removed from the
 analysis.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../_images/Figure19.png"><img alt="../_images/Figure19.png" src="../_images/Figure19.png" style="width: 678.0px; height: 376.5px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure19.png"><img alt="../_images/Figure19.png" height="376" src="../_images/Figure19.png" width="678" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 19: Initial configuration in the</strong> Select Columns <strong>dialog for the cars data set.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 19: Initial configuration in the</strong> Select Columns <strong>dialog for the cars data set.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Since the number of inputs typically exceeds the number of outputs, we initialize all numeric variables to be inputs, leaving
@@ -124,15 +133,17 @@ category to set the radio buttons for the group, as shown in Figure 21.  Since C
 you can also use it to calculate correlations between multiple inputs and a single output, or between any two individual
 variables.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../_images/Figure20.png"><img alt="../_images/Figure20.png" src="../_images/Figure20.png" style="width: 677.25px; height: 376.5px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure20.png"><img alt="../_images/Figure20.png" height="376" src="../_images/Figure20.png" width="677" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 20: Click on the</strong> <img alt="AllOnIcon" src="../_images/AllOnIcon.png" /> <strong>icon beneath Output to label the highlighted variables as outputs.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 20: Click on the</strong> <img alt="AllOnIcon" src="../_images/AllOnIcon.png" /> <strong>icon beneath Output to label the highlighted variables as outputs.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-center" id="id3">
-<a class="reference internal image-reference" href="../_images/Figure21.png"><img alt="../_images/Figure21.png" src="../_images/Figure21.png" style="width: 675.0px; height: 375.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure21.png"><img alt="../_images/Figure21.png" height="375" src="../_images/Figure21.png" width="675" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 21: Result of using shift-click and the group assignment icon to select</strong> Output <strong>variables.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 21: Result of using shift-click and the group assignment icon to select</strong> Output <strong>variables.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Sometimes value ranges between variables differ by many orders of magnitude, which can bias the analysis.   The checkbox,
@@ -153,9 +164,9 @@ values to be scaled, click <em>Continue</em> to go to the final step where you p
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

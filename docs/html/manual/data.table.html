@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Source Data, CSV Format Data Table &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Slycat™ Navbar" href="Navbar.html" />
+    <link rel="prev" title="Getting Started" href="GettingStarted.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Slycat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="slycat.overview.html">Overview</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Source Data, CSV Format Data Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Navbar.html">Slycat™ Navbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Projects.html">Projects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Models.html">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Bookmarks.html">Bookmarks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Templates.html">Templates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="user-manual.html">Slycat User Manual</a></li>
+          <li class="breadcrumb-item"><a href="slycat.overview.html">Overview</a></li>
+      <li class="breadcrumb-item active">Source Data, CSV Format Data Table</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/manual/data.table.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="source-data-csv-format-data-table">
+<span id="csv-ref-label"></span><h1>Source Data, CSV Format Data Table<a class="headerlink" href="#source-data-csv-format-data-table" title="Link to this heading"></a></h1>
+<p><strong>Source Data Formats for Slycat Models</strong></p>
+<p>The most common file format required for data to create a Slycat™ analysis is a simple Comma-Separated Values (CSV) file.  The CCA and Parameter Space models are created solely by supplying a CSV file.  The Timeseries model requires the timeseries to be written to CSV or PRN files, and be accompanied by a table that supplies the input parameters.  See the <a class="reference internal" href="timeseries.model.html#timeseries-ref-label"><span class="std std-ref">Timeseries Model</span></a> page for these details.  The VideoSwarm model has several creation options. The essential set of required data is multiple videos and the set of matrices output from the VideoSwarm dimensionality reduction algorithm.  See the <a class="reference internal" href="VS_Manual/vs.html#vs-ref-label"><span class="std std-ref">VideoSwarm Model</span></a> page for these details.  The Dial-A-Cluster model accepts several different but specialized data formats.  See the <a class="reference internal" href="DAC_Manual/dac.model.html#dac-ref-label"><span class="std std-ref">Dial-A-Cluster Model</span></a> Data Formats page for these details and examples.</p>
+<p>The SlyPI library offers methods to create these data formats and to integrate an automated analysis step into mod-sim workflows.  See the <a class="reference internal" href="slypi/slypi.html#slypi-ref-label"><span class="std std-ref">SlyPI Library</span></a> page for more information.</p>
+<p><strong>CSV Format, Specification, Options</strong></p>
+<p>Slycat™ relies on a CSV-format data table to create most of its analysis models. Often this table already exists as a product or artifact of completing an ensemble of simulation runs.  Also, intermediate and final result images can be produced during a simulation and stored on an HPC file system for later analysis.  Supplementing the data table with file system paths to images, animations, PDF documents, and 3D model files (such as STL and VTP) will produce an enhanced Parameter Space model.  An enhanced Parameter Space model enables a user to connect features in a plotted numerical domain to explanatory images or artifacts.  These images can convey real or concrete intuition about why particular samples have similar features in an abstract quantitative space.</p>
+<p>The CSV file is expected to follow the standard CSV format where each row is a set of comma-delimited values from a single sample. A header row should name the values contained in the columns, and the delimiters must be commas. Columns may contain integers, real numbers, or strings. Columns must be type-consistent and missing data should be represented with an appropriate entry, such as “” for empty string or NAN for missing number.</p>
+<p>Here is a simple CSV file example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>index,<span class="w"> </span>value1,<span class="w"> </span>value2
+<span class="m">0</span>,<span class="w"> </span><span class="m">2</span>.7,<span class="w"> </span><span class="m">3</span>
+<span class="m">1</span>,<span class="w"> </span><span class="m">2</span>.6,<span class="w"> </span><span class="m">5</span>
+<span class="m">2</span>,<span class="w"> </span><span class="m">2</span>.5,<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p>File or simulation artifact paths may be included to facilitate exploration in Slycat™.  The format for a Linux file system URL or media path is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>file://hostname/path/to/image.jpg
+</pre></div>
+</div>
+<p>Here is a CSV example for a Linux remote system that includes one media column:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>index,<span class="w"> </span>value1,<span class="w"> </span>value2,<span class="w"> </span>media1
+<span class="m">0</span>,<span class="w"> </span><span class="m">2</span>.7,<span class="w"> </span><span class="m">3</span>,<span class="w"> </span>file://hostname/tmp/sim1/stress.jpg
+<span class="m">1</span>,<span class="w"> </span><span class="m">2</span>.6,<span class="w"> </span><span class="m">5</span>,<span class="w"> </span>file://hostname/tmp/sim2/stress.jpg
+<span class="m">2</span>,<span class="w"> </span><span class="m">2</span>.5,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span>file://hostname/tmp/sim3/stress.jpg
+</pre></div>
+</div>
+<p>Media that is stored on a Windows file system must be referenced with an “smb” indentifier to denote the Samba protocol. To include a reference to a media file on a Windows file system, use this format:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>smb://somehost.example.com/drive/path/to/image.jpg
+</pre></div>
+</div>
+<p>Here is a CSV example for a remote Windows file system (Samba protocol), that includes one media column:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>index,<span class="w"> </span>value1,<span class="w"> </span>value2,<span class="w"> </span>media1
+<span class="m">0</span>,<span class="w"> </span><span class="m">2</span>.7,<span class="w"> </span><span class="m">3</span>,<span class="w"> </span>smb://host.example.com/collab/sim1/stress.jpg
+<span class="m">1</span>,<span class="w"> </span><span class="m">2</span>.6,<span class="w"> </span><span class="m">5</span>,<span class="w"> </span>smb://host.example.com/collab/sim2/stress.jpg
+<span class="m">2</span>,<span class="w"> </span><span class="m">2</span>.5,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span>smb://host.example.com/collab/sim3/stress.jpg
+</pre></div>
+</div>
+<p><strong>Media Formats</strong></p>
+<p>The Slycat™ Parameter Space model supports many media formats.  See <a class="reference internal" href="media.support.html#mediasupport-ref-label"><span class="std std-ref">Supported Media Formats</span></a> for the full specification.</p>
+<p><strong>XY Pairs</strong></p>
+<p>The Parameter Space model recognizes pairs of columns in the data table, such as pairs of (x, y) coordinates.  When XY pairs are present Slycat™ allows a user to visualize that pair with a single selection in the Navbar, instead of individually selecting the X-axis variable and the Y-axis variable.  To enable this feature and mark the pair of columns, the 2 column labels are prefaced with [XYpair X] and [XYpair Y]. The column label string is placed after the preface, and the label is closed with an X or a Y. When both labels are combined in the Navbar control the final X or Y character is dropped.</p>
+<p>Here are several examples of valid XY pair column labels:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>XYpair<span class="w"> </span>X<span class="o">]</span>Risk<span class="w"> </span>PCA<span class="w"> </span>X,<span class="w"> </span><span class="o">[</span>XYpair<span class="w"> </span>Y<span class="o">]</span>Risk<span class="w"> </span>PCA<span class="w"> </span>Y
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>XYpair<span class="w"> </span>X<span class="o">]</span>Foo<span class="w"> </span>X,<span class="w"> </span><span class="o">[</span>XYpair<span class="w"> </span>Y<span class="o">]</span>Foo<span class="w"> </span>Y
+</pre></div>
+</div>
+<p>Here is a CSV example that includes an XY pair that indicates a 2D projection of correlation values.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>index,<span class="w"> </span>value1,<span class="w"> </span>value2,<span class="w"> </span>value3,<span class="w"> </span><span class="o">[</span>XYpair<span class="w"> </span>X<span class="o">]</span>Risk<span class="w"> </span>PCA<span class="w"> </span>X,<span class="w"> </span><span class="o">[</span>XYpair<span class="w"> </span>Y<span class="o">]</span>Risk<span class="w"> </span>PCA<span class="w"> </span>Y
+<span class="m">0</span>,<span class="w"> </span><span class="m">2</span>.7,<span class="w"> </span><span class="m">3</span>,<span class="w"> </span><span class="m">0</span>.056,<span class="w"> </span><span class="m">0</span>.72,<span class="w"> </span><span class="m">0</span>.31
+<span class="m">1</span>,<span class="w"> </span><span class="m">2</span>.6,<span class="w"> </span><span class="m">3</span>,<span class="w"> </span><span class="m">0</span>.103,<span class="w"> </span><span class="m">0</span>.77,<span class="w"> </span><span class="m">0</span>.52
+<span class="m">2</span>,<span class="w"> </span><span class="m">2</span>.5,<span class="w"> </span><span class="m">4</span>,<span class="w"> </span><span class="m">0</span>.087,<span class="w"> </span><span class="m">0</span>.44,<span class="w"> </span><span class="m">0</span>.35
+</pre></div>
+</div>
+<p>Here is a CSV file example that illustrates numerical values, string values, missing values, media paths, and XY pairs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>index,<span class="w"> </span>value1,<span class="w"> </span>value2,<span class="w"> </span>value3,<span class="w"> </span>rank,<span class="w"> </span><span class="o">[</span>XYpair<span class="w"> </span>X<span class="o">]</span>x_coord<span class="w"> </span>X,<span class="w"> </span><span class="o">[</span>XYpair<span class="w"> </span>Y<span class="o">]</span>y_coord<span class="w"> </span>Y,<span class="w"> </span>media1,<span class="w"> </span>media2
+<span class="m">0</span>,<span class="w"> </span><span class="m">2</span>.7,<span class="w"> </span><span class="m">3</span>,<span class="w"> </span><span class="m">0</span>.056,<span class="w"> </span>low,<span class="w">  </span><span class="m">0</span>.72,<span class="w"> </span><span class="m">0</span>.31,<span class="w"> </span>file://hostname/tmp/sim1/stress.jpg,<span class="w"> </span>file://hostname/tmp/sim1/veloc.jpg
+<span class="m">1</span>,<span class="w"> </span><span class="m">2</span>.6,<span class="w"> </span><span class="m">3</span>,<span class="w"> </span><span class="m">0</span>.103,<span class="w"> </span>low,<span class="w">  </span><span class="m">0</span>.77,<span class="w"> </span><span class="m">0</span>.52,<span class="w"> </span>file://hostname/tmp/sim2/stress.jpg,<span class="w"> </span>file://hostname/tmp/sim2/veloc.jpg
+<span class="m">2</span>,<span class="w"> </span><span class="m">2</span>.5,<span class="w"> </span><span class="m">4</span>,<span class="w"> </span><span class="m">0</span>.087,<span class="w">  </span>“”,<span class="w">  </span><span class="m">0</span>.44,<span class="w"> </span><span class="m">0</span>.35,<span class="w"> </span>file://hostname/tmp/sim3/stress.jpg,<span class="w"> </span>file://hostname/tmp/sim3/veloc.jpg
+<span class="m">3</span>,<span class="w"> </span><span class="m">2</span>.4,<span class="w"> </span><span class="m">4</span>,<span class="w">   </span>NAN,<span class="w"> </span>med,<span class="w">  </span><span class="m">0</span>.68,<span class="w"> </span><span class="m">0</span>.59,<span class="w"> </span>file://hostname/tmp/sim4/stress.jpg,<span class="w"> </span>file://hostname/tmp/sim4/veloc.jpg
+<span class="m">4</span>,<span class="w"> </span><span class="m">2</span>.3,<span class="w"> </span><span class="m">5</span>,<span class="w"> </span><span class="m">0</span>.040,<span class="w"> </span>high,<span class="w"> </span><span class="m">0</span>.39,<span class="w"> </span><span class="m">0</span>.30,<span class="w"> </span>file://hostname/tmp/sim5/stress.jpg,<span class="w"> </span>file://hostname/tmp/sim5/veloc.jpg
+<span class="m">5</span>,<span class="w"> </span><span class="m">2</span>.2,<span class="w"> </span><span class="m">5</span>,<span class="w"> </span><span class="m">0</span>.066,<span class="w"> </span>med,<span class="w">  </span><span class="m">0</span>.42,<span class="w"> </span><span class="m">0</span>.41,<span class="w"> </span>file://hostname/tmp/sim6/stress.jpg,<span class="w"> </span>file://hostname/tmp/sim6/veloc.jpg
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="GettingStarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Navbar.html" class="btn btn-neutral float-right" title="Slycat™ Navbar" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

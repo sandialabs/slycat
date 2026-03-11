@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Variable Table &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a><ul class="current">
@@ -57,9 +60,14 @@
 <li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -96,7 +104,7 @@
            <div itemprop="articleBody">
              
   <section id="variable-table">
-<h1>Variable Table<a class="headerlink" href="#variable-table" title="Permalink to this heading"></a></h1>
+<h1>Variable Table<a class="headerlink" href="#variable-table" title="Link to this heading"></a></h1>
 <p>The <em>Variable Table</em> at the bottom of Figure 23 provides access to the original numeric variable values for each simulation
 run.  It is essentially an interactive version of the original table data, where each column represents a single variable
 and each row contains the variable values for a single ensemble member.  Within the table, the cell backgrounds take on one
@@ -108,7 +116,7 @@ between rows and scatterplot points.  The interactive capabilities of the table 
 <figure class="align-center" id="id1">
 <img alt="../_images/Figure23.png" src="../_images/Figure23.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 23: CCA model of cars data set displaying the first canonical component.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 23: CCA model of cars data set displaying the first canonical component.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Rows that have not been used in the CCA analysis have white backgrounds.  CCA requires that all rows have values for each of
@@ -121,11 +129,11 @@ calculation and will be color-coded.</p>
 <figure class="align-center" id="id2">
 <img alt="../_images/Figure24.png" src="../_images/Figure24.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 24: CCA model of Cars data set displaying the second canonical component.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 24: CCA model of Cars data set displaying the second canonical component.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <section id="sorting">
-<h2>Sorting<a class="headerlink" href="#sorting" title="Permalink to this heading"></a></h2>
+<h2>Sorting<a class="headerlink" href="#sorting" title="Link to this heading"></a></h2>
 <p>Sorting allows rapid identification of simulations whose variable values are extrema.  Additionally, sorting facilitates
 comparison between simulations whose values are similar within one variable, but whose values for other variables might differ
 significantly.  For instance, in Figure 23 and Figure 24 the tables are sorted by weight.  The highlighted row appears adjacent
@@ -138,13 +146,13 @@ The sorting column is independent of variable selection (see Color-Coding Points
 the sorting icon for that column becomes visible and may be clicked to initiate sorting on that variable.</p>
 </section>
 <section id="variable-selection">
-<h2>Variable Selection<a class="headerlink" href="#variable-selection" title="Permalink to this heading"></a></h2>
+<h2>Variable Selection<a class="headerlink" href="#variable-selection" title="Link to this heading"></a></h2>
 <p>Left-clicking the variable name in a column header selects that variable to color-code the scatterplot points in the
 <em>Simulation View</em>, to color the cell backgrounds in its associated table column, and to highlight that variable’s row in
 the <em>Correlation View</em>.</p>
 </section>
 <section id="simulation-selection">
-<h2>Simulation Selection<a class="headerlink" href="#simulation-selection" title="Permalink to this heading"></a></h2>
+<h2>Simulation Selection<a class="headerlink" href="#simulation-selection" title="Link to this heading"></a></h2>
 <p>Left-clicking within a table row selects that simulation, which is then highlighted in both the table and the scatterplot.
 Multiple row selection, as is commonly performed on lists, consists of clicking on a starting row, then using shift-click to
 select the ending row (either above or below the starting row).  This selects both the starting and ending rows along with
@@ -166,9 +174,9 @@ radius.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

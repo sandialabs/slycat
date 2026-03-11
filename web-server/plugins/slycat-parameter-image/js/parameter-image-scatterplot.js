@@ -56,12 +56,17 @@ import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
 } from "components/ScatterplotOptions/ScatterplotOptionsCategoricalAxisLabels";
+import { TypeLabel, FrameMenu } from "./Components/TypeButton";
+import { MEDIA_TYPES } from "./constants/media-types";
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
 var vtkunselect_event = new Event("vtkunselect");
 var vtkresize_event = new Event("vtkresize");
 var vtkclose_event = new Event("vtkclose");
+
+// WeakMap to store the root elements for the type buttons
+const rootsByPopupEl = new WeakMap();
 
 $.widget("parameter_image.scatterplot", {
   options: {
@@ -2000,70 +2005,8 @@ $.widget("parameter_image.scatterplot", {
         );
     };
 
-    var add_pin_button = function (fh) {
-      fh.append("i")
-        .attr("class", "pin-button frame-button fa-solid fa-thumbtack")
-        .attr("title", "Pin")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["pin"]);
-    };
-
-    var add_max_button = function (fh) {
-      fh.append("i")
-        .attr("class", "max-button frame-button fa-regular fa-window-maximize")
-        .attr("title", "Maximize")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["maximize"]);
-    };
-
-    var add_min_button = function (fh) {
-      fh.append("i")
-        .attr("class", "min-button frame-button fa-regular fa-window-minimize")
-        .attr("title", "Minimize")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["minimize"]);
-    };
-
-    var add_download_button = function (fh, uri, filename) {
-      fh.append("a")
-        .attr("href", uri)
-        .attr("class", "download-button frame-button fa-solid fa-download")
-        .attr("title", "Download media file")
-        .attr("download", filename);
-    };
-
-    var add_jump_button = function (fh, index) {
-      var container = fh
-        .append("span")
-        .attr("class", "jump-button frame-button jump-button-container")
-        .on("click", handlers["jump"]);
-      container
-        .append("i")
-        .attr("class", "table-button jump-button frame-button fa-solid fa-table")
-        .attr("title", "Jump to row " + index + " in table")
-        .attr("aria-hidden", "true");
-
-      container
-        .append("i")
-        .attr("class", "arrow-button jump-button frame-button fa-solid fa-arrow-right")
-        .attr("title", "Jump to row " + index + " in table")
-        .attr("aria-hidden", "true");
-
-      container
-        .append("span")
-        .attr("class", "table-index jump-button frame-button")
-        .attr("title", "Index of current media. Click to jump to row " + index + " in table.")
-        .attr("aria-hidden", "true")
-        .text(index);
-    };
-
-    var add_clone_button = function (fh) {
-      // console.log(`Adding clone button for 3D media...`);
-      fh.append("i")
-        .attr("class", "clone-button frame-button fa-solid fa-clone")
-        .attr("title", "Clone")
-        .attr("aria-hidden", "true")
-        .on("click", handlers["clone"]);
+    var add_react_mount = function (fh, className) {
+      return fh.append("div").attr("class", className);
     };
 
     var build_frame_html = function (img) {
@@ -2206,6 +2149,16 @@ $.widget("parameter_image.scatterplot", {
       close: function () {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
+
+        // Unmount the TypeButton root
+        const root = rootsByPopupEl.get(frame.node());
+        if (root) {
+          root.unmount();
+        } else {
+          console.error("No root found for frame", frame);
+        }
+        rootsByPopupEl.delete(frame.node());
+
         self._remove_image_and_leader_line(frame);
         self._sync_open_media();
       },
@@ -2302,15 +2255,16 @@ $.widget("parameter_image.scatterplot", {
         }
       },
 
-      maximize: function () {
-        let target = d3.event.target;
+      maximize: function (event) {
+        console.debug(`Maximizing frame at ${event ? event.target : d3.event.target}`);
+        let target = event ? event.target : d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
 
         // Remove frame's hover state
         self._cancel_hover_state(frame, image);
 
         // Get the SVG pane's size
-        var $svg = $("#scatterplot svg");
+        var $svg = $("#scatterplot svg.scatterplot-svg");
         var svgh = $svg.height();
         var svgw = $svg.width();
 
@@ -2380,8 +2334,8 @@ $.widget("parameter_image.scatterplot", {
         $(window).trigger("resize");
       },
 
-      minimize: function () {
-        let target = d3.event.target;
+      minimize: function (event) {
+        let target = event ? event.target : d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
 
         // Remove maximized class from frame
@@ -2412,10 +2366,11 @@ $.widget("parameter_image.scatterplot", {
         $(window).trigger("resize");
       },
 
-      pin: function () {
+      pin: function (event) {
         // console.log("pin event handler running");
         var frame, imageHeight, imageWidth, target_width, target_height, x, y;
-        frame = d3.select(d3.event.target.closest(".image-frame"));
+        let target = event ? event.target : d3.event.target;
+        frame = d3.select(target.closest(".image-frame"));
         self._cancel_hover_state(frame, image);
 
         // Remove maximized class from frame
@@ -2484,15 +2439,17 @@ $.widget("parameter_image.scatterplot", {
         video_sync_time_changed(self);
       },
 
-      jump: function () {
+      jump: function (event) {
         // console.log("jump event handler running");
-        var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
+        let target = event ? event.target : d3.event.target;
+        var index = d3.select(target.closest(".image-frame")).attr("data-index");
         self.element.trigger("jump_to_simulation", index);
       },
 
-      clone: function () {
+      clone: function (event) {
         // console.log(`About to clone this frame...`);
-        const frame = d3.select(d3.event.target.closest(".image-frame"));
+        let target = event ? event.target : d3.event.target;
+        const frame = d3.select(target.closest(".image-frame"));
         const width = frame.node().offsetWidth;
         const height = frame.node().offsetHeight;
         const index = frame.attr("data-index");
@@ -2605,8 +2562,11 @@ $.widget("parameter_image.scatterplot", {
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
 
+      let media_type = MEDIA_TYPES.UNKNOWN;
+
       // If the URL is a web link, create a link to open it in a new window
       if (link) {
+        media_type = MEDIA_TYPES.LINK;
         // Create a "open in new window" link for http or https URLs
         frame_html.style({
           width: image.width + "px",
@@ -2629,6 +2589,7 @@ $.widget("parameter_image.scatterplot", {
         var image_url = url_creator.createObjectURL(blob);
 
         if (blob.type.indexOf("image/") == 0) {
+          media_type = MEDIA_TYPES.IMAGE;
           // Create the html image ...
           var htmlImage = frame_html
             .append("img")
@@ -2663,6 +2624,7 @@ $.widget("parameter_image.scatterplot", {
             self._adjust_leader_line(frame_html);
           });
         } else if (blob.type.indexOf("video/") == 0) {
+          media_type = MEDIA_TYPES.VIDEO;
           // Create the video ...
           var video = frame_html
             .append("video")
@@ -2785,7 +2747,7 @@ $.widget("parameter_image.scatterplot", {
           frame_html.append("div").classed("mouseEventOverlay", true);
         } else if (blob.type.indexOf("application/pdf") == 0) {
           // Create the pdf ...
-
+          media_type = MEDIA_TYPES.PDF;
           var pdfWidth = 320;
 
           // Using an embed element
@@ -2891,6 +2853,7 @@ $.widget("parameter_image.scatterplot", {
           frame_html.append("div").classed("mouseEventOverlay", true);
         } else if (isVtp || isStl) {
           // console.debug(`opening a vtp or stl`);
+          media_type = isVtp ? MEDIA_TYPES.VTP : MEDIA_TYPES.STL;
 
           // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
           // other media, but caused 3D frame to grow by 20px each time the page is refreshed. So this
@@ -2944,6 +2907,7 @@ $.widget("parameter_image.scatterplot", {
             reader.readAsArrayBuffer(blob);
           }
         } else {
+          media_type = MEDIA_TYPES.UNKNOWN;
           // We don't support this file type, so just create a download link for files
           // or a "open in new window" link for http or https URLs
           // console.log("blob?type is: " + blob.type)
@@ -2973,25 +2937,39 @@ $.widget("parameter_image.scatterplot", {
       // Create a resize handle
       add_resize_handle(frame_html);
 
-      // Create a pin button ...
-      add_pin_button(footer);
+      // Create TypeLabel and FrameMenu in React
+      const is3D = media_type === MEDIA_TYPES.VTP || media_type === MEDIA_TYPES.STL;
 
-      // Create a maximize button ...
-      add_max_button(footer);
+      let typeLabelMount = add_react_mount(footer, "react-component-type-label");
+      const typeLabelRoot = createRoot(typeLabelMount.node());
+      typeLabelRoot.render(
+        <TypeLabel mediaType={media_type} tableIndex={image.index} />,
+      );
 
-      // Create a maximize button ...
-      add_min_button(footer);
-
-      // Create a download button for non-links ...
-      if (!link) add_download_button(footer, image_url, image.uri.split("/").pop());
-
-      // Create jump control
-      add_jump_button(footer, image.index);
-
-      // Create clone button for 3D media ...
-      if (isVtp) {
-        add_clone_button(footer, image.uri);
-      }
+      let frameMenuMount = add_react_mount(footer, "react-component-frame-menu");
+      const frameMenuRoot = createRoot(frameMenuMount.node());
+      frameMenuRoot.render(
+        <FrameMenu
+          onMaximize={(event) => handlers["maximize"](event)}
+          onMinimize={(event) => handlers["minimize"](event)}
+          onPin={(event) => handlers["pin"](event)}
+          onClone={media_type === MEDIA_TYPES.VTP ? (event) => handlers["clone"](event) : undefined}
+          onSetCenterOfRotation={
+            is3D
+              ? () =>
+                  frame_html
+                    .node()
+                    .querySelector(".vtp")
+                    .dispatchEvent(new Event("vtkarmcenterofrotation"))
+              : undefined
+          }
+          onJump={(event) => handlers["jump"](event)}
+          tableIndex={image.index}
+          downloadUrl={!link ? image_url : undefined}
+          downloadFilename={!link ? image.uri.split("/").pop() : undefined}
+        />,
+      );
+      rootsByPopupEl.set(frame_html.node(), frameMenuRoot);
 
       if (!image.no_sync) self._sync_open_media();
 

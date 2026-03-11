@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adding Table Columns &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -40,7 +42,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
@@ -62,9 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -102,23 +110,25 @@
            <div itemprop="articleBody">
              
   <section id="adding-table-columns">
-<span id="addingtablecolumns"></span><h1>Adding Table Columns<a class="headerlink" href="#adding-table-columns" title="Permalink to this heading"></a></h1>
+<span id="addingtablecolumns"></span><h1>Adding Table Columns<a class="headerlink" href="#adding-table-columns" title="Link to this heading"></a></h1>
 <p>Generally speaking, data cannot be changed once a model has been loaded.  However, columns can be added the
 <em>Metadata Table</em>, so that the user may enter notes or designate a given ensemble member as belonging to a specified
 category.  Columns are added using the yellow Edit &gt; Model Table pulldown in the upper right of the Slycat™ screen,
 as shown in Figure 38.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../../_images/edit-pulldown-table.png"><img alt="../../_images/edit-pulldown-table.png" src="../../_images/edit-pulldown-table.png" style="width: 159.20000000000002px; height: 200.8px;" /></a>
+<a class="reference internal image-reference" href="../../_images/edit-pulldown-table.png"><img alt="../../_images/edit-pulldown-table.png" height="201" src="../../_images/edit-pulldown-table.png" width="159" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 38: Edit pulldown menu with Model Table selected.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 38: Edit pulldown menu with Model Table selected.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>After selecting Model Table from the Edit pulldown, a wizard appears to help you add columns to the
 <em>Metadata Table</em>, as shown in Figure 39.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../../_images/edit-table-wizard.png"><img alt="../../_images/edit-table-wizard.png" src="../../_images/edit-table-wizard.png" style="width: 634.4000000000001px; height: 288.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/edit-table-wizard.png"><img alt="../../_images/edit-table-wizard.png" height="288" src="../../_images/edit-table-wizard.png" width="634" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 39: Initial screen for the add column wizard in Dial-A-Cluster.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 39: Initial screen for the add column wizard in Dial-A-Cluster.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>DAC allows you to add two types of <em>Metadata Table</em> columns.  The first type of column is free text, which lets you
@@ -126,9 +136,10 @@ type notes into the table describing a particular ensemble member.  To add a fre
 column” in the wizard and push the <em>Continue</em> button.  In this case you will see the next screen in the wizard, shown
 in Figure 40.</p>
 <figure class="align-center" id="id3">
-<a class="reference internal image-reference" href="../../_images/free-text-column.png"><img alt="../../_images/free-text-column.png" src="../../_images/free-text-column.png" style="width: 633.6px; height: 256.0px;" /></a>
+<a class="reference internal image-reference" href="../../_images/free-text-column.png"><img alt="../../_images/free-text-column.png" height="256" src="../../_images/free-text-column.png" width="634" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 40: Add free text column wizard option.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 40: Add free text column wizard option.</strong></span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>To add a free text column, simply type the name of the new column header into the wizard using the “New Free Text Column”
@@ -138,7 +149,7 @@ and type the notes.  Once you press enter or otherwise finish the entry, it will
 <figure class="align-center" id="id4">
 <img alt="../../_images/entering-free-text.png" src="../../_images/entering-free-text.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 41: Entering free text into the Metadata Table.</strong></span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 41: Entering free text into the Metadata Table.</strong></span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The second type of column available in the add column wizard is a categorical column.  A categorical column lets you define
@@ -146,9 +157,10 @@ a set of categories for a particular ensemble member.  Once added, the user can 
 those categories.  To add a categorical column, select “Add categorical column” in the dialog from Figure 39 and press
 <em>Continue</em>.  You will see the dialog in Figure 42.</p>
 <figure class="align-center" id="id5">
-<a class="reference internal image-reference" href="../../_images/categorical-column.png"><img alt="../../_images/categorical-column.png" src="../../_images/categorical-column.png" style="width: 630.4000000000001px; height: 574.4px;" /></a>
+<a class="reference internal image-reference" href="../../_images/categorical-column.png"><img alt="../../_images/categorical-column.png" height="574" src="../../_images/categorical-column.png" width="630" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 42: Wizard used to add a categorical column to the Metadata Table.</strong></span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 42: Wizard used to add a categorical column to the Metadata Table.</strong></span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>First, type the column name into the “New Categorical Column” text box.  Next, add categories to your column.  The categories
@@ -164,7 +176,7 @@ Press the <em>Finish &amp; Reload Model</em> button to add the new categorical c
 <figure class="align-center" id="id6">
 <img alt="../../_images/entering-category.png" src="../../_images/entering-category.png" />
 <figcaption>
-<p><span class="caption-text"><strong>Figure 43: Selecting a category for a row of the Metadata Table.</strong></span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 43: Selecting a category for a row of the Metadata Table.</strong></span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>After the model has been reloaded, a new column will appear in the <em>Metadata Table</em> to the far right, as shown in Figure 43.  To
@@ -183,9 +195,9 @@ otherwise finish the entry, it will be saved with the model as part of the table
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

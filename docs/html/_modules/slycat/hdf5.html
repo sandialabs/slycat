@@ -1,18 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>slycat.hdf5 &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -37,8 +39,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
@@ -76,17 +82,19 @@
 <span class="c1"># DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government</span>
 <span class="c1"># retains certain rights in this software.</span>
 
-<span class="kn">import</span> <span class="nn">h5py</span>
-<span class="kn">import</span> <span class="nn">numbers</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">slycat.darray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">slycat.darray</span>
 
-<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cherrypy</span>
 
-<div class="viewcode-block" id="DArray"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray">[docs]</a><span class="k">class</span> <span class="nc">DArray</span><span class="p">(</span><span class="n">slycat</span><span class="o">.</span><span class="n">darray</span><span class="o">.</span><span class="n">Prototype</span><span class="p">):</span>
+<div class="viewcode-block" id="DArray">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DArray</span><span class="p">(</span><span class="n">slycat</span><span class="o">.</span><span class="n">darray</span><span class="o">.</span><span class="n">Prototype</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Slycat darray implementation that stores data in an HDF5 file.&quot;&quot;&quot;</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">storage</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -94,7 +102,7 @@
     <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="kc">None</span>
 
   <span class="nd">@property</span>
-  <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the number of dimensions in the darray.</span>
 
 <span class="sd">    Returns</span>
@@ -105,7 +113,7 @@
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-names&quot;</span><span class="p">])</span>
 
   <span class="nd">@property</span>
-  <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the darray shape (its size along each dimension).</span>
 
 <span class="sd">    Returns</span>
@@ -116,7 +124,7 @@
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">end</span> <span class="o">-</span> <span class="n">begin</span> <span class="k">for</span> <span class="n">begin</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-begin&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-end&quot;</span><span class="p">])])</span>
 
   <span class="nd">@property</span>
-  <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the darray size (total number of elements stored in the darray).</span>
 
 <span class="sd">    Returns</span>
@@ -127,7 +135,7 @@
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
   <span class="nd">@property</span>
-  <span class="k">def</span> <span class="nf">dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return metadata describing the darray dimensions.</span>
 
 <span class="sd">    Returns</span>
@@ -137,7 +145,7 @@
     <span class="k">return</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">begin</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-names&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-types&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-begin&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-end&quot;</span><span class="p">])]</span>
 
   <span class="nd">@property</span>
-  <span class="k">def</span> <span class="nf">attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return metadata describing the darray attributes.</span>
 
 <span class="sd">    Returns</span>
@@ -148,7 +156,7 @@
       <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="nb">type</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-names&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">])]</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
 
-  <span class="k">def</span> <span class="nf">_update_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute_index</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">_update_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute_index</span><span class="p">):</span>
     <span class="n">attribute_key</span> <span class="o">=</span> <span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute_index</span>
     <span class="n">unique_key</span> <span class="o">=</span> <span class="s2">&quot;unique/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute_index</span>
 
@@ -192,7 +200,9 @@
       <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attribute_unique</span><span class="p">)</span>
       <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">unique_key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">attribute_unique</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">][</span><span class="n">attribute_index</span><span class="p">]))</span>
 
-<div class="viewcode-block" id="DArray.get_statistics"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.get_statistics">[docs]</a>  <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+<div class="viewcode-block" id="DArray.get_statistics">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.get_statistics">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_update_cache</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
 
     <span class="n">attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">]</span>
@@ -202,14 +212,20 @@
       <span class="s2">&quot;unique&quot;</span><span class="p">:</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;unique&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
       <span class="p">}</span></div>
 
-<div class="viewcode-block" id="DArray.get_unique"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.get_unique">[docs]</a>  <span class="k">def</span> <span class="nf">get_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">hyperslice</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DArray.get_unique">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.get_unique">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">hyperslice</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_update_cache</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
       <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;unique/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">][</span><span class="n">hyperslice</span><span class="p">]</span>
       <span class="p">}</span></div>
 
-<div class="viewcode-block" id="DArray.get_data"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.get_data">[docs]</a>  <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DArray.get_data">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.get_data">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a reference to the data storage for a darray attribute.</span>
 
 <span class="sd">    Parameters</span>
@@ -225,9 +241,9 @@
 <span class="sd">      `references` the underlying data - data is not retrieved from the file</span>
 <span class="sd">      until you access it using the `[]` operator.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">class</span> <span class="nc">StorageWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">StorageWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">      </span><span class="sd">&quot;&quot;&quot;Ensures that the dtype of data retrieved from the file matches what was put in.&quot;&quot;&quot;</span>
-      <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+      <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">storage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">bytes</span><span class="p">:</span>
@@ -235,7 +251,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
           <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="s1">&#39;unicode&#39;</span>
 
-      <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+      <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         
         <span class="c1"># check for unicode string, convert to numpy</span>
@@ -258,7 +274,10 @@
 
     <span class="k">return</span> <span class="n">StorageWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">][</span><span class="n">attribute</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="DArray.set_data"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.set_data">[docs]</a>  <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">hyperslice</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DArray.set_data">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.DArray.set_data">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">hyperslice</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Overwrite the contents of a darray attribute.</span>
 
 <span class="sd">    Parameters</span>
@@ -305,27 +324,39 @@
     <span class="k">if</span> <span class="s2">&quot;max&quot;</span> <span class="ow">in</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
       <span class="k">del</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="s2">&quot;unique&quot;</span> <span class="ow">in</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
-      <span class="k">del</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span></div></div>
+      <span class="k">del</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span></div>
+</div>
 
-<div class="viewcode-block" id="ArraySet"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet">[docs]</a><span class="k">class</span> <span class="nc">ArraySet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ArraySet">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArraySet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset.&quot;&quot;&quot;</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">file</span>
 
-  <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">])</span>
 
-  <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+  <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">])</span>
 
-<div class="viewcode-block" id="ArraySet.keys"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.keys">[docs]</a>  <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ArraySet.keys">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.keys">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span></div>
 
-<div class="viewcode-block" id="ArraySet.array_count"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.array_count">[docs]</a>  <span class="k">def</span> <span class="nf">array_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ArraySet.array_count">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.array_count">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">array_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Note: this assumes that array indices are contiguous, which we don&#39;t explicitly enforce.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
 
-<div class="viewcode-block" id="ArraySet.start_array"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.start_array">[docs]</a>  <span class="k">def</span> <span class="nf">start_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ArraySet.start_array">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.start_array">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">start_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add an uninitialized darray to the arrayset.</span>
 
 <span class="sd">    An existing array with the same index will be overwritten.</span>
@@ -372,7 +403,10 @@
     <span class="c1"># cherrypy.log.error(&quot;returning Darray for start_array for put_model_array&quot;)</span>
     <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">array_key</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="ArraySet.store_array"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.store_array">[docs]</a>  <span class="k">def</span> <span class="nf">store_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ArraySet.store_array">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.ArraySet.store_array">[docs]</a>
+  <span class="k">def</span><span class="w"> </span><span class="nf">store_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Store a :class:`slycat.darray.Prototype` in the arrayset.</span>
 
 <span class="sd">    An existing array with the same index will be overwritten.</span>
@@ -404,9 +438,13 @@
       <span class="n">hdf5_attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">attribute_key</span><span class="p">]</span>
       <span class="n">hdf5_attribute</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
 
-    <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">array_index</span><span class="p">])</span></div></div>
+    <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">array_index</span><span class="p">])</span></div>
+</div>
 
-<div class="viewcode-block" id="start_arrayset"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.start_arrayset">[docs]</a><span class="k">def</span> <span class="nf">start_arrayset</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+
+<div class="viewcode-block" id="start_arrayset">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.start_arrayset">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">start_arrayset</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Create a new array set using an open hdf5 file.</span>
 
 <span class="sd">  Parameters</span>
@@ -424,10 +462,13 @@
   <span class="n">file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">ArraySet</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
 
+
 <span class="c1">################################################################################################################################################</span>
 <span class="c1"># Legacy functionality - don&#39;t use these in new code.</span>
 
-<div class="viewcode-block" id="dtype"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.dtype">[docs]</a><span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="n">input_type</span><span class="p">):</span>
+<div class="viewcode-block" id="dtype">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.dtype">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="n">input_type</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Convert a string attribute type into a dtype suitable for use with h5py.&quot;&quot;&quot;</span>
   <span class="k">try</span><span class="p">:</span>
     <span class="n">input_type</span> <span class="o">=</span> <span class="n">input_type</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
@@ -437,10 +478,14 @@
     <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py dtype&quot;</span><span class="p">,</span> <span class="s2">&quot;Unsupported type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">input_type</span><span class="p">))</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unsupported type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">input_type</span><span class="p">))</span>
   <span class="k">return</span> <span class="n">dtype</span><span class="o">.</span><span class="n">type_map</span><span class="p">[</span><span class="n">input_type</span><span class="p">]</span></div>
+
 <span class="n">dtype</span><span class="o">.</span><span class="n">type_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;int8&quot;</span><span class="p">:</span><span class="s2">&quot;int8&quot;</span><span class="p">,</span> <span class="s2">&quot;int16&quot;</span><span class="p">:</span><span class="s2">&quot;int16&quot;</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">:</span><span class="s2">&quot;int32&quot;</span><span class="p">,</span> <span class="s2">&quot;int64&quot;</span><span class="p">:</span><span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;uint8&quot;</span><span class="p">:</span><span class="s2">&quot;uint8&quot;</span><span class="p">,</span> <span class="s2">&quot;uint16&quot;</span><span class="p">:</span><span class="s2">&quot;uint16&quot;</span><span class="p">,</span> <span class="s2">&quot;uint32&quot;</span><span class="p">:</span><span class="s2">&quot;uint32&quot;</span><span class="p">,</span> <span class="s2">&quot;uint64&quot;</span><span class="p">:</span><span class="s2">&quot;uint64&quot;</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">:</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;float64&quot;</span><span class="p">:</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span><span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span><span class="s2">&quot;float64&quot;</span><span class="p">}</span>
 
-<div class="viewcode-block" id="path"><a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.path">[docs]</a><span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+<div class="viewcode-block" id="path">
+<a class="viewcode-back" href="../../slycat-packages/slycat.hdf5.html#slycat.hdf5.path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">path</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
   <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="n">array</span> <span class="o">+</span> <span class="s2">&quot;.hdf5&quot;</span><span class="p">)</span></div>
+
 
 </pre></div>
 
@@ -451,9 +496,9 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

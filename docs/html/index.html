@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome!! &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <title>Welcome! &mdash; Slycat 3.4.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=23636ea3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -39,8 +41,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
@@ -63,7 +69,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Welcome!!</li>
+      <li class="breadcrumb-item active">Welcome!</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -74,7 +80,7 @@
            <div itemprop="articleBody">
              
   <section id="welcome">
-<h1>Welcome!!<a class="headerlink" href="#welcome" title="Permalink to this heading"></a></h1>
+<h1>Welcome!<a class="headerlink" href="#welcome" title="Link to this heading"></a></h1>
 <p>This is Slycat™ - a web-based data science analysis and visualization platform,
 created at <a class="reference external" href="http://www.sandia.gov">Sandia National Laboratories</a>.</p>
 <p>Slycat™ is a web-based system for analysis of large, high-dimensional
@@ -90,84 +96,105 @@ instance, sensitivity analysis uses ensembles to examine how simulation
 input parameters and simulation results are correlated. By looking at
 groups of runs as a whole, higher level patterns can be seen despite
 variations in the individual runs.</p>
-<p>The Slycat™ system integrates data management, scalable analysis, and
-visualization via commodity web clients using a multi-tiered hierarchy
-of computation and data storage. Analysis models are computed local or
-on the Slycat™ server, and model artifacts are stored in a project
-database. These artifacts are the basis for visualizations that are
-delivered to users’ desktops through ordinary web browsers. Slycat™
-currently provides two types of analysis: canonical correlation analysis
-(CCA) to model relationships between inputs and output metrics, and time
-series analysis featuring clustering and comparative visualization of
-waveforms.</p>
-</section>
-<section id="design">
-<h1>Design<a class="headerlink" href="#design" title="Permalink to this heading"></a></h1>
-<p>Slycat™ incorporates several components:</p>
+<p>The Slycat™ system integrates scalable analysis, visualization, HPC file system access, and data management, via commodity web clients using a multi-tiered hierarchy of computation and data storage. The web-based service delivers a collaborative platform for researchers and engineers to coproduce an analysis and share their results and discoveries. The system is access-controlled to allow project owners to designate who can see the analysis models and who can change models in the project. Most analysis models are computed on the Slycat™ server with model artifacts stored in a project database. These artifacts are the basis for visualizations that are delivered to users’ desktops through ordinary web browsers. Storing features of an ensemble on the Slycat™ server leaves the big data in place on HPC systems and gives users fast interaction and exploration while remaining scalable.</p>
+<p>Exploring remote simulation artifacts, such as images and 3D surfaces, is made easy through the Slycat™ agent architecture. The Parameter Space model enables a user to connect features in a plotted numerical domain to explanatory images or artifacts stored on an remote system. These images can convey real or concrete intuition about why particular samples have similar features in an abstract quantitative space.</p>
+<p><strong>Slycat™ Analysis Models</strong></p>
+<p>A handful of analysis models provides complimentary views into a dataset or ensemble. Often one model reveals a unique pattern or a group of outliers in the data, and another model allows deeper exploration of the data to discover the cause of the pattern or outliers.  Here is a brief overview of models.</p>
 <ul class="simple">
-<li><p>A Web Server that can load, transform, index, and analyze moderate amounts of data, storing the analysis results for later visualization.</p></li>
-<li><p>A web-based user interface that you use to pull your data into the Slycat™ Web Server, compute analyses, and view analysis results. You can use Slycat™ with any modern, standards-compliant browser, including Firefox, Safari, and Chrome.  There is no software to install on your workstation.</p></li>
-<li><p>A collection of command-line clients that can be used to push data into Slycat™ Web Server and control it remotely, if that suits your workflow better.</p></li>
+<li><p><strong>Canonical Correlation Analysis (CCA) Model:</strong> Reveals relationships between simulation input parameters and output responses (or generically, between independents variables and dependent variables). Excels at analysis for sensitivity and parametric studies.</p></li>
+<li><p><strong>Parameter Space Model:</strong> An exploratory visual interface that combines a filterable scatterplot representation with remote Slycat™ agent access to images, videos, and other media-based ensemble data.</p></li>
+<li><p><strong>Timeseries Model:</strong> Features clustering and comparative visualization for time-varying measurements or signals, such as simulation heartbeat files and waveforms.</p></li>
+<li><p><strong>Dial-A-Cluster Model:</strong> Allows interactive visualization of multivariate time series data.</p></li>
+<li><p><strong>VideoSwarm Model:</strong> Slycat™ watches hundreds of simulation animation results and illustrates their similarity (or dissimilarity) through time, along with live videos to accompany the quantitative clustering.</p></li>
 </ul>
-<p>The Slycat™ Web Server provides easy collaboration and a graphical user
-interface for analyses that have broad appeal.</p>
-</section>
-<section id="documentation">
-<h1>Documentation:<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h1>
+<p><strong>Slycat™ Interaction &amp; Usage</strong></p>
+<p>The Slycat™ service is composed of the Slycat™ server, a user’s client (often a web browser) interacting with the server, and the remote system agent launched and controlled by the server. The typical user interaction is via a web browser, such as Firefox, Chrome, or Safari. However, the Slycat™ server’s RESTful API enables multiple usage and interaction paradigms. There are many options for Slycat™ clients:</p>
+<ul class="simple">
+<li><p>A web browser enables a user to both create analysis models and to explore their data.</p></li>
+<li><p>The <a class="reference internal" href="manual/slypi/slypi.html#slypi-ref-label"><span class="std std-ref">SlyPI Library</span></a> enables automated or scripted model creation and extended analysis and post-processing.</p></li>
+<li><p>The Sandia Analyst Workbench (SAW) enables automated post-processing and Slycat™ model creation from SAW (leveraging either the Slycat-SAW Integration or the SlyPI library).</p></li>
+<li><p>The RESTful API enables users to engage Slycat™ directly from their own code.</p></li>
+<li><p>A Slycat™ analysis or visualization may be embedded in a focused engineering or simulation application, providing reusable, as-a-service visualization and analytics components.</p></li>
+</ul>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="manual/slycat.overview.html">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/cca.model.html">Canonical Correlation Analysis Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/parameter.space.model.html">Parameter Space Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/timeseries.model.html">Timeseries Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="manual/DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manual/slycat.overview.html">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/data.table.html">Source Data, CSV Format Data Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/Navbar.html">Slycat™ Navbar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/Projects.html">Projects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/Models.html">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/Bookmarks.html">Bookmarks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/Templates.html">Templates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/cca.model.html">Canonical Correlation Analysis Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/CarsExample.html"><em>Cars</em> Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/CreatingCCAModel.html">Creating a CCA Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/CCAModelVis.html">CCA Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/parameter.space.model.html">Parameter Space Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/data.table.html">Source Data, CSV Format Data Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/media.support.html">Supported Media Formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/CreatingPSModel.html">Creating a Parameter Space Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/PSModelVis.html">Parameter Space Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/timeseries.model.html">Timeseries Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/TimeSeriesData.html">Time Series Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/CreatingTSModel.html">Creating a Time Series Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/TSModelVis.html">Time Series Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/DAC_Manual/dac.model.html">Dial-A-Cluster Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/DACData.html">Data Formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/CreatingDACModel.html">Model Creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/DAC_Manual/Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/VS_Manual/vs.html">VideoSwarm Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/VS_Manual/vs.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/VS_Manual/vs.html#reference">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manual/slypi/slypi.html">SlyPI Library</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#installing-slypi">Installing SlyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#user-authentication">User Authentication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#kerberos">Kerberos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#proxies-certificates">Proxies/Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#slypi-examples">SlyPI Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#more-advanced-usage">More Advanced Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manual/slypi/slypi.html#further-information">Further Information</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="manual/Acknowledgements.html">Acknowledgements</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Running Slycat Server</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="QuickStart.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="QuickStart.html#docker-service-names">Docker service names</a></li>
-<li class="toctree-l2"><a class="reference internal" href="QuickStart.html#list-of-helpful-docker-commands">List of helpful docker commands</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="colophon.html#writing-the-documentation">Writing the Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="colophon.html#building-the-documentation">Building the Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="colophon.html#deploying-the-documentation">Deploying the Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="rest-api.html">REST API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="hyperchunks.html">Hyperchunks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="GET-methods/GET-rest-api.html">GET METHODS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="POST-methods/POST-rest-api.html">POST METHODS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="PUT-methods/PUT-rest-api.html">PUT METHODS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="DELETE-methods/DELETE-rest-api.html">DELETE METHODS</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.darray.html">slycat.darray</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.hdf5.html">slycat.hdf5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.hyperchunks.html">slycat.hyperchunks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.uri.html">slycat.uri</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.client.html">slycat.web.client</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.html">slycat.web.server</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.authentication.html">slycat.web.server.authentication</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.database.couchdb.html">slycat.web.server.database.couchdb</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.engine.html">slycat.web.server.engine</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.handlers.html">slycat.web.server.handlers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.hdf5.html">slycat.web.server.hdf5</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.plugin.html">slycat.web.server.plugin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="slycat-packages/slycat.web.server.remote.html">slycat.web.server.remote</a></li>
 </ul>
 </li>
 </ul>
 </div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Running Slycat Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+</ul>
+</div>
 </section>
 <section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
@@ -185,9 +212,9 @@ interface for analyses that have broad appeal.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

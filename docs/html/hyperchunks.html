@@ -1,20 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hyperchunks &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=23636ea3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -41,8 +43,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
@@ -89,7 +95,7 @@
            <div itemprop="articleBody">
              
   <section id="hyperchunks">
-<span id="id1"></span><h1>Hyperchunks<a class="headerlink" href="#hyperchunks" title="Permalink to this heading"></a></h1>
+<span id="id1"></span><h1>Hyperchunks<a class="headerlink" href="#hyperchunks" title="Link to this heading"></a></h1>
 <p>To meet a wide variety of needs for incremental and interactive data ingestion
 and retrieval, Slycat has evolved a complex data storage hierarchy.  At the top
 of the hierarchy are <em>projects</em>, which provide administrative and access
@@ -117,7 +123,7 @@ serve as a compact specification for a set of hyperchunks.  Using HQL, a client
 can read and write data that spans the arrays and attributes in an arrayset,
 including computed attributes and arbitrary expressions.</p>
 <section id="basic-hql">
-<h2>Basic HQL<a class="headerlink" href="#basic-hql" title="Permalink to this heading"></a></h2>
+<h2>Basic HQL<a class="headerlink" href="#basic-hql" title="Link to this heading"></a></h2>
 <p>To begin, the most basic building-block in HQL is a <em>slice</em> expression, which
 follows the same syntactic rules as slicing in the Python language:  At its
 most general a slice takes the form “start:stop:skip”, which specifies every
@@ -217,7 +223,7 @@ hyperchunks by separating them with semicolons:</p>
 </ul>
 </section>
 <section id="advanced-hql">
-<h2>Advanced HQL<a class="headerlink" href="#advanced-hql" title="Permalink to this heading"></a></h2>
+<h2>Advanced HQL<a class="headerlink" href="#advanced-hql" title="Link to this heading"></a></h2>
 <p>In addition to slices specifying attribute indices, HQL attribute expressions can include
 computed expressions that generate attribute data “on the fly”.  Attribute expressions
 currently include function execution and a full set of boolean expressions, including set
@@ -247,7 +253,7 @@ the attribute expression and the hyperslices expression:</p>
 of the sorted data, rather than the first ten elements of the attribute.</p>
 </section>
 <section id="hql-context">
-<h2>HQL Context<a class="headerlink" href="#hql-context" title="Permalink to this heading"></a></h2>
+<h2>HQL Context<a class="headerlink" href="#hql-context" title="Link to this heading"></a></h2>
 <p>Depending on the context, not all APIs allow every HQL feature.  For example,
 APIs that write data don’t allow computed attribute expressions; some APIs only
 allow array expressions; others allow only array and attribute expressions.
@@ -270,9 +276,9 @@ For those situations, you may omit the other parts of the HQL.  For example:</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

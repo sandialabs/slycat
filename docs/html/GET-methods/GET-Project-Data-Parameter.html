@@ -1,19 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GET Project Data Parameter &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,8 +42,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../manual/user-manual.html">Slycat User Manual</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -129,15 +135,15 @@
            <div itemprop="articleBody">
              
   <section id="get-project-data-parameter">
-<h1>GET Project Data Parameter<a class="headerlink" href="#get-project-data-parameter" title="Permalink to this heading"></a></h1>
+<h1>GET Project Data Parameter<a class="headerlink" href="#get-project-data-parameter" title="Link to this heading"></a></h1>
 <dl class="http get">
 <dt class="sig sig-object http" id="get--projects-data-(did)-parameters-(param)">
-<span class="sig-name descname"><span class="pre">GET</span> </span><span class="sig-name descname"><span class="pre">/projects/data/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">did</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/parameters/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">param</span></em><span class="sig-paren">)</span><a class="headerlink" href="#get--projects-data-(did)-parameters-(param)" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">GET</span> </span><span class="sig-name descname"><span class="pre">/projects/data/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">did</span></em><span class="sig-paren">)</span><span class="sig-name descname"><span class="pre">/parameters/</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">param</span></em><span class="sig-paren">)</span><a class="headerlink" href="#get--projects-data-(did)-parameters-(param)" title="Link to this definition"></a></dt>
 <dd><p>Returns a project data parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Status Codes<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><span><a class="reference external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a></span> – </p></li>
+<li><p><span><a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/200">200 OK</a></span> – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Response Headers<span class="colon">:</span></dt>
@@ -177,7 +183,7 @@
 </dd></dl>
 
 <section id="see-also">
-<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="GET-Project-Data-In-Model.html#get--api-projects-data-model-(mid)" title="GET /api/projects/data/model/(mid)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/data/model/(mid)</span></code></a></p></li>
 <li><p><a class="reference internal" href="GET-Project-Data.html#get--api-projects-data-(did)" title="GET /api/projects/data/(did)"><code class="xref http http-get docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/projects/data/(did)</span></code></a></p></li>
@@ -196,9 +202,9 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,24 +1,26 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Creating a Parameter Space Model &mdash; Slycat 3.4.2 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=23636ea3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Parameter Space Model Visualization" href="PSModelVis.html" />
-    <link rel="prev" title="Taylor Anvil Impact Scenario (TAIS) Data Set" href="TAISDataSet.html" /> 
+    <link rel="prev" title="Supported Media Formats" href="media.support.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,22 +42,29 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.table.html">Source Data, CSV Format Data Table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="media.support.html">Supported Media Formats</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Creating a Parameter Space Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="DatatableCreation.html">Data Table Creation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VS_Manual/vs.html">VideoSwarm Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slypi/slypi.html">SlyPI Library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Running Slycat Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
@@ -91,16 +100,19 @@
            <div itemprop="articleBody">
              
   <section id="creating-a-parameter-space-model">
-<h1>Creating a Parameter Space Model<a class="headerlink" href="#creating-a-parameter-space-model" title="Permalink to this heading"></a></h1>
-<p>Like the CCA model, the core of the Parameter Space model is table data.  Up until the stage where inputs and outputs for the
-model are selected, the model creation steps are identical to CCA (see Creating a CCA Model).  Instead of initializing all
-variables as <em>Input</em>, the variables default to being assigned as <em>Neither</em>.  As with CCA, group selection operations using
+<h1>Creating a Parameter Space Model<a class="headerlink" href="#creating-a-parameter-space-model" title="Link to this heading"></a></h1>
+<p>Like the CCA model, the core of the Parameter Space model is table data ingested from a Comma-Separate Values (CSV) file.</p>
+<p>The CSV file is expected to follow the standard CSV format where each row is a set of comma-delimited values from a single sample. A header row should name the values contained in the columns, and the delimiters must be commas. Columns may contain integers, real numbers, or strings. Columns must be type-consistent and missing data should be represented with an appropriate entry, such as “” for empty string or NAN for missing number.</p>
+<p>See the <a class="reference internal" href="data.table.html#csv-ref-label"><span class="std std-ref">Source Data, CSV Format Data Table</span></a> page for a complete description of the Slycat™ CSV format requirements and options.</p>
+<p>See the <a class="reference internal" href="media.support.html#mediasupport-ref-label"><span class="std std-ref">Supported Media Formats</span></a> page for a complete description of the media formats supported in the Slycat™ Parameter Space model.</p>
+<p>Up until the stage where inputs and outputs for the model are selected, the model creation steps are identical to CCA (see Creating a CCA Model).  Instead of initializing all variables as <em>Input</em>, the variables default to being assigned as <em>Neither</em>.  As with CCA, group selection operations using
 shift-click and/or control-click allow rapid assignment of variable types (see Select Columns).  However, a central difference
 in the Parameter Space model is that variables can also be designated as being <em>Categorical</em> and/or <em>Editable</em>.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../_images/Figure25.png"><img alt="../_images/Figure25.png" src="../_images/Figure25.png" style="width: 677.25px; height: 346.5px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure25.png"><img alt="../_images/Figure25.png" height="346" src="../_images/Figure25.png" width="677" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 25: Parameter Space model creation wizard dialog for designating variable attributes, including Categorical and Editable.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 25: Parameter Space model creation wizard dialog for designating variable attributes, including Categorical and Editable.</strong></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p><em>Categorical</em> variables are those with a limited number of discrete values.  During scatterplot filtering, it is often
@@ -111,9 +123,10 @@ are filtered using a slider, which is limited to defining a single range of valu
 scatterplot display to be only those cars having 3, 5, or 8 cylinders that were manufactured in even-numbered years.  This
 fine-grained filtering of the data would be impossible using a range slider.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="../_images/Figure26.png"><img alt="../_images/Figure26.png" src="../_images/Figure26.png" style="width: 180.0px; height: 357.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/Figure26.png"><img alt="../_images/Figure26.png" height="357" src="../_images/Figure26.png" width="180" />
+</a>
 <figcaption>
-<p><span class="caption-text"><strong>Figure 26: Filters for Categorical variables enumerate each discrete value as a labeled button, enabling filtering operations that would not be possible using range sliders.  The values selected here (shown in dark blue) limit the scatterplot to display just those cars with 3, 5, or 8 cylinders that were manufactured in even-numbered years.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text"><strong>Figure 26: Filters for Categorical variables enumerate each discrete value as a labeled button, enabling filtering operations that would not be possible using range sliders.  The values selected here (shown in dark blue) limit the scatterplot to display just those cars with 3, 5, or 8 cylinders that were manufactured in even-numbered years.</strong></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>An <em>Editable</em> variable is one that can be modified by the user.  The type of values originally in the variable define the type
@@ -127,16 +140,16 @@ declared.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="TAISDataSet.html" class="btn btn-neutral float-left" title="Taylor Anvil Impact Scenario (TAIS) Data Set" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="media.support.html" class="btn btn-neutral float-left" title="Supported Media Formats" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="PSModelVis.html" class="btn btn-neutral float-right" title="Parameter Space Model Visualization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.</p>
+    <p>&#169; Copyright Copyright 2025 National Technology &amp; Engineering Solutions of Sandia, LLC (NTESS).
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
+certain rights in this software..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

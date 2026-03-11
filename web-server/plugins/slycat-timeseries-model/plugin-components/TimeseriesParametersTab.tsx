@@ -4,15 +4,17 @@ import SlycatSelector from "components/SlycatSelector";
 import SlycatNumberInput from "components/SlycatNumberInput";
 
 interface TimeseriesParametersTabProps {
-  delimiter: string;
-  delimiterCallback: Function;
-  columnNames: any;
-  columnCallback: Function;
-  bincountCallback: Function;
-  resamplingCallback: Function;
-  linkageCallback: Function;
-  metricCallback: Function;
-  fileType: string;
+  delimiter: string
+  delimiterCallback: Function
+  columnNames: any
+  allColumnNames: any
+  indexColumnCallback: Function
+  columnCallback: Function
+  bincountCallback: Function
+  resamplingCallback: Function
+  linkageCallback: Function
+  metricCallback: Function
+  fileType: string
 }
 
 function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
@@ -20,6 +22,21 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
     <div>
       {props.fileType === "csv" ? (
         <div>
+          <div className="alert alert-primary" role="alert">
+            Select a particular timeseries and clustering parameters.
+          </div>
+          <strong>Slycat Table File Selections</strong>
+          <hr className="mt-1 mb-3"></hr>
+          <SlycatSelector
+            label={"Column Name of Timeseries Path"}
+            options={props.columnNames}
+            onSelectCallBack={props.columnCallback}
+          />
+          <SlycatSelector
+            label={'Index Column Name'}
+            options={props.allColumnNames}
+            onSelectCallBack={props.indexColumnCallback}
+          />
           <SlycatTextInput
             id={"delimiter"}
             label={"Table File Delimeter"}
@@ -27,13 +44,13 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
             warning="Please enter a table file delimiter."
             callBack={props.delimiterCallback}
           />
-          <SlycatSelector
-            label={"Timeseries Column Name"}
-            options={props.columnNames}
-            onSelectCallBack={props.columnCallback}
-          />
+          <strong>Timeseries Clustering Parameters</strong>
+          <hr className="mt-1 mb-3"></hr>
         </div>
-      ) : null}
+      ) :
+        <div className="alert alert-primary" role="alert">
+          Select the timeseries clustering parameters.
+        </div>}
       <div>
         <SlycatNumberInput
           label={"Timeseries Bin Count"}
@@ -64,12 +81,7 @@ function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
           ]}
           onSelectCallBack={props.linkageCallback}
         />
-        <SlycatSelector
-          label={"Cluster Metric"}
-          options={[{ text: "euclidean", value: "euclidean" }]}
-          disabled={true}
-          onSelectCallBack={props.metricCallback}
-        />
+        Cluster Metric: Euclidean
       </div>
     </div>
   );

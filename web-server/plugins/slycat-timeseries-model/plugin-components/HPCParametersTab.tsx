@@ -19,21 +19,25 @@ interface HPCParametersTabProps {
   hoursCallback: Function;
   minutesCallback: Function;
   workDirCallback: Function;
+  licenseCallback: Function;
 }
 
 function HPCParametersTab(props: HPCParametersTabProps) {
   return (
     <div>
       <div className="form-floating mb-3">
-        <input
-          id="job-host"
-          className="form-control"
-          value={props.hostName}
-          disabled
-          placeholder="Job Host"
-        />
-        <label htmlFor="job-host">Job Host</label>
+        <div className="alert alert-primary" role="alert">
+          Select a working directory and HPC submission details.
+        </div>
+        Job Host: {props.hostName}
       </div>
+      <SlycatTextInput
+        id={"work-dir"}
+        label={"Working Directory"}
+        value={props.workDir ? props.workDir : ""}
+        warning="Please enter a working directory."
+        callBack={props.workDirCallback}
+      />
       <SlycatTextInput
         id={"account-id"}
         label={"Account ID"}
@@ -66,11 +70,11 @@ function HPCParametersTab(props: HPCParametersTabProps) {
         hourCallBack={props.hoursCallback}
       />
       <SlycatTextInput
-        id={"work-dir"}
-        label={"Working Directory"}
-        value={props.workDir ? props.workDir : ""}
-        warning="Please enter a working directory."
-        callBack={props.workDirCallback}
+        id={"license"}
+        label={"License"}
+        value={""}
+        warning=""
+        callBack={props.licenseCallback}
       />
     </div>
   );
