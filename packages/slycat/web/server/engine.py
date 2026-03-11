@@ -175,6 +175,12 @@ def start(root_path, config_file):
     #### GET METHODS ####
     #####################
     dispatcher.connect(
+        "get-all-column-names",
+        "/remotes/:hostname/column_names/file{path:.*}",
+        slycat.web.server.handlers.get_all_column_names,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
         "get-time-series-names",
         "/remotes/:hostname/time_series_names/file{path:.*}",
         slycat.web.server.handlers.get_time_series_names,
