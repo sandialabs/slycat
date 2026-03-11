@@ -277,8 +277,8 @@ class Session(object):
                     file_name = self._aids[1]
                     split_file_name = file_name.split('.')
                     file_extension = split_file_name[len(split_file_name) - 1]
-                    # if ".h5" in self._aids[1] or ".hdf5" in self._aids[1]:
-                    if file_extension == '.h5' or file_extension == '.hdf5':
+
+                    if file_extension == 'h5' or file_extension == 'hdf5':
                         slycat.web.server.plugin.manager.parsers[self._parser]["parse"](
                             database,
                             model,
