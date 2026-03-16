@@ -22,38 +22,40 @@ export const SlycatLocalBrowser = (props: { callBack: (status: boolean) => void 
     }
   };
   return (
-    <div className="form-group row">
-      <label className="col-sm-2 col-form-label">File</label>
-      <div className="col-sm-6">
-        <input
-          type="file"
-          className=""
-          onChange={handleFileSelected}
-          id="slycat-local-browser-file"
-          placeholder="file"
-        ></input>
-      </div>
-      
-      <SlycatParserControls
-        setParser={React.useCallback(
-          (parser: string) => {
-            dispatch(setParser(parser));
-          },
-          [dispatch],
-        )}
-      />
-      <div className="progress" style={{ visibility: progress > 0 ? undefined : "hidden" }}>
-        <div
-          className="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={100}
-          style={{ width: progress?.toString() + "%" }}
-        >
-          {progressStatus}
+    <div>
+      <div className="form-group row">
+        <label className="col-sm-2 col-form-label">File</label>
+        <div className="col-sm-6">
+          <input
+            type="file"
+            className=""
+            onChange={handleFileSelected}
+            id="slycat-local-browser-file"
+            placeholder="file"
+          ></input>
         </div>
+
+        <SlycatParserControls
+          setParser={React.useCallback(
+            (parser: string) => {
+              dispatch(setParser(parser));
+            },
+            [dispatch],
+          )}
+        />
       </div>
+        <div className="progress" style={{ visibility: progress > 0 ? undefined : "hidden", marginTop: "10px"}}>
+          <div
+            className="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={100}
+            style={{ width: progress?.toString() + "%" }}
+          >
+            {progressStatus}
+          </div>
+        </div>
     </div>
   );
 };
