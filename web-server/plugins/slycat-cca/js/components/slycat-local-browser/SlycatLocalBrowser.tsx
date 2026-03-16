@@ -33,16 +33,15 @@ export const SlycatLocalBrowser = (props: { callBack: (status: boolean) => void 
           placeholder="file"
         ></input>
       </div>
-      <div className="col-sm-10">
-        <SlycatParserControls
-          setParser={React.useCallback(
-            (parser: string) => {
-              dispatch(setParser(parser));
-            },
-            [dispatch],
-          )}
-        />
-      </div>
+      
+      <SlycatParserControls
+        setParser={React.useCallback(
+          (parser: string) => {
+            dispatch(setParser(parser));
+          },
+          [dispatch],
+        )}
+      />
       <div className="progress" style={{ visibility: progress > 0 ? undefined : "hidden" }}>
         <div
           className="progress-bar progress-bar-striped progress-bar-animated"
