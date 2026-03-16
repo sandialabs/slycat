@@ -46,6 +46,22 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
 
   return (
     <div hidden={hidden}>
+      <div className="alert alert-primary" role="alert">
+        <strong>Windows Network Share (SMB) Example:</strong>
+        <br />
+        If the Windows share URL is: sdss.company.com\Collab3
+        <br />
+          <div style={{fontSize: "14px", marginLeft: "5px"}}>
+            Enter "sdss.company.com" as the Hostname
+            <br />
+            Enter "Collab3" as the Share Name
+            <br />
+            Enter your Username and "company.com" as the Domain
+            <br />
+          </div>
+        Browse for your directory after you are connected.
+        <br />
+      </div>
       {!hidden && <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />}
     </div>
   );

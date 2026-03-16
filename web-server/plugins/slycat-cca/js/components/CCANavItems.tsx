@@ -19,8 +19,8 @@ export const CCAWizardNavItems = () => {
   return (
     <ul className="nav nav-pills">
       <CCANavItem
-        key={"Locate Data"}
-        name={"Locate Data"}
+        key={"Find Data"}
+        name={"Find Data"}
         active={tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB}
       />
       <CCANavItem
@@ -36,8 +36,8 @@ export const CCAWizardNavItems = () => {
         }
       />
       <CCANavItem
-        key={"Upload Table"}
-        name={"Upload Table"}
+        key={"Select File"}
+        name={"Select File"}
         active={
           tabName === TabNames.CCA_LOCAL_BROWSER_TAB ||
           tabName === TabNames.CCA_REMOTE_BROWSER_TAB ||
@@ -50,8 +50,8 @@ export const CCAWizardNavItems = () => {
         }
       />
       <CCANavItem
-        key={"HDF5 Input"}
-        name={"HDF5 Input"}
+        key={"Inputs"}
+        name={"Inputs"}
         active={tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB}
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
@@ -63,8 +63,8 @@ export const CCAWizardNavItems = () => {
         }
       />
       <CCANavItem
-        key={"HDF5 Output"}
-        name={"HDF5 Output"}
+        key={"Outputs"}
+        name={"Outputs"}
         active={tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB}
         hidden={
           tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB ||
@@ -93,8 +93,8 @@ export const CCAWizardNavItems = () => {
         }
       />
       <CCANavItem
-        key={"Name Model"}
-        name={"Name Model"}
+        key={"Model"}
+        name={"Model"}
         active={tabName === TabNames.CCA_FINISH_MODEL}
         hidden={tabName !== TabNames.CCA_FINISH_MODEL}
       />

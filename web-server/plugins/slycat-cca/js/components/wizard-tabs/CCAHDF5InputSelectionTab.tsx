@@ -26,6 +26,9 @@ export const CCAHDF5InputSelectionTab = (props: { hidden?: boolean }) => {
 
   return (
     <div hidden={hidden}>
+      <div className="alert alert-primary" role="alert">
+        Browse to and Select the Input dataset.
+      </div>
       {!hidden && <HDF5Browser
         onSelectFileCallBack={handleTablePath}
         onReauthCallBack={OnReauth}
