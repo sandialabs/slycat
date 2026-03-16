@@ -106,6 +106,7 @@ import {
 import React from "react";
 import { createRoot } from "react-dom/client";
 import PSControlsBar from "./Components/PSControlsBar";
+import { COLUMN_LABELS } from "utils/ui-labels";
 
 let table_metadata = null;
 
@@ -366,7 +367,7 @@ $(document).ready(function () {
           }
 
           // Adding Index column
-          table_metadata["column-names"].push("Row");
+          table_metadata["column-names"].push(COLUMN_LABELS.index);
           table_metadata["column-types"].push("int64");
 
           filter_manager.set_table_metadata(table_metadata);

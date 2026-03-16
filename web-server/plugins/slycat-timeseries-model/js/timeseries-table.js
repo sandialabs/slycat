@@ -435,76 +435,6 @@ $.widget("timeseries.table", {
 
     self.onDataLoaded = new SlickEvent();
 
-    self.get_indices_old = function (sortedUnsorted, rows, callback, asynchronous) {
-      if (asynchronous != false) asynchronous = true;
-
-      if (rows.length == 0) {
-        callback([]);
-        return;
-      }
-
-      var sort = "";
-      if (self.sort_column !== null && self.sort_order !== null)
-        sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-
-      var row_string = "";
-      for (var i = 0; i < rows.length; ++i) {
-        row_string += rows[i];
-        break;
-      }
-      for (var i = 1; i < rows.length; ++i) {
-        row_string += ",";
-        row_string += rows[i];
-      }
-
-      // XMLHttpRequest does not support synchronous retrieval with arraybuffer, so falling back to ajax with no arraybuffer for initial synchronous sorted table filter retrieval.
-      if (asynchronous) {
-        var request = new XMLHttpRequest();
-        request.open(
-          "GET",
-          self.api_root +
-            "models/" +
-            self.mid +
-            "/tables/" +
-            self.aid +
-            "/arrays/0/" +
-            sortedUnsorted +
-            "-indices?rows=" +
-            row_string +
-            "&index=Index&byteorder=" +
-            (chunker.is_little_endian() ? "little" : "big") +
-            sort,
-        );
-        request.responseType = "arraybuffer";
-        request.callback = callback;
-        request.onload = function (e) {
-          this.callback(new Int32Array(this.response));
-        };
-        request.send();
-      } else {
-        $.ajax({
-          type: "GET",
-          url:
-            self.api_root +
-            "models/" +
-            self.mid +
-            "/tables/" +
-            self.aid +
-            "/arrays/0/" +
-            sortedUnsorted +
-            "-indices?rows=" +
-            row_string +
-            "&index=Index" +
-            sort,
-          async: false,
-          callback: callback,
-          success: function (data) {
-            this.callback(new Int32Array(data));
-          },
-        });
-      }
-    };
-
     self.get_indices = function (direction, rows, callback) {
       if (rows.length == 0) {
         callback([]);
@@ -583,55 +513,6 @@ $.widget("timeseries.table", {
 
     self.getLength = function () {
       return self.row_count;
-    };
-
-    self.getItem_old = function (index) {
-      var column_begin = 0;
-      var column_end = self.metadata["column-count"];
-      var page = Math.floor(index / self.page_size);
-      var page_begin = page * self.page_size;
-
-      if (!(page in self.pages)) {
-        var row_begin = page_begin;
-        var row_end = (page + 1) * self.page_size;
-
-        var sort = "";
-        if (self.sort_column !== null && self.sort_order !== null) {
-          sort = "&sort=" + self.sort_column + ":" + self.sort_order;
-        }
-
-        var rowsToRetrieve = self.retrieve_table_filter.slice(row_begin, row_end).join(",");
-
-        $.ajax({
-          type: "GET",
-          url:
-            self.api_root +
-            "models/" +
-            self.mid +
-            "/tables/" +
-            self.aid +
-            "/arrays/0/chunk?rows=" +
-            rowsToRetrieve +
-            "&columns=" +
-            column_begin +
-            "-" +
-            column_end +
-            "&index=Index" +
-            sort,
-          async: false,
-          success: function (data) {
-            self.pages[page] = data;
-          },
-          error: function (request, status, reason_phrase) {
-            console.log("error", request, status, reason_phrase);
-          },
-        });
-      }
-
-      var result = {};
-      for (var i = column_begin; i != column_end; ++i)
-        result[i] = self.pages[page].data[i][index - page_begin];
-      return result;
     };
 
     self.getItem = function (index) {

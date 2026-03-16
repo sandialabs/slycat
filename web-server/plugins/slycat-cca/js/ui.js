@@ -52,6 +52,7 @@ import {
   setBarplotHeight,
   setBarplotWidth,
 } from "./actions";
+import { COLUMN_LABELS } from "utils/ui-labels";
 
 // Wait for document ready
 $(document).ready(function () {
@@ -276,7 +277,7 @@ $(document).ready(function () {
       client.get_model_table_metadata({
         mid: redux_state_tree.derived.model_id,
         aid: "data-table",
-        index: "Index",
+        index: encodeURIComponent(COLUMN_LABELS.index),
         success: function (table_metadata) {
           redux_state_tree.derived.table_metadata = table_metadata;
           if (redux_state_tree.variable_selected === undefined) {
