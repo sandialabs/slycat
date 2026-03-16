@@ -34,6 +34,9 @@ export const CCASmbTab = (props: { hidden?: boolean }) => {
   );
   return (
     <div hidden={hidden}>
+      <div className="alert alert-primary" role="alert">
+        Browse and Select the File.
+      </div>
       <div>
         {tabName === TabNames.CCA_SMB_TAB && (
           <>
