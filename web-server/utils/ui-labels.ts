@@ -24,3 +24,7 @@ export const REMOTE_AUTH_LABELS = {
     "Note: you may have tried too many times with bad credentials and have been suspended for the next few minutes.",
   authErrorUnauthorizedDescription: "Make sure the Hostname is entered correctly.",
 } as const;
+
+export const COLUMN_LABELS = {
+  index: "Row #",
+} as const;

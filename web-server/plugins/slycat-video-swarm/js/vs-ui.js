@@ -30,6 +30,7 @@ import table_pane from "./vs-table.js";
 import movie_pane from "./vs-movies.js";
 import d3 from "d3";
 import control from "./vs-controls";
+import { COLUMN_LABELS } from "utils/ui-labels";
 // global parameters to set up movie-plex UI
 // -----------------------------------------
 
@@ -222,11 +223,11 @@ function model_loaded() {
 
       // Adding Index column to table_metadata and table_data
       table_metadata[0]["column-count"] = table_metadata[0]["column-count"] + 1;
-      table_metadata[0]["column-names"].push("Index");
+      table_metadata[0]["column-names"].push(COLUMN_LABELS.index);
       table_metadata[0]["column-types"].push("int64");
       table_metadata[0]["column-min"].push(0);
       table_metadata[0]["column-max"].push(table_metadata[0]["row-count"] - 1);
-      table_data[0]["column-names"].push("Index");
+      table_data[0]["column-names"].push(COLUMN_LABELS.index);
       table_data[0]["columns"].push(table_metadata[0]["column-count"] - 1);
       table_data[0]["data"].push(_.range(table_data[0]["rows"].length));
 

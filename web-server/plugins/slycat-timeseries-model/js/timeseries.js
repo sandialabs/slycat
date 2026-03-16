@@ -37,6 +37,7 @@ import {
   setHiddenSimulations,
   setCurrentVIndex,
 } from "./services/dataSlice";
+import { COLUMN_LABELS } from "utils/ui-labels";
 
 export default function initialize_timeseries_model(
   dispatch,
@@ -359,7 +360,7 @@ export default function initialize_timeseries_model(
         lastRow +
         "&columns=" +
         parameters.column +
-        "&index=Index&sort=" +
+        "&index=" + encodeURIComponent(COLUMN_LABELS.index) + "&sort=" +
         lastColumn +
         ":ascending",
       async: true,
