@@ -511,9 +511,10 @@ function constructor(params) {
           server: component.remote.hostname().trim(),
           share: component.remote.share().trim(),
         })
-        .then((response) => {
+        .then(async (response) => {
           console.log("authenticated.", response);
-          if (response.ok) {
+          const data = await response.json()
+          if (response.ok && data.status) {
             component.remote.session_exists(true);
             component.remote.enable(true);
             component.remote.status_type(null);
@@ -532,6 +533,7 @@ function constructor(params) {
               </div>,
             );
           } else {
+            alert(`could not connect ${response.statusText} , ${data.msg}`);
             component.remote.enable(true);
             component.remote.status_type("danger");
             component.remote.focus("password");
@@ -541,7 +543,6 @@ function constructor(params) {
           console.log("could not connect", error);
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
           component.remote.focus("password");
         });
     }
