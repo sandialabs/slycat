@@ -31,7 +31,6 @@ export default class SlycatFormDropDown extends React.Component<SlycatFormDropDo
   }
 
   onValueChange = (value) => {
-    // localStorage.setItem("slycat-remote-controls-username", value);
     this.setState({value: value});
   };
 

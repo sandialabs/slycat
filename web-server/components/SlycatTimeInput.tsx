@@ -37,8 +37,6 @@ export default class SlycatTimeInput extends React.Component<
   }
 
   onHourChange = (value) => {
-    // localStorage.setItem("slycat-remote-controls-username", value);
-    // this.setState({value: value});
     if (value === "") {
       value = 0;
     }
