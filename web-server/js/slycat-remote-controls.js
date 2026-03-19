@@ -46,13 +46,15 @@ ko.components.register("slycat-remote-controls", {
         component.hostname(remote_host.hostname());
       };
 
-      if (!component.hostname())
-        component.hostname(localStorage.getItem("slycat-remote-controls-hostname"));
-      if (!component.username())
-        component.username(localStorage.getItem("slycat-remote-controls-username"));
+      var storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
+      if (storedHostname) component.hostname(storedHostname);
+      var storedUsername = localStorage.getItem("slycat-remote-controls-username");
+      if (storedUsername) component.username(storedUsername);
 
-      component.hostname.subscribe(function (value) {
-        localStorage.setItem("slycat-remote-controls-hostname", value);
+      var hostnameSubscription = component.hostname.subscribe(function (value) {
+        if (value != null) {
+          localStorage.setItem("slycat-remote-controls-hostname", value);
+        }
         component.status_type(null);
         component.status(null);
 
@@ -74,18 +76,20 @@ ko.components.register("slycat-remote-controls", {
         }
       });
 
-      component.username.subscribe(function (value) {
-        localStorage.setItem("slycat-remote-controls-username", value);
+      var usernameSubscription = component.username.subscribe(function (value) {
+        if (value != null) {
+          localStorage.setItem("slycat-remote-controls-username", value);
+        }
         component.status_type(null);
         component.status(null);
       });
 
-      component.password.subscribe(function (value) {
+      var passwordSubscription = component.password.subscribe(function (value) {
         component.status_type(null);
         component.status(null);
       });
 
-      component.focus.subscribe(function (value) {
+      var focusSubscription = component.focus.subscribe(function (value) {
         var hostname = component.hostname();
         var username = component.username();
         var password = component.password();
@@ -132,6 +136,13 @@ ko.components.register("slycat-remote-controls", {
           mapping.fromJS(remote_hosts, component.remote_hosts);
           component.hostname(current_host || component.hostname());
         },
+      });
+
+      ko.utils.domNodeDisposal.addDisposeCallback(component_info.element, function () {
+        hostnameSubscription.dispose();
+        usernameSubscription.dispose();
+        passwordSubscription.dispose();
+        focusSubscription.dispose();
       });
 
       return component;

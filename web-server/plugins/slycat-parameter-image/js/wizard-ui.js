@@ -316,9 +316,8 @@ function constructor(params) {
     }
 
     var type = component.ps_type();
-    component.remote.username(null);
     component.remote.password(null);
-    component.remote.hostname(null);
+    component.smb_wizard_login_root.render(null);
     if (type === "local") {
       component.tab(1);
     } else if (type === "server") {

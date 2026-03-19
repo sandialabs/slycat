@@ -155,8 +155,8 @@
 
     <div data-bind="visible:tab() == 2">
       <form role="form">
+        <!-- ko if: ps_type() == 'remote' -->
         <slycat-remote-controls
-          data-bind="visible: ps_type() == 'remote'"
           params="
           hostname:remote.hostname,
           username:remote.username,
@@ -169,6 +169,7 @@
           session_exists:remote.session_exists
         "
         ></slycat-remote-controls>
+        <!-- /ko -->
         <div
           class="smb-wizard-login"
           style="padding-left: 16px"

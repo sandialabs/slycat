@@ -53,7 +53,7 @@ export default class ConnectModal extends React.Component<ConnectModalProps, Con
    * updates local storage and react state depending on which input
    * is being typed in
    *
-   * @memberof SlycatRemoteControls
+   * @memberof ConnectModal
    */
   private onValueChange = (value: string, type: string) => {
     switch (type) {
@@ -88,7 +88,7 @@ export default class ConnectModal extends React.Component<ConnectModalProps, Con
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
    * @async
-   * @memberof SlycatRemoteControls
+   * @memberof ConnectModal
    */
   private checkRemoteStatus = async (hostname: string) => {
     return client.get_remotes_fetch(hostname).then((json: any) => {
@@ -111,7 +111,7 @@ export default class ConnectModal extends React.Component<ConnectModalProps, Con
    * hostname, username, password
    *
    * @async
-   * @memberof SlycatRemoteControls
+   * @memberof ConnectModal
    */
   private connect = async () => {
     this.setState({ loadingData: true }, () => {
@@ -149,7 +149,7 @@ export default class ConnectModal extends React.Component<ConnectModalProps, Con
    * if the 'enter key' is pressed try and connect to
    * the input hostname
    *
-   * @memberof SlycatRemoteControls
+   * @memberof ConnectModal
    */
   handleKeyDown = (e: any) => {
     if (e.key === "Enter") {
