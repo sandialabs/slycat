@@ -582,15 +582,7 @@ export default class TimeseriesWizard extends React.Component<
         });
     }
     if (selectedPathType === "f" && this.state.selectedOption === "xyce") {
-      client
-      .get_all_column_names_fetch({
-        hostname: this.state.hostname,
-        path: selectedPath,
-      })
-      .then((result) => {
-        console.log(result);
-        this.handleAllColumnNames(result);
-      });
+      this.setState({indexColumn: "%eval_id"});
     }
   };
 
@@ -702,7 +694,7 @@ export default class TimeseriesWizard extends React.Component<
           time_hours: this.state.jobHours,
           time_minutes: this.state.jobMin,
           time_seconds: 0,
-          license: this.state.license,
+          license: this.state.license ?? '',
           working_dir: fn_params.workdir + "/slycat/",
         },
       },
