@@ -536,6 +536,17 @@ S. Martin
               <div class="invalid-feedback">Must be > 0.</div>
             </div>
           </div>
+          <div id="form-group-license" class="mb-3">
+          <label class="col-form-label">License</label>
+          <div>
+            <input
+              id="hpc-license"
+              class="form-control slycat-remote-interface-prebuilt-field"
+              type="text"
+              data-bind="value: license, enable : HPC_Job"
+            />
+          </div>
+        </div>
         </div>
 
         <label style="margin-top: 10px">Requested Job Time</label>
