@@ -3267,7 +3267,7 @@ def post_remotes_smb():
     :return: {"sid":sid, "status":boolean, msg:""}
     user_name password
     """
-    
+
     # encode with in js
 
     #   b64EncodeUnicode(str) {
@@ -3312,9 +3312,11 @@ def post_remotes_smb():
             }
         )
         database.save(session)
+        slycat.web.server.smb.check_session(sid)
     except Exception as e:
-        cherrypy.log.error("login could not save session for remotes %s" % e)
-        msg = "login could not save session for remote host"
+        cherrypy.log.error("login could not save session for remotes")
+        msg = "login could not save session for remote host, double check that the hostname and share name are correct"
+        return {"sid": sid, "status": False, "msg": msg}
     return {"sid": sid, "status": True, "msg": msg}
 
 
@@ -3406,11 +3408,17 @@ def post_combine_hdf5_tables(mid):
                 return index
 
         unformatted_input_column_stack = numpy.column_stack(unformatted_input).tolist()
-        unformatted_output_column_stack = numpy.column_stack(unformatted_output).tolist()
+        unformatted_output_column_stack = numpy.column_stack(
+            unformatted_output
+        ).tolist()
 
         # Map validation helper function to each column
-        bad_columns_map_inputs = map(validate_column, enumerate(unformatted_input_column_stack))
-        bad_columns_map_outputs = map(validate_column, enumerate(unformatted_output_column_stack))
+        bad_columns_map_inputs = map(
+            validate_column, enumerate(unformatted_input_column_stack)
+        )
+        bad_columns_map_outputs = map(
+            validate_column, enumerate(unformatted_output_column_stack)
+        )
 
         # Convert the map object to a list for viewing
         bad_columns_inputs = list(bad_columns_map_inputs)
@@ -3418,7 +3426,11 @@ def post_combine_hdf5_tables(mid):
 
         input_column_headers_indices = [i for i in range(0, len(unformatted_input[0]))]
         output_column_headers_indices = [
-            i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))
+            i
+            for i in range(
+                len(unformatted_input[0]),
+                (len(unformatted_input[0]) + len(unformatted_output[0])),
+            )
         ]
 
         # Remove bad columns from the combined data
@@ -3434,7 +3446,11 @@ def post_combine_hdf5_tables(mid):
     else:
         input_column_headers_indices = [i for i in range(0, len(unformatted_input[0]))]
         output_column_headers_indices = [
-            i for i in range(len(unformatted_input[0]), (len(unformatted_input[0]) + len(unformatted_output[0])))
+            i
+            for i in range(
+                len(unformatted_input[0]),
+                (len(unformatted_input[0]) + len(unformatted_output[0])),
+            )
         ]
 
     slycat.web.server.put_model_parameter(
@@ -3866,6 +3882,7 @@ def get_remote_image(hostname, path, **kwargs):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_image(path, **kwargs)
 
+
 # TODO: clean up everything
 @cherrypy.tools.json_out(on=True)
 def get_all_column_names(hostname, path, **kwargs):
@@ -3889,6 +3906,7 @@ def get_all_column_names(hostname, path, **kwargs):
         raise cherrypy.HTTPError(
             "400 could not detect column names. There could be hidden characters in your csv."
         )
+
 
 # TODO: clean up everything
 @cherrypy.tools.json_out(on=True)
