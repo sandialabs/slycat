@@ -93,7 +93,18 @@ export default class SlycatRemoteControls extends Component {
       if (this.props.agent) {
         result = json.filter((host) => host.agent === true);
       }
-      this.setState({ hostnames: result, initialLoad: true });
+      // if the stored hostname is not in the list of valid hostnames, use the first valid hostname
+      const validHostnames = result.map((host) => host.hostname);
+      const isStoredHostnameValid = validHostnames.includes(this.state.hostname);
+      const hostname = isStoredHostnameValid ? this.state.hostname : (validHostnames[0] || "");
+
+      this.setState({ hostnames: result, hostname, initialLoad: true }, () => {
+        // if the stored hostname is not in the list of valid hostnames, set the hostname in localStorage and check the remote status
+        if (!isStoredHostnameValid && hostname) {
+          localStorage.setItem("slycat-remote-controls-hostname", hostname);
+          this.checkRemoteStatus(hostname);
+        }
+      });
     });
   };
   componentDidUpdate() {
@@ -144,8 +155,12 @@ export default class SlycatRemoteControls extends Component {
         break;
       case "hostname":
         localStorage.setItem("slycat-remote-controls-hostname", value);
-        this.checkRemoteStatus(value);
-        this.setState({ hostname: value });
+        // set the hostname in the state first, then check the remote status
+        // this is to avoid a race condition where the hostname is not set in the state
+        // before the remote status is checked
+        this.setState({ hostname: value }, () => {
+          this.checkRemoteStatus(value);
+        });
         break;
       case "password":
         this.setState({ password: value }, () => {
@@ -224,7 +239,7 @@ export default class SlycatRemoteControls extends Component {
             />
             <label htmlFor="username">{REMOTE_AUTH_LABELS.username}</label>
           </div>
-          <div className="form-floating mb-3" data-bind-old="visible: !session_exists()">
+          <div className="form-floating mb-3">
             <input
               id="password"
               placeholder={REMOTE_AUTH_LABELS.password}
@@ -250,21 +265,16 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   getHostnamesJSX = () => {
-    const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => {
-      return (
-        <li key={i}>
-          <a
-            className="dropdown-item"
-            onClick={(e) => this.onValueChange(e.target.text, "hostname")}
-          >
-            {hostnameObject.hostname}
-          </a>
-        </li>
-      );
-    });
+    const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => (
+      <option
+        key={i}
+        value={hostnameObject.hostname}
+      >
+        {hostnameObject.hostname}
+      </option>
+    ));
     return hostnamesJSX;
   };
-
   /**
    * JSX for SlycatRemoteControls
    *
@@ -277,33 +287,20 @@ export default class SlycatRemoteControls extends Component {
       return <div />;
     }
     return (
-      <form id="authentication-form" onSubmit={this.handleSubmit}>
+      <form id="authentication-form" className={this.constructor.name} onSubmit={this.handleSubmit}>
         <div className="mb-3">
-          <div className="input-group">
-            <button
-              className="btn btn-secondary dropdown-toggle"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            />
-            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <div className="form-floating">
+            <select
+              className="form-select"
+              id="hostname"
+              value={this.state.hostname}
+              onChange={(e) => this.onValueChange(e.target.value, "hostname")}
+            >
               {this.getHostnamesJSX()}
-            </ul>
-            <div className="form-floating">
-              <input
-                id="hostname"
-                placeholder="Hostname"
-                className="form-control"
-                value={this.state.hostname ? this.state.hostname : ""}
-                type="text"
-                onChange={(e) => this.onValueChange(e.target.value, "hostname")}
-              />
-              <label className="form-label" htmlFor="hostname">
-                Hostname
-              </label>
-            </div>
+            </select>
+            <label className="form-label" htmlFor="hostname">
+              Hostname
+            </label>
           </div>
         </div>
         {this.getFormInputsJSX()}
