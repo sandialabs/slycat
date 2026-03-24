@@ -15,6 +15,7 @@ export default class SlycatRemoteControls extends Component {
    * every time the hostname is changed. session exist should always be checked before
    * moving on in in your logic structure.
    * connectButton: bool tells UI to include connect
+   * editableHostname: bool tells UI to allow the hostname to be edited
    * @memberof SlycatRemoteControls
    */
   constructor(props) {
@@ -93,18 +94,27 @@ export default class SlycatRemoteControls extends Component {
       if (this.props.agent) {
         result = json.filter((host) => host.agent === true);
       }
-      // if the stored hostname is not in the list of valid hostnames, use the first valid hostname
-      const validHostnames = result.map((host) => host.hostname);
-      const isStoredHostnameValid = validHostnames.includes(this.state.hostname);
-      const hostname = isStoredHostnameValid ? this.state.hostname : (validHostnames[0] || "");
+      // When the hostname is not editable, the user can only pick from the
+      // dropdown, so we must ensure the stored value matches a known host.
+      // If it doesn't, fall back to the first available host.
+      if (this.props.editableHostname === false) {
+        const validHostnames = result.map((host) => host.hostname);
+        const isStoredHostnameValid = validHostnames.includes(this.state.hostname);
+        const hostname = isStoredHostnameValid ? this.state.hostname : validHostnames[0] || "";
 
-      this.setState({ hostnames: result, hostname, initialLoad: true }, () => {
-        // if the stored hostname is not in the list of valid hostnames, set the hostname in localStorage and check the remote status
-        if (!isStoredHostnameValid && hostname) {
-          localStorage.setItem("slycat-remote-controls-hostname", hostname);
-          this.checkRemoteStatus(hostname);
-        }
-      });
+        this.setState({ hostnames: result, hostname, initialLoad: true }, () => {
+          // The stored hostname was invalid, so persist the corrected
+          // default and check its remote session status.
+          if (!isStoredHostnameValid && hostname) {
+            localStorage.setItem("slycat-remote-controls-hostname", hostname);
+            this.checkRemoteStatus(hostname);
+          }
+        });
+      } else {
+        // Hostname is editable, so trust whatever the user had in
+        // localStorage — they can freely type any host.
+        this.setState({ hostnames: result, initialLoad: true });
+      }
     });
   };
   componentDidUpdate() {
@@ -266,12 +276,11 @@ export default class SlycatRemoteControls extends Component {
    */
   getHostnamesJSX = () => {
     const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => (
-      <option
-        key={i}
-        value={hostnameObject.hostname}
-      >
-        {hostnameObject.hostname}
-      </option>
+      <li key={i}>
+        <a className="dropdown-item" onClick={(e) => this.onValueChange(e.target.text, "hostname")}>
+          {hostnameObject.hostname}
+        </a>
+      </li>
     ));
     return hostnamesJSX;
   };
@@ -289,18 +298,33 @@ export default class SlycatRemoteControls extends Component {
     return (
       <form id="authentication-form" className={this.constructor.name} onSubmit={this.handleSubmit}>
         <div className="mb-3">
-          <div className="form-floating">
-            <select
-              className="form-select"
-              id="hostname"
-              value={this.state.hostname}
-              onChange={(e) => this.onValueChange(e.target.value, "hostname")}
-            >
+          <div className="input-group">
+            <button
+              className="btn btn-secondary dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            />
+            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
               {this.getHostnamesJSX()}
-            </select>
-            <label className="form-label" htmlFor="hostname">
-              Hostname
-            </label>
+            </ul>
+            <div className="form-floating">
+              <input
+                id="hostname"
+                placeholder="Hostname"
+                className="form-control"
+                readOnly={this.props.editableHostname === false}
+                value={this.state.hostname ? this.state.hostname : ""}
+                type="text"
+                onChange={(e) => this.onValueChange(e.target.value, "hostname")}
+              />
+
+              <label className="form-label" htmlFor="hostname">
+                Hostname
+              </label>
+            </div>
           </div>
         </div>
         {this.getFormInputsJSX()}
