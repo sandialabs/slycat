@@ -33,9 +33,7 @@ S. Martin
     data-bind="click: cancel"
     data-bs-dismiss="modal"
     aria-label="Close"
-  >
-    
-  </button>
+  ></button>
 </div>
 
 <!-- Organizes the tabs in the input wizard. -->
@@ -537,16 +535,16 @@ S. Martin
             </div>
           </div>
           <div id="form-group-license" class="mb-3">
-          <label class="col-form-label">License</label>
-          <div>
-            <input
-              id="hpc-license"
-              class="form-control slycat-remote-interface-prebuilt-field"
-              type="text"
-              data-bind="value: license, enable : HPC_Job"
-            />
+            <label class="col-form-label">License</label>
+            <div>
+              <input
+                id="hpc-license"
+                class="form-control slycat-remote-interface-prebuilt-field"
+                type="text"
+                data-bind="value: license, enable : HPC_Job"
+              />
+            </div>
           </div>
-        </div>
         </div>
 
         <label style="margin-top: 10px">Requested Job Time</label>
@@ -585,7 +583,7 @@ S. Martin
 
     <!-- Name model and launch remote or server job -->
     <div data-bind="visible:tab() == 8">
-      <form class="form-horizontal" role="form" onsubmit="return false">
+      <form class="form-horizontal" role="form" onsubmit="return false;">
         <slycat-model-controls
           params="name:model.name,description:model.description,marking:model.marking"
         ></slycat-model-controls>
