@@ -16,6 +16,7 @@ export default class SlycatRemoteControls extends Component {
    * moving on in in your logic structure.
    * connectButton: bool tells UI to include connect
    * editableHostname: bool tells UI to allow the hostname to be edited
+   * agent: bool tells UI to only show agent hosts
    * @memberof SlycatRemoteControls
    */
   constructor(props) {

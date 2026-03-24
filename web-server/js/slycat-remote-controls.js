@@ -29,6 +29,8 @@ ko.components.register("slycat-remote-controls", {
       component.status_type = params.status_type || ko.observable(null);
       component.remote_hosts = mapping.fromJS([]);
       component.session_exists = params.session_exists;
+      component.editableHostname = params.editableHostname !== false;
+      component.agent = params.agent === true;
       component.ispasswordrequired = ispasswordrequired;
 
       // Adding UI labels
@@ -125,12 +127,35 @@ ko.components.register("slycat-remote-controls", {
 
       client.get_configuration_remote_hosts({
         success: function (remote_hosts) {
+          if (component.agent) {
+            remote_hosts = remote_hosts.filter(function (host) {
+              return host.agent === true;
+            });
+          }
           var current_host = component.hostname();
           remote_hosts.sort(function (left, right) {
             return left.hostname == right.hostname ? 0 : left.hostname < right.hostname ? -1 : 1;
           });
           mapping.fromJS(remote_hosts, component.remote_hosts);
-          component.hostname(current_host || component.hostname());
+
+          // When the hostname is not editable, the user can only pick from the
+          // dropdown, so we must ensure the stored value matches a known host.
+          // If it doesn't, fall back to the first available host.
+          if (!component.editableHostname) {
+            var validHostnames = remote_hosts.map(function (host) {
+              return host.hostname;
+            });
+            var isValid = current_host && validHostnames.indexOf(current_host) !== -1;
+            var hostname = isValid ? current_host : validHostnames[0] || "";
+            component.hostname(hostname);
+            if (!isValid && hostname) {
+              localStorage.setItem("slycat-remote-controls-hostname", hostname);
+            }
+          } else {
+            // Hostname is editable, so trust whatever the user had in
+            // localStorage — they can freely type any host.
+            component.hostname(current_host || component.hostname());
+          }
         },
       });
 
