@@ -316,9 +316,7 @@ function constructor(params) {
     }
 
     var type = component.ps_type();
-    component.remote.username(null);
     component.remote.password(null);
-    component.remote.hostname(null);
     if (type === "local") {
       component.tab(1);
     } else if (type === "server") {
