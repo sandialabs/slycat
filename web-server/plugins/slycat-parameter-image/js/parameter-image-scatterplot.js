@@ -2091,6 +2091,7 @@ $.widget("parameter_image.scatterplot", {
     var handlers = {
       move: function () {
         // console.log("move");
+        if (self._drag_from_button) return;
         var theElement, transx, transy;
         if (within_svg(d3.event, self.options)) {
           theElement = d3.select(this);
@@ -2112,12 +2113,19 @@ $.widget("parameter_image.scatterplot", {
       move_start: function () {
         // console.log("move_start");
 
+        var sourceTarget = d3.event.sourceEvent.target;
+        if (sourceTarget.closest(".no-frame-drag")) {
+          self._drag_from_button = true;
+          return;
+        }
+        self._drag_from_button = false;
+
         // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
         $(".mouseEventOverlay").show();
 
         var frame, sourceEventTarget;
         self.state = "moving";
-        sourceEventTarget = d3.select(d3.event.sourceEvent.target);
+        sourceEventTarget = d3.select(sourceTarget);
 
         if (
           sourceEventTarget.classed("image-frame") ||
@@ -2139,6 +2147,10 @@ $.widget("parameter_image.scatterplot", {
       },
       move_end: function () {
         // console.log("move_end");
+        if (self._drag_from_button) {
+          self._drag_from_button = false;
+          return;
+        }
 
         // Hiding the mouseEventOverlay on all frames (currently PDF and videos only)
         $(".mouseEventOverlay").hide();
@@ -2950,6 +2962,7 @@ $.widget("parameter_image.scatterplot", {
       const frameMenuRoot = createRoot(frameMenuMount.node());
       frameMenuRoot.render(
         <FrameMenu
+          className="no-frame-drag"
           onMaximize={(event) => handlers["maximize"](event)}
           onMinimize={(event) => handlers["minimize"](event)}
           onPin={(event) => handlers["pin"](event)}
