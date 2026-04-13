@@ -74,11 +74,48 @@ var cluster_button_callback = function ()
 	{
 		dialog.ajax_error('Please select a color (from the "Do Not Color" pulldown) for clustering.')
 			("","","");
-		return;
+	}
+
+	// check to see if the user selected LOF
+	else if (color_by_col == -2)
+	{
+
+		// re-compute alpha values for current LOF
+		client.get_model_parameter(
+		{
+			mid: mid,
+            aid: "dac-lof-values",
+			success: function (result)
+		    {
+				client.post_sensitive_model_command(
+				{
+					mid: mid,
+					type:"DAC",
+					command: "update_alpha_lof",
+					parameters: {use_PCA_comps: use_PCA_comps, lof_values: result},
+					success: function (result)
+					{
+						// fire alpha value change event with pre-computed alpha values for selected column
+						var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+							{ detail: JSON.parse(result)["alpha_values"] });
+						document.body.dispatchEvent(alphaEvent);
+					},
+					error: function ()
+					{
+						dialog.ajax_error ('Server failure: could not update alpha cluster coords for LOF.')("","","");
+					}
+				})
+			},
+			error: function () {
+				{
+					dialog.ajax_error ('Server failure: could not update alpha cluster coords for LOF.')("","","");
+				}
+			}
+		})
 	}
 
     // check for editable column col
-    if (color_by_col >= alpha_clusters.length) {
+    else if (color_by_col >= alpha_clusters.length) {
 
         // re-compute alpha values for editable column
         client.post_sensitive_model_command(
