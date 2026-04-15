@@ -86,7 +86,7 @@ def parse_command_line ():
     parser.add_argument("--frame_col", type=int,
                         help="column number (indexed by 1) with the frame files "
                             "to be processed, first frame only.  Note that frame "
-                            "files are expected to be of the format *.#.*, "
+                            "files are expected to be of the format *#.*, "
                             "where * is the video name (and does not vary by frame), "
                             "# is the frame number in the video, "
                             "and the last * is the file type extension.")
