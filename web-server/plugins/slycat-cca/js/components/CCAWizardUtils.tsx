@@ -852,16 +852,17 @@ export const useConnectSMB = () => {
           server: authValues.hostname?.trim(),
           share: authValues.share?.trim(),
         })
-        .then((response: Response) => {
+        .then(async (response: Response) => {
           console.log("authenticated.", response);
           dispatch(setLoading(false));
-          if (response.ok) {
+          const data = await response.json()
+          if (response.ok && data.status) {
             if (callBackSuccess) {
               callBackSuccess();
             }
             console.log("connected");
           } else {
-            alert(`could not connect ${response.statusText}`);
+            alert(`could not connect ${response.statusText} , ${data.msg}`);
           }
         })
         .catch((errorResponse) => {

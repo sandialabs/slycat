@@ -273,12 +273,7 @@ class Session(object):
                 # new way self._aids[0] is the file name being added to the model and hdf5
                 # self._aids[1] is the name of the file being pushed to the project_data data object
                 if len(self._aids) > 1:
-                    # Parse out the file extension
-                    file_name = self._aids[1]
-                    split_file_name = file_name.split('.')
-                    file_extension = split_file_name[len(split_file_name) - 1]
-
-                    if file_extension == 'h5' or file_extension == 'hdf5':
+                    if isinstance(self._aids[1], str) and self._aids[1].endswith((".hdf5", ".h5")):
                         slycat.web.server.plugin.manager.parsers[self._parser]["parse"](
                             database,
                             model,

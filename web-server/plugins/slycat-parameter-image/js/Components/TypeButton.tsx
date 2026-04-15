@@ -103,7 +103,6 @@ export const FrameMenu: React.FC<FrameMenuProps> = ({
   return (
     <div
       className={`dropup frame-menu frame-button ${className}`}
-      onMouseDown={(e) => e.stopPropagation()}
     >
       <button
         type="button"

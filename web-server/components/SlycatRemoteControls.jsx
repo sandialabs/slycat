@@ -14,6 +14,8 @@ export default class SlycatRemoteControls extends Component {
    * every time the hostname is changed. session exist should always be checked before
    * moving on in in your logic structure.
    * connectButton: bool tells UI to include connect
+   * editableHostname: bool tells UI to allow the hostname to be edited
+   * agent: bool tells UI to only show agent hosts
    * @memberof SlycatRemoteControls
    */
   constructor(props) {
@@ -92,7 +94,27 @@ export default class SlycatRemoteControls extends Component {
       if (this.props.agent) {
         result = json.filter((host) => host.agent === true);
       }
-      this.setState({ hostnames: result, initialLoad: true });
+      // When the hostname is not editable, the user can only pick from the
+      // dropdown, so we must ensure the stored value matches a known host.
+      // If it doesn't, fall back to the first available host.
+      if (this.props.editableHostname === false) {
+        const validHostnames = result.map((host) => host.hostname);
+        const isStoredHostnameValid = validHostnames.includes(this.state.hostname);
+        const hostname = isStoredHostnameValid ? this.state.hostname : validHostnames[0] || "";
+
+        this.setState({ hostnames: result, hostname, initialLoad: true }, () => {
+          // The stored hostname was invalid, so persist the corrected
+          // default and check its remote session status.
+          if (!isStoredHostnameValid && hostname) {
+            localStorage.setItem("slycat-remote-controls-hostname", hostname);
+            this.checkRemoteStatus(hostname);
+          }
+        });
+      } else {
+        // Hostname is editable, so trust whatever the user had in
+        // localStorage — they can freely type any host.
+        this.setState({ hostnames: result, initialLoad: true });
+      }
     });
   };
   componentDidUpdate() {
@@ -143,8 +165,12 @@ export default class SlycatRemoteControls extends Component {
         break;
       case "hostname":
         localStorage.setItem("slycat-remote-controls-hostname", value);
-        this.checkRemoteStatus(value);
-        this.setState({ hostname: value });
+        // set the hostname in the state first, then check the remote status
+        // this is to avoid a race condition where the hostname is not set in the state
+        // before the remote status is checked
+        this.setState({ hostname: value }, () => {
+          this.checkRemoteStatus(value);
+        });
         break;
       case "password":
         this.setState({ password: value }, () => {
@@ -223,7 +249,7 @@ export default class SlycatRemoteControls extends Component {
             />
             <label htmlFor="username">{REMOTE_AUTH_LABELS.username}</label>
           </div>
-          <div className="form-floating mb-3" data-bind-old="visible: !session_exists()">
+          <div className="form-floating mb-3">
             <input
               id="password"
               placeholder={REMOTE_AUTH_LABELS.password}
@@ -249,21 +275,15 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   getHostnamesJSX = () => {
-    const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => {
-      return (
-        <li key={i}>
-          <a
-            className="dropdown-item"
-            onClick={(e) => this.onValueChange(e.target.text, "hostname")}
-          >
-            {hostnameObject.hostname}
-          </a>
-        </li>
-      );
-    });
+    const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => (
+      <li key={i}>
+        <a className="dropdown-item" onClick={(e) => this.onValueChange(e.target.text, "hostname")}>
+          {hostnameObject.hostname}
+        </a>
+      </li>
+    ));
     return hostnamesJSX;
   };
-
   /**
    * JSX for SlycatRemoteControls
    *
@@ -276,7 +296,7 @@ export default class SlycatRemoteControls extends Component {
       return <div />;
     }
     return (
-      <form id="authentication-form" onSubmit={this.handleSubmit}>
+      <form id="authentication-form" className={this.constructor.name} onSubmit={this.handleSubmit}>
         <div className="mb-3">
           <div className="input-group">
             <button
@@ -295,10 +315,12 @@ export default class SlycatRemoteControls extends Component {
                 id="hostname"
                 placeholder="Hostname"
                 className="form-control"
+                readOnly={this.props.editableHostname === false}
                 value={this.state.hostname ? this.state.hostname : ""}
                 type="text"
                 onChange={(e) => this.onValueChange(e.target.value, "hostname")}
               />
+
               <label className="form-label" htmlFor="hostname">
                 Hostname
               </label>

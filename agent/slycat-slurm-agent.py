@@ -264,7 +264,8 @@ class Agent(agent.Agent):
         f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
         f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
         # License for slurm
-        f.write("#SBATCH --license=%s\n" % (license))
+        if license:
+            f.write("#SBATCH --license=%s\n" % (license))
         f.write("module load %s\n" % module_name)
         f.write("profile=default \n")
         f.write("ipython profile create --parallel \n")

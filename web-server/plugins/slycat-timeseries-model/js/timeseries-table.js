@@ -5,6 +5,7 @@
 
 import d3 from "d3";
 import * as chunker from "./chunker";
+import he from "he";
 
 import {
   SlickRowSelectionModel,
@@ -67,10 +68,13 @@ $.widget("timeseries.table", {
     }
 
     function make_column(column_index, header_class, cell_class) {
+      const column_name = self.options.metadata["column-names"][column_index];
+      const encoded_column_name = he.encode(column_name);
       var column = {
         id: column_index,
         field: column_index,
-        name: self.options.metadata["column-names"][column_index],
+        name: encoded_column_name,
+        toolTip: column_name,
         sortable: false,
         headerCssClass: header_class,
         cssClass: cell_class,

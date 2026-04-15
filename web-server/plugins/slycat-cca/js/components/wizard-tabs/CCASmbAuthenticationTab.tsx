@@ -10,11 +10,11 @@ import {
   TabNames,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useAppDispatch } from "../wizard-store/hooks";
-import { useHandleAuthentication } from "../CCAWizardUtils";
+import { useConnectSMB } from "../CCAWizardUtils";
 export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const dispatch = useAppDispatch();
-  const handleAuthentication = useHandleAuthentication();
+  const connectSMB = useConnectSMB();
   const setSmbAuthValues = function (
     hostname: string,
     username: string,
@@ -37,9 +37,9 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
     //If the user hits enter key, try to connect
     if (last_key === "Enter") {
       if (authInfo?.sessionExists) {
-        dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+        dispatch(setTabName(TabNames.CCA_SMB_TAB));
       } else {
-        handleAuthentication();
+        connectSMB(() => dispatch(setTabName(TabNames.CCA_SMB_TAB)));
       }
     }
   };
