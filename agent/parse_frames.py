@@ -330,19 +330,19 @@ def frame_file_split(file_name):
     file_num = base_name[len(file_root):]
 
     # check that we have valid file name
-    check_fname = True
+    valid_fname = True
 
     # non-null root and extension
     if len(file_root) == 0 or len(file_ext) == 0:
-        check_fname = False
+        valid_fname = False
 
     # integer for frame number
     try:
         frame_num_int = int(file_num)
     except ValueError:
-        check_fname = False
+        valid_fname = False
 
-    return file_root, file_num, file_ext, check_fname
+    return file_root, file_num, file_ext, valid_fname
     
 # read and order frame files, generate movies if requested
 def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
