@@ -36,6 +36,7 @@ window.Sortable = Sortable;
 
 import * as chunker from "js/chunker";
 import * as table_helpers from "js/slycat-table-helpers";
+import he from "he";
 
 $.widget("vs.table", {
   options: {
@@ -93,10 +94,13 @@ $.widget("vs.table", {
     }
 
     function make_column(column_index, header_class, cell_class) {
+      const column_name = self.options.metadata["column-names"][column_index];
+      const encoded_column_name = he.encode(column_name);
       return {
         id: column_index,
         field: column_index,
-        name: self.options.metadata["column-names"][column_index],
+        name: encoded_column_name,
+        toolTip: column_name,
         sortable: false,
         headerCssClass: header_class,
         cssClass: cell_class,
