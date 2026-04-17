@@ -2,14 +2,14 @@
 
 <div class="modal-header">
   <h3 class="modal-title">New Parameter Space Model</h3>
-  <button
-    type="button"
-    class="btn-close"
-    data-bind="click: cancel"
-    data-bs-dismiss="modal"
-    aria-label="Close"
-  >
-    
+  <a href="/docs/manual/parameter.space.model.html" target="_blank" rel="noopener noreferrer">
+    <sup class="larger">
+    <i class="fa fa-circle-question fa-lg text-secondary p-1" title="Parameter Space User Manual"></i>
+    </sup>
+  </a>
+
+  <button type="button" class="btn-close" data-bind="click: cancel" data-bs-dismiss="modal" aria-label="Close">
+
   </button>
 </div>
 <div class="modal-body">
@@ -20,34 +20,21 @@
     <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: ps_type() == 'local'">
       <a class="nav-link">Upload Table</a>
     </li>
-    <li
-      class="nav-item"
-      data-bind="css:{active:tab() == 2}, visible: ps_type() == 'remote' || ps_type() == 'smb'"
-    >
+    <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: ps_type() == 'remote' || ps_type() == 'smb'">
       <a class="nav-link">Choose Host</a>
     </li>
-    <li
-      class="nav-item"
-      data-bind="css:{active:tab() == 3}, visible: ps_type() == 'remote' || ps_type() == 'smb'"
-    >
+    <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: ps_type() == 'remote' || ps_type() == 'smb'">
       <a class="nav-link">Select Table</a>
     </li>
-    <li
-      class="nav-item"
-      data-bind="css:{active:tab() == 6}, visible: (ps_type() == 'local' || ps_type() == 'remote' || ps_type() == 'server') && parser() == 'slycat-hdf5-parser'"
-    >
+    <li class="nav-item"
+      data-bind="css:{active:tab() == 6}, visible: (ps_type() == 'local' || ps_type() == 'remote' || ps_type() == 'server') && parser() == 'slycat-hdf5-parser'">
       <a class="nav-link">Select HDF5 Inputs</a>
     </li>
-    <li
-      class="nav-item"
-      data-bind="css:{active:tab() == 7}, visible: (ps_type() == 'local' || ps_type() == 'remote' || ps_type() == 'server') && parser() == 'slycat-hdf5-parser'"
-    >
+    <li class="nav-item"
+      data-bind="css:{active:tab() == 7}, visible: (ps_type() == 'local' || ps_type() == 'remote' || ps_type() == 'server') && parser() == 'slycat-hdf5-parser'">
       <a class="nav-link">Select HDF5 Outputs</a>
     </li>
-    <li
-      class="nav-item"
-      data-bind="css:{active:tab() == 4}, visible: parser() != 'slycat-hdf5-parser'"
-    >
+    <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: parser() != 'slycat-hdf5-parser'">
       <a class="nav-link">Select Columns</a>
     </li>
     <li class="nav-item" data-bind="css:{active:tab() == 5}"><a class="nav-link">Name Model</a></li>
@@ -57,52 +44,32 @@
     <div data-bind="visible:tab() == 0">
       <div class="form-check">
         <label class="fw-bold">
-          <input
-            type="radio"
-            name="local-or-remote-radios"
-            id="local-radio"
-            value="local"
-            data-bind="checked: ps_type"
-          />
+          <input type="radio" name="local-or-remote-radios" id="local-radio" value="local"
+            data-bind="checked: ps_type" />
           Local
         </label>
       </div>
 
       <div class="form-check">
         <label class="fw-bold">
-          <input
-            type="radio"
-            name="local-or-remote-radios"
-            id="remote-radio"
-            value="remote"
-            data-bind="checked: ps_type"
-          />
+          <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote"
+            data-bind="checked: ps_type" />
           Remote
         </label>
       </div>
 
       <div class="form-check">
         <label class="fw-bold">
-          <input
-            type="radio"
-            name="local-or-remote-radios"
-            id="remote-radio"
-            value="smb"
-            data-bind="checked: ps_type"
-          />
+          <input type="radio" name="local-or-remote-radios" id="remote-radio" value="smb"
+            data-bind="checked: ps_type" />
           SMB Drive
         </label>
       </div>
 
       <div class="form-check">
         <label class="fw-bold">
-          <input
-            type="radio"
-            name="matrix-local-or-remote-radios"
-            id="server-radio"
-            value="server"
-            data-bind="checked: ps_type"
-          />
+          <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server"
+            data-bind="checked: ps_type" />
           Slycat Server
         </label>
       </div>
@@ -111,53 +78,34 @@
         <div class="mb-3 row">
           <label for="selectmenu1" class="col-sm-2 col-form-label"> File </label>
           <div class="col-sm-10">
-            <select
-              id="selectmenu1"
-              class="form-select"
-              name=""
-              data-theme="c"
-              data-bind="options: server_files, value: selected_file"
-            ></select>
+            <select id="selectmenu1" class="form-select" name="" data-theme="c"
+              data-bind="options: server_files, value: selected_file"></select>
           </div>
         </div>
-        <slycat-parser-controls
-          params="parser:parser,category:'table'"
-          data-bind="visible: ps_type() == 'server'"
-        ></slycat-parser-controls>
+        <slycat-parser-controls params="parser:parser,category:'table'"
+          data-bind="visible: ps_type() == 'server'"></slycat-parser-controls>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 1" class="form-horizontal">
-      <div
-        class="alert alert-danger slycat-big-scrolling-alert"
-        role="alert"
-        data-bind="visible:error_messages().length > 0, text: error_messages()"
-        style="white-space: pre-line"
-      ></div>
-      <slycat-local-browser
-        params="
+      <div class="alert alert-danger slycat-big-scrolling-alert" role="alert"
+        data-bind="visible:error_messages().length > 0, text: error_messages()" style="white-space: pre-line"></div>
+      <slycat-local-browser params="
         selection:browser.selection,
         progress:browser.progress,
-        progress_status:browser.progress_status"
-      ></slycat-local-browser>
+        progress_status:browser.progress_status"></slycat-local-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
 
       <div class="form-horizontal">
-        <input
-          type="checkbox"
-          name="matrix-local-or-remote-radios"
-          id="project-data"
-          data-bind="checked: useProjectData"
-        />
+        <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data"
+          data-bind="checked: useProjectData" />
         Save original data to server
       </div>
     </div>
 
     <div data-bind="visible:tab() == 2">
       <form role="form">
-        <slycat-remote-controls
-          data-bind="visible: ps_type() == 'remote'"
-          params="
+        <slycat-remote-controls data-bind="visible: ps_type() == 'remote'" params="
           hostname:remote.hostname,
           username:remote.username,
           password:remote.password,
@@ -167,35 +115,22 @@
           focus:remote.focus,
           activate:connect,
           session_exists:remote.session_exists
-        "
-        ></slycat-remote-controls>
-        <div
-          class="smb-wizard-login"
-          style="padding-left: 16px"
-          data-bind="visible: ps_type() == 'smb'"
-        >
+        "></slycat-remote-controls>
+        <div class="smb-wizard-login" style="padding-left: 16px" data-bind="visible: ps_type() == 'smb'">
           SMB
         </div>
-        <label
-          class="col-sm-9 alert alert-danger slycat-big-scrolling-alert"
-          role="alert"
+        <label class="col-sm-9 alert alert-danger slycat-big-scrolling-alert" role="alert"
           data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb'"
-          style="position: relative; left: 145px"
-          >Remote authentication failed.</label
-        >
+          style="position: relative; left: 145px">Remote authentication failed.</label>
       </form>
     </div>
 
     <div data-bind="visible:tab() == 3" style="height: 600px">
       <div class="smb-wizard-browse" data-bind="visible: ps_type() == 'smb'">SMB</div>
       <div class="slycat-remote-browser-flex-layout" data-bind="visible:ps_type() == 'remote'">
-        <label
-          class="alert alert-danger slycat-big-scrolling-alert"
-          role="alert"
-          data-bind="visible:error_messages().length > 0, text: error_messages()"
-        ></label>
-        <slycat-remote-browser
-          params="
+        <label class="alert alert-danger slycat-big-scrolling-alert" role="alert"
+          data-bind="visible:error_messages().length > 0, text: error_messages()"></label>
+        <slycat-remote-browser params="
           type:'remote',
           sid:remote.sid,
           hostname:remote.hostname,
@@ -206,72 +141,52 @@
           persistence_id:'pi-table-file',
           progress:remote.progress,
           progress_status:remote.progress_status,
-          reauth:reauth,"
-        ></slycat-remote-browser>
+          reauth:reauth,"></slycat-remote-browser>
         <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
         <div>
-          <input
-            type="checkbox"
-            name="matrix-local-or-remote-radios"
-            id="project-data"
-            data-bind="checked: useProjectData"
-          />
+          <input type="checkbox" name="matrix-local-or-remote-radios" id="project-data"
+            data-bind="checked: useProjectData" />
           <label for="matrix-local-or-remote-radios">Save original data to server</label>
         </div>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 6">
-      <div
-        class="hdf5-wizard-input-browse"
-        data-bind="visible: ps_type() == 'local' || ps_type() == 'remote' || ps_type() == 'server'"
-      >
+      <div class="hdf5-wizard-input-browse"
+        data-bind="visible: ps_type() == 'local' || ps_type() == 'remote' || ps_type() == 'server'">
         HDF5 Inputs
       </div>
       <div class="slycat-remote-browser-flex-layout" data-bind="visible:ps_type() == 'local'">
-        <label
-          class="alert alert-danger slycat-big-scrolling-alert"
-          role="alert"
-          data-bind="visible:error_messages().length > 0, text: error_messages()"
-        ></label>
+        <label class="alert alert-danger slycat-big-scrolling-alert" role="alert"
+          data-bind="visible:error_messages().length > 0, text: error_messages()"></label>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 7">
       <div class="hdf5-wizard-output-browse">HDF5 Outputs</div>
       <div class="slycat-remote-browser-flex-layout">
-        <label
-          class="alert alert-danger slycat-big-scrolling-alert"
-          role="alert"
-          data-bind="visible:error_messages().length > 0, text: error_messages()"
-        ></label>
+        <label class="alert alert-danger slycat-big-scrolling-alert" role="alert"
+          data-bind="visible:error_messages().length > 0, text: error_messages()"></label>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 4">
-      <div
-        class="alert alert-warning slycat-big-scrolling-alert"
-        role="alert"
-        data-bind="visible:warning_messages().length > 0, text: warning_messages()"
-        style="white-space: pre-line"
-      ></div>
-      <slycat-table-ingestion
-        params="
+      <div class="alert alert-warning slycat-big-scrolling-alert" role="alert"
+        data-bind="visible:warning_messages().length > 0, text: warning_messages()" style="white-space: pre-line"></div>
+      <slycat-table-ingestion params="
         variables: attributes,
         properties: [
           {name: 'Classification', type: 'select', values: ['Input','Output','Neither']},
           {name: 'Categorical', type: 'bool'},
           {name: 'Editable', type: 'bool'}
         ]
-      "
-      ></slycat-table-ingestion>
+      "></slycat-table-ingestion>
     </div>
 
     <div data-bind="visible:tab() == 5">
       <form data-bind="submit: name_model" id="new-parameter-image-name-model-form" novalidate>
         <slycat-model-controls
-          params="name:model.name,description:model.description,marking:model.marking"
-        ></slycat-model-controls>
+          params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
   </div>
@@ -281,56 +196,39 @@
     Back
   </button>
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
-  <button
-    class="btn btn-primary local-browser-continue browser-continue"
-    data-bind="visible:tab() == 1,click:upload_table,enable:enable"
-  >
+  <button class="btn btn-primary local-browser-continue browser-continue"
+    data-bind="visible:tab() == 1,click:upload_table,enable:enable">
     <i class="fa fa-spinner fa-pulse"></i> Continue
   </button>
-  <button
-    class="btn btn-primary remote-browser-continue browser-continue"
-    data-bind="visible:tab() == 6,click:load_hdf5_input"
-  >
+  <button class="btn btn-primary remote-browser-continue browser-continue"
+    data-bind="visible:tab() == 6,click:load_hdf5_input">
     Continue
   </button>
-  <button
-    class="btn btn-primary remote-browser-continue browser-continue"
-    data-bind="visible:tab() == 7,click:load_hdf5_output"
-  >
+  <button class="btn btn-primary remote-browser-continue browser-continue"
+    data-bind="visible:tab() == 7,click:load_hdf5_output">
     Continue
   </button>
-  <button
-    class="btn btn-primary"
-    data-bind="visible:tab() == 2 && ps_type() == 'remote',click:connect,enable:remote.enable"
-  >
+  <button class="btn btn-primary"
+    data-bind="visible:tab() == 2 && ps_type() == 'remote',click:connect,enable:remote.enable">
     Continue
   </button>
-  <button
-    class="btn btn-primary"
-    data-bind="visible:tab() == 2 && ps_type() == 'smb',click:connectSMB,enable:remote.enable"
-  >
+  <button class="btn btn-primary"
+    data-bind="visible:tab() == 2 && ps_type() == 'smb',click:connectSMB,enable:remote.enable">
     Continue
   </button>
-  <button
-    class="btn btn-primary remote-browser-continue browser-continue"
-    data-bind="visible:tab() == 3 && ps_type() == 'remote',click:load_table,enable:enable"
-  >
+  <button class="btn btn-primary remote-browser-continue browser-continue"
+    data-bind="visible:tab() == 3 && ps_type() == 'remote',click:load_table,enable:enable">
     <i class="fa fa-spinner fa-pulse"></i> Continue
   </button>
-  <button
-    class="btn btn-primary remote-browser-continue browser-continue"
-    data-bind="visible:tab() == 3 && ps_type() == 'smb',click:load_table_smb"
-  >
+  <button class="btn btn-primary remote-browser-continue browser-continue"
+    data-bind="visible:tab() == 3 && ps_type() == 'smb',click:load_table_smb">
     <i class="fa fa-spinner fa-pulse"></i> Continue
   </button>
   <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
-  <button
-    class="btn btn-primary"
-    data-bind="
+  <button class="btn btn-primary" data-bind="
       visible: tab() == 5,
       click: function(data, event) { name_model(document.getElementById('new-parameter-image-name-model-form'), data, event) }
-    "
-  >
+    ">
     Finish & Go To Model
   </button>
 </div>
