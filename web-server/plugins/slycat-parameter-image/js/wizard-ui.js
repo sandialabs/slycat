@@ -278,14 +278,15 @@ function constructor(params) {
       selectElementLocal.addEventListener("change", (event) => {
         component.file_extension(event.target.files[0]);
         if (typeof event.target.files[0] !== "undefined") {
-          let file_name = event.target.files[0].name;
-          let file_extension = file_name.split(".")[1];
+          const fileName = event.target.files[0].name;
+          const splitFileName = fileName.split(".");
+          const fileExtension = splitFileName[splitFileName.length - 1];
 
-          if (file_extension == "csv") {
+          if (fileExtension == "csv") {
             component.parser("slycat-csv-parser");
-          } else if (file_extension == "dat") {
+          } else if (fileExtension == "dat") {
             component.parser("slycat-dakota-parser");
-          } else if (file_extension == "h5" || file_extension == "hdf5") {
+          } else if (fileExtension == "h5" || fileExtension == "hdf5") {
             component.parser("slycat-hdf5-parser");
           }
         }
@@ -296,16 +297,17 @@ function constructor(params) {
       selectElementRemote.addEventListener("click", function () {
         if (component.browser.selection().length > 0) {
           if (typeof component.browser.selection()[0] !== "undefined") {
-            const file_path = component.browser.selection()[0];
-            const split_path = file_path.split("/");
-            const file_name = split_path[split_path.length - 1];
-            const file_extension = file_name.split(".")[1];
+            const filePath = component.browser.selection()[0];
+            const splitPath = filePath.split("/");
+            const fileName = splitPath[splitPath.length - 1];
+            const splitFileName = fileName.split(".");
+            const fileExtension = splitFileName[splitFileName.length - 1];
 
-            if (file_extension == "csv") {
+            if (fileExtension == "csv") {
               component.parser("slycat-csv-parser");
-            } else if (file_extension == "dat") {
+            } else if (fileExtension == "dat") {
               component.parser("slycat-dakota-parser");
-            } else if (file_extension == "h5" || file_extension == "hdf5") {
+            } else if (fileExtension == "h5" || fileExtension == "hdf5") {
               component.parser("slycat-hdf5-parser");
             }
           }
@@ -314,9 +316,7 @@ function constructor(params) {
     }
 
     var type = component.ps_type();
-    component.remote.username(null);
     component.remote.password(null);
-    component.remote.hostname(null);
     if (type === "local") {
       component.tab(1);
     } else if (type === "server") {
@@ -509,9 +509,10 @@ function constructor(params) {
           server: component.remote.hostname().trim(),
           share: component.remote.share().trim(),
         })
-        .then((response) => {
+        .then(async (response) => {
           console.log("authenticated.", response);
-          if (response.ok) {
+          const data = await response.json()
+          if (response.ok && data.status) {
             component.remote.session_exists(true);
             component.remote.enable(true);
             component.remote.status_type(null);
@@ -530,6 +531,7 @@ function constructor(params) {
               </div>,
             );
           } else {
+            alert(`could not connect ${response.statusText} , ${data.msg}`);
             component.remote.enable(true);
             component.remote.status_type("danger");
             component.remote.focus("password");
@@ -539,7 +541,6 @@ function constructor(params) {
           console.log("could not connect", error);
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
           component.remote.focus("password");
         });
     }

@@ -44,6 +44,9 @@ export const CCARemoteBrowserTab = (props: { hidden?: boolean }) => {
   };
   return (
     <div hidden={hidden}>
+      <div className="alert alert-primary" role="alert">
+        Browse and Select the File.
+      </div>
       {hostname && sessionExists && tabName === TabNames.CCA_REMOTE_BROWSER_TAB ? (
         <>
           <RemoteFileBrowser

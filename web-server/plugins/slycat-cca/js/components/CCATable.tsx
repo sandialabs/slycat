@@ -16,6 +16,7 @@ import SlickGridDataProvider from "./SlickGridDataProvider";
 
 import * as table_helpers from "js/slycat-table-helpers-react";
 import slycat_color_maps from "js/slycat-color-maps";
+import he from "he";
 
 class CCATable extends React.Component {
   constructor(props) {
@@ -48,10 +49,13 @@ class CCATable extends React.Component {
   }
 
   make_column = (column_index, header_class, cell_class) => {
+    const column_name = this.props.metadata["column-names"][column_index];
+    const encoded_column_name = he.encode(column_name);
     return {
       id: column_index,
       field: column_index,
-      name: this.props.metadata["column-names"][column_index],
+      name: encoded_column_name,
+      toolTip: column_name,
       sortable: false,
       headerCssClass: header_class,
       cssClass: cell_class,

@@ -91,6 +91,7 @@ component.nnodes = ko.observable('1');
 component.ntasks_per_node = ko.observable('1');
 component.time_hours = ko.observable('01');
 component.time_minutes = ko.observable('00');
+component.license = ko.observable('');
 
 // HPC UI status
 component.HPC_Job = ko.observable(false);
@@ -728,7 +729,8 @@ component.reauth = function() {
                           "time_hours": component.time_hours(),
                           "time_minutes": component.time_minutes(),
                           "time_seconds": '0',
-                          "working_dir": component.workdir()}}}};
+                          "working_dir": component.workdir(),
+                          "license": component.license()}}}};
         // launch job
         $.ajax({
           contentType: "application/json",

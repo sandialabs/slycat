@@ -106,6 +106,7 @@ import {
 import React from "react";
 import { createRoot } from "react-dom/client";
 import PSControlsBar from "./Components/PSControlsBar";
+import { COLUMN_LABELS } from "utils/ui-labels";
 
 let table_metadata = null;
 
@@ -366,7 +367,7 @@ $(document).ready(function () {
           }
 
           // Adding Index column
-          table_metadata["column-names"].push("Index");
+          table_metadata["column-names"].push(COLUMN_LABELS.index);
           table_metadata["column-types"].push("int64");
 
           filter_manager.set_table_metadata(table_metadata);
@@ -1204,6 +1205,8 @@ $(document).ready(function () {
     if (v_index == table_metadata["column-count"] - 1) {
       var count = table_metadata["row-count"];
       for (var i = 0; i != count; ++i) v[i] = i;
+      // Dispatch update to v values in Redux
+      window.store.dispatch(setVValues(v));
       update_widgets_after_color_variable_change();
     } else {
       update_v(variable);

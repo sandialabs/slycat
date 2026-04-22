@@ -194,7 +194,7 @@ def create_session(username, password, server, share):
         raise cherrypy.HTTPError("401 Remote smb connection failed: %s" % str(e))
 
 
-def check_session(sid):
+def check_session(sid: str) -> bool:
     """
     Return a true if session is active
 

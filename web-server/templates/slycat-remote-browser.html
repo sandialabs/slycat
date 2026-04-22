@@ -4,32 +4,32 @@
       <label class="fw-bold" for="slycat-remote-browser-path" data-bind="text: hostname() + ':'" />
     </div>
     <div class="mb-3 row path" data-bind="css: {'is-invalid': path_error}">
-      <div class="col-sm-12 d-flex flex-row align-items-center">
-        <div class="input-group" style="width: calc(100% - 44px); float: left; margin-right: 5px">
-          <input
-            type="text"
-            class="form-control"
-            id="slycat-remote-browser-path"
-            data-bind="value: path_input"
-          />
-          <div class="input-group-append">
+      <div class="col-sm-12">
+        <div class="d-flex flex-row align-items-center">
+          <div class="input-group" style="width: calc(100% - 44px); float: left; margin-right: 5px">
+            <input
+              type="text"
+              class="form-control"
+              id="slycat-remote-browser-path"
+              data-bind="value: path_input"
+            />
             <button class="btn btn-secondary" type="submit">Go</button>
           </div>
-        </div>
-        <div class="btn-group" role="group" style="float: right">
-          <button
-            class="btn btn-secondary"
-            type="button"
-            title="Navigate to parent directory"
-            data-bind="
+          <div class="btn-group" role="group" style="float: right">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              title="Navigate to parent directory"
+              data-bind="
             click:up,
             disable:path()=='/'
           "
-          >
-            <i class="fas fa-turn-up" aria-hidden="true"></i>
-          </button>
+            >
+              <i class="fas fa-turn-up" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
-        <div class="alert alert-danger" role="alert" data-bind="fadeError: browse_error">
+        <div class="alert alert-danger mt-2" role="alert" data-bind="fadeError: browse_error">
           Oops, that path is not accessible. Please try again.
         </div>
       </div>

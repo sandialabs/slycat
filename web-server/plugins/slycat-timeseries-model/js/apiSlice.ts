@@ -1,6 +1,7 @@
 // Import the RTK Query methods from the React-specific entry point
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import api_root from "js/slycat-api-root";
+import { COLUMN_LABELS } from "utils/ui-labels";
 
 // Define our single API slice object
 export const apiSlice = createApi({
@@ -16,7 +17,7 @@ export const apiSlice = createApi({
       query: (modelId) => `models/${modelId}`,
     }),
     getTableMetadata: builder.query({
-      query: (modelId) => `models/${modelId}/tables/inputs/arrays/0/metadata?index=Index`,
+      query: (modelId) => `models/${modelId}/tables/inputs/arrays/0/metadata?index=${encodeURIComponent(COLUMN_LABELS.index)}`,
     }),
     getClusters: builder.query({
       query: (modelId) => `models/${modelId}/files/clusters`,

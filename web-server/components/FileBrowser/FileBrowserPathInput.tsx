@@ -18,6 +18,21 @@ interface FileBrowserPathInputProps {
  * Shared path input component for file browsers
  */
 export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const scrollToEnd = () => {
+    const el = inputRef.current;
+    if (el) {
+      el.scrollLeft = el.scrollWidth;
+    }
+  };
+
+  React.useEffect(() => {
+    if (inputRef.current && document.activeElement !== inputRef.current) {
+      scrollToEnd();
+    }
+  }, [props.pathInput]);
+
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       props.onBrowse(props.pathInput);
@@ -43,12 +58,14 @@ export default function FileBrowserPathInput(props: FileBrowserPathInputProps) {
         <div className="col-sm-12 d-flex flex-row align-items-center">
           <div className={`input-group flex-grow-1 ${styles.pathContainer}`}>
             <input
+              ref={inputRef}
               type="text"
               className={`form-control ${props.hasError ? "is-invalid" : ""}`}
               id="slycat-remote-browser-path"
               value={props.pathInput}
               onKeyPress={handleKeyPress}
               onChange={handleChange}
+              onBlur={scrollToEnd}
               disabled={props.disabled}
             />
             <button className="btn btn-secondary" onClick={handleGoClick} disabled={props.disabled}>

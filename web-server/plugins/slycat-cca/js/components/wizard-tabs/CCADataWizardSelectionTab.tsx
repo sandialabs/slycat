@@ -60,7 +60,7 @@ export const CCAWizardDataSelectionTab = (props: { hidden?: boolean }) => {
             }, [dispatch])}
             checked={dataLocation && dataLocation === dataLocationType.SMB}
           />
-          SMB
+          Windows Network Share {"(SMB)"}
         </label>
       </div>
     </div>

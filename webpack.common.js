@@ -302,5 +302,10 @@ module.exports = {
       module: /web-server\/css\/.*\.scss$/,
       message: /Deprecation Warning.*node_modules\/bootstrap\/scss\/_functions\.scss/,
     },
+    {
+      // Ignore "repetitive deprecation warnings omitted" from sass-loader in our custom SCSS files
+      module: /web-server\/css\/.*\.scss$/,
+      message: /repetitive deprecation warnings omitted/,
+    },
   ],
 };
