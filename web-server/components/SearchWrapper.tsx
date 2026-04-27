@@ -2,7 +2,10 @@ import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faColumns } from "@fortawesome/free-solid-svg-icons";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
+import Icon from "components/Icons/Icon";
+import { faArrowDownWideShort } from "@fortawesome/free-solid-svg-icons";
+import { faArrowDownShortWide } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * @param items list of item objects
@@ -23,12 +26,15 @@ export interface SearchWrapperState {
   initialItems: Item[];
   items: Item[];
   searchQuery: string;
+  sortFields: Dict<string>[];
+  sortField: string;
+  sortDescending: boolean;
   two_columns: boolean;
 }
 /**
  * @param {name} string name
  * @param {description} string description
- * @param {cretor} name of the creator as string
+ * @param {creator} name of the creator as string
  * @param {created} string representation of date created
  * @interface Item
  */
@@ -46,10 +52,20 @@ interface Item {
 export default class SearchWrapper extends React.Component<SearchWrapperProps, SearchWrapperState> {
   public constructor(props: SearchWrapperProps) {
     super(props);
+
+    // basic included sort fields (keys should all be distinct)
+    var basicSortFields = [{key: 'created', type: 'string', label: 'Created'},
+                           {key: 'creator', type: 'string', label: 'Creator'},
+                           {key: 'description', type: 'string', label: 'Description'},
+                           {key: 'name', type: 'string', label: 'Name'}];
+
     this.state = {
       initialItems: this.props.items,
       items: [],
       searchQuery: "",
+      sortFields: basicSortFields,
+      sortField: 'created',
+      sortDescending: true,
       two_columns: true,
     };
   }
@@ -78,6 +94,8 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    */
   private readonly filterList = (trimSearchQuery: string): void => {
     this.setState((prevState) => {
+
+      // filter initial items
       const updatedList = prevState.initialItems.filter(
         ({ name, description, creator, created }) => {
           return (
@@ -88,7 +106,12 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           );
         },
       );
-      return { items: updatedList, searchQuery: trimSearchQuery };
+
+      // sort filtered list
+      const sortedUpdatedList = this.sortState(
+        updatedList, this.state.sortField, this.state.sortDescending);
+
+      return { items: sortedUpdatedList, searchQuery: trimSearchQuery };
     });
   };
 
@@ -116,22 +139,147 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   }
 
   /**
-   * creates the one/two column input field
+   * creates the one/two column button field
    *
    * @memberof SearchWrapper
    */
-    private readonly getColumnField = (): JSX.Element | null => {
-      return this.props.items.length > 0 ? (
-        <button
-          className="btn btn-light mb-3 me-2"
-          title="Toggle between one and two column model list."
-          type="button"
-          onClick={() => this.changeColumnState()}
+  private readonly getColumnField = (): JSX.Element | null => {
+    return this.props.items.length > 0 ? (
+      <button
+        className="btn btn-sm bb-transparent mb-3 me-2"
+        data-bs-toggle="button"
+        title="Toggle between one and two column model list"
+        type="button"
+        onClick={() => this.changeColumnState()}
+      >
+        <FontAwesomeIcon icon={faBars} />
+      </button>
+    ) : null;
+  };
+
+  // sort list (do not update state)
+  private readonly sortState = 
+    (currList: Item[], sortField: string, sortDescending: boolean): JSX.Element | null => {
+
+    // get type of data to sort
+    const sortFieldType = this.state.sortFields.find(field => field.key === sortField)['type']
+        
+    // sort by string
+    if (sortFieldType === 'string') {
+        const updatedList = [...currList].sort((a,b) => sortDescending ?
+          b[sortField].localeCompare(a[sortField]) :
+          a[sortField].localeCompare(b[sortField]));
+        return updatedList;
+  
+    } else if (sortFieldType === 'numeric') {
+      console.log('numeric sort');
+      return currList;
+    }
+  };
+
+  // sort current items
+  private readonly changeSortState = 
+    (newSortField: string, sortDescending: boolean): JSX.Element | null => {
+    
+    // sort list
+    this.setState((prevState) => {
+      const updatedList = this.sortState(prevState.items, newSortField, sortDescending);
+      return { items: updatedList, sortField: newSortField, sortDescending: sortDescending };
+    });
+
+  };
+
+  /**
+   * creates the sort select field
+   *
+   * @memberof SearchWrapper
+   */
+  private readonly getSortField = (): JSX.Element | null => {
+
+    // get fields to sort by
+    var options = this.state.sortFields;
+
+    return this.props.items.length > 0 ? (
+      <div className="input-group">
+        
+        <select
+          name="Sort"
+          title="Sort models by metadata"
+          className="form-select mb-3 me-2"
+          onChange={(e) => this.changeSortState(e.target.value, this.state.sortDescending)}
         >
-         <FontAwesomeIcon icon={faColumns} />
+          {options.map((option) => (
+          <option key={option.key} value={option.key}>
+            {option.label}
+          </option>
+          ))}
+        
+        </select>
+
+      </div>
+    ) : null;
+  };
+
+  // set sort descending
+  private readonly setSortDescending = (): JSX.Element | null => {
+    this.changeSortState(this.state.sortField, true);
+  }
+
+  // set sort ascending
+  private readonly setSortAscending = (): JSX.Element | null => {
+    this.changeSortState(this.state.sortField, false);
+  }
+
+  /**
+   * creates the sort ascending/descending field
+   *
+   * @memberof SearchWrapper
+   */
+  private readonly getSortDirectionField = (): JSX.Element | null => {
+
+    return this.props.items.length > 0 ? (
+      <div className="input-group">
+    
+        <button className={this.state.sortDescending ? 
+                           "active btn btn-sm bg-transparent mb-3" :
+                           "btn btn-sm bg-transparent mb-3" }
+          type="button" title="Sort Descending"
+          onClick={() => this.setSortDescending()}
+          >
+          <FontAwesomeIcon icon={faArrowDownWideShort} />
         </button>
-      ) : null;
-    };
+        
+        <button className={this.state.sortDescending ?
+                           "btn btn-sm bg-transparent mb-3 me-2" :
+                           "active btn btn-sm bg-transparent mb-3 me-2"}
+          type="button" title="Sort Ascending"
+          onClick={() => this.setSortAscending()}
+          >
+         <FontAwesomeIcon icon={faArrowDownShortWide} />
+        </button>
+
+      </div>
+    ) : null;
+  };
+
+  /**
+   * creates the delete button field
+   *
+   * @memberof SearchWrapper
+   */
+  private readonly getDeleteField = (): JSX.Element | null => {
+    return this.props.items.length > 0 ? (
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-danger mb-3 ms-2"
+        //name={id}
+        //onClick={(e) => delete_model(name, id, e)}
+        title="Delete selected models"
+      >
+        <Icon type="trash-can" />
+      </button>
+    ) : null;
+  };
 
   /**
    * populate the model or projects list depending on the type passed to props
@@ -198,8 +346,11 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           <div className="d-flex justify-content-between">
             <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
             <div className="btn-toolbar me-2">
-              {this.getColumnField()}
+              {this.props.type === "models" ? this.getSortField() : null}
+              {this.props.type === "models" ? this.getSortDirectionField() : null}
+              {this.props.type === "models" ? this.getColumnField() : null}
               {this.getSearchField()}
+              {this.props.type === "models" ? this.getDeleteField() : null}
             </div>
           </div>
         </div>
