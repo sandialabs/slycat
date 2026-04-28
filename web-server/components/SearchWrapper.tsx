@@ -20,6 +20,9 @@ export interface SearchWrapperProps {
  * @param initialItems list of Item objects
  * @param items list of Item objects
  * @param searchQuery string to regex on
+ * @param sortFields list of fields that can be used to sort
+ * @param sortField current field used to sort
+ * @param sortDescending sort descending (true) or ascending (false)
  * @param two_columns one or two columns
  */
 export interface SearchWrapperState {
@@ -31,6 +34,7 @@ export interface SearchWrapperState {
   sortDescending: boolean;
   two_columns: boolean;
 }
+
 /**
  * @param {name} string name
  * @param {description} string description
@@ -43,6 +47,8 @@ interface Item {
   description: string;
   creator: string;
   created: string;
+  marking: string;
+  model_type: string;
 }
 
 /**
@@ -57,6 +63,8 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     var basicSortFields = [{key: 'created', type: 'string', label: 'Created'},
                            {key: 'creator', type: 'string', label: 'Creator'},
                            {key: 'description', type: 'string', label: 'Description'},
+                           {key: 'marking', type: 'string', label: 'Marking'},
+                           {key: 'model-type', type: 'string', label: 'Model Type'},
                            {key: 'name', type: 'string', label: 'Name'}];
 
     this.state = {
@@ -163,7 +171,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
     // get type of data to sort
     const sortFieldType = this.state.sortFields.find(field => field.key === sortField)['type']
-        
+  
     // sort by string
     if (sortFieldType === 'string') {
         const updatedList = [...currList].sort((a,b) => sortDescending ?
@@ -180,7 +188,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   // sort current items
   private readonly changeSortState = 
     (newSortField: string, sortDescending: boolean): JSX.Element | null => {
-    
+
     // sort list
     this.setState((prevState) => {
       const updatedList = this.sortState(prevState.items, newSortField, sortDescending);
