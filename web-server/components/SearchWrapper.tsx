@@ -1,11 +1,7 @@
 import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
 import Icon from "components/Icons/Icon";
-import { faArrowDownWideShort } from "@fortawesome/free-solid-svg-icons";
-import { faArrowDownShortWide } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * @param items list of item objects
@@ -154,14 +150,14 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   private readonly getColumnField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
       <button
-        className="btn btn-sm bb-transparent mb-3 me-2"
+        className="btn btn-sm bg-transparent mb-3 me-2"
         data-bs-toggle="button"
         title="Toggle between one and two column model list"
         type="button"
         onClick={() => this.changeColumnState()}
       >
-        <FontAwesomeIcon icon={faBars} />
-      </button>
+        <Icon type="bars" />
+        </button>
     ) : null;
   };
 
@@ -254,7 +250,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           type="button" title="Sort Descending"
           onClick={() => this.setSortDescending()}
           >
-          <FontAwesomeIcon icon={faArrowDownWideShort} />
+          <Icon type="arrow-down-wide-short" />
         </button>
         
         <button className={this.state.sortDescending ?
@@ -263,7 +259,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           type="button" title="Sort Ascending"
           onClick={() => this.setSortAscending()}
           >
-         <FontAwesomeIcon icon={faArrowDownShortWide} />
+          <Icon type="arrow-down-short-wide" />
         </button>
 
       </div>
@@ -280,6 +276,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       <button
         type="button"
         className="btn btn-sm btn-outline-danger mb-3 ms-2"
+        data-bs-toggle="button"
         //name={id}
         //onClick={(e) => delete_model(name, id, e)}
         title="Delete selected models"
