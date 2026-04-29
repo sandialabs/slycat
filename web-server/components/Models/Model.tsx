@@ -19,6 +19,8 @@ interface ModelProps {
   description: string;
   created: string;
   creator: string;
+  selected: boolean;
+  onSelect: (id: string, e: React.MouseEvent) => void;
 }
 
 /**
@@ -40,6 +42,7 @@ const delete_model = (name: string, id: string, e: React.MouseEvent) => {
     },
   });
 };
+
 /**
  * Takes a json object of a model and create a model list JSX element from that data and returns it
  * @param props a model json meta data
@@ -56,6 +59,8 @@ const Model: React.FC<ModelProps> = ({
   description,
   created,
   creator,
+  selected,
+  onSelect,
 }) => {
   const recognized_marking = markings.find((obj) => obj.type == marking);
   const model_href = server_root + "models/" + id;
@@ -97,6 +102,15 @@ const Model: React.FC<ModelProps> = ({
             by <span>{creator}</span>
           </small>
           <span>
+            <button
+              type="button"
+              className={selected ? "active btn btn-sm btn-outline-warning me-2" :
+                                    "btn btn-sm btn-outline-warning me-2" }
+              title="Select model"
+              onClick={(e) => onSelect(id, e)}
+            >
+              <Icon type="check" />
+            </button>
             <button
               type="button"
               className="btn btn-sm btn-outline-danger"

@@ -12,6 +12,8 @@ import Spinner from "../Spinner";
 export interface ModelsListProps {
   models: any[];
   two_columns: boolean;
+  isSelected: (id: string) => boolean;
+  onSelect: (id: string, e: React.MouseEvent) => void;
 }
 /**
  * @param markings
@@ -72,6 +74,8 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
           markings={this.state.markings}
           message={model.message}
           result={model.result}
+          selected={this.props.isSelected(model._id)}
+          onSelect={this.props.onSelect}
         />
       );
     });

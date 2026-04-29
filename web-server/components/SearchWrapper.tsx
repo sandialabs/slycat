@@ -2,6 +2,7 @@ import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
 import React from "react";
 import Icon from "components/Icons/Icon";
+import * as dialog from "js/slycat-dialog";
 
 /**
  * @param items list of item objects
@@ -20,6 +21,7 @@ export interface SearchWrapperProps {
  * @param sortField current field used to sort
  * @param sortDescending sort descending (true) or ascending (false)
  * @param two_columns one or two columns
+ * @param models_selected list of selected models (by id)
  */
 export interface SearchWrapperState {
   initialItems: Item[];
@@ -29,13 +31,16 @@ export interface SearchWrapperState {
   sortField: string;
   sortDescending: boolean;
   two_columns: boolean;
+  models_selected: string[];
 }
 
 /**
  * @param {name} string name
  * @param {description} string description
  * @param {creator} name of the creator as string
- * @param {created} string representation of date created
+ * @param {created} string representation of date 
+ * @param {marking} string marking
+ * @param {model_type} string type of model
  * @interface Item
  */
 interface Item {
@@ -56,12 +61,12 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     super(props);
 
     // basic included sort fields (keys should all be distinct)
-    var basicSortFields = [{key: 'created', type: 'string', label: 'Created'},
-                           {key: 'creator', type: 'string', label: 'Creator'},
-                           {key: 'description', type: 'string', label: 'Description'},
-                           {key: 'marking', type: 'string', label: 'Marking'},
-                           {key: 'model-type', type: 'string', label: 'Model Type'},
-                           {key: 'name', type: 'string', label: 'Name'}];
+    const basicSortFields = [{key: 'created', type: 'string', label: 'Created'},
+                             {key: 'creator', type: 'string', label: 'Creator'},
+                             {key: 'description', type: 'string', label: 'Description'},
+                             {key: 'marking', type: 'string', label: 'Marking'},
+                             {key: 'model-type', type: 'string', label: 'Model Type'},
+                             {key: 'name', type: 'string', label: 'Name'}];
 
     this.state = {
       initialItems: this.props.items,
@@ -71,6 +76,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       sortField: 'created',
       sortDescending: true,
       two_columns: true,
+      models_selected: [],
     };
   }
 
@@ -150,13 +156,13 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   private readonly getColumnField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
       <button
-        className="btn btn-sm bg-transparent mb-3 me-2"
-        data-bs-toggle="button"
+        className={this.state.two_columns ? "active btn btn-sm bg-transparent mb-3 me-2" :
+                   "btn btn-sm bg-transparent mb-3 me-2"}
         title="Toggle between one and two column model list"
         type="button"
         onClick={() => this.changeColumnState()}
       >
-        <Icon type="bars" />
+        <Icon type="table-columns" />
         </button>
     ) : null;
   };
@@ -266,6 +272,79 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     ) : null;
   };
 
+  // select a model
+  private selectModel(mid: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    
+    // check if model is already selected
+    if (this.isModelSelected(mid)) {
+      
+      // if so, unselect model
+      this.setState((prevState) => {
+        const updatedSelection = prevState.models_selected.filter(id => id !== mid);
+        return { models_selected: updatedSelection };
+      });
+
+    } else {
+      
+      // add to selected models and re-render
+      this.setState((prevState) => {
+        const updatedSelection = [...prevState.models_selected, mid];
+        return { models_selected: updatedSelection };
+      });
+
+    }
+
+  }
+
+  // check if model is already selected
+  private isModelSelected(mid: string) {
+    return (this.state.models_selected.indexOf(mid) > -1);
+  }
+
+  // delete models selected
+  private delete_models() {
+
+    // check that models have been selected
+    if (this.state.models_selected.length > 0) {
+
+      const models_selected = this.state.models_selected;
+
+      dialog.dialog({
+        title: "Delete Model(s)?",
+        message: "The selected model(s) will be deleted immediately. This action cannot be undone.",
+        buttons: [
+          { className: "btn-light", label: "Cancel" },
+          { className: "btn-danger", label: "Delete" },
+        ],
+        callback(button: any) {
+          if (button?.label === "Delete") {
+            console.log("delete models");
+            console.log(models_selected);
+
+            //client.delete_model({ mid: id, success: () => location.reload() });
+          }
+        },
+      });
+    
+    // otherwise prompt user to use project delete
+    } else {
+
+      dialog.dialog({
+        title: "Delete Model(s)?",
+        message: "No models have been selected. To delete the entire project " +
+                 "please use the delete buttons on the project page.",
+        buttons: [
+          { className: "btn-light", label: "Cancel" },
+        ],
+        callback(button: any) { 
+          // do notihng
+        },
+      });
+    }
+
+  }
+
   /**
    * creates the delete button field
    *
@@ -276,9 +355,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       <button
         type="button"
         className="btn btn-sm btn-outline-danger mb-3 ms-2"
-        data-bs-toggle="button"
-        //name={id}
-        //onClick={(e) => delete_model(name, id, e)}
+        onClick={(e) => this.delete_models()}
         title="Delete selected models"
       >
         <Icon type="trash-can" />
@@ -292,8 +369,12 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly getList = (): JSX.Element => {
+
     return this.props.type === "models" ? (
-      <ModelsList models={this.state.items} two_columns={this.state.two_columns}/>
+      <ModelsList models={this.state.items} 
+                  two_columns={this.state.two_columns} 
+                  isSelected={this.isModelSelected.bind(this)}
+                  onSelect={this.selectModel.bind(this)}/>
     ) : (
       <ProjectsList projects={this.state.items as any} />
     );
@@ -350,7 +431,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         <div className="container mt-4">
           <div className="d-flex justify-content-between">
             <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
-            <div className="btn-toolbar me-2">
+            <div className="btn-toolbar">
               {this.props.type === "models" ? this.getSortField() : null}
               {this.props.type === "models" ? this.getSortDirectionField() : null}
               {this.props.type === "models" ? this.getColumnField() : null}
