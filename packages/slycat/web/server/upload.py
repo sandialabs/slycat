@@ -1,32 +1,38 @@
-# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
-# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
-# retains certain rights in this software.
+# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC.
+# Under the terms of Contract DE-NA0003525 with National Technology and Engineering
+# Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
 
-"""Functions for managing upload sessions.
+"""Utilities for managing upload sessions.
 
-An upload session is used to incrementally upload (potentially large) data
-before it is parsed and stored in the form of model artifacts.  When an
-upload session is created, a new id is generated and a storage location is
-created on the filesystem.  The client uses the session id to upload one-to-many
-files, each of which may be split in one-to-many parts - splitting files into
-parts allows clients to incrementally upload files that might otherwise exceed
-request body limits.  Once the client has completed uploading file data, it
-notifies the server, and includes a list of part-counts for each file it
-uploaded.  This gives the server a chance to validate that it received every
-part of every file that the client sent.  Assuming all went well, the file
-parts are consolidated into whole files that are passed to a parser plugin
-for parsing and storage in a model.  Once parsing is complete, the client
-deletes the session, which releases all temporary storage used by the session.
-The client may also opt to delete the session before uploading is complete,
-cancelling the entire operation.
+An upload session is used to incrementally upload potentially large data before
+it is parsed and stored as model artifacts.
 
-A "last access" time for each session is maintained and updated whenever the
-session is accessed.  If a session times-out (a threshold amount of time has
-elapsed since the last access) it is automatically deleted, and subsequent use
-of the expired session id will fail.
+Workflow
+--------
+1. A session is created, generating a unique session ID and a temporary storage
+   location on the filesystem.
+2. The client uploads one or more files associated with the session.
+3. Each file may be uploaded in one or more parts to avoid request body size
+   limits.
+4. When the client has finished uploading all parts, it notifies the server and
+   provides the expected part counts for each file.
+5. The server validates the uploaded parts, reconstructs complete files, and
+   passes them to the configured parser plugin.
+6. After parsing completes, the client deletes the session, which removes all
+   temporary storage.
 
-Each session is bound to the IP address of the client that created it - only
-the same client IP address is allowed to access the session.
+Sessions may also be deleted before upload completion to cancel the operation.
+
+Session lifetime
+----------------
+Each session tracks a "last accessed" timestamp. If a session is not accessed
+within the configured timeout interval, it is automatically deleted. Any
+subsequent attempt to use the expired session ID will fail.
+
+Security model
+--------------
+Each session is bound to the IP address of the client that created it. Only the
+same client IP address may access the session.
 """
 
 import cherrypy
@@ -34,12 +40,13 @@ import datetime
 import glob
 import os
 import shutil
-import slycat.web.server.authentication
-import slycat.web.server.database
 import stat
 import threading
 import time
 import uuid
+
+import slycat.web.server.authentication
+import slycat.web.server.database
 
 
 session_cache = {}
@@ -48,6 +55,16 @@ parsing_locks = {}
 
 
 def root():
+    """Return the root directory used for upload session storage.
+
+    The value is lazily initialized from the CherryPy application configuration
+    and cached on the function object.
+
+    Returns
+    -------
+    str
+        Filesystem path to the upload storage root.
+    """
     if root.path is None:
         root.path = cherrypy.tree.apps[""].config["slycat-web-server"]["upload-store"]
     return root.path
@@ -57,30 +74,65 @@ root.path = None
 
 
 def path(uid, fid=None, pid=None):
+    """Construct a filesystem path for upload session storage.
+
+    Parameters
+    ----------
+    uid : str
+        Upload session identifier.
+    fid : int or str, optional
+        File identifier within the session.
+    pid : int or str, optional
+        Project identifier within the file.
+
+    Returns
+    -------
+    str
+        Filesystem path for the session, file, or file part.
+    """
     result = os.path.join(root(), uid)
     if fid is not None:
-        result = os.path.join(result, "file-%s" % fid)
+        result = os.path.join(result, f"file-{fid}")
     if pid is not None:
-        result = os.path.join(result, "part-%s" % pid)
+        result = os.path.join(result, f"part-{pid}")
     return result
 
 
 class Session(object):
-    """Encapsulates an upload session.
+    """Encapsulate an upload session.
+
+    Notes
+    -----
+    Calling threads must serialize access to a ``Session`` object. To facilitate
+    this, ``Session`` implements the context manager protocol and callers should
+    always access sessions via a ``with`` statement.
 
     Examples
     --------
-
-    Calling threads must serialize access to the Session object.  To facilitate this,
-    a Session is a context manager - callers should always use a `with statement` when
-    accessing a session:
-
     >>> with slycat.web.server.upload.get_session(uid) as session:
-    ...   print session.username
-
+    ...     print(session.username)
     """
 
     def __init__(self, uid, client, mid, input, parser, aids, kwargs):
+        """Initialize an upload session.
+
+        Parameters
+        ----------
+        uid : str
+            Unique upload session identifier.
+        client : str
+            Client IP address associated with the session.
+        mid : str
+            Model identifier receiving uploaded content.
+        input : any
+            Parser-specific input identifier or descriptor.
+        parser : str
+            Registered parser name.
+        aids : any
+            Artifact identifier(s) passed through to the parser.
+        kwargs : dict
+            Additional parser keyword arguments.
+        """
         now = datetime.datetime.now(datetime.timezone.utc)
         self._uid = uid
         self._client = client
@@ -97,10 +149,12 @@ class Session(object):
         self._lock = threading.Lock()
 
     def __enter__(self):
+        """Acquire the session lock and return the session."""
         self._lock.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Release the session lock."""
         return self._lock.__exit__(exc_type, exc_value, traceback)
 
     @property
@@ -110,7 +164,7 @@ class Session(object):
 
     @property
     def mid(self):
-        """Return the model id that will store data uploaded during the session."""
+        """Return the model ID that will store uploaded session data info."""
         return self._mid
 
     @property
@@ -119,7 +173,19 @@ class Session(object):
         return self._accessed
 
     def put_remote_upload_file_part(self, sid, fid, pid, file_path):
-        """used to download a remote ssh file to the server via a thread"""
+        """Start a background download of a remote file part into this session.
+
+        Parameters
+        ----------
+        sid : str
+            Remote session identifier.
+        fid : int or str
+            File identifier.
+        pid : int or str
+            Project identifier.
+        file_path : str
+            Remote filesystem path to download.
+        """
         try:
             self._download_thread = threading.Thread(
                 name="downlading remote file",
@@ -135,61 +201,109 @@ class Session(object):
             )
             self._download_thread.start()
         except Exception as e:
-            cherrypy.log.error("e: %s" % str(e))
+            cherrypy.log.error(f"e: {e}")
 
     def _download_file_part(self, sid, fid, pid, file_path, calling_client):
+        """Download a remote file part and store it as an uploaded part.
+
+        Parameters
+        ----------
+        sid : str
+            Remote session identifier.
+        fid : int or str
+            File identifier.
+        pid : int or str
+            Project identifier.
+        file_path : str
+            Remote file path.
+        calling_client : str
+            Client IP address initiating the download.
+
+        Raises
+        ------
+        cherrypy.HTTPError
+            If the requested remote path refers to a directory.
+        """
         data = None
         with slycat.web.server.remote.get_session(sid, calling_client) as session:
-            filename = "%s@%s:%s" % (session.username, session.hostname, file_path)
+            filename = f"{session.username}@{session.hostname}:{file_path}"
             if stat.S_ISDIR(session.sftp.stat(file_path).st_mode):
                 cherrypy.log.error(
                     "slycat.web.server.handlers.py put_upload_file_part",
-                    "cherrypy.HTTPError 400 cannot load directory %s." % filename,
+                    f"cherrypy.HTTPError 400 cannot load directory {filename}.",
                 )
-                raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+                raise cherrypy.HTTPError(f"400 Cannot load directory {filename}.")
             try:
                 data = session.sftp.file(file_path).read()
             except Exception as e:
-                cherrypy.log.error("e: %s" % str(e))
+                cherrypy.log.error(f"e: {e}")
+
         self.put_upload_file_part(fid, pid, data)
 
     def put_upload_file_part(self, fid, pid, data):
+        """Store an uploaded file part on disk.
+
+        Parameters
+        ----------
+        fid : int or str
+            File identifier.
+        pid : int or str
+            Project identifier.
+        data : bytes
+            File part payload.
+
+        Raises
+        ------
+        cherrypy.HTTPError
+            If upload finalization has already started.
+        """
         if self._parsing_thread is not None:
             raise cherrypy.HTTPError("409 Upload already finished.")
 
         storage = path(self._uid, fid, pid)
-        if not os.path.exists(os.path.dirname(storage)):
-            os.makedirs(os.path.dirname(storage))
-        # cherrypy.log.error("Storing upload file part %s" % storage)
+        storage_dir = os.path.dirname(storage)
+        if not os.path.exists(storage_dir):
+            os.makedirs(storage_dir)
+
         with open(storage, "wb") as file:
             file.write(data)
+
         self._received.add((fid, pid))
 
     def post_upload_finished(self, uploaded, useProjectData):
-        """
-        checks for missing and excess files, if neither are found moves on to
-        finishing the upload and parsing the uploaded item.
-        :param uploaded: description of uploaded parts of the file
-        :return:
-          if missing:
-            {"missing": missing}
-          if excess:
-            {"excess": excess}
-          if moving to finished state
-            "202 Upload session finished."
-          if previously finished
-            "409 Upload already finished."
+        """Validate uploads and begin asynchronous parsing.
+
+        Parameters
+        ----------
+        uploaded : sequence of int
+            For each uploaded file, the number of parts the client claims to
+            have uploaded.
+        useProjectData : bool
+            Whether parameter-image uploads should also populate project data.
+
+        Returns
+        -------
+        dict or None
+            Returns a dictionary describing missing or excess parts when
+            validation fails. Otherwise returns ``None`` and sets an HTTP 202
+            response status.
+
+        Raises
+        ------
+        cherrypy.HTTPError
+            If parsing has already started or a remote download is still active.
         """
         if self._parsing_thread is not None:
             raise cherrypy.HTTPError("409 Upload already finished.")
+
         if self._download_thread is not None and self._download_thread.is_alive():
             raise cherrypy.HTTPError("423 server is busy downloading file.")
 
-        uploaded = {
+        expected_parts = {
             (fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])
         }
-        missing = [part for part in uploaded if part not in self._received]
-        excess = [part for part in self._received if part not in uploaded]
+        missing = [part for part in expected_parts if part not in self._received]
+        excess = [part for part in self._received if part not in expected_parts]
         self.useProjectData = useProjectData
 
         if missing:
@@ -201,16 +315,25 @@ class Session(object):
             return {"excess": excess}
 
         self._parsing_thread = threading.Thread(
-            name="Upload parsing", target=Session._parse_uploads, args=[self]
+            name="Upload parsing",
+            target=Session._parse_uploads,
+            args=[self],
         )
         self._parsing_thread.start()
 
         cherrypy.response.status = "202 Upload session finished."
 
     def _parse_uploads(self):
-        """
-        calls the parse function specified by the registered parser
-        :return: not used
+        """Reconstruct uploaded files and invoke the configured parser.
+
+        This method runs in a background thread. It assembles uploaded file parts
+        in numeric order, reconstructs each full file as text or binary data,
+        and then invokes the configured parser.
+
+        Notes
+        -----
+        Parsing is serialized per model ID using ``parsing_locks`` so that
+        multiple uploads targeting the same model do not parse concurrently.
         """
         cherrypy.log.error("Upload parsing started.")
 
@@ -218,128 +341,144 @@ class Session(object):
             parsing_locks[self._mid] = threading.Lock()
 
         with parsing_locks[self._mid]:
-            # cherrypy.log.error("got lock: %s" % self._mid)
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", self._mid)
 
-            def numeric_order(x):
-                """Files and file parts must be loaded in numeric, not lexicographical, order."""
-                return int(x.split("-")[-1])
+            def numeric_order(item_path):
+                """Sort file and part paths by trailing numeric suffix."""
+                return int(item_path.split("-")[-1])
 
-            # we no longer support multi file uploads
-            # TODO: need to decide if we should remove this or refactor for multi files again
             files = []
             storage = path(self._uid)
-            for file_dir in sorted(
-                glob.glob(os.path.join(storage, "file-*")), key=numeric_order
-            ):
-                # cherrypy.log.error("Assembling %s" % file_dir)
 
-                is_bin_file = False
+            for file_dir in sorted(
+                glob.glob(os.path.join(storage, "file-*")),
+                key=numeric_order,
+            ):
+                is_binary_file = False
                 file_parts = []
 
                 for file_part in sorted(
-                    glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order
+                    glob.glob(os.path.join(file_dir, "part-*")),
+                    key=numeric_order,
                 ):
-                    # cherrypy.log.error(" Loading %s" % file_part)
-
-                    # is this a text file?
-                    if is_bin_file == False:
-
-                        # try to open as text file
+                    if not is_binary_file:
                         try:
                             with open(file_part, "r") as f:
                                 file_parts.append(f.read())
 
                         # not a text file, open as binary
                         except UnicodeDecodeError:
-                            is_bin_file = True
+                            is_binary_file = True
 
-                    # is it a binary file?
-                    if is_bin_file == True:
+                    if is_binary_file is True:
                         with open(file_part, "rb") as f:
                             file_parts.append(f.read())
 
-                # join file parts to make full file
-                if is_bin_file == False:
-                    file = "".join(file_parts)
-                else:
-                    file = b"".join(file_parts)
-
-                files.append(file)
+                reconstructed_file = (
+                    b"".join(file_parts) if is_binary_file else "".join(file_parts)
+                )
+                files.append(reconstructed_file)
 
             try:
-                # adding this check for backwards compatibility
-                # new way self._aids[0] is the file name being added to the model and hdf5
-                # self._aids[1] is the name of the file being pushed to the project_data data object
+                parser = slycat.web.server.plugin.manager.parsers[self._parser]["parse"]
+
+                # Backward-compatible handling of artifact identifiers.
+                # New convention:
+                #   self._aids[0] -> filename added to the model and HDF5
+                #   self._aids[1] -> filename pushed to the project_data object
                 if len(self._aids) > 1:
-                    if isinstance(self._aids[1], str) and self._aids[1].endswith((".hdf5", ".h5")):
-                        slycat.web.server.plugin.manager.parsers[self._parser]["parse"](
+                    if (
+                        isinstance(self._aids[1], str)
+                        and self._aids[1].endswith((".hdf5", ".h5"))
+                    ):
+                        parser(
                             database,
                             model,
                             self._input,
                             files,
                             self._aids,
-                            **self._kwargs
+                            **self._kwargs,
                         )
                     elif isinstance(self._aids[0], list):
-                        slycat.web.server.plugin.manager.parsers[self._parser]["parse"](
+                        parser(
                             database,
                             model,
                             self._input,
                             files,
                             self._aids[0],
-                            **self._kwargs
+                            **self._kwargs,
                         )
                 else:
-                    slycat.web.server.plugin.manager.parsers[self._parser]["parse"](
-                        database, model, self._input, files, self._aids, **self._kwargs
+                    parser(
+                        database,
+                        model,
+                        self._input,
+                        files,
+                        self._aids,
+                        **self._kwargs,
                     )
+
                 if (
                     model["model-type"] == "parameter-image"
-                    and self.useProjectData == True
+                    and self.useProjectData is True
                     and ".h5" not in self._aids[1]
                     and ".hdf5" not in self._aids[1]
                 ):
-                    # Use project data
                     slycat.web.server.handlers.create_project_data(
-                        self._mid, self._aids, files
+                        self._mid,
+                        self._aids,
+                        files,
                     )
             except Exception as e:
-                cherrypy.log.error("Exception parsing posted files: %s" % e)
+                cherrypy.log.error(f"Exception parsing posted files: {e}")
                 import traceback
 
                 cherrypy.log.error(traceback.format_exc())
-            cherrypy.log.error("Upload parsing finished.")
+
+        cherrypy.log.error("Upload parsing finished.")
 
     def close(self):
-        """
-        destroys the temp files made by an upload session
-        :return:
+        """Close the session and remove its temporary filesystem storage.
+
+        Raises
+        ------
+        cherrypy.HTTPError
+            If parsing is still in progress.
         """
         if self._parsing_thread is not None and self._parsing_thread.is_alive():
-            # Commenting out the error email since it seems like a frequent one as well...
-            # cherrypy.log.error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
             raise cherrypy.HTTPError("409 Parsing in progress.")
 
         storage = path(self._uid)
-        cherrypy.log.error("Destroying temporary upload storage %s" % storage)
+        cherrypy.log.error(f"Destroying temporary upload storage {storage}")
         if os.path.exists(storage):
             shutil.rmtree(storage)
 
 
 def create_session(mid, input, parser, aids, kwargs):
-    """Create a cached upload session for the given model.
+    """Create and cache an upload session for a model.
 
     Parameters
     ----------
-    mid : string
-      ID of the model that will store data uploaded during the session.
+    mid : str
+        ID of the model that will store data uploaded during the session.
+    input : any
+        Parser-specific input identifier or descriptor.
+    parser : str
+        Registered parser name.
+    aids : any
+        Artifact identifier(s) passed through to the parser.
+    kwargs : dict
+        Additional parser keyword arguments.
 
     Returns
     -------
-    uid : string
-      A unique session identifier.
+    str
+        Unique upload session identifier.
+
+    Notes
+    -----
+    The caller must have write access to the owning project.
     """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -349,7 +488,7 @@ def create_session(mid, input, parser, aids, kwargs):
     _start_session_cleanup_worker()
 
     client = cherrypy.request.headers.get("x-forwarded-for")
-    cherrypy.log.error("Creating upload session for %s" % (client))
+    cherrypy.log.error(f"Creating upload session for {client}")
 
     uid = uuid.uuid4().hex
     with session_cache_lock:
@@ -360,47 +499,49 @@ def create_session(mid, input, parser, aids, kwargs):
 def get_session(uid):
     """Return a cached upload session.
 
-    If the session has timed-out or doesn't exist, raises a 404 exception.
+    If the session has timed out or does not exist, a 404 error is raised.
 
     Parameters
     ----------
-    uid : string
-      Unique session identifier returned by :func:`slycat.web.server.upload.create_session`.
+    uid : str
+        Unique session identifier returned by :func:`create_session`.
 
     Returns
     -------
-    session : :class:`slycat.web.server.upload.Session`
-      Session object that encapsulates the upload session.
+    Session
+        Session object encapsulating the upload state.
+
+    Raises
+    ------
+    cherrypy.HTTPError
+        If the session does not exist, has expired, or is accessed from a
+        different client IP address.
     """
     client = cherrypy.request.headers.get("x-forwarded-for")
 
     with session_cache_lock:
         _expire_session(uid)
 
-        if uid in session_cache:
-            session = session_cache[uid]
-            # Only the originating client can access a session.
-            if client != session.client:
-                cherrypy.log.error(
-                    "Client %s attempted to access upload session from %s"
-                    % (client, session.client)
-                )
-                del session_cache[uid]
-                cherrypy.log.error(
-                    "slycat.web.server.upload.py get_session",
-                    "cherrypy.HTTPError 404 client %s attempted to access upload session from %s"
-                    % (client, session.client),
-                )
-                raise cherrypy.HTTPError("404")
-
-        if uid not in session_cache:
+        session = session_cache.get(uid)
+        if session is None:
             cherrypy.log.error(
                 "slycat.web.server.upload.py get_session",
                 "cherrypy.HTTPError 404 uid is not in session_cache",
             )
             raise cherrypy.HTTPError("404")
 
-        session = session_cache[uid]
+        if client != session.client:
+            cherrypy.log.error(
+                f"Client {client} attempted to access upload session from {session.client}"
+            )
+            del session_cache[uid]
+            cherrypy.log.error(
+                "slycat.web.server.upload.py get_session",
+                "cherrypy.HTTPError 404 client %s attempted to access upload session from %s"
+                % (client, session.client),
+            )
+            raise cherrypy.HTTPError("404")
+
         session._accessed = datetime.datetime.now(datetime.timezone.utc)
         return session
 
@@ -410,60 +551,67 @@ def delete_session(uid):
 
     Parameters
     ----------
-    uid : string, required
-      Unique session identifier returned by :func:`slycat.web.server.upload.create_session`.
+    uid : str
+        Unique session identifier returned by :func:`create_session`.
     """
     with session_cache_lock:
         if uid in session_cache:
             session = session_cache[uid]
-            cherrypy.log.error("Deleting upload session for %s" % (session.client))
-            session_cache[uid].close()
+            cherrypy.log.error(f"Deleting upload session for {session.client}")
+            session.close()
             del session_cache[uid]
 
 
 def _expire_session(uid):
-    """Test an existing session to see if it is expired.
+    """Expire a session if it has timed out.
 
-    Assumes that the caller already holds session_cache_lock.
+    Notes
+    -----
+    This function assumes the caller already holds ``session_cache_lock``.
+
+    Parameters
+    ----------
+    uid : str
+        Upload session identifier.
     """
-    if uid in session_cache:
-        now = datetime.datetime.now(datetime.timezone.utc)
-        session = session_cache[uid]
-        if (
-            now - session.accessed
-            > slycat.web.server.config["slycat-web-server"]["upload-session-timeout"]
-        ):
-            cherrypy.log.error("Timing-out upload session from %s" % (session.client))
-            session_cache[uid].close()
-            del session_cache[uid]
+    session = session_cache.get(uid)
+    if session is None:
+        return
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    timeout = slycat.web.server.config["slycat-web-server"]["upload-session-timeout"]
+    if now - session.accessed > timeout:
+        cherrypy.log.error(f"Timing-out upload session from {session.client}")
+        session.close()
+        del session_cache[uid]
 
 
 def _session_monitor():
+    """Background worker that removes orphaned storage and expired sessions."""
     while True:
-        # cherrypy.log.error("Upload session cleanup worker running.")
-        # Remove orphaned file storage (could happen if the server is restarted while an upload session is active).
+        # Remove orphaned file storage. This can happen if the server is
+        # restarted while an upload session is active.
         for storage in glob.glob(os.path.join(root(), "*")):
             if os.path.basename(storage) not in session_cache:
-                cherrypy.log.error(
-                    "Removing orphaned upload session storage %s" % storage
-                )
+                cherrypy.log.error(f"Removing orphaned upload session storage {storage}")
                 shutil.rmtree(storage)
 
         # Remove expired upload sessions.
         with session_cache_lock:
-            for uid in list(
-                session_cache.keys()
-            ):  # We make an explicit copy of the keys because we may be modifying the dict contents
+            # Make an explicit copy of the keys because the dictionary may be
+            # modified during iteration.
+            for uid in session_cache.keys():
                 _expire_session(uid)
-        # cherrypy.log.error("Upload session cleanup worker finished.")
+
         time.sleep(datetime.timedelta(minutes=15).total_seconds())
 
 
 def _start_session_cleanup_worker():
+    """Start the upload session cleanup worker if it is not already running."""
     if _start_session_cleanup_worker.thread is None:
-        # cherrypy.log.error("Starting upload session cleanup worker.")
         _start_session_cleanup_worker.thread = threading.Thread(
-            name="Upload Monitor", target=_session_monitor
+            name="Upload Monitor",
+            target=_session_monitor,
         )
         _start_session_cleanup_worker.thread.daemon = True
         _start_session_cleanup_worker.thread.start()
