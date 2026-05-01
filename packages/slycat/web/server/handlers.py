@@ -1404,7 +1404,6 @@ def post_model_files(
         slycat.web.server.plugin.manager.parsers[parser]["parse"](
             database, model, input, files, aids, **kwargs
         )
-        # create_project_data(mid, aids, files)
     except Exception as e:
         cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         cherrypy.log.error(
