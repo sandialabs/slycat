@@ -932,8 +932,8 @@ export default class TimeseriesWizard extends React.Component<
         closingCallBack={this.cleanup}
         title={
           this.state.visibleTab != "0"
-            ? "Timeseries Wizard - " + this.state.selectedOption
-            : "Timeseries Wizard"
+            ? "New Timeseries Model - " + this.state.selectedOption
+            : "New Timeseries Model"
         }
         body={this.getBodyJsx()}
         footer={this.getFooterJSX()}
