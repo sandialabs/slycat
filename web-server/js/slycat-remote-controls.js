@@ -48,12 +48,12 @@ ko.components.register("slycat-remote-controls", {
         component.hostname(remote_host.hostname());
       };
 
-      var storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
+      const storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
       if (storedHostname) component.hostname(storedHostname);
-      var storedUsername = localStorage.getItem("slycat-remote-controls-username");
+      const storedUsername = localStorage.getItem("slycat-remote-controls-username");
       if (storedUsername) component.username(storedUsername);
 
-      var hostnameSubscription = component.hostname.subscribe(function (value) {
+      const hostnameSubscription = component.hostname.subscribe(function (value) {
         if (value != null) {
           localStorage.setItem("slycat-remote-controls-hostname", value);
         }
