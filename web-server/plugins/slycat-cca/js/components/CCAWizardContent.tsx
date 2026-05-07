@@ -37,7 +37,7 @@ export const CCAModalContent = (props: React.PropsWithChildren<ModalContentProps
         <h3 className="modal-title">{title}</h3>
         <a href="/docs/manual/cca.model.html" target="_blank" rel="noopener noreferrer">
           <sup className="larger">
-          <i className="fa fa-circle-question fa-lg text-secondary p-1" title="Parameter Space User Manual"></i>
+          <i className="fa fa-circle-question fa-lg text-secondary p-1" title="CCA User Manual"></i>
           </sup>
         </a>
         <button

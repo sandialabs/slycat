@@ -39,7 +39,7 @@ export default class ModalContent extends React.Component<ModalContentProps, Mod
           <h3 className="modal-title">{this.props.title}</h3>
            <a href="/docs/manual/timeseries.model.html" target="_blank" rel="noopener noreferrer">
             <sup className="larger">
-            <i className="fa fa-circle-question fa-lg text-secondary p-1" title="Parameter Space User Manual"></i>
+            <i className="fa fa-circle-question fa-lg text-secondary p-1" title="Timeseries User Manual"></i>
             </sup>
           </a>
           <button
