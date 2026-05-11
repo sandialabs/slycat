@@ -3,6 +3,7 @@ import ProjectsList from "components/Projects/ProjectsList";
 import React from "react";
 import Icon from "components/Icons/Icon";
 import * as dialog from "js/slycat-dialog";
+import client from "js/slycat-web-client.js";
 
 /**
  * @param items list of item objects
@@ -67,6 +68,21 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
                              {key: 'marking', type: 'string', label: 'Marking'},
                              {key: 'model-type', type: 'string', label: 'Model Type'},
                              {key: 'name', type: 'string', label: 'Name'}];
+
+    // check for DAC models
+    var dac_model = false;
+    for (let i=0; i<this.props.items.length; i++) {
+      if (this.props.items[i]['model-type'] === 'DAC') {
+        if ('artifact:dac-outlier-summary' in this.props.items[i]) {
+          dac_model = true;
+        }
+      }
+    }
+
+    // if DAC models are present, add outlier field
+    if (dac_model) {
+      basicSortFields.push({key: 'artifact:dac-outlier-summary', type: 'numeric', label: 'Outlier'});
+    }
 
     this.state = {
       initialItems: this.props.items,
@@ -182,8 +198,10 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         return updatedList;
   
     } else if (sortFieldType === 'numeric') {
-      console.log('numeric sort');
-      return currList;
+      const updatedList = [...currList].sort((a,b) => sortDescending ?
+        (sortField in b ? b[sortField] : 0) - (sortField in a ? a[sortField] : 0) :
+        (sortField in a ? a[sortField] : 0) - (sortField in b ? b[sortField] : 0));
+      return updatedList;
     }
   };
 
@@ -319,10 +337,13 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         ],
         callback(button: any) {
           if (button?.label === "Delete") {
-            console.log("delete models");
-            console.log(models_selected);
-
-            //client.delete_model({ mid: id, success: () => location.reload() });
+            for (let i = 0; i<models_selected.length; i++) {
+              if (i == (models_selected.length-1)) {
+                client.delete_model({mid: models_selected[i], success: () => location.reload()});
+              } else {
+                client.delete_model({mid: models_selected[i]});
+              }
+            }
           }
         },
       });

@@ -21,6 +21,7 @@ interface ModelProps {
   creator: string;
   selected: boolean;
   onSelect: (id: string, e: React.MouseEvent) => void;
+  outlier: number;
 }
 
 /**
@@ -61,6 +62,7 @@ const Model: React.FC<ModelProps> = ({
   creator,
   selected,
   onSelect,
+  outlier,
 }) => {
   const recognized_marking = markings.find((obj) => obj.type == marking);
   const model_href = server_root + "models/" + id;
@@ -100,6 +102,7 @@ const Model: React.FC<ModelProps> = ({
             Created <span>{formatDateToLocaleString(created)}</span>
             <br />
             by <span>{creator}</span>
+            {outlier !== null ? `, outlier score: ${outlier.toFixed(2)}` : null}
           </small>
           <span>
             <button
