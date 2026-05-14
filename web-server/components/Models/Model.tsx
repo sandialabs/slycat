@@ -20,7 +20,7 @@ interface ModelProps {
   created: string;
   creator: string;
   selected: boolean;
-  onSelect: (id: string, e: React.MouseEvent) => void;
+  onSelect: (id: string, e: React.SyntheticEvent) => void;
   outlier: number;
 }
 
@@ -104,16 +104,18 @@ const Model: React.FC<ModelProps> = ({
             by <span>{creator}</span>
             {outlier !== null ? `, outlier score: ${outlier.toFixed(2)}` : null}
           </small>
-          <span>
-            <button
-              type="button"
-              className={selected ? "active btn btn-sm btn-outline-warning me-2" :
-                                    "btn btn-sm btn-outline-warning me-2" }
-              title="Select model"
-              onClick={(e) => onSelect(id, e)}
-            >
-              <Icon type="check" />
-            </button>
+            <input
+              type="checkbox"
+              className="form-check-input me-3 mt-0"
+              style={{ width: "1.2em", height: "1.2em" }}
+              checked={selected}
+              title="Select model for bulk delete"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                e.stopPropagation();
+                onSelect(id, e);
+              }}
+            />
             <button
               type="button"
               className="btn btn-sm btn-outline-danger"
@@ -123,7 +125,6 @@ const Model: React.FC<ModelProps> = ({
             >
               <Icon type="trash-can" />
             </button>
-          </span>
         </div>
       </div>
     </div>

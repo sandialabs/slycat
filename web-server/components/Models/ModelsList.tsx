@@ -13,7 +13,7 @@ export interface ModelsListProps {
   models: any[];
   two_columns: boolean;
   isSelected: (id: string) => boolean;
-  onSelect: (id: string, e: React.MouseEvent) => void;
+  onSelect: (id: string, e: React.SyntheticEvent) => void;
 }
 /**
  * @param markings

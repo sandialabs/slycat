@@ -291,7 +291,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   };
 
   // select a model
-  private selectModel(mid: string, e: React.MouseEvent) {
+  private selectModel(mid: string, e: React.SyntheticEvent) {
     e.stopPropagation();
     
     // check if model is already selected
