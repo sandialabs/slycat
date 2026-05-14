@@ -339,15 +339,22 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         { className: "btn-danger", label: "Delete" },
       ],
       callback(button: any) {
-        if (button?.label === "Delete") {
-          for (let i = 0; i < models_selected.length; i++) {
-            if (i === models_selected.length - 1) {
-              client.delete_model({ mid: models_selected[i], success: () => location.reload() });
-            } else {
-              client.delete_model({ mid: models_selected[i] });
-            }
-          }
+        if (button?.label !== "Delete") {
+          return;
         }
+        const deleteNext = (index: number) => {
+          if (index >= models_selected.length) {
+            location.reload();
+            return;
+          }
+          client.delete_model({
+            mid: models_selected[index],
+            success: () => {
+              deleteNext(index + 1);
+            },
+          });
+        };
+        deleteNext(0);
       },
     });
   }
