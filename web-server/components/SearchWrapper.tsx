@@ -352,6 +352,15 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
             success: () => {
               deleteNext(index + 1);
             },
+            error: () => {
+              console.error("delete_model failed");
+              dialog.dialog({
+                title: "Delete failed",
+                message:
+                  "Deleting one or more models failed. Reload the page to see which models still exist.",
+                buttons: [{ className: "btn-primary", label: "OK" }],
+              });
+            },
           });
         };
         deleteNext(0);
