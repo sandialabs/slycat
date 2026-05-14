@@ -322,48 +322,34 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
   // delete models selected
   private delete_models() {
-
-    // check that models have been selected
-    if (this.state.models_selected.length > 0) {
-
-      const models_selected = this.state.models_selected;
-
-      dialog.dialog({
-        title: "Delete Model(s)?",
-        message: "The selected model(s) will be deleted immediately. This action cannot be undone.",
-        buttons: [
-          { className: "btn-light", label: "Cancel" },
-          { className: "btn-danger", label: "Delete" },
-        ],
-        callback(button: any) {
-          if (button?.label === "Delete") {
-            for (let i = 0; i<models_selected.length; i++) {
-              if (i == (models_selected.length-1)) {
-                client.delete_model({mid: models_selected[i], success: () => location.reload()});
-              } else {
-                client.delete_model({mid: models_selected[i]});
-              }
-            }
-          }
-        },
-      });
-    
-    // otherwise prompt user to use project delete
-    } else {
-
-      dialog.dialog({
-        title: "Delete Model(s)?",
-        message: "No models have been selected. To delete the entire project " +
-                 "please use the delete buttons on the project page.",
-        buttons: [
-          { className: "btn-light", label: "Cancel" },
-        ],
-        callback(button: any) { 
-          // do notihng
-        },
-      });
+    const models_selected = this.state.models_selected;
+    const n = models_selected.length;
+    if (n === 0) {
+      return;
     }
 
+    dialog.dialog({
+      title: `Delete ${n} Selected ${n === 1 ? "Model" : "Models"}?`,
+      message:
+        n === 1
+          ? "The selected model will be deleted immediately. This action cannot be undone."
+          : `The ${n} selected models will be deleted immediately. This action cannot be undone.`,
+      buttons: [
+        { className: "btn-light", label: "Cancel" },
+        { className: "btn-danger", label: "Delete" },
+      ],
+      callback(button: any) {
+        if (button?.label === "Delete") {
+          for (let i = 0; i < models_selected.length; i++) {
+            if (i === models_selected.length - 1) {
+              client.delete_model({ mid: models_selected[i], success: () => location.reload() });
+            } else {
+              client.delete_model({ mid: models_selected[i] });
+            }
+          }
+        }
+      },
+    });
   }
 
   /**
@@ -378,7 +364,6 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         type="button"
         className="btn btn-sm btn-outline-danger mb-3 ms-2"
         onClick={(e) => this.delete_models()}
-        title="Delete selected models"
       >
         <Icon type="trash-can" className="me-1" />
         Delete {n} Selected {n === 1 ? "Model" : "Models"}
