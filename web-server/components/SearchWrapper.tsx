@@ -39,7 +39,7 @@ export interface SearchWrapperState {
  * @param {name} string name
  * @param {description} string description
  * @param {creator} name of the creator as string
- * @param {created} string representation of date 
+ * @param {created} string representation of date
  * @param {marking} string marking
  * @param {model_type} string type of model
  * @interface Item
@@ -62,18 +62,20 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     super(props);
 
     // basic included sort fields (keys should all be distinct)
-    const basicSortFields = [{key: 'created', type: 'string', label: 'Created'},
-                             {key: 'creator', type: 'string', label: 'Creator'},
-                             {key: 'description', type: 'string', label: 'Description'},
-                             {key: 'marking', type: 'string', label: 'Marking'},
-                             {key: 'model-type', type: 'string', label: 'Model Type'},
-                             {key: 'name', type: 'string', label: 'Name'}];
+    const basicSortFields = [
+      { key: "created", type: "string", label: "Created" },
+      { key: "creator", type: "string", label: "Creator" },
+      { key: "description", type: "string", label: "Description" },
+      { key: "marking", type: "string", label: "Marking" },
+      { key: "model-type", type: "string", label: "Model Type" },
+      { key: "name", type: "string", label: "Name" },
+    ];
 
     // check for DAC models
     var dac_model = false;
-    for (let i=0; i<this.props.items.length; i++) {
-      if (this.props.items[i]['model-type'] === 'DAC') {
-        if ('artifact:dac-outlier-summary' in this.props.items[i]) {
+    for (let i = 0; i < this.props.items.length; i++) {
+      if (this.props.items[i]["model-type"] === "DAC") {
+        if ("artifact:dac-outlier-summary" in this.props.items[i]) {
           dac_model = true;
         }
       }
@@ -81,7 +83,11 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
     // if DAC models are present, add outlier field
     if (dac_model) {
-      basicSortFields.push({key: 'artifact:dac-outlier-summary', type: 'numeric', label: 'Outlier'});
+      basicSortFields.push({
+        key: "artifact:dac-outlier-summary",
+        type: "numeric",
+        label: "Outlier",
+      });
     }
 
     this.state = {
@@ -89,7 +95,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       items: [],
       searchQuery: "",
       sortFields: basicSortFields,
-      sortField: 'created',
+      sortField: "created",
       sortDescending: true,
       two_columns: true,
       models_selected: [],
@@ -120,7 +126,6 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    */
   private readonly filterList = (trimSearchQuery: string): void => {
     this.setState((prevState) => {
-
       // filter initial items
       const updatedList = prevState.initialItems.filter(
         ({ name, description, creator, created }) => {
@@ -135,7 +140,10 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
       // sort filtered list
       const sortedUpdatedList = this.sortState(
-        updatedList, this.state.sortField, this.state.sortDescending);
+        updatedList,
+        this.state.sortField,
+        this.state.sortDescending,
+      );
 
       return { items: sortedUpdatedList, searchQuery: trimSearchQuery };
     });
@@ -149,7 +157,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   private readonly getSearchField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
       <input
-        className="form-control mb-3"
+        className="form-control form-control-sm"
         style={{ width: "13rem" }}
         type="search"
         placeholder={`Filter ${this.props.type}`}
@@ -161,8 +169,10 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
   // toggle between one and two columns
   private readonly changeColumnState = (): JSX.Element | null => {
-    this.setState((prevState) => {return {two_columns: !prevState.two_columns}})
-  }
+    this.setState((prevState) => {
+      return { two_columns: !prevState.two_columns };
+    });
+  };
 
   /**
    * creates the one/two column button field
@@ -172,49 +182,55 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   private readonly getColumnField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
       <button
-        className={this.state.two_columns ? "active btn btn-sm bg-transparent mb-3 me-2" :
-                   "btn btn-sm bg-transparent mb-3 me-2"}
+        className={
+          this.state.two_columns ? "active btn btn-sm bg-transparent" : "btn btn-sm bg-transparent"
+        }
         title="Toggle between one and two column model list"
         type="button"
         onClick={() => this.changeColumnState()}
       >
         <Icon type="table-columns" />
-        </button>
+      </button>
     ) : null;
   };
 
   // sort list (do not update state)
-  private readonly sortState = 
-    (currList: Item[], sortField: string, sortDescending: boolean): JSX.Element | null => {
-
+  private readonly sortState = (
+    currList: Item[],
+    sortField: string,
+    sortDescending: boolean,
+  ): JSX.Element | null => {
     // get type of data to sort
-    const sortFieldType = this.state.sortFields.find(field => field.key === sortField)['type']
-  
+    const sortFieldType = this.state.sortFields.find((field) => field.key === sortField)["type"];
+
     // sort by string
-    if (sortFieldType === 'string') {
-        const updatedList = [...currList].sort((a,b) => sortDescending ?
-          b[sortField].localeCompare(a[sortField]) :
-          a[sortField].localeCompare(b[sortField]));
-        return updatedList;
-  
-    } else if (sortFieldType === 'numeric') {
-      const updatedList = [...currList].sort((a,b) => sortDescending ?
-        (sortField in b ? b[sortField] : 0) - (sortField in a ? a[sortField] : 0) :
-        (sortField in a ? a[sortField] : 0) - (sortField in b ? b[sortField] : 0));
+    if (sortFieldType === "string") {
+      const updatedList = [...currList].sort((a, b) =>
+        sortDescending
+          ? b[sortField].localeCompare(a[sortField])
+          : a[sortField].localeCompare(b[sortField]),
+      );
+      return updatedList;
+    } else if (sortFieldType === "numeric") {
+      const updatedList = [...currList].sort((a, b) =>
+        sortDescending
+          ? (sortField in b ? b[sortField] : 0) - (sortField in a ? a[sortField] : 0)
+          : (sortField in a ? a[sortField] : 0) - (sortField in b ? b[sortField] : 0),
+      );
       return updatedList;
     }
   };
 
   // sort current items
-  private readonly changeSortState = 
-    (newSortField: string, sortDescending: boolean): JSX.Element | null => {
-
+  private readonly changeSortState = (
+    newSortField: string,
+    sortDescending: boolean,
+  ): JSX.Element | null => {
     // sort list
     this.setState((prevState) => {
       const updatedList = this.sortState(prevState.items, newSortField, sortDescending);
       return { items: updatedList, sortField: newSortField, sortDescending: sortDescending };
     });
-
   };
 
   /**
@@ -223,40 +239,32 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly getSortField = (): JSX.Element | null => {
-
-    // get fields to sort by
-    var options = this.state.sortFields;
-
     return this.props.items.length > 0 ? (
-      <div className="input-group">
-        
-        <select
-          name="Sort"
-          title="Sort models by metadata"
-          className="form-select mb-3 me-2"
-          onChange={(e) => this.changeSortState(e.target.value, this.state.sortDescending)}
-        >
-          {options.map((option) => (
+      <select
+        name="Sort"
+        title="Sort models by metadata"
+        className="form-select form-select-sm"
+        style={{ width: "12rem" }}
+        onChange={(e) => this.changeSortState(e.target.value, this.state.sortDescending)}
+      >
+        {this.state.sortFields.map((option) => (
           <option key={option.key} value={option.key}>
             {option.label}
           </option>
-          ))}
-        
-        </select>
-
-      </div>
+        ))}
+      </select>
     ) : null;
   };
 
   // set sort descending
   private readonly setSortDescending = (): JSX.Element | null => {
     this.changeSortState(this.state.sortField, true);
-  }
+  };
 
   // set sort ascending
   private readonly setSortAscending = (): JSX.Element | null => {
     this.changeSortState(this.state.sortField, false);
-  }
+  };
 
   /**
    * creates the sort ascending/descending field
@@ -264,28 +272,32 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly getSortDirectionField = (): JSX.Element | null => {
-
     return this.props.items.length > 0 ? (
-      <div className="input-group">
-    
-        <button className={this.state.sortDescending ? 
-                           "active btn btn-sm bg-transparent mb-3" :
-                           "btn btn-sm bg-transparent mb-3" }
-          type="button" title="Sort Descending"
+      <div className="btn-group" role="group" aria-label="Sort direction">
+        <button
+          className={
+            this.state.sortDescending
+              ? "active btn btn-sm bg-transparent"
+              : "btn btn-sm bg-transparent"
+          }
+          type="button"
+          title="Sort Descending"
           onClick={() => this.setSortDescending()}
-          >
+        >
           <Icon type="arrow-down-wide-short" />
         </button>
-        
-        <button className={this.state.sortDescending ?
-                           "btn btn-sm bg-transparent mb-3 me-2" :
-                           "active btn btn-sm bg-transparent mb-3 me-2"}
-          type="button" title="Sort Ascending"
+        <button
+          className={
+            this.state.sortDescending
+              ? "btn btn-sm bg-transparent"
+              : "active btn btn-sm bg-transparent"
+          }
+          type="button"
+          title="Sort Ascending"
           onClick={() => this.setSortAscending()}
-          >
+        >
           <Icon type="arrow-down-short-wide" />
         </button>
-
       </div>
     ) : null;
   };
@@ -293,31 +305,26 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   // select a model
   private selectModel(mid: string, e: React.SyntheticEvent) {
     e.stopPropagation();
-    
+
     // check if model is already selected
     if (this.isModelSelected(mid)) {
-      
       // if so, unselect model
       this.setState((prevState) => {
-        const updatedSelection = prevState.models_selected.filter(id => id !== mid);
+        const updatedSelection = prevState.models_selected.filter((id) => id !== mid);
         return { models_selected: updatedSelection };
       });
-
     } else {
-      
       // add to selected models and re-render
       this.setState((prevState) => {
         const updatedSelection = [...prevState.models_selected, mid];
         return { models_selected: updatedSelection };
       });
-
     }
-
   }
 
   // check if model is already selected
   private isModelSelected(mid: string) {
-    return (this.state.models_selected.indexOf(mid) > -1);
+    return this.state.models_selected.indexOf(mid) > -1;
   }
 
   // delete models selected
@@ -378,7 +385,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     return this.props.items.length > 0 && n > 0 ? (
       <button
         type="button"
-        className="btn btn-sm btn-outline-danger mb-3 ms-2"
+        className="btn btn-sm btn-outline-danger"
         onClick={(e) => this.delete_models()}
       >
         <Icon type="trash-can" className="me-1" />
@@ -393,12 +400,13 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly getList = (): JSX.Element => {
-
     return this.props.type === "models" ? (
-      <ModelsList models={this.state.items} 
-                  two_columns={this.state.two_columns} 
-                  isSelected={this.isModelSelected.bind(this)}
-                  onSelect={this.selectModel.bind(this)}/>
+      <ModelsList
+        models={this.state.items}
+        two_columns={this.state.two_columns}
+        isSelected={this.isModelSelected.bind(this)}
+        onSelect={this.selectModel.bind(this)}
+      />
     ) : (
       <ProjectsList projects={this.state.items as any} />
     );
@@ -455,12 +463,12 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         <div className="container mt-4">
           <div className="d-flex justify-content-between">
             <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
-            <div className="btn-toolbar">
+            <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
+              {this.props.type === "models" ? this.getDeleteField() : null}
               {this.props.type === "models" ? this.getSortField() : null}
               {this.props.type === "models" ? this.getSortDirectionField() : null}
               {this.props.type === "models" ? this.getColumnField() : null}
               {this.getSearchField()}
-              {this.props.type === "models" ? this.getDeleteField() : null}
             </div>
           </div>
         </div>
