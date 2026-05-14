@@ -76,7 +76,7 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
           result={model.result}
           selected={this.props.isSelected(model._id)}
           onSelect={this.props.onSelect}
-          outlier={model["model-type"]=="DAC" ? 
+          outlier={model["model-type"]==="DAC" ? 
             ('artifact:dac-outlier-summary' in model ? model['artifact:dac-outlier-summary'] : null) 
             : null}
         />
