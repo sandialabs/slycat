@@ -372,14 +372,16 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   private readonly getDeleteField = (): JSX.Element | null => {
-    return this.props.items.length > 0 ? (
+    const n = this.state.models_selected.length;
+    return this.props.items.length > 0 && n > 0 ? (
       <button
         type="button"
         className="btn btn-sm btn-outline-danger mb-3 ms-2"
         onClick={(e) => this.delete_models()}
         title="Delete selected models"
       >
-        <Icon type="trash-can" />
+        <Icon type="trash-can" className="me-1" />
+        Delete {n} Selected {n === 1 ? "Model" : "Models"}
       </button>
     ) : null;
   };
@@ -448,7 +450,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
   public render() {
     return (
-      <div>
+      <div className="SearchWrapper">
         <div className="container mt-4">
           <div className="d-flex justify-content-between">
             <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
