@@ -1,10 +1,12 @@
 import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
+import ControlsButtonToggle from "components/ControlsButtonToggle";
 import React from "react";
 import Icon from "components/Icons/Icon";
 import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
+import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 
 interface SearchModelsSortDropdownProps {
   sortFields: Array<{ key: string; label: string }>;
@@ -240,11 +242,9 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     ) : null;
   };
 
-  // toggle between one and two columns
-  private readonly changeColumnState = (): JSX.Element | null => {
-    this.setState((prevState) => {
-      return { two_columns: !prevState.two_columns };
-    });
+  // toggle between one and two columns (toolbar control)
+  private readonly toggleTwoColumnLayout = (_event: React.MouseEvent<HTMLButtonElement>): void => {
+    this.setState((prevState) => ({ two_columns: !prevState.two_columns }));
   };
 
   /**
@@ -254,16 +254,14 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    */
   private readonly getColumnField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
-      <button
-        className={
-          this.state.two_columns ? "active btn btn-sm bg-transparent" : "btn btn-sm bg-transparent"
-        }
+      <ControlsButtonToggle
+        button_style="btn-slycat-controls"
+        active={this.state.two_columns}
+        id="search-models-column-toggle"
         title="Toggle between one and two column model list"
-        type="button"
-        onClick={() => this.changeColumnState()}
-      >
-        <Icon type="table-columns" />
-      </button>
+        icon={faTableColumns}
+        toggle_active_state={this.toggleTwoColumnLayout}
+      />
     ) : null;
   };
 
