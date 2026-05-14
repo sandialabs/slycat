@@ -2,8 +2,81 @@ import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
 import React from "react";
 import Icon from "components/Icons/Icon";
+import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
+
+interface SearchModelsSortDropdownProps {
+  sortFields: Array<{ key: string; label: string }>;
+  sortField: string;
+  sortDescending: boolean;
+  onChangeSortField: (key: string) => void;
+  onChangeSortDescending: (sortDescending: boolean) => void;
+}
+
+/**
+ * Sort-by field and order as a Bootstrap dropdown (toolbar), with scrollable menu height like other Slycat dropdowns.
+ */
+const SearchModelsSortDropdown: React.FC<SearchModelsSortDropdownProps> = ({
+  sortFields,
+  sortField,
+  sortDescending,
+  onChangeSortField,
+  onChangeSortDescending,
+}) => {
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  useDropdownMenuHeight(menuRef as React.RefObject<HTMLElement>);
+
+  const currentLabel = sortFields.find((f) => f.key === sortField)?.label ?? "—";
+  const orderWord = sortDescending ? "descending" : "ascending";
+
+  return (
+    <div className="dropdown">
+      <button
+        type="button"
+        id="search-models-sort-dropdown"
+        className="btn dropdown-toggle btn-sm btn-slycat-controls"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        title={`Sort models by metadata. Current: ${currentLabel}, ${orderWord} order.`}
+      >
+        Sort: {currentLabel}&nbsp;
+      </button>
+      <div
+        ref={menuRef}
+        className="dropdown-menu"
+        aria-labelledby="search-models-sort-dropdown"
+      >
+        {sortFields.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            className={`dropdown-item${option.key === sortField ? " active" : ""}`}
+            onClick={() => onChangeSortField(option.key)}
+          >
+            {option.label}
+          </button>
+        ))}
+        <div className="dropdown-divider" role="separator" />
+        <h6 className="dropdown-header">Order</h6>
+        <button
+          type="button"
+          className={`dropdown-item${!sortDescending ? " active" : ""}`}
+          onClick={() => onChangeSortDescending(false)}
+        >
+          Ascending
+        </button>
+        <button
+          type="button"
+          className={`dropdown-item${sortDescending ? " active" : ""}`}
+          onClick={() => onChangeSortDescending(true)}
+        >
+          Descending
+        </button>
+      </div>
+    </div>
+  );
+};
 
 /**
  * @param items list of item objects
@@ -234,71 +307,19 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   };
 
   /**
-   * creates the sort select field
+   * Sort-by field (Bootstrap dropdown)
    *
    * @memberof SearchWrapper
    */
   private readonly getSortField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
-      <select
-        name="Sort"
-        title="Sort models by metadata"
-        className="form-select form-select-sm"
-        style={{ width: "12rem" }}
-        onChange={(e) => this.changeSortState(e.target.value, this.state.sortDescending)}
-      >
-        {this.state.sortFields.map((option) => (
-          <option key={option.key} value={option.key}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    ) : null;
-  };
-
-  // set sort descending
-  private readonly setSortDescending = (): JSX.Element | null => {
-    this.changeSortState(this.state.sortField, true);
-  };
-
-  // set sort ascending
-  private readonly setSortAscending = (): JSX.Element | null => {
-    this.changeSortState(this.state.sortField, false);
-  };
-
-  /**
-   * creates the sort ascending/descending field
-   *
-   * @memberof SearchWrapper
-   */
-  private readonly getSortDirectionField = (): JSX.Element | null => {
-    return this.props.items.length > 0 ? (
-      <div className="btn-group" role="group" aria-label="Sort direction">
-        <button
-          className={
-            this.state.sortDescending
-              ? "active btn btn-sm bg-transparent"
-              : "btn btn-sm bg-transparent"
-          }
-          type="button"
-          title="Sort Descending"
-          onClick={() => this.setSortDescending()}
-        >
-          <Icon type="arrow-down-wide-short" />
-        </button>
-        <button
-          className={
-            this.state.sortDescending
-              ? "btn btn-sm bg-transparent"
-              : "active btn btn-sm bg-transparent"
-          }
-          type="button"
-          title="Sort Ascending"
-          onClick={() => this.setSortAscending()}
-        >
-          <Icon type="arrow-down-short-wide" />
-        </button>
-      </div>
+      <SearchModelsSortDropdown
+        sortFields={this.state.sortFields as Array<{ key: string; label: string }>}
+        sortField={this.state.sortField}
+        sortDescending={this.state.sortDescending}
+        onChangeSortField={(key) => this.changeSortState(key, this.state.sortDescending)}
+        onChangeSortDescending={(desc) => this.changeSortState(this.state.sortField, desc)}
+      />
     ) : null;
   };
 
@@ -466,7 +487,6 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
             <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
               {this.props.type === "models" ? this.getDeleteField() : null}
               {this.props.type === "models" ? this.getSortField() : null}
-              {this.props.type === "models" ? this.getSortDirectionField() : null}
               {this.props.type === "models" ? this.getColumnField() : null}
               {this.getSearchField()}
             </div>
