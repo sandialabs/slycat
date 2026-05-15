@@ -9,6 +9,54 @@ import client from "js/slycat-web-client.js";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import styles from "./SearchWrapper.module.scss";
 
+const MODELS_LIST_UI_STORAGE_PREFIX = "slycat:modelsListUi:v1:";
+
+interface PersistedModelsListUi {
+  sortField: string;
+  sortDescending: boolean;
+  two_columns: boolean;
+}
+
+function loadPersistedModelsListUi(
+  scope: string | undefined,
+  validSortFieldKeys: string[],
+): Partial<PersistedModelsListUi> | null {
+  if (!scope || typeof localStorage === "undefined") {
+    return null;
+  }
+  try {
+    const raw = localStorage.getItem(MODELS_LIST_UI_STORAGE_PREFIX + scope);
+    if (!raw) {
+      return null;
+    }
+    const data = JSON.parse(raw) as Record<string, unknown>;
+    const out: Partial<PersistedModelsListUi> = {};
+    if (typeof data.sortField === "string" && validSortFieldKeys.includes(data.sortField)) {
+      out.sortField = data.sortField;
+    }
+    if (typeof data.sortDescending === "boolean") {
+      out.sortDescending = data.sortDescending;
+    }
+    if (typeof data.two_columns === "boolean") {
+      out.two_columns = data.two_columns;
+    }
+    return Object.keys(out).length > 0 ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePersistedModelsListUi(scope: string | undefined, data: PersistedModelsListUi): void {
+  if (!scope || typeof localStorage === "undefined") {
+    return;
+  }
+  try {
+    localStorage.setItem(MODELS_LIST_UI_STORAGE_PREFIX + scope, JSON.stringify(data));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
 interface SearchModelsSortDropdownProps {
   sortFields: Array<{ key: string; label: string }>;
   sortField: string;
@@ -88,6 +136,10 @@ const SearchModelsSortDropdown: React.FC<SearchModelsSortDropdownProps> = ({
 export interface SearchWrapperProps {
   items: Item[];
   type: string;
+  /**
+   * When `type` is `"models"`, identifies where to persist sort & column layout (e.g. project id).
+   */
+  persistenceScope?: string;
 }
 
 /**
@@ -166,20 +218,46 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       });
     }
 
+    const validSortFieldKeys = basicSortFields.map((f) => f.key);
+    const persisted =
+      props.type === "models" && props.persistenceScope
+        ? loadPersistedModelsListUi(props.persistenceScope, validSortFieldKeys)
+        : null;
+    const sortField =
+      persisted?.sortField && validSortFieldKeys.includes(persisted.sortField)
+        ? persisted.sortField
+        : "created";
+    const sortDescending =
+      typeof persisted?.sortDescending === "boolean" ? persisted.sortDescending : true;
+    const two_columns = typeof persisted?.two_columns === "boolean" ? persisted.two_columns : true;
+
     this.state = {
       initialItems: this.props.items,
       items: [],
       searchQuery: "",
       sortFields: basicSortFields,
-      sortField: "created",
-      sortDescending: true,
-      two_columns: true,
+      sortField,
+      sortDescending,
+      two_columns,
       models_selected: [],
     };
   }
 
   public componentDidMount() {
-    this.setState((prevState) => ({ items: prevState.initialItems }));
+    this.setState((prevState) => ({
+      items: this.sortState(prevState.initialItems, prevState.sortField, prevState.sortDescending),
+    }));
+  }
+
+  private persistModelsListUiFromState(): void {
+    if (this.props.type !== "models" || !this.props.persistenceScope) {
+      return;
+    }
+    savePersistedModelsListUi(this.props.persistenceScope, {
+      sortField: this.state.sortField,
+      sortDescending: this.state.sortDescending,
+      two_columns: this.state.two_columns,
+    });
   }
 
   /**
@@ -217,8 +295,8 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       // sort filtered list
       const sortedUpdatedList = this.sortState(
         updatedList,
-        this.state.sortField,
-        this.state.sortDescending,
+        prevState.sortField,
+        prevState.sortDescending,
       );
 
       return { items: sortedUpdatedList, searchQuery: trimSearchQuery };
@@ -245,7 +323,10 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
   // toggle between one and two columns (toolbar control)
   private readonly toggleTwoColumnLayout = (_event: React.MouseEvent<HTMLButtonElement>): void => {
-    this.setState((prevState) => ({ two_columns: !prevState.two_columns }));
+    this.setState(
+      (prevState) => ({ two_columns: !prevState.two_columns }),
+      () => this.persistModelsListUiFromState(),
+    );
   };
 
   /**
@@ -297,11 +378,13 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
 
   // sort current items
   private readonly changeSortState = (newSortField: string, sortDescending: boolean): void => {
-    // sort list
-    this.setState((prevState) => {
-      const updatedList = this.sortState(prevState.items, newSortField, sortDescending);
-      return { items: updatedList, sortField: newSortField, sortDescending: sortDescending };
-    });
+    this.setState(
+      (prevState) => {
+        const updatedList = this.sortState(prevState.items, newSortField, sortDescending);
+        return { items: updatedList, sortField: newSortField, sortDescending };
+      },
+      () => this.persistModelsListUiFromState(),
+    );
   };
 
   /**
