@@ -49,6 +49,7 @@ export interface Attribute {
 export interface CCAWizardState {
   tab: TabNames;
   dataLocation: dataLocationType;
+  errorMessages: string | undefined;
   mid: string | undefined;
   pid: string | undefined;
   fileUploaded: boolean;
@@ -74,6 +75,7 @@ const initialState: CCAWizardState = {
   mid: undefined,
   pid: undefined,
   fileUploaded: false,
+  errorMessages: undefined,
   localFileSelected: false,
   attributes: [],
   scaleInputs: true,
@@ -95,7 +97,7 @@ const initialState: CCAWizardState = {
   parser: undefined,
   hdf5InputTable: undefined,
   hdf5OutputTable: undefined,
-  fileName: undefined
+  fileName: undefined,
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -109,6 +111,9 @@ export const cCAWizardSlice = createSlice({
     },
     setParser: (state, action: PayloadAction<string>) => {
       state.parser = action.payload;
+    },
+    setErrorMessages: (state, action: PayloadAction<string | undefined>) => {
+      state.errorMessages = action.payload;
     },
     setProgressStatus: (state, action: PayloadAction<string>) => {
       state.progressStatus = action.payload;
@@ -170,6 +175,7 @@ export const {
   setLocalFileSelected,
   setRemotePath,
   setParser,
+  setErrorMessages,
   setProgressStatus,
   setProgress,
   setTabName,
@@ -210,5 +216,6 @@ export const selectFileName = (state: RootState) => state.cCAWizard.fileName;
 export const selectLocalFileSelected = (state: RootState) => state.cCAWizard.localFileSelected;
 export const selectHdf5InputTable = (state: RootState) => state.cCAWizard.hdf5InputTable;
 export const selectHdf5OutputTable = (state: RootState) => state.cCAWizard.hdf5OutputTable;
+export const selectErrorMessages = (state: RootState) => state.cCAWizard.errorMessages;
 
 export default cCAWizardSlice.reducer;

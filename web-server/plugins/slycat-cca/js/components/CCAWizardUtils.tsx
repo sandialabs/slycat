@@ -40,6 +40,7 @@ import {
   selectHdf5InputTable,
   selectHdf5OutputTable,
   dataLocationType,
+  setErrorMessages,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
@@ -429,10 +430,39 @@ const useFileUploadSuccess = () => {
                 };
               },
             );
+            dispatch(setErrorMessages(undefined));
             dispatch(setAttributes(attributes ?? []));
             dispatch(setLoading(false));
             setUploadStatus(true);
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+          },
+          error: function (request, status, reason_phrase) {
+            client
+              .get_model_parameter_fetch({
+                mid: mid,
+                aid: "error-messages",
+              })
+              .then((errors) => {
+                // keep track of both warnings and errors
+                var error_messages = "";
+                // check if there are actual errors or just warnings
+                setProgressStatus("Error Processing File");
+                // setProgress(0);
+                dispatch(setLoading(false));
+                if (errors.length >= 1) {
+                  if (!errors[0].includes("Oops")) {
+                    error_messages =
+                      "The errors listed below must be fixed before you can upload a model.\n\n";
+                  }
+                  // display warnings/errors
+                  for (var i = 0; i < errors.length; i++) {
+                    error_messages += "Error:\n" + errors[i] + "\n";
+                  }
+                  dispatch(setErrorMessages(error_messages));
+                } else {
+                  dispatch(setErrorMessages(error_messages));
+                }
+              });
           },
         });
       }
@@ -507,7 +537,7 @@ export const useHandleRemoteFileSubmit = () => {
         } else if (fileExtension == "h5" || fileExtension == "hdf5") {
           parser = "slycat-hdf5-parser";
           dispatch(setParser("slycat-hdf5-parser"));
-        } 
+        }
 
         const fileObject = {
           pid,
@@ -620,7 +650,12 @@ export const useHandleLocalFileSubmit = (): [
           dispatch(setProgress(100));
           dispatch(setProgressStatus("File upload complete"));
           setUploadStatus(true);
-          fileUploadSuccess(autoParser, setProgress, setProgressStatus, setUploadStatus);
+          fileUploadSuccess(
+            autoParser,
+            (progress) => dispatch(setProgress(progress)),
+            (status) => dispatch(setProgressStatus(status)),
+            setUploadStatus,
+          );
         },
         error: function () {
           setUploadStatus(false);
@@ -855,7 +890,7 @@ export const useConnectSMB = () => {
         .then(async (response: Response) => {
           console.log("authenticated.", response);
           dispatch(setLoading(false));
-          const data = await response.json()
+          const data = await response.json();
           if (response.ok && data.status) {
             if (callBackSuccess) {
               callBackSuccess();
