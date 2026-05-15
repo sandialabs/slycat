@@ -1,7 +1,7 @@
 import { ModelsList } from "components/Models/ModelsList";
 import ProjectsList from "components/Projects/ProjectsList";
 import ControlsButtonToggle from "components/ControlsButtonToggle";
-import React from "react";
+import React, { type JSX } from "react";
 import Icon from "components/Icons/Icon";
 import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
@@ -270,7 +270,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     currList: Item[],
     sortField: string,
     sortDescending: boolean,
-  ): JSX.Element | null => {
+  ): Item[] => {
     // get type of data to sort
     const sortFieldType = this.state.sortFields.find((field) => field.key === sortField)["type"];
 
@@ -282,7 +282,8 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           : a[sortField].localeCompare(b[sortField]),
       );
       return updatedList;
-    } else if (sortFieldType === "numeric") {
+    }
+    if (sortFieldType === "numeric") {
       const updatedList = [...currList].sort((a, b) =>
         sortDescending
           ? (sortField in b ? b[sortField] : 0) - (sortField in a ? a[sortField] : 0)
@@ -290,13 +291,11 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
       );
       return updatedList;
     }
+    return currList;
   };
 
   // sort current items
-  private readonly changeSortState = (
-    newSortField: string,
-    sortDescending: boolean,
-  ): JSX.Element | null => {
+  private readonly changeSortState = (newSortField: string, sortDescending: boolean): void => {
     // sort list
     this.setState((prevState) => {
       const updatedList = this.sortState(prevState.items, newSortField, sortDescending);
