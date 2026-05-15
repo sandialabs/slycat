@@ -6,7 +6,7 @@ import Icon from "components/Icons/Icon";
 import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
-import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
+import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 
 interface SearchModelsSortDropdownProps {
   sortFields: Array<{ key: string; label: string }>;
@@ -33,7 +33,7 @@ const SearchModelsSortDropdown: React.FC<SearchModelsSortDropdownProps> = ({
   const orderWord = sortDescending ? "descending" : "ascending";
 
   return (
-    <div className="dropdown">
+    <div className="dropdown btn-group">
       <button
         type="button"
         id="search-models-sort-dropdown"
@@ -256,10 +256,10 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     return this.props.items.length > 0 ? (
       <ControlsButtonToggle
         button_style="btn-slycat-controls"
-        active={this.state.two_columns}
+        active={!this.state.two_columns}
         id="search-models-column-toggle"
         title="Toggle between one and two column model list"
-        icon={faTableColumns}
+        icon={faGripLines}
         toggle_active_state={this.toggleTwoColumnLayout}
       />
     ) : null;
@@ -477,15 +477,22 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   };
 
   public render() {
+    const isModels = this.props.type === "models";
     return (
       <div className="SearchWrapper">
         <div className="container mt-4">
           <div className="d-flex justify-content-between">
             <h3 className="pe-4 text-capitalize">{this.props.type}</h3>
             <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
-              {this.props.type === "models" ? this.getDeleteField() : null}
-              {this.props.type === "models" ? this.getSortField() : null}
-              {this.props.type === "models" ? this.getColumnField() : null}
+              {isModels ? (
+                <>
+                  {this.getDeleteField()}
+                  <div className="btn-group" role="group" aria-label="Sort and column layout">
+                    {this.getSortField()}
+                    {this.getColumnField()}
+                  </div>
+                </>
+              ) : null}
               {this.getSearchField()}
             </div>
           </div>
