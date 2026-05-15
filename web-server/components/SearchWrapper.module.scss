@@ -1,0 +1,7 @@
+.filterSearchInput::placeholder {
+  font-style: italic;
+}
+
+.filterSearchInput:focus::placeholder {
+  color: transparent;
+}

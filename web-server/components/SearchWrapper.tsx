@@ -7,6 +7,7 @@ import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
+import styles from "./SearchWrapper.module.scss";
 
 interface SearchModelsSortDropdownProps {
   sortFields: Array<{ key: string; label: string }>;
@@ -232,11 +233,11 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   private readonly getSearchField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
       <input
-        className="form-control form-control-sm"
+        className={`form-control form-control-sm ${styles.filterSearchInput}`}
         style={{ width: "13rem" }}
         type="search"
-        placeholder={`Filter ${this.props.type}`}
-        aria-label={`Filter ${this.props.type}`}
+        placeholder={`Filter ${this.props.type}...`}
+        aria-label={`Filter ${this.props.type}...`}
         onChange={(e) => this.filterList(e.target.value.trim().toLowerCase())}
       />
     ) : null;
