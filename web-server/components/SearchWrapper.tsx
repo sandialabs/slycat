@@ -487,7 +487,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     return this.props.items.length > 0 && n > 0 ? (
       <button
         type="button"
-        className="btn btn-sm btn-outline-danger"
+        className="btn btn-sm btn-danger"
         onClick={(e) => this.delete_models()}
       >
         <Icon type="trash-can" className="me-1" />
