@@ -647,15 +647,43 @@ export const useHandleLocalFileSubmit = (): [
         progress_status: progressStatusCallback,
         progress_final: 90,
         success: function () {
-          dispatch(setProgress(100));
-          dispatch(setProgressStatus("File upload complete"));
-          setUploadStatus(true);
-          fileUploadSuccess(
-            autoParser,
-            (progress) => dispatch(setProgress(progress)),
-            (status) => dispatch(setProgressStatus(status)),
-            setUploadStatus,
-          );
+          client
+            .get_model_parameter_fetch({
+              mid: mid,
+              aid: "error-messages",
+            })
+            .then((errors) => {
+              // keep track of both warnings and errors
+              var error_messages = "";
+              // check if there are actual errors or just warnings
+              setProgressStatus("Error Processing File");
+              // setProgress(0);
+              dispatch(setLoading(false));
+              if (errors.length >= 1) {
+                if (!errors[0].includes("Oops")) {
+                  error_messages =
+                    "The errors listed below must be fixed before you can upload a model.\n\n";
+                }
+                // display warnings/errors
+                for (var i = 0; i < errors.length; i++) {
+                  error_messages += "Error:\n" + errors[i] + "\n";
+                }
+                dispatch(setProgress(0));
+                dispatch(setProgressStatus("Failed"));
+                setUploadStatus(true);
+                dispatch(setErrorMessages(error_messages));
+              } else {
+                dispatch(setProgress(100));
+                dispatch(setProgressStatus("File upload complete"));
+                setUploadStatus(true);
+                fileUploadSuccess(
+                  autoParser,
+                  (progress) => dispatch(setProgress(progress)),
+                  (status) => dispatch(setProgressStatus(status)),
+                  setUploadStatus,
+                );
+              }
+            });
         },
         error: function () {
           setUploadStatus(false);
