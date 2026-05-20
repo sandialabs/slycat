@@ -7,7 +7,7 @@ import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
  */
 export default class SmbAuthentication extends React.Component<any, any> {
   /**
-   *Creates an instance of SlycatRemoteControls.
+   *Creates an instance of SmbAuthentication.
    * @param {callBack, ConnectButton} props,
    * callback: function
    * where hostname, username, password, and session exist are return to the callee
@@ -412,7 +412,7 @@ export default class SmbAuthentication extends React.Component<any, any> {
   };
 
   /**
-   * JSX for SlycatRemoteControls
+   * JSX for SmbAuthentication
    *
    * @returns JSX for rendering the component
    * @memberof SmbAuthentication

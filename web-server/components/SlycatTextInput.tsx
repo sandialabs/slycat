@@ -37,8 +37,6 @@ export default class SlycatTextInput extends React.Component<
   }
 
   onValueChange = (value: string) => {
-    // localStorage.setItem("slycat-remote-controls-username", value);
-    // this.setState({value: value});
     this.setState({ value: value });
     this.props.callBack(value);
   };

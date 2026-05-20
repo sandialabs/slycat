@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import client from "js/slycat-web-client";
-import ConnectButton from "components/ConnectButton.tsx";
 import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
 
 /**

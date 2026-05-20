@@ -127,7 +127,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
    * @async
-   * @memberof SlycatRemoteControls
+   * @memberof LoadingPage
    */
   private checkRemoteJob = async () => {
     return client.get_checkjob_fetch(this.props.hostname, this.props.jid).then((json: any) => {
@@ -175,7 +175,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
    * @async
-   * @memberof SlycatRemoteControls
+   * @memberof LoadingPage
    */
   private checkRemoteStatus = async (): Promise<any> => {
     return client.get_remotes_fetch(this.props.hostname).then((json: any) => {

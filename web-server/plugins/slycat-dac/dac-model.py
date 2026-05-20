@@ -248,6 +248,39 @@ def register_slycat_plugin(context):
 
         return content()
 
+    # update alpha cluster for LOF (this is done whenever called since
+    # LOF changes all the time)
+    def update_alpha_LOF(database, model, verb, type, command, **kwargs):
+
+        # get use PCA comps
+        use_PCA_comps = kwargs["use_PCA_comps"]
+
+        # get LOF values
+        lof_values = kwargs["lof_values"]
+
+        # get number of alpha values using array metadata
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "dac-var-dist"
+        )
+        num_vars = len(meta_dist)
+
+        # get distance matrices and included columns
+        _, var_dist = load_var_dist(database, model, num_vars)
+
+        # compute alpha cluster values for NNLS cluster button
+        alpha_cluster_lof = dac.compute_alpha_clusters(
+            var_dist,
+            [lof_values],
+            ["float64"],
+            use_coordinates=use_PCA_comps,
+        )
+
+        # return alpha values using content function
+        def content():
+            yield json.dumps({"alpha_values": alpha_cluster_lof[0].tolist()})
+
+        return content()
+
     # helper function for init_mds_coords and update_alpha_clusters
     # loads up distance matrices and include variables
     def load_var_dist(database, model, num_vars):
@@ -2194,6 +2227,7 @@ def register_slycat_plugin(context):
     context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)
     context.register_model_command("POST", "DAC", "compute_lof", compute_lof)
+    context.register_model_command("POST", "DAC", "update_alpha_lof", update_alpha_LOF)
 
     # register input wizard with slycat
     context.register_wizard(

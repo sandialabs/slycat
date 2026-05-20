@@ -8,6 +8,7 @@ import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import { setActiveFilters } from "./actions";
+import { setupDropdownMenuHeight } from "js/dropdown-menu-utils";
 import watch from "redux-watch";
 
 function FilterManager(
@@ -718,6 +719,11 @@ FilterManager.prototype.build_sliders = function () {
     };
 
     ko.applyBindings(new ViewModel(), document.getElementById("parameter-image-plus-layout"));
+
+    // Make the filter dropdown menu size to fit the viewport, matching the
+    // behavior of the React useDropdownMenuHeight hook used elsewhere.
+    const $filterControls = $("#filter-controls");
+    setupDropdownMenuHeight($filterControls, $filterControls.find(".dropdown-menu"));
 
     self.active_filters_ready(true);
     if (self.foundMismatches) {

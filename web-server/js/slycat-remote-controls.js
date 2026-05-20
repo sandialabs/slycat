@@ -19,7 +19,7 @@ export function remoteControlsReauth(status, status_type) {
 ko.components.register("slycat-remote-controls", {
   viewModel: {
     createViewModel: function (params, component_info) {
-      var component = {};
+      const component = {};
       component.hostname = params.hostname;
       component.username = params.username;
       component.password = params.password;
@@ -38,7 +38,7 @@ ko.components.register("slycat-remote-controls", {
       component.remoteAuthLabelPassword = REMOTE_AUTH_LABELS.password;
 
       component.status_classes = ko.pureComputed(function () {
-        var classes = [];
+        const classes = [];
         if (component.status()) classes.push("in");
         if (component.status_type()) classes.push("alert-" + component.status_type());
         return classes.join(" ");
@@ -48,12 +48,12 @@ ko.components.register("slycat-remote-controls", {
         component.hostname(remote_host.hostname());
       };
 
-      if (!component.hostname())
-        component.hostname(localStorage.getItem("slycat-remote-controls-hostname"));
-      if (!component.username())
-        component.username(localStorage.getItem("slycat-remote-controls-username"));
+      const storedHostname = localStorage.getItem("slycat-remote-controls-hostname");
+      if (storedHostname) component.hostname(storedHostname);
+      const storedUsername = localStorage.getItem("slycat-remote-controls-username");
+      if (storedUsername) component.username(storedUsername);
 
-      component.hostname.subscribe(function (value) {
+      const hostnameSubscription = component.hostname.subscribe(function (value) {
         if (value != null) {
           localStorage.setItem("slycat-remote-controls-hostname", value);
         }
@@ -78,7 +78,7 @@ ko.components.register("slycat-remote-controls", {
         }
       });
 
-      component.username.subscribe(function (value) {
+      const usernameSubscription = component.username.subscribe(function (value) {
         if (value != null) {
           localStorage.setItem("slycat-remote-controls-username", value);
         }
@@ -86,18 +86,18 @@ ko.components.register("slycat-remote-controls", {
         component.status(null);
       });
 
-      component.password.subscribe(function (value) {
+      const passwordSubscription = component.password.subscribe(function (value) {
         component.status_type(null);
         component.status(null);
       });
 
-      component.focus.subscribe(function (value) {
-        var hostname = component.hostname();
-        var username = component.username();
-        var password = component.password();
-        var hostname_input = $(component_info.element).find("input").eq(0);
-        var username_input = $(component_info.element).find("input").eq(1);
-        var password_input = $(component_info.element).find("input").eq(2);
+      const focusSubscription = component.focus.subscribe(function (value) {
+        const hostname = component.hostname();
+        const username = component.username();
+        const password = component.password();
+        const hostname_input = $(component_info.element).find("input").eq(0);
+        const username_input = $(component_info.element).find("input").eq(1);
+        const password_input = $(component_info.element).find("input").eq(2);
 
         if (value == true) {
           if (component.hostname() && component.username()) {
@@ -136,7 +136,7 @@ ko.components.register("slycat-remote-controls", {
               return host.agent === true;
             });
           }
-          var current_host = component.hostname();
+          const current_host = component.hostname();
           remote_hosts.sort(function (left, right) {
             return left.hostname == right.hostname ? 0 : left.hostname < right.hostname ? -1 : 1;
           });
@@ -146,11 +146,11 @@ ko.components.register("slycat-remote-controls", {
           // dropdown, so we must ensure the stored value matches a known host.
           // If it doesn't, fall back to the first available host.
           if (!component.editableHostname) {
-            var validHostnames = remote_hosts.map(function (host) {
+            const validHostnames = remote_hosts.map(function (host) {
               return host.hostname;
             });
-            var isValid = current_host && validHostnames.indexOf(current_host) !== -1;
-            var hostname = isValid ? current_host : validHostnames[0] || "";
+            const isValid = current_host && validHostnames.indexOf(current_host) !== -1;
+            const hostname = isValid ? current_host : validHostnames[0] || "";
             component.hostname(hostname);
             if (!isValid && hostname) {
               localStorage.setItem("slycat-remote-controls-hostname", hostname);
@@ -161,6 +161,13 @@ ko.components.register("slycat-remote-controls", {
             component.hostname(current_host || component.hostname());
           }
         },
+      });
+
+      ko.utils.domNodeDisposal.addDisposeCallback(component_info.element, function () {
+        hostnameSubscription.dispose();
+        usernameSubscription.dispose();
+        passwordSubscription.dispose();
+        focusSubscription.dispose();
       });
 
       return component;

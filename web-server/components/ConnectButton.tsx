@@ -68,7 +68,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
    * @async
-   * @memberof SlycatRemoteControls
+   * @memberof ConnectButton
    */
   private checkRemoteStatus = async (hostname: string) => {
     return client.get_remotes_fetch(hostname).then((json: any) => {
@@ -89,7 +89,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
    * hostname, username, password
    *
    * @async
-   * @memberof SlycatRemoteControls
+   * @memberof ConnectButton
    */
   private connect = async () => {
     this.setState({ loadingData: true });
