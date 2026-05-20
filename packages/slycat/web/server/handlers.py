@@ -3466,9 +3466,9 @@ def post_combine_hdf5_tables(mid):
     )
 
     if len(column_headers_input) == 0:
-        column_headers_input.append('placeholder_input')
+        column_headers_input.append('missing_input_header')
     if len(column_headers_output) == 0:
-        column_headers_output.append('placeholder_output')
+        column_headers_output.append('missing_output_header')
 
     # Once we have column headers, this is how we can get/store them.
     for i, column in enumerate(column_headers_input):
