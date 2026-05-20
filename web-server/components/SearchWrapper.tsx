@@ -115,6 +115,7 @@ const SearchModelsSortDropdown: React.FC<SearchModelsSortDropdownProps> = ({
           className={`dropdown-item${!sortDescending ? " active" : ""}`}
           onClick={() => onChangeSortDescending(false)}
         >
+          <Icon type="arrow-down-short-wide" className="me-1" />
           Ascending
         </button>
         <button
@@ -122,6 +123,7 @@ const SearchModelsSortDropdown: React.FC<SearchModelsSortDropdownProps> = ({
           className={`dropdown-item${sortDescending ? " active" : ""}`}
           onClick={() => onChangeSortDescending(true)}
         >
+          <Icon type="arrow-down-wide-short" className="me-1" />
           Descending
         </button>
       </div>
