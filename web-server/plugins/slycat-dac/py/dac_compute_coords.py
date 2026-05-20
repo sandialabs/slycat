@@ -865,8 +865,14 @@ def compute_LOF(dist_mats, alpha_values, subset,
         lof = LocalOutlierFactor(n_neighbors=num_neighbors, novelty=True)
     
     # compute LOF
-    lof.fit_predict(full_dist_mat)
-    landmark_lof_vals = -lof.negative_outlier_factor_
+    landmark_lof_vals = np.zeros(len(landmark_rows))
+    try:
+        lof.fit_predict(full_dist_mat)
+        landmark_lof_vals = -lof.negative_outlier_factor_
+
+    # value error occurs when # neighbors are greather than # samples
+    except ValueError:
+        cherrypy.log.error("[DAC] Warning, LOF number neighbors >= number samples.")
 
     # if not in landmarks, assign old values
     lof_vals = old_lof_vals
@@ -1045,18 +1051,33 @@ def compute_LOF_subset(dist_mats, alpha_values, old_lof_vals, subset, proj=None,
                         dist_mats[i][subset_inds[:,None], subset_inds]**2
 
     # compute LOF values on subset, if not full dataset
+    lof_subset_vals = np.zeros(len(subset_inds))
     if compute_proj and (num_proj < num_tests):
         lof = LocalOutlierFactor(n_neighbors=num_neighbors, 
                                 novelty=True, metric="precomputed")
-        lof.fit_predict(np.sqrt(full_dist_mat))
-        lof_subset_vals = -lof.negative_outlier_factor_
-    
+
+        # compute LOF
+        try:
+            lof.fit_predict(np.sqrt(full_dist_mat))
+            lof_subset_vals = -lof.negative_outlier_factor_
+
+        # value error occurs when # neighbors are greather than # samples
+        except ValueError:
+            cherrypy.log.error("[DAC] Warning, LOF number neighbors >= number samples.")
+
     # otherwise use novelty=False
     else:
         lof = LocalOutlierFactor(n_neighbors=num_neighbors, 
                                  metric="precomputed")
-        lof.fit_predict(np.sqrt(full_dist_mat))
-        lof_subset_vals = -lof.negative_outlier_factor_
+
+        # compute LOF
+        try:
+            lof.fit_predict(np.sqrt(full_dist_mat))
+            lof_subset_vals = -lof.negative_outlier_factor_
+
+        # value error occurs when # neighbors are greather than # samples
+        except ValueError:
+            cherrypy.log.error("[DAC] Warning, LOF number neighbors >= number samples.")
 
     # if not in subset, assign old values (probably 0)
     lof_vals = old_lof_vals

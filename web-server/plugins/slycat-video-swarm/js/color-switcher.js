@@ -6,7 +6,7 @@ retains certain rights in this software.
 
 import d3 from "d3";
 import "jquery-ui";
-import { setupDropdownMenuHeight } from "./dropdown-menu-utils";
+import { setupDropdownMenuHeight } from "js/dropdown-menu-utils";
 
 $.widget("slycat.colorswitcher", {
   options: {
