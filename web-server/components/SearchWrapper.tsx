@@ -6,7 +6,6 @@ import Icon from "components/Icons/Icon";
 import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
-import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import styles from "./SearchWrapper.module.scss";
 
 const MODELS_LIST_UI_STORAGE_PREFIX = "slycat:modelsListUi:v1:";
@@ -343,7 +342,8 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
         active={!this.state.two_columns}
         id="search-models-column-toggle"
         title="Toggle between one and two column model list"
-        icon={faGripLines}
+        iconType="layout-three-columns"
+        rotation={90}
         toggle_active_state={this.toggleTwoColumnLayout}
       />
     ) : null;
