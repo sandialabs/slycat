@@ -1,15 +1,28 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import Icon, { type IconName, type IconRotation } from "components/Icons/Icon";
 
-export interface ControlsButtonToggleProps {
+interface ControlsButtonToggleBaseProps {
   button_style: string;
   active: boolean;
   id?: string;
   title: string;
-  icon: IconProp;
   toggle_active_state(event: React.MouseEvent<HTMLButtonElement>): void;
 }
+
+/**
+ * Provide exactly one of:
+ *   - `icon`: a raw FontAwesome `IconProp` (legacy callers)
+ *   - `iconType`: an `IconName` resolved by the central Slycat `<Icon>`
+ *     component (supports both FontAwesome and Bootstrap icons). The optional
+ *     `rotation` prop applies to this path only.
+ */
+export type ControlsButtonToggleProps = ControlsButtonToggleBaseProps &
+  (
+    | { icon: IconProp; iconType?: never; rotation?: never }
+    | { icon?: never; iconType: IconName; rotation?: IconRotation }
+  );
 
 /**
  * Button that toggles between on and off when clicked (Slycat controls styling).
@@ -28,7 +41,11 @@ export default class ControlsButtonToggle extends React.PureComponent<ControlsBu
         aria-pressed={this.props.active}
         onClick={this.props.toggle_active_state}
       >
-        <FontAwesomeIcon icon={this.props.icon} />
+        {this.props.iconType ? (
+          <Icon type={this.props.iconType} rotation={this.props.rotation} />
+        ) : (
+          <FontAwesomeIcon icon={this.props.icon} />
+        )}
       </button>
     );
   }
