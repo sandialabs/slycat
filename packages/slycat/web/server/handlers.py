@@ -3383,7 +3383,7 @@ def post_combine_hdf5_tables(mid):
     input_headers = []
     attributes = []
 
-    # Check for 1D vectors and reformat them into columnso
+    # Check for 1D vectors and reformat them into columns
     if not (isinstance(unformatted_input[0], numpy.ndarray)):
         unformatted_input = [numpy.array([x]) for x in unformatted_input]
         column_headers_input = list(h5[input_path].dims[0])
