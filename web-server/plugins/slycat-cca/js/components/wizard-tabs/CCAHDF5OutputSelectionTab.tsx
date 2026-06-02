@@ -23,7 +23,6 @@ export const CCAHDF5OutputSelectionTab = (props: { hidden?: boolean }) => {
 
         dispatch(setHdf5OutputTable(fullPath));
       }
-    // },[dispatch, errorMessage]);
     },[dispatch]);
 
   return (
