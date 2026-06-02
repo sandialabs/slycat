@@ -36,6 +36,8 @@ import {
   setTabName,
   setFileName,
   setParser,
+  selectErrorMessage,
+  setErrorMessage,
   TabNames,
   selectHdf5InputTable,
   selectHdf5OutputTable,
@@ -332,9 +334,12 @@ export const useUploadTableFile = () => {
                   success: function () {
                     // set the tab
                     dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
-                  },
+                  }
                 });
               },
+               error: function () {
+                 dispatch(setErrorMessage('Error: Input and Output tables must have the same row dimension.'));
+               }
             });
           },
           error: () => {

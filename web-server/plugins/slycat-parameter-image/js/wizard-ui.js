@@ -639,6 +639,10 @@ function constructor(params) {
             }
             component.finish();
           },
+          error: (results) => {
+            let error_message = 'Error: Input and Output tables must have the same row dimension.';
+            component.error_messages(error_message);
+          }
         });
       },
       error: (results) => {

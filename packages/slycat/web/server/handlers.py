@@ -3378,6 +3378,12 @@ def post_combine_hdf5_tables(mid):
     unformatted_input = list(h5[input_path])
     unformatted_output = list(h5[output_path])
 
+    # The number of rows must be the same for input/output, or else we can't combine into one table
+    if len(unformatted_input) != len(unformatted_output):
+        raise cherrypy.HTTPError(
+            "400 Error: Input and Output tables must have the same row dimension."
+        )
+
     combined_dataset = []
     output_headers = []
     input_headers = []
