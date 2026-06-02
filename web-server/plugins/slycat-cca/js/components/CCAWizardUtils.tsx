@@ -317,6 +317,8 @@ export const useCCAHandleBack = () => {
 
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       if (dataLocation === dataLocationType.LOCAL) {
+        dispatch(setProgress(0));
+        dispatch(setProgressStatus(""));
         dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
       } else if (dataLocation === dataLocationType.REMOTE) {
         dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
