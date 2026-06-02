@@ -67,6 +67,7 @@ export interface CCAWizardState {
   hdf5InputTable: string | undefined;
   hdf5OutputTable: string | undefined;
   fileName: string | undefined;
+  errorMessage: string | undefined;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -95,7 +96,8 @@ const initialState: CCAWizardState = {
   parser: undefined,
   hdf5InputTable: undefined,
   hdf5OutputTable: undefined,
-  fileName: undefined
+  fileName: undefined,
+  errorMessage: undefined
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -161,6 +163,9 @@ export const cCAWizardSlice = createSlice({
     setFileName: (state, action: PayloadAction<string>) => {
       state.fileName = action.payload;
     },
+    setErrorMessage: (state, action: PayloadAction<string>) => {
+      state.errorMessage = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -188,6 +193,7 @@ export const {
   setHdf5InputTable,
   setHdf5OutputTable,
   setFileName,
+  setErrorMessage
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -210,5 +216,6 @@ export const selectFileName = (state: RootState) => state.cCAWizard.fileName;
 export const selectLocalFileSelected = (state: RootState) => state.cCAWizard.localFileSelected;
 export const selectHdf5InputTable = (state: RootState) => state.cCAWizard.hdf5InputTable;
 export const selectHdf5OutputTable = (state: RootState) => state.cCAWizard.hdf5OutputTable;
+export const selectErrorMessage = (state: RootState) => state.cCAWizard.errorMessage;
 
 export default cCAWizardSlice.reducer;
