@@ -337,15 +337,25 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    */
   private readonly getColumnField = (): JSX.Element | null => {
     return this.props.items.length > 0 ? (
-      <ControlsButtonToggle
-        button_style="btn-slycat-controls"
-        active={!this.state.two_columns}
-        id="search-models-column-toggle"
-        title="Toggle between one and two column model list"
-        iconType="layout-three-columns"
-        rotation={90}
-        toggle_active_state={this.toggleTwoColumnLayout}
-      />
+      <>
+        <ControlsButtonToggle
+          button_style="btn-slycat-controls"
+          active={this.state.two_columns}
+          id="search-models-column-toggle-two"
+          title="Toggle between one and two column model list"
+          iconType="text-columns"
+          toggle_active_state={this.toggleTwoColumnLayout}
+        />
+        <ControlsButtonToggle
+          button_style="btn-slycat-controls"
+          active={!this.state.two_columns}
+          id="search-models-column-toggle"
+          title="Toggle between one and two column model list"
+          iconType="layout-three-columns"
+          rotation={90}
+          toggle_active_state={this.toggleTwoColumnLayout}
+        />
+      </>
     ) : null;
   };
 
