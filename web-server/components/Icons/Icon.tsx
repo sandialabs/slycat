@@ -9,24 +9,6 @@ import { far } from "@fortawesome/free-regular-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 
 /*
- * Bootstrap Icons via `react-bootstrap-icons`.
- *
- * The whole icon pack is imported as a namespace so registering a Bootstrap
- * icon only requires adding an entry to ICON_NAME_MAP below — no extra
- * per-icon import. Use the PascalCase form of the icon name from
- * https://icons.getbootstrap.com/ as the `name` (e.g. "arrow-down" ->
- * `ArrowDown`; names starting with a digit are prefixed with `Icon`, e.g.
- * "1-circle" -> `Icon1Circle`). The `name` field is typed against the
- * library's exports so TypeScript will autocomplete valid icon names and
- * reject typos.
- *
- * Example:
- *   alarm: { library: "bootstrap", name: "Alarm" },
- */
-import * as BootstrapIcons from "react-bootstrap-icons";
-import type { IconProps as BootstrapIconProps } from "react-bootstrap-icons";
-
-/*
  * react-icons (multi-library) support.
  *
  * To keep bundles small, import each icon directly from its pack subpath
@@ -40,22 +22,14 @@ import type { IconProps as BootstrapIconProps } from "react-bootstrap-icons";
  *   // ...then in ICON_NAME_MAP:
  *   "text-columns": { library: "react-icons", component: PiTextColumns },
  */
-import { PiTextColumns } from "react-icons/pi";
+import { PiTextAlignJustify, PiTextColumns } from "react-icons/pi";
 import type { IconType } from "react-icons";
 
 library.add(fas, far, fab);
 
-/**
- * Names of every icon component exported by `react-bootstrap-icons`.
- * `keyof typeof BootstrapIcons` only sees value-space exports, so the
- * library's type-only exports (`Icon`, `IconProps`) are excluded.
- */
-type BootstrapIconName = keyof typeof BootstrapIcons;
-
 type FontAwesomeMapEntry = FontAwesomeIconProps;
-type BootstrapMapEntry = { library: "bootstrap"; name: BootstrapIconName };
 type ReactIconsMapEntry = { library: "react-icons"; component: IconType };
-type IconMapEntry = FontAwesomeMapEntry | BootstrapMapEntry | ReactIconsMapEntry;
+type IconMapEntry = FontAwesomeMapEntry | ReactIconsMapEntry;
 
 export const ICON_NAME_MAP = {
   trash: { icon: { prefix: "fas", iconName: "trash" } },
@@ -94,17 +68,16 @@ export const ICON_NAME_MAP = {
   "arrow-down-wide-short": { icon: { prefix: "fas", iconName: "arrow-down-wide-short"} },
   "arrow-down-short-wide": { icon: { prefix: "fas", iconName: "arrow-down-short-wide"} },
   check: { icon: { prefix: "fas", iconName: "check" } },
-  // Bootstrap icons
-  "layout-three-columns": { library: "bootstrap", name: "LayoutThreeColumns" },
-  // react-icons (Phosphor) icons
+  // react-icons icons
   "text-columns": { library: "react-icons", component: PiTextColumns },
+  "text-align-justify": { library: "react-icons", component: PiTextAlignJustify },
 } satisfies Record<string, IconMapEntry>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;
 
 /**
- * Quarter-turn rotation in degrees, applied uniformly to FontAwesome and
- * Bootstrap icons via a CSS transform. `0` is treated as no rotation.
+ * Quarter-turn rotation in degrees, applied uniformly via a CSS transform.
+ * `0` is treated as no rotation.
  */
 export type IconRotation = 0 | 90 | 180 | 270;
 
@@ -112,9 +85,6 @@ type IconProps = Omit<FontAwesomeIconProps, "icon" | "rotation"> & {
   type: IconName;
   rotation?: IconRotation;
 };
-
-const isBootstrapMapEntry = (entry: IconMapEntry): entry is BootstrapMapEntry =>
-  "library" in entry && entry.library === "bootstrap";
 
 const isReactIconsMapEntry = (entry: IconMapEntry): entry is ReactIconsMapEntry =>
   "library" in entry && entry.library === "react-icons";
@@ -149,29 +119,6 @@ const Icon = React.forwardRef<SVGSVGElement, IconProps>((props, ref) => {
     throw new Error(`Unknown Icon type: "${String(type)}". Add it to ICON_NAME_MAP.`);
   }
   const style = applyRotationStyle(rotation, callerStyle);
-  if (isBootstrapMapEntry(mapEntry)) {
-    // react-bootstrap-icons' published types use FC<IconProps>, but the icons
-    // are implemented with React.forwardRef, so refs are forwarded at runtime.
-    const BootstrapIconComponent = BootstrapIcons[
-      mapEntry.name
-    ] as React.ForwardRefExoticComponent<
-      BootstrapIconProps & React.RefAttributes<SVGSVGElement>
-    >;
-    // react-bootstrap-icons components only understand a small set of props;
-    // forward just the ones that are type-compatible with both libraries.
-    const { className, title } = rest as {
-      className?: string;
-      title?: string;
-    };
-    return (
-      <BootstrapIconComponent
-        ref={ref}
-        className={className}
-        style={style}
-        title={title}
-      />
-    );
-  }
   if (isReactIconsMapEntry(mapEntry)) {
     // react-icons v5 icon components are plain function components and do not
     // forward refs, so `ref` is intentionally not passed here. They accept

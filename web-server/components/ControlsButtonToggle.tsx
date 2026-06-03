@@ -15,13 +15,18 @@ interface ControlsButtonToggleBaseProps {
  * Provide exactly one of:
  *   - `icon`: a raw FontAwesome `IconProp` (legacy callers)
  *   - `iconType`: an `IconName` resolved by the central Slycat `<Icon>`
- *     component (supports both FontAwesome and Bootstrap icons). The optional
+ *     component (supports FontAwesome and react-icons). The optional
  *     `rotation` prop applies to this path only.
  */
 export type ControlsButtonToggleProps = ControlsButtonToggleBaseProps &
   (
     | { icon: IconProp; iconType?: never; rotation?: never }
-    | { icon?: never; iconType: IconName; rotation?: IconRotation }
+    | {
+        icon?: never;
+        iconType: IconName;
+        rotation?: IconRotation;
+        iconClassName?: string;
+      }
   );
 
 /**
@@ -42,7 +47,11 @@ export default class ControlsButtonToggle extends React.PureComponent<ControlsBu
         onClick={this.props.toggle_active_state}
       >
         {this.props.iconType ? (
-          <Icon type={this.props.iconType} rotation={this.props.rotation} />
+          <Icon
+            type={this.props.iconType}
+            rotation={this.props.rotation}
+            className={this.props.iconClassName}
+          />
         ) : (
           <FontAwesomeIcon icon={this.props.icon} />
         )}
