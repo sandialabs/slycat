@@ -1,12 +1,43 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { FontAwesomeIconProps } from "@fortawesome/react-fontawesome";
-import { library } from "@fortawesome/fontawesome-svg-core";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-/* import all the free icons (Solid, Regular, and Brands) */
-import { fas } from "@fortawesome/free-solid-svg-icons";
-import { far } from "@fortawesome/free-regular-svg-icons";
-import { fab } from "@fortawesome/free-brands-svg-icons";
+/*
+ * Font Awesome 7 icons via `@fortawesome/free-*-svg-icons`.
+ *
+ * Import each icon from its pack subpath so webpack tree-shakes unused glyphs.
+ * Do not use `library.add(fas|far|fab)` — that registers entire icon packs.
+ *
+ * Example:
+ *   import { faTrashCan } from "@fortawesome/free-solid-svg-icons/faTrashCan";
+ *   // ...then in ICON_NAME_MAP:
+ *   "trash-can": { icon: faTrashCan },
+ */
+import { faArrowDownShortWide } from "@fortawesome/free-solid-svg-icons/faArrowDownShortWide";
+import { faArrowDownWideShort } from "@fortawesome/free-solid-svg-icons/faArrowDownWideShort";
+import { faBackwardFast } from "@fortawesome/free-solid-svg-icons/faBackwardFast";
+import { faBackwardStep } from "@fortawesome/free-solid-svg-icons/faBackwardStep";
+import { faCrosshairs } from "@fortawesome/free-solid-svg-icons/faCrosshairs";
+import { faDownload } from "@fortawesome/free-solid-svg-icons/faDownload";
+import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons/faEllipsisVertical";
+import { faFastForward } from "@fortawesome/free-solid-svg-icons/faFastForward";
+import { faFolder } from "@fortawesome/free-solid-svg-icons/faFolder";
+import { faForwardStep } from "@fortawesome/free-solid-svg-icons/faForwardStep";
+import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
+import { faPause } from "@fortawesome/free-solid-svg-icons/faPause";
+import { faPencil } from "@fortawesome/free-solid-svg-icons/faPencil";
+import { faPlay } from "@fortawesome/free-solid-svg-icons/faPlay";
+import { faTable } from "@fortawesome/free-solid-svg-icons/faTable";
+import { faThumbtack } from "@fortawesome/free-solid-svg-icons/faThumbtack";
+import { faToggleOn } from "@fortawesome/free-solid-svg-icons/faToggleOn";
+import { faTrashCan } from "@fortawesome/free-solid-svg-icons/faTrashCan";
+import { faTurnUp } from "@fortawesome/free-solid-svg-icons/faTurnUp";
+import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
+import { faClone } from "@fortawesome/free-regular-svg-icons/faClone";
+import { faFile } from "@fortawesome/free-regular-svg-icons/faFile";
+import { faWindowMaximize } from "@fortawesome/free-regular-svg-icons/faWindowMaximize";
+import { faWindowMinimize } from "@fortawesome/free-regular-svg-icons/faWindowMinimize";
 
 /*
  * react-icons (multi-library) support.
@@ -25,38 +56,36 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 import { PiTextAlignJustify, PiTextColumns } from "react-icons/pi";
 import type { IconType } from "react-icons";
 
-library.add(fas, far, fab);
-
-type FontAwesomeMapEntry = FontAwesomeIconProps;
+type FontAwesomeMapEntry = { icon: IconDefinition };
 type ReactIconsMapEntry = { library: "react-icons"; component: IconType };
 type IconMapEntry = FontAwesomeMapEntry | ReactIconsMapEntry;
 
 export const ICON_NAME_MAP = {
-  "trash-can": { icon: { prefix: "fas", iconName: "trash-can" } },
-  gear: { icon: { prefix: "fas", iconName: "gear" } },
-  download: { icon: { prefix: "fas", iconName: "download" } },
-  upload: { icon: { prefix: "fas", iconName: "upload" } },
-  "backward-fast": { icon: { prefix: "fas", iconName: "backward-fast" } },
-  "backward-step": { icon: { prefix: "fas", iconName: "backward-step" } },
-  play: { icon: { prefix: "fas", iconName: "play" } },
-  pause: { icon: { prefix: "fas", iconName: "pause" } },
-  "forward-step": { icon: { prefix: "fas", iconName: "forward-step" } },
-  "fast-forward": { icon: { prefix: "fas", iconName: "fast-forward" } },
-  pencil: { icon: { prefix: "fas", iconName: "pencil" } },
-  "turn-up": { icon: { prefix: "fas", iconName: "turn-up" } },
-  folder: { icon: { prefix: "fas", iconName: "folder" } },
-  file: { icon: { prefix: "far", iconName: "file" } },
-  "toggle-on": { icon: { prefix: "fas", iconName: "toggle-on" } },
-  "window-maximize": { icon: { prefix: "far", iconName: "window-maximize" } },
-  "window-minimize": { icon: { prefix: "far", iconName: "window-minimize" } },
-  clone: { icon: { prefix: "far", iconName: "clone" } },
-  table: { icon: { prefix: "fas", iconName: "table" } },
-  crosshairs: { icon: { prefix: "fas", iconName: "crosshairs" } },
-  "ellipsis-vertical": { icon: { prefix: "fas", iconName: "ellipsis-vertical" } },
-  thumbtack: { icon: { prefix: "fas", iconName: "thumbtack" } },
+  "trash-can": { icon: faTrashCan },
+  gear: { icon: faGear },
+  download: { icon: faDownload },
+  upload: { icon: faUpload },
+  "backward-fast": { icon: faBackwardFast },
+  "backward-step": { icon: faBackwardStep },
+  play: { icon: faPlay },
+  pause: { icon: faPause },
+  "forward-step": { icon: faForwardStep },
+  "fast-forward": { icon: faFastForward },
+  pencil: { icon: faPencil },
+  "turn-up": { icon: faTurnUp },
+  folder: { icon: faFolder },
+  file: { icon: faFile },
+  "toggle-on": { icon: faToggleOn },
+  "window-maximize": { icon: faWindowMaximize },
+  "window-minimize": { icon: faWindowMinimize },
+  clone: { icon: faClone },
+  table: { icon: faTable },
+  crosshairs: { icon: faCrosshairs },
+  "ellipsis-vertical": { icon: faEllipsisVertical },
+  thumbtack: { icon: faThumbtack },
   // sort icons
-  "arrow-down-wide-short": { icon: { prefix: "fas", iconName: "arrow-down-wide-short"} },
-  "arrow-down-short-wide": { icon: { prefix: "fas", iconName: "arrow-down-short-wide"} },
+  "arrow-down-wide-short": { icon: faArrowDownWideShort },
+  "arrow-down-short-wide": { icon: faArrowDownShortWide },
   // react-icons icons
   "text-columns": { library: "react-icons", component: PiTextColumns },
   "text-align-justify": { library: "react-icons", component: PiTextAlignJustify },
@@ -124,7 +153,7 @@ const Icon = React.forwardRef<SVGSVGElement, IconProps>((props, ref) => {
   return (
     <FontAwesomeIcon
       ref={ref}
-      {...mapEntry}
+      icon={mapEntry.icon}
       {...rest}
       style={style as FontAwesomeIconProps["style"]}
     />
