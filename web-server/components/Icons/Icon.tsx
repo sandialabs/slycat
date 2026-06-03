@@ -32,9 +32,7 @@ type ReactIconsMapEntry = { library: "react-icons"; component: IconType };
 type IconMapEntry = FontAwesomeMapEntry | ReactIconsMapEntry;
 
 export const ICON_NAME_MAP = {
-  trash: { icon: { prefix: "fas", iconName: "trash" } },
   "trash-can": { icon: { prefix: "fas", iconName: "trash-can" } },
-  "trash-can-regular": { icon: { prefix: "far", iconName: "trash-can" } },
   gear: { icon: { prefix: "fas", iconName: "gear" } },
   download: { icon: { prefix: "fas", iconName: "download" } },
   upload: { icon: { prefix: "fas", iconName: "upload" } },
@@ -49,13 +47,6 @@ export const ICON_NAME_MAP = {
   folder: { icon: { prefix: "fas", iconName: "folder" } },
   file: { icon: { prefix: "far", iconName: "file" } },
   "toggle-on": { icon: { prefix: "fas", iconName: "toggle-on" } },
-  // Media type icons
-  image: { icon: { prefix: "far", iconName: "image" } },
-  video: { icon: { prefix: "fas", iconName: "video" } },
-  "file-pdf": { icon: { prefix: "far", iconName: "file-pdf" } },
-  cube: { icon: { prefix: "fas", iconName: "cube" } },
-  link: { icon: { prefix: "fas", iconName: "link" } },
-  "question-circle": { icon: { prefix: "fas", iconName: "circle-question" } },
   "window-maximize": { icon: { prefix: "far", iconName: "window-maximize" } },
   "window-minimize": { icon: { prefix: "far", iconName: "window-minimize" } },
   clone: { icon: { prefix: "far", iconName: "clone" } },
@@ -64,10 +55,8 @@ export const ICON_NAME_MAP = {
   "ellipsis-vertical": { icon: { prefix: "fas", iconName: "ellipsis-vertical" } },
   thumbtack: { icon: { prefix: "fas", iconName: "thumbtack" } },
   // sort icons
-  "table-columns": { icon : { prefix: "fas", iconName: "table-columns" } },
   "arrow-down-wide-short": { icon: { prefix: "fas", iconName: "arrow-down-wide-short"} },
   "arrow-down-short-wide": { icon: { prefix: "fas", iconName: "arrow-down-short-wide"} },
-  check: { icon: { prefix: "fas", iconName: "check" } },
   // react-icons icons
   "text-columns": { library: "react-icons", component: PiTextColumns },
   "text-align-justify": { library: "react-icons", component: PiTextAlignJustify },
