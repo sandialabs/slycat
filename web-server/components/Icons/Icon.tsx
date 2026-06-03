@@ -26,6 +26,23 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 import * as BootstrapIcons from "react-bootstrap-icons";
 import type { IconProps as BootstrapIconProps } from "react-bootstrap-icons";
 
+/*
+ * react-icons (multi-library) support.
+ *
+ * To keep bundles small, import each icon directly from its pack subpath
+ * (e.g. "react-icons/pi" for Phosphor) — never `import * as` a whole pack.
+ * react-icons sets `"sideEffects": false`, so a production webpack build
+ * tree-shakes unused exports and bundles only the icons referenced here.
+ * Store the imported component on the map entry's `component` field.
+ *
+ * Example:
+ *   import { PiTextColumns } from "react-icons/pi";
+ *   // ...then in ICON_NAME_MAP:
+ *   "text-columns": { library: "react-icons", component: PiTextColumns },
+ */
+import { PiTextColumns } from "react-icons/pi";
+import type { IconType } from "react-icons";
+
 library.add(fas, far, fab);
 
 /**
@@ -37,7 +54,8 @@ type BootstrapIconName = keyof typeof BootstrapIcons;
 
 type FontAwesomeMapEntry = FontAwesomeIconProps;
 type BootstrapMapEntry = { library: "bootstrap"; name: BootstrapIconName };
-type IconMapEntry = FontAwesomeMapEntry | BootstrapMapEntry;
+type ReactIconsMapEntry = { library: "react-icons"; component: IconType };
+type IconMapEntry = FontAwesomeMapEntry | BootstrapMapEntry | ReactIconsMapEntry;
 
 export const ICON_NAME_MAP = {
   trash: { icon: { prefix: "fas", iconName: "trash" } },
@@ -78,6 +96,8 @@ export const ICON_NAME_MAP = {
   check: { icon: { prefix: "fas", iconName: "check" } },
   // Bootstrap icons
   "layout-three-columns": { library: "bootstrap", name: "LayoutThreeColumns" },
+  // react-icons (Phosphor) icons
+  "text-columns": { library: "react-icons", component: PiTextColumns },
 } satisfies Record<string, IconMapEntry>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;
@@ -95,6 +115,9 @@ type IconProps = Omit<FontAwesomeIconProps, "icon" | "rotation"> & {
 
 const isBootstrapMapEntry = (entry: IconMapEntry): entry is BootstrapMapEntry =>
   "library" in entry && entry.library === "bootstrap";
+
+const isReactIconsMapEntry = (entry: IconMapEntry): entry is ReactIconsMapEntry =>
+  "library" in entry && entry.library === "react-icons";
 
 /**
  * Merge a quarter-turn rotation into a caller-provided style, preserving any
@@ -148,6 +171,17 @@ const Icon = React.forwardRef<SVGSVGElement, IconProps>((props, ref) => {
         title={title}
       />
     );
+  }
+  if (isReactIconsMapEntry(mapEntry)) {
+    // react-icons v5 icon components are plain function components and do not
+    // forward refs, so `ref` is intentionally not passed here. They accept
+    // standard SVG props, so className/style (incl. rotation) and title apply.
+    const ReactIconComponent = mapEntry.component;
+    const { className, title } = rest as {
+      className?: string;
+      title?: string;
+    };
+    return <ReactIconComponent className={className} style={style} title={title} />;
   }
   // FontAwesomeIcon types `style` as `CSSProperties & CSSVariables` to support
   // `--fa-*` custom properties; a plain `CSSProperties` is fine at runtime.
