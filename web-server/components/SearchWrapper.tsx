@@ -342,7 +342,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           button_style="btn-slycat-controls"
           active={this.state.two_columns}
           id="search-models-column-toggle-two"
-          title="Toggle between one and two column model list"
+          title="Two-column model list"
           iconType="text-columns"
           toggle_active_state={this.toggleTwoColumnLayout}
         />
@@ -350,7 +350,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
           button_style="btn-slycat-controls"
           active={!this.state.two_columns}
           id="search-models-column-toggle"
-          title="Toggle between one and two column model list"
+          title="Single-column model list"
           iconType="layout-three-columns"
           rotation={90}
           toggle_active_state={this.toggleTwoColumnLayout}
