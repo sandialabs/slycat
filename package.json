@@ -202,5 +202,6 @@
     ],
     "indent": 2,
     "esversion": 6
-  }
+  },
+  "packageManager": "npm@11.11.0"
 }
