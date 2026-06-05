@@ -20,7 +20,7 @@ def register_slycat_plugin(context):
     import numpy
     import cherrypy
     import json
-    import imp
+    import importlib.util
 
     # identify media columns in table data
     def media_columns(database, model, verb, type, command, **kwargs):
@@ -287,9 +287,12 @@ def register_slycat_plugin(context):
         )
 
     # import parse code module from source by hand
-    vs_parse = imp.load_source(
-        "vs-parse-files", os.path.join(os.path.dirname(__file__), "vs-parse-files.py")
-    )
+    module_name = "vs_parse_files"
+    module_path = os.path.join(os.path.dirname(__file__), "vs-parse-files.py")
+
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    vs_parse = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vs_parse)
     # register the new model
     context.register_model("VS", finish)
 
