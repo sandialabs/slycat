@@ -13,7 +13,7 @@ import slycat.web.server
 import time
 
 # to separate actual parsing code from code called by slycat
-import imp
+import importlib.util
 import os
 
 # this is the parse code actually called by slycat
@@ -72,8 +72,12 @@ def parse(database, model, input, files, aids, **kwargs):
     database.save(model)
 
 # import parse code module from source by hand
-vs_parse = imp.load_source('vs-parse-files',
-    os.path.join(os.path.dirname(__file__), 'vs-parse-files.py'))
+module_name = "vs_parse_files"
+module_path = os.path.join(os.path.dirname(__file__), "vs-parse-files.py")
+
+spec = importlib.util.spec_from_file_location(module_name, module_path)
+vs_parse = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(vs_parse)
 
 def register_slycat_plugin(context):
     context.register_parser("vs-parser", "VideoSwarm Files", ["mp-files"], parse)
