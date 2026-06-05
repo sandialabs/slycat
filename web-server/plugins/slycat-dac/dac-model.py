@@ -29,12 +29,14 @@ def register_slycat_plugin(context):
 
     # for profiling
     from datetime import timedelta
+    import sys
 
     def load_module_from_path(module_name, module_path):
         spec = importlib.util.spec_from_file_location(module_name, module_path)
         if spec is None or spec.loader is None:
             raise ImportError(f"Cannot load module from {module_path}")
         module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
         spec.loader.exec_module(module)
         return module
     
