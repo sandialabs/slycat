@@ -27,10 +27,16 @@ import threading
 import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
-import imp
-
 import cherrypy
+import importlib.util
 
+def load_module_from_path(module_name, module_path):
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
 # filter out shots that have < MIN_CHANNELS
@@ -568,8 +574,10 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
                          shot_names, time_steps, start_progress, end_progress):
 
     # import dac_compute_coords
-    compute_coords = imp.load_source('dac_compute_coords', 
-                os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+    compute_coords = load_module_from_path(
+        "dac_compute_coords",
+        os.path.join(os.path.dirname(__file__), "py", "dac_compute_coords.py"),
+    )
 
     # get channel names
     shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
@@ -722,8 +730,10 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     """
 
     # import error handling from source
-    dac_error = imp.load_source('dac_error_handling',
-                           os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+    dac_error = load_module_from_path(
+        "dac_error_handling",
+        os.path.join(os.path.dirname(__file__), "py", "dac_error_handling.py"),
+    )
 
     dac_error.log_dac_msg("TDMS parser started.")
 
@@ -798,8 +808,10 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
     try:
         
         # import dac_upload_model from source
-        push = imp.load_source('dac_upload_model',
-                               os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+        push = load_module_from_path(
+            "dac_upload_model",
+            os.path.join(os.path.dirname(__file__), "py", "dac_upload_model.py"),
+        )
         
         dac_error.log_dac_msg("TDMS thread started.")
 
@@ -952,8 +964,10 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     """
 
     # import error handling from source
-    dac_error = imp.load_source('dac_error_handling',
-                           os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+    dac_error = load_module_from_path(
+        "dac_error_handling",
+        os.path.join(os.path.dirname(__file__), "py", "dac_error_handling.py"),
+    )
 
     dac_error.log_dac_msg("TDMS zip parser started.")
 
