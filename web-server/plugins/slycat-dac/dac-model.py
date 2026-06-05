@@ -16,7 +16,7 @@ def register_slycat_plugin(context):
     import slycat.web.server.authentication
 
     # to import other dac modules
-    import imp
+    import importlib.util
 
     # for computations/array manipulations
     import numpy
@@ -28,11 +28,16 @@ def register_slycat_plugin(context):
     import traceback
 
     # for profiling
-    import time
     from datetime import timedelta
 
-    import cherrypy
-
+    def load_module_from_path(module_name, module_path):
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot load module from {module_path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    
     def finish(database, model):
         slycat.web.server.update_model(
             database,
@@ -2189,19 +2194,20 @@ def register_slycat_plugin(context):
             stop_event.set()
 
     # import dac modules from source by hand
-    dac = imp.load_source(
+    # import dac modules from source by hand
+    dac = load_module_from_path(
         "dac_compute_coords",
-        os.path.join(os.path.dirname(__file__), "py/dac_compute_coords.py"),
+        os.path.join(os.path.dirname(__file__), "py", "dac_compute_coords.py"),
     )
 
-    push = imp.load_source(
+    push = load_module_from_path(
         "dac_upload_model",
-        os.path.join(os.path.dirname(__file__), "py/dac_upload_model.py"),
+        os.path.join(os.path.dirname(__file__), "py", "dac_upload_model.py"),
     )
 
-    dac_error = imp.load_source(
+    dac_error = load_module_from_path(
         "dac_error_handling",
-        os.path.join(os.path.dirname(__file__), "py/dac_error_handling.py"),
+        os.path.join(os.path.dirname(__file__), "py", "dac_error_handling.py"),
     )
 
     # register plugin with slycat
