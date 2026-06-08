@@ -1151,7 +1151,7 @@ class Connection(object):
       # binary data
       request_buffer = io.BytesIO()
       for chunk in data:
-        request_buffer.write(chunk.tostring(order="C"))
+        request_buffer.write(chunk.tobytes(order="C"))
     else:
 
       # string data

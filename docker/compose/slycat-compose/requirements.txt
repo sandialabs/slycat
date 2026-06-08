@@ -10,7 +10,7 @@ future
 routes
 scipy
 scikit-learn
-npTDMS==1.6.0
+npTDMS
 pandas
 pysmb
 natsort

@@ -40,7 +40,9 @@ def tonative(n, encoding="ISO-8859-1"):
 
 def base64_decode(n, encoding="ISO-8859-1"):
     """Return the native string base64-decoded (as a native string)."""
-    decoded = base64.decodestring(n.encode("ascii"))
+    if isinstance(n, str):
+        n = n.encode("ascii")
+    decoded = base64.b64decode(n)
     return tonative(decoded, encoding)
 
 
