@@ -47,7 +47,7 @@ def start(root_path, config_file):
 
     # below, simply tell engine to watch config file for potential reload, reloading may be ON or OFF
     cherrypy.engine.autoreload.files.add(config_file)
-    parser = configparser.SafeConfigParser()
+    parser = configparser.ConfigParser()
     parser.read(config_file)
     configuration = {
         section: {key: eval(value) for key, value in parser.items(section)}
