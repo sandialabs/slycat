@@ -64,13 +64,11 @@ def cmdscale(D, full=False):
            where dx is a row vector of distances to points in Y and d_mean
            is the average of the distance in Y.
     """
-    
     # number of points
     n = len(D)
 
     # for multiple points, solve eigenvalue problem
     if n > 1:
-
         # Centering matrix
         H = np.eye(n) - np.ones((n, n)) / n
 
@@ -78,15 +76,13 @@ def cmdscale(D, full=False):
         B = -H.dot(D ** 2).dot(H) / 2
 
         # diagonalize
-        if full:        
-
+        if full:
             # keep all eigenvalues/vectors    
             evals, evecs = np.linalg.eigh(B)
 
         else:
             # keep only largest two eigenvalues/vectors
-            evals, evecs = scipy.linalg.eigh(B, eigvals=(n-2,n-1))
-
+            evals, evecs = scipy.linalg.eigh(B, subset_by_index=(n-2,n-1))
         # Sort by eigenvalue in descending order
         idx   = np.argsort(evals)[::-1]
         evals = evals[idx]
@@ -118,7 +114,7 @@ def cmdscale(D, full=False):
     else:
         Y = np.array([0, 0])
         Yinv = np.array([0, 0])
-
+    
     return Y, Yinv
 
 
@@ -224,7 +220,6 @@ def compute_coords_landmark (dist_mats, alpha_values, old_coords, subset,
     
     OUTPUTS: Y is a numpy array of coordinates (n,2) and
     """
-
     # set landmark default, vector of all ones, indicating that
     # everything is a landmark and distance matrices are square
     num_tests = dist_mats[0].shape[0]
@@ -265,7 +260,6 @@ def compute_coords_landmark (dist_mats, alpha_values, old_coords, subset,
     for i in range(len(dist_mats)):
         full_dist_mat = full_dist_mat + alpha_values[i]**2 * \
                         dist_mats[i][landmark_rows[:,None], landmark_cols]**2
-
     # compute mds coordinates on landmarks
     mds_landmark_coords, proj_inv = cmdscale(np.sqrt(full_dist_mat))
 
@@ -304,6 +298,7 @@ def compute_coords_landmark (dist_mats, alpha_values, old_coords, subset,
 # this is the newest, coordinate only behavior
 def compute_coords (dist_mats, alpha_values, old_coords, subset, 
                     proj=None, landmarks=None, use_coordinates=False):
+    import cherrypy
     """
     Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale (legacy) to compute
     classical multidimensional scaling.
@@ -325,7 +320,6 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
     
     OUTPUTS: Y is a numpy array of coordinates (n,2)
     """
-
     # if distance matrices are actual distances, use previous behavior
     if use_coordinates == False:
         return compute_coords_landmark(dist_mats, alpha_values, old_coords, subset,
