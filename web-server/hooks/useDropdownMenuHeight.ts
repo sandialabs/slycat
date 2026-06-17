@@ -2,7 +2,7 @@ import { useEffect, RefObject } from "react";
 import $ from "jquery";
 
 export const useDropdownMenuHeight = (
-  dropdownMenuRef: RefObject<HTMLElement | null>,
+  dropdownMenuRef: RefObject<HTMLElement>,
   containerSelector: string = ".ui-layout-container",
 ) => {
   useEffect(() => {

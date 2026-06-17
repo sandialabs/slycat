@@ -11,9 +11,6 @@ import Spinner from "../Spinner";
  */
 export interface ModelsListProps {
   models: any[];
-  two_columns: boolean;
-  isSelected: (id: string) => boolean;
-  onSelect: (id: string, e: React.SyntheticEvent) => void;
 }
 /**
  * @param markings
@@ -74,22 +71,14 @@ export class ModelsList extends React.Component<ModelsListProps, ModelsListState
           markings={this.state.markings}
           message={model.message}
           result={model.result}
-          selected={this.props.isSelected(model._id)}
-          onSelect={this.props.onSelect}
-          outlier={model["model-type"]==="DAC" ? 
-            ('artifact:dac-outlier-summary' in model ? model['artifact:dac-outlier-summary'] : null) 
-            : null}
         />
       );
     });
-    
-    // list models in one or two columns
-    const num_columns = this.props.two_columns ? "2" : "1";
-    const model_list_style = `row row-cols-${num_columns} g-5`;
+
     if (models.length > 0) {
       return (
         <div className="container pt-0">
-          <div className={model_list_style}>{models}</div>
+          <div className="row row-cols-2 g-5">{models}</div>
         </div>
       );
     }

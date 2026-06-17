@@ -19,9 +19,6 @@ interface ModelProps {
   description: string;
   created: string;
   creator: string;
-  selected: boolean;
-  onSelect: (id: string, e: React.SyntheticEvent) => void;
-  outlier: number;
 }
 
 /**
@@ -43,7 +40,6 @@ const delete_model = (name: string, id: string, e: React.MouseEvent) => {
     },
   });
 };
-
 /**
  * Takes a json object of a model and create a model list JSX element from that data and returns it
  * @param props a model json meta data
@@ -60,9 +56,6 @@ const Model: React.FC<ModelProps> = ({
   description,
   created,
   creator,
-  selected,
-  onSelect,
-  outlier,
 }) => {
   const recognized_marking = markings.find((obj) => obj.type == marking);
   const model_href = server_root + "models/" + id;
@@ -102,20 +95,8 @@ const Model: React.FC<ModelProps> = ({
             Created <span>{formatDateToLocaleString(created)}</span>
             <br />
             by <span>{creator}</span>
-            {outlier !== null ? `, outlier score: ${outlier.toFixed(2)}` : null}
           </small>
-            <input
-              type="checkbox"
-              className="form-check-input me-3 mt-0"
-              style={{ width: "1.2em", height: "1.2em" }}
-              checked={selected}
-              title="Select model for bulk delete"
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => {
-                e.stopPropagation();
-                onSelect(id, e);
-              }}
-            />
+          <span>
             <button
               type="button"
               className="btn btn-sm btn-outline-danger"
@@ -125,6 +106,7 @@ const Model: React.FC<ModelProps> = ({
             >
               <Icon type="trash-can" />
             </button>
+          </span>
         </div>
       </div>
     </div>

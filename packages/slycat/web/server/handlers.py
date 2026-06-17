@@ -3337,15 +3337,27 @@ def post_hdf5_table(path, pid, mid):
     path {string} -- path to table inside of HDF5 file
     """
     # Need to find the HDF5 stored on Slycat server, so we can query it for the path.
-    clean_path = path.replace("-", "/")
+    path = path.replace("-", "/")
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", pid)
+    did = model["project_data"][0]
+    project_data = database.get("project_data", did)
+    file_name = project_data["hdf5_name"]
+    hdf5_path = (
+        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+    )
+    h5 = h5py.File(hdf5_path, "r")
+    table = list(h5[path])
+    column_headers = list(h5[path].dims[1][0])
+    headers = []
+    attributes = []
+    dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(table[0])}]
 
     if "hdf5-inputs" not in model:
-        model["hdf5-inputs"] = clean_path
+        model["hdf5-inputs"] = path
     else:
-        model["hdf5-outputs"] = clean_path
+        model["hdf5-outputs"] = path
     slycat.web.server.authentication.require_project_writer(project)
     database.save(model)
 
@@ -3376,29 +3388,6 @@ def post_combine_hdf5_tables(mid):
     # Getting indices for input/output columns
     unformatted_input = list(h5[input_path])
     unformatted_output = list(h5[output_path])
-
-    # The number of rows must be the same for input/output, or else we can't combine into one table
-    if len(unformatted_input) != len(unformatted_output):
-        raise cherrypy.HTTPError(
-            "400 Error: Input and Output tables must have the same row dimension."
-        )
-
-    combined_dataset = []
-    output_headers = []
-    input_headers = []
-    attributes = []
-
-    # Check for 1D vectors and reformat them into columns
-    if not (isinstance(unformatted_input[0], numpy.ndarray)):
-        unformatted_input = [numpy.array([x]) for x in unformatted_input]
-        column_headers_input = list(h5[input_path].dims[0])
-    else:
-        column_headers_input = list(h5[input_path].dims[1][0])
-    if not (isinstance(unformatted_output[0], numpy.ndarray)):
-        unformatted_output = [numpy.array([x]) for x in unformatted_output]
-        column_headers_output = list(h5[output_path].dims[0])
-    else:
-        column_headers_output = list(h5[output_path].dims[1][0])
 
     # If model type is CCA, perform validation before combining tables
     if model["model-type"] == "cca":
@@ -3470,35 +3459,30 @@ def post_combine_hdf5_tables(mid):
         database, model, "output-columns", output_column_headers_indices, True
     )
 
-    if len(column_headers_input) == 0:
-        column_headers_input.append('missing_input_header')
-    if len(column_headers_output) == 0:
-        column_headers_output.append('missing_output_header')
+    combined_dataset = []
+    output_headers = []
+    input_headers = []
+    attributes = []
+
+    column_headers_input = list(h5[input_path].dims[1][0])
+    column_headers_output = list(h5[output_path].dims[1][0])
 
     # Once we have column headers, this is how we can get/store them.
     for i, column in enumerate(column_headers_input):
-        # If column was a 1D vector, it will be strings.
-        # If it was from a table, it will bytes.
-        if isinstance(column, bytes):
-            input_headers.append(str(column.decode("utf-8")))
-        elif isinstance(column, str):
-            input_headers.append(str(column))
+        input_headers.append(str(column.decode("utf-8")))
         attributes.append(
             {
-                "name": str(column.decode("utf-8")) if isinstance(column, bytes) else str(column),
+                "name": str(column.decode("utf-8")),
                 "type": str(type(unformatted_input[0][i]))
                 .split("numpy.")[1]
                 .split("'>")[0],
             }
         )
     for j, column in enumerate(column_headers_output):
-        if isinstance(column, bytes):
-            output_headers.append(str(column.decode("utf-8")))
-        else:
-            output_headers.append(str(column))
+        output_headers.append(str(column.decode("utf-8")))
         attributes.append(
             {
-                "name": str(column.decode("utf-8")) if isinstance(column, bytes) else str(column),
+                "name": str(column.decode("utf-8")),
                 "type": str(type(unformatted_output[0][j]))
                 .split("numpy.")[1]
                 .split("'>")[0],
@@ -3538,24 +3522,14 @@ def post_browse_hdf5(path, pid, mid):
     Formats the tree structure to conform with remote/hdf5 browser requirements.
     """
 
-    def get_dimensions(obj):
-        if isinstance(obj, h5py.Dataset):
-            try:
-                rows = obj.shape[0]
-            except:
-                rows = ''
-            try:
-                cols = obj.shape[1]
-            except:
-                cols = ''
-            dimensions = '(' + str(rows) + ', ' + str(cols) + ')'
-            return dimensions
-        else:
-            return ''
-
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
         dimensions = ""
+        for path in obj:
+            if isinstance(obj[path], h5py.Dataset):
+                rows = obj[path].shape[0]
+                cols = obj[path].shape[1]
+                dimensions = str(rows) + " x " + str(cols)
         # Need to include all these fields because we are repurposing the remote file browser, which expects all these
         tree_structure["path"] = path
         tree_structure["name"] = []
@@ -3567,11 +3541,7 @@ def post_browse_hdf5(path, pid, mid):
         for key, value in all_items:
             # key will be all the sub groups and datasets in the current path
             tree_structure["name"].append(key)
-            try:
-                tree_structure["sizes"].append(get_dimensions(obj[path + '/' + key]))
-            except Exception as e:
-                cherrypy.log.error(str(e))
-                tree_structure["sizes"].append(dimensions)
+            tree_structure["sizes"].append(dimensions)
             tree_structure["mtimes"].append("2024")
             if isinstance(value, h5py.Group):
                 tree_structure["mime-types"].append("application/x-directory")

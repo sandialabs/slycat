@@ -98,9 +98,6 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # new addition: compute initial LOF per variable
     LOF_vec = dac.init_LOF(var_dist, proj=proj, landmarks=landmarks, use_coordinates=use_coordinates)
 
-    # compute LOF summary value for ranking this model
-    LOF_summary = numpy.max(LOF_vec)
-
     dac_error.log_dac_msg("Pushing data to database.")
 
     # Push DAC variables to slycat server
@@ -270,7 +267,6 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
 
     # upload lof values as parameter
     slycat.web.server.put_model_parameter(database, model, "dac-lof-values", LOF_vec.tolist())
-    slycat.web.server.put_model_parameter(database, model, "dac-outlier-summary", LOF_summary)
 
     # upload done indicator for polling routine
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])

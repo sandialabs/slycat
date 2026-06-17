@@ -617,24 +617,16 @@ export const selectXScale = createSelector(
   selectXScaleRange,
   selectXColumnType,
   selectXValues,
-  selectXValuesWithoutHidden,
   selectShowHistogram,
-  selectAutoScale,
   (
     xScaleType: string,
     xExtent: ExtentType,
     xScaleRange: ScaleRangeType,
     xColumnType: string | undefined,
     xValues,
-    xValuesWithoutHidden,
     selectShowHistogram,
-    autoScale,
   ): SlycatScaleType => {
-    // For string columns, the domain is derived from the values array. When
-    // autoScale is on, use the filtered values so the axis reflects active
-    // filters (matching how getExtent handles numeric columns).
-    const values = autoScale ? xValuesWithoutHidden : xValues;
-    return getScale(xScaleType, xExtent, xScaleRange, xColumnType, values, selectShowHistogram);
+    return getScale(xScaleType, xExtent, xScaleRange, xColumnType, xValues, selectShowHistogram);
   },
 );
 
@@ -659,24 +651,16 @@ export const selectYScale = createSelector(
   selectYScaleRange,
   selectYColumnType,
   selectYValues,
-  selectYValuesWithoutHidden,
   selectShowHistogram,
-  selectAutoScale,
   (
     yScaleType: string,
     yExtent: ExtentType,
     yScaleRange: ScaleRangeType,
     yColumnType: string,
     yValues,
-    yValuesWithoutHidden,
     selectShowHistogram,
-    autoScale,
   ): SlycatScaleType => {
-    // For string columns, the domain is derived from the values array. When
-    // autoScale is on, use the filtered values so the axis reflects active
-    // filters (matching how getExtent handles numeric columns).
-    const values = autoScale ? yValuesWithoutHidden : yValues;
-    return getScale(yScaleType, yExtent, yScaleRange, yColumnType, values, selectShowHistogram);
+    return getScale(yScaleType, yExtent, yScaleRange, yColumnType, yValues, selectShowHistogram);
   },
 );
 
@@ -696,24 +680,16 @@ export const selectVScale = createSelector(
   selectLegendScaleRange,
   selectVColumnType,
   selectVValues,
-  selectVValuesWithoutHidden,
   selectShowHistogram,
-  selectAutoScale,
   (
     vScaleType: string,
     vExtent: ExtentType,
     vScaleRange: ScaleRangeType,
     vColumnType: string,
     vValues,
-    vValuesWithoutHidden,
     showHistogram,
-    autoScale,
   ): SlycatScaleType => {
-    // For string columns, the domain is derived from the values array. When
-    // autoScale is on, use the filtered values so the axis reflects active
-    // filters (matching how getExtent handles numeric columns).
-    const values = autoScale ? vValuesWithoutHidden : vValues;
-    return getScale(vScaleType, vExtent, vScaleRange, vColumnType, values, showHistogram);
+    return getScale(vScaleType, vExtent, vScaleRange, vColumnType, vValues, showHistogram);
   },
 );
 

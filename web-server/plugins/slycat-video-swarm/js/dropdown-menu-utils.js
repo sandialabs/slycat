@@ -21,6 +21,7 @@ export function setupDropdownMenuHeight(container, menu) {
     }
   };
 
+  // Add event listeners for dropdown show and window resize
   container.on("show.bs.dropdown", handleDropdownShow);
   $(window).on("resize", () => {
     if (menu.is(":visible")) {

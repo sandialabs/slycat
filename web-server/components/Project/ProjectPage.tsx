@@ -12,7 +12,7 @@ const ProjectPage: React.FC<ProjectPageProps> = ({ projectId, models }) => {
   return (
     <>
       <div id="slycat-models" className="mb-5">
-        <SearchWrapper items={models} type="models" persistenceScope={projectId} />
+        <SearchWrapper items={models} type="models" />
       </div>
       <div id="slycat-templates" className="mb-5">
         <TemplatesList projectId={projectId} />

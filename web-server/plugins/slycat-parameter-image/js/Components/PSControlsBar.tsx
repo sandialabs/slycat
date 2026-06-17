@@ -6,7 +6,7 @@ import ControlsVideo from "./ControlsVideo";
 import ControlsThreeD from "./ControlsThreeD";
 import ControlsSelection from "./ControlsSelection";
 import ControlsGroup from "components/ControlsGroup";
-import ControlsButtonToggle from "components/ControlsButtonToggle";
+import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsButtonUpdateTable from "./ControlsButtonUpdateTable.jsx";
 import ControlsButtonDownloadDataTable from "components/ControlsButtonDownloadDataTable";
 import ControlsButtonVarOptions from "./ControlsButtonVarOptions";
