@@ -30,6 +30,9 @@ from os import listdir
 import csv
 import urllib.parse
 
+# getting digits from frame file
+from string import digits
+
 # error handling
 import sys
 import traceback
@@ -83,7 +86,7 @@ def parse_command_line ():
     parser.add_argument("--frame_col", type=int,
                         help="column number (indexed by 1) with the frame files "
                             "to be processed, first frame only.  Note that frame "
-                            "files are expected to be of the format *.#.*, "
+                            "files are expected to be of the format *#.*, "
                             "where * is the video name (and does not vary by frame), "
                             "# is the frame number in the video, "
                             "and the last * is the file type extension.")
@@ -296,7 +299,7 @@ def init_parameters (args, log):
 
 # read csv file and get movie/frame file names
 def read_csv(args, log):
-
+    
     # read csv file
     log("[VS-LOG] Reading " + str(args.csv_file) + " ...")
     csv_file = open(args.csv_file)
@@ -317,6 +320,30 @@ def read_csv(args, log):
 
     return num_movies, movie_files, frame_files, meta_data
 
+# parse frame file, return root file name, file num (string), and file extension
+# file_name = file_root + file_num + file_ext
+def frame_file_split(file_name):
+
+    # get extension and file name
+    base_name, file_ext = os.path.splitext(file_name)
+    file_root = base_name.rstrip(digits)
+    file_num = base_name[len(file_root):]
+
+    # check that we have valid file name
+    valid_fname = True
+
+    # non-null root and extension
+    if len(file_root) == 0 or len(file_ext) == 0:
+        valid_fname = False
+
+    # integer for frame number
+    try:
+        frame_num_int = int(file_num)
+    except ValueError:
+        valid_fname = False
+
+    return file_root, file_num, file_ext, valid_fname
+    
 # read and order frame files, generate movies if requested
 def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
 
@@ -334,7 +361,8 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
     for i in range(0, num_movies):
 
         # create movie, if requested
-        if (args.generate_movies == 'true' and args.replace_movies == 'None') or (args.generate_movies == 'true' and args.replace_movies == 'true'):
+        if (args.generate_movies == 'true' and args.replace_movies == 'None') or \
+           (args.generate_movies == 'true' and args.replace_movies == 'true'):
             list_frame_files.append(frame_files[i])
             list_indeces.append(i)
             
@@ -358,10 +386,11 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
                 for k in range(0, len(pool_results)):
                     movie_files.append(pool_results[k])
 
-            # keep track of movie files created
-
-        elif (args.generate_movies == 'false' and args.movie_dir != 'None') or (args.generate_movies == 'true' and args.replace_movies == 'false'):
-            movie_input, movie_output, file_location, frame_file_path = create_movie_name(args, log, frame_files, i)
+        # keep track of movie files created
+        elif (args.generate_movies == 'false' and args.movie_dir != 'None') or \
+             (args.generate_movies == 'true' and args.replace_movies == 'false'):
+            movie_input, movie_output, file_location, frame_file_path = \
+                create_movie_name(args, log, frame_files, i)
             movie_name = file_location + movie_output
             movie_files.append(movie_name)
 
@@ -376,39 +405,27 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
                 simulation_id = '.' + frame_file_path_split[0]             
 
         # check for at least two dots in frame file name
-        frame_split = frame_file_name.split('.')
-        if len(frame_split) < 3:
+        frame_root, frame_num, frame_ext, check_fname = frame_file_split(frame_file_name)
+        
+        # error out if minimal standards are unmet
+        if check_fname == False:
             log("[VS-LOG] Error: incorrect frame file name format.")
             sys.exit()
 
-        # get root file name, frame #, and extension
-        frame_ext = frame_split[-1]
-        frame_num = frame_split[-2]
-        frame_root = ".".join(frame_split[0:-2])
-
         # get all files in frame path
         files_in_path = os.listdir(frame_file_path)
-
+        
         # restrict to files with same root name
         frames_in_path = []
         frame_nums_in_path = []
         for j in range(0, len(files_in_path)):
 
             # get root file name
-            file_split = files_in_path[j].split(".")
+            file_root, file_num, file_ext, check_fname= frame_file_split(files_in_path[j])
 
-            # only consider files with at least two dots
-            if len(file_split) < 3:
+            # skip any files that don't parse
+            if not check_fname:
                 continue
-
-            # only consider files with same extension
-            file_ext = file_split[-1]
-            if file_ext != frame_ext:
-                continue
-
-            # get file root & frame num
-            file_root = ".".join(file_split[0:-2])
-            file_num = file_split[-2]
 
             # compare to file root of frames of interest
             if frame_root == file_root:

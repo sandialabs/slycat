@@ -37,16 +37,18 @@ import {
   setAttributes,
   setAuthInfo,
   setErrorMessages,
-  setFileName,
   setFileUploaded,
   setLoading,
   setLocalFileSelected,
   setMid,
-  setParser,
   setPid,
   setProgress,
   setProgressStatus,
   setTabName,
+  setFileName,
+  setParser,
+  selectErrorMessage,
+  setErrorMessage,
   TabNames,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
@@ -471,9 +473,12 @@ export const useUploadTableFile = () => {
                   input: true,
                   success: () => {
                     dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
-                  },
+                  }
                 });
               },
+               error: function () {
+                 dispatch(setErrorMessage('Error: Input and Output tables must have the same row dimension.'));
+               }
             });
           },
           error: onInvalidTable,

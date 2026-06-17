@@ -931,10 +931,6 @@ a {
 .bootstrap-styles .dropdown-header.disabled {
   color: #6c757d;
 }
-#controls-pane .bootstrap-styles .dropdown-menu {
-  max-height: 500px;
-  overflow-y: auto;
-}
 .image-frame .download-link,
 .image-frame .open-link {
   padding: 20px;
