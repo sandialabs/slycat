@@ -1,17 +1,27 @@
-/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
- DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
- retains certain rights in this software. */
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC .
+Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions
+of Sandia, LLC, the U.S. Government retains certain rights in this software. */
+
 import * as React from "react";
-import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import { produce } from "immer";
+
 import server_root from "js/slycat-server-root";
+import client from "js/slycat-web-client";
+import fileUploader from "js/slycat-file-uploader-factory";
+import * as dialog from "js/slycat-dialog";
+
+import { useAppDispatch, useAppSelector } from "./wizard-store/hooks";
 import {
   Attribute,
+  dataLocationType,
   resetCCAWizard,
   selectAttributes,
   selectAuthInfo,
   selectDataLocation,
   selectDescription,
+  selectFileName,
+  selectHdf5InputTable,
+  selectHdf5OutputTable,
   selectLoading,
   selectLocalFileSelected,
   selectMarking,
@@ -24,11 +34,12 @@ import {
   selectRemotePath,
   selectScaleInputs,
   selectTab,
-  selectFileName,
   setAttributes,
   setAuthInfo,
+  setErrorMessages,
   setFileUploaded,
   setLoading,
+  setLocalFileSelected,
   setMid,
   setPid,
   setProgress,
@@ -39,17 +50,101 @@ import {
   selectErrorMessage,
   setErrorMessage,
   TabNames,
-  selectHdf5InputTable,
-  selectHdf5OutputTable,
-  dataLocationType,
 } from "./wizard-store/reducers/CCAWizardSlice";
-import client from "js/slycat-web-client";
-import fileUploader from "js/slycat-file-uploader-factory";
-import * as dialog from "js/slycat-dialog";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 /**
- * Higher order function for handling the continue logic
+ * Shared error text for failed parser/upload operations.
+ */
+const FILE_PARSE_ERROR_MESSAGE =
+  "Did you choose the correct file and filetype?  There was a problem parsing the file: ";
+
+/**
+ * Infer the parser from a filename extension.
+ * Falls back to the provided parser if the extension is not recognized.
+ */
+const getParserFromFileName = (fileName: string, fallbackParser?: string): string | undefined => {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+
+  switch (extension) {
+    case "csv":
+      return "slycat-csv-parser";
+    case "dat":
+      return "slycat-dakota-parser";
+    case "h5":
+    case "hdf5":
+      return "slycat-hdf5-parser";
+    default:
+      return fallbackParser;
+  }
+};
+
+/**
+ * Extract the final path segment from a filesystem path.
+ */
+const getBaseNameFromPath = (path: string) => {
+  const segments = path.split("/");
+  return segments[segments.length - 1];
+};
+
+/**
+ * Format server-side model error messages into a single display string.
+ */
+const formatModelErrors = (errors: string[]) => {
+  let errorMessages = "";
+
+  if (errors.length >= 1) {
+    if (!errors[0].includes("Oops")) {
+      errorMessages = "The errors listed below must be fixed before you can upload a model.\n\n";
+    }
+
+    for (let i = 0; i < errors.length; i += 1) {
+      errorMessages += `Error:\n${errors[i]}\n`;
+    }
+  }
+
+  return errorMessages;
+};
+
+/**
+ * Build upload progress callback wrappers around redux state.
+ * If called with no argument, returns the current value.
+ * If called with a value, writes the new value to redux.
+ */
+const useUploadProgressCallbacks = () => {
+  const dispatch = useAppDispatch();
+  const progress = useAppSelector(selectProgress);
+  const progressStatus = useAppSelector(selectProgressStatus);
+
+  const progressCallback = React.useCallback(
+    (input?: number) => {
+      if (input === undefined) {
+        return progress;
+      }
+
+      dispatch(setProgress(input));
+      return input;
+    },
+    [dispatch, progress],
+  );
+
+  const progressStatusCallback = React.useCallback(
+    (input?: string) => {
+      if (input === undefined) {
+        return progressStatus;
+      }
+
+      dispatch(setProgressStatus(input));
+      return input;
+    },
+    [dispatch, progressStatus],
+  );
+
+  return { progressCallback, progressStatusCallback, progress, progressStatus };
+};
+
+/**
+ * Higher order function for handling the continue logic.
  * @returns continue logic function
  */
 export const useCCAHandleContinue = () => {
@@ -57,89 +152,105 @@ export const useCCAHandleContinue = () => {
   const dataLocation = useAppSelector(selectDataLocation);
   const authInfo = useAppSelector(selectAuthInfo);
   const parser = useAppSelector(selectParser);
+  const localFileSelected = useAppSelector(selectLocalFileSelected);
+  const hdf5InputTable = useAppSelector(selectHdf5InputTable);
+  const hdf5OutputTable = useAppSelector(selectHdf5OutputTable);
+
   const dispatch = useAppDispatch();
+
   const uploadSelection = useUploadSelection();
   const uploadHandleRemoteFileSubmit = useHandleRemoteFileSubmit();
   const handleAuthentication = useHandleAuthentication();
   const finishModel = useFinishModel();
-  const [handleLocalFileSubmit, ,] = useHandleLocalFileSubmit();
+  const [handleLocalFileSubmit] = useHandleLocalFileSubmit();
   const setUploadStatus = useSetUploadStatus();
-  const localFileSelected = useAppSelector(selectLocalFileSelected);
-  const hdf5InputTable = useAppSelector(selectHdf5InputTable);
-  const hdf5OutputTable = useAppSelector(selectHdf5OutputTable);
   const uploadTableFile = useUploadTableFile();
   const connectSMB = useConnectSMB();
+
   /**
-   * handle continue operation
+   * Advance the wizard based on the current tab and state.
    */
   const handleContinue = React.useCallback(() => {
-    if (
-      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
-      dataLocation === dataLocationType.LOCAL
-    ) {
-      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+    if (tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB) {
+      if (dataLocation === dataLocationType.LOCAL) {
+        dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+      } else if (dataLocation === dataLocationType.REMOTE) {
+        dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
+      } else if (dataLocation === dataLocationType.SMB) {
+        dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
+      }
+      return;
     }
-    if (
-      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
-      dataLocation === dataLocationType.REMOTE
-    ) {
-      dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
-    }
-    if (
-      tabName === TabNames.CCA_DATA_WIZARD_SELECTION_TAB &&
-      dataLocation === dataLocationType.SMB
-    ) {
-      dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
-    }
+
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
       if (!authInfo.sessionExists) {
         connectSMB(() => dispatch(setTabName(TabNames.CCA_SMB_TAB)));
       } else {
         dispatch(setTabName(TabNames.CCA_SMB_TAB));
       }
+      return;
     }
+
     if (tabName === TabNames.CCA_SMB_TAB) {
       uploadHandleRemoteFileSubmit();
+      return;
     }
+
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
       if (authInfo?.sessionExists) {
         dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
       } else {
         handleAuthentication();
       }
+      return;
     }
+
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       uploadHandleRemoteFileSubmit();
+      return;
     }
+
     if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB && localFileSelected) {
-      const fileSelector = (
-        document.getElementById("slycat-local-browser-file") as never as HTMLInputElement
-      )?.files;
-      if (fileSelector?.length && fileSelector.length > 0) {
-        handleLocalFileSubmit(fileSelector[0], parser, setUploadStatus);
+      const fileSelector = document.getElementById(
+        "slycat-local-browser-file",
+      ) as HTMLInputElement | null;
+
+      const file = fileSelector?.files?.[0];
+
+      if (file) {
+        handleLocalFileSubmit(file, parser, setUploadStatus);
       }
+
+      return;
     }
+
     if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB && hdf5InputTable) {
       uploadTableFile(hdf5InputTable);
+      return;
     }
+
     if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB && hdf5OutputTable) {
       uploadTableFile(hdf5OutputTable);
+      return;
     }
+
     if (tabName === TabNames.CCA_TABLE_INGESTION) {
       uploadSelection();
+      return;
     }
+
     if (tabName === TabNames.CCA_FINISH_MODEL) {
       finishModel();
     }
   }, [
     tabName,
     dataLocation,
+    authInfo?.sessionExists,
     localFileSelected,
     hdf5InputTable,
     hdf5OutputTable,
     dispatch,
     connectSMB,
-    authInfo?.sessionExists,
     handleAuthentication,
     uploadHandleRemoteFileSubmit,
     handleLocalFileSubmit,
@@ -149,11 +260,12 @@ export const useCCAHandleContinue = () => {
     uploadSelection,
     finishModel,
   ]);
+
   return handleContinue;
 };
 
 /**
- * build logic for the back button
+ * Build logic for the back button.
  * @returns handler for back button logic
  */
 export const useCCAHandleBack = () => {
@@ -163,59 +275,75 @@ export const useCCAHandleBack = () => {
   const dispatch = useAppDispatch();
 
   /**
-   * handle back operation
+   * Move the wizard backward based on the current tab and state.
    */
   const handleBack = React.useCallback(() => {
-    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB || tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
+    if (tabName === TabNames.CCA_LOCAL_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+      return;
     }
+
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+      return;
     }
+
     if (tabName === TabNames.CCA_REMOTE_BROWSER_TAB) {
       dispatch(setTabName(TabNames.CCA_AUTHENTICATION_TAB));
+      return;
     }
+
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
+      return;
     }
+
     if (tabName === TabNames.CCA_SMB_TAB && dataLocation === dataLocationType.SMB) {
       dispatch(setTabName(TabNames.CCA_SMB_AUTHENTICATION_TAB));
+      return;
     }
-    if (
-      tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB &&
-      dataLocation === dataLocationType.LOCAL
-    ) {
-      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+
+    if (tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
+      if (dataLocation === dataLocationType.LOCAL) {
+        dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+      } else if (dataLocation === dataLocationType.REMOTE) {
+        dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+      }
+      return;
     }
-    if (
-      tabName === TabNames.CCA_HDF5_INPUT_SELECTION_TAB &&
-      dataLocation === dataLocationType.REMOTE
-    ) {
-      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
-    }
+
     if (tabName === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
       dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
+      return;
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.LOCAL) {
-      dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+
+    if (tabName === TabNames.CCA_TABLE_INGESTION) {
+      if (dataLocation === dataLocationType.LOCAL) {
+        dispatch(setProgress(0));
+        dispatch(setProgressStatus(""));
+        dispatch(setTabName(TabNames.CCA_LOCAL_BROWSER_TAB));
+      } else if (dataLocation === dataLocationType.REMOTE) {
+        dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+      } else if (dataLocation === dataLocationType.SMB) {
+        dispatch(setTabName(TabNames.CCA_SMB_TAB));
+      }
+      return;
     }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.REMOTE) {
-      dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
-    }
-    if (tabName === TabNames.CCA_TABLE_INGESTION && dataLocation === dataLocationType.SMB) {
-      dispatch(setTabName(TabNames.CCA_SMB_TAB));
-    }
-    if (tabName === TabNames.CCA_FINISH_MODEL && parser !== "slycat-hdf5-parser") {
-      dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
-    }
-    if (tabName === TabNames.CCA_FINISH_MODEL && parser === "slycat-hdf5-parser") {
-      dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
+
+    if (tabName === TabNames.CCA_FINISH_MODEL) {
+      if (parser !== "slycat-hdf5-parser") {
+        dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+      } else {
+        dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
+      }
     }
   }, [tabName, dataLocation, parser, dispatch]);
+
   return handleBack;
 };
+
 /**
- * A hook for controlling how the back and continue buttons work based on the current redux state
+ * A hook for controlling how the back and continue buttons work based on the current redux state.
  * @returns the back button and continue button jsx
  */
 export const useCCAWizardFooter = () => {
@@ -239,6 +367,7 @@ export const useCCAWizardFooter = () => {
       Back
     </button>
   );
+
   const nextButton = !loading ? (
     <button
       key="continue"
@@ -254,11 +383,12 @@ export const useCCAWizardFooter = () => {
       Loading...
     </button>
   );
+
   return [backButton, nextButton];
 };
 
 /**
- * Function to handle setup for creating a cca model in the model wizard modal
+ * Function to handle setup for creating a cca model in the model wizard modal.
  * @param pid project id
  * @param statePid redux project id
  * @param stateMid redux model id
@@ -272,12 +402,14 @@ export const useHandleWizardSetup = (
   marking: string | undefined,
 ) => {
   const dispatch = useAppDispatch();
+
   return React.useCallback(() => {
     if (!statePid) {
       dispatch(setPid(pid));
     }
+
     if (!stateMid && statePid) {
-      // create the model on open so we have something to reference later
+      // Create the model immediately so later steps have a model id to reference.
       client
         .post_project_models_fetch({
           pid: statePid,
@@ -293,6 +425,9 @@ export const useHandleWizardSetup = (
   }, [statePid, stateMid, dispatch, pid, marking]);
 };
 
+/**
+ * Upload a selected HDF5 table and advance the wizard accordingly.
+ */
 export const useUploadTableFile = () => {
   const dispatch = useAppDispatch();
   const currentTab = useAppSelector(selectTab);
@@ -303,48 +438,54 @@ export const useUploadTableFile = () => {
 
   return React.useCallback(
     (fullPath: string) => {
+      const onInvalidTable = () => {
+        dialog.ajax_error("There was an error, did you choose a valid HDF5 table? ")();
+      };
+
       if (currentTab === TabNames.CCA_HDF5_INPUT_SELECTION_TAB) {
         client.post_hdf5_table({
           path: fullPath,
-          pid: pid,
-          mid: mid,
+          pid,
+          mid,
           aids: [["data-table"], fileName],
           success: () => {
             dispatch(setTabName(TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB));
           },
-          error: () => {
-            dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
-          },
+          error: onInvalidTable,
         });
-      } else if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
+        return;
+      }
+
+      if (currentTab === TabNames.CCA_HDF5_OUTPUT_SELECTION_TAB) {
         client.post_hdf5_table({
           path: fullPath,
-          pid: pid,
-          mid: mid,
+          pid,
+          mid,
           aids: [["data-table"], fileName],
           success: () => {
             client.post_combine_hdf5_tables({
-              mid: mid,
+              mid,
               success: () => {
                 client.put_model_parameter({
-                  mid: mid,
+                  mid,
                   aid: "scale-inputs",
                   value: scaleInputs,
                   input: true,
-                  success: function () {
-                    // set the tab
+                  success: () => {
                     dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
-                  }
+                  },
                 });
               },
-               error: function () {
-                 dispatch(setErrorMessage('Error: Input and Output tables must have the same row dimension.'));
-               }
+              error: function () {
+                dispatch(
+                  setErrorMessage(
+                    "Error: Input and Output tables must have the same row dimension.",
+                  ),
+                );
+              },
             });
           },
-          error: () => {
-            dialog.ajax_error(`There was an error, did you choose a valid HDF5 table? `)();
-          },
+          error: onInvalidTable,
         });
       }
     },
@@ -358,7 +499,7 @@ export const onReauth = () => {
 };
 
 /**
- * Handle the cleanup for closing the cca wizard modal
+ * Handle the cleanup for closing the cca wizard modal.
  * @param setModalOpen function for setting local state for if the wizard is open
  * @param stateMid redux model id
  * @returns memoized () => void
@@ -368,153 +509,154 @@ export const useHandleClosingCallback = (
   stateMid: string | undefined,
 ) => {
   const dispatch = useAppDispatch();
+
   return React.useCallback(() => {
     setModalOpen(false);
+
     if (stateMid) {
       client.delete_model_fetch({ mid: stateMid });
     }
+
     dispatch(resetCCAWizard());
   }, [setModalOpen, stateMid, dispatch]);
 };
 
 /**
- * callback function for when a file is done uploading for gathering and setting all the file meta data
+ * Callback function for when a file is done uploading for gathering and setting all the file metadata.
  * @returns a memoized function to call once uploading a file is done
  */
 const useFileUploadSuccess = () => {
   const mid = useAppSelector(selectMid);
   const dispatch = useAppDispatch();
+
   return React.useCallback(
     (
       autoParser: string | undefined,
-      setProgress: (status: number) => void,
-      setProgressStatus: (status: string) => void,
+      setProgressValue: (status: number) => void,
+      setProgressStatusValue: (status: string) => void,
       setUploadStatus: (status: boolean) => void,
     ) => {
-      setProgress(95);
-      setProgressStatus("Finishing...");
+      setProgressValue(95);
+      setProgressStatusValue("Finishing...");
+
       if (autoParser === "slycat-hdf5-parser") {
         dispatch(setLoading(false));
         setUploadStatus(true);
         dispatch(setTabName(TabNames.CCA_HDF5_INPUT_SELECTION_TAB));
-      } else {
-        client.get_model_arrayset_metadata({
-          mid: mid,
-          aid: "data-table",
-          arrays: "0",
-          statistics: "0/...",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          success: function (metadata: any) {
-            setProgress(100);
-            setProgressStatus("Finished");
-            const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (attribute: any, index) => {
-                const constant = metadata.statistics[index].unique === 1;
-                const string = attribute.type == "string";
-                let tooltip = "";
-                if (string) {
-                  tooltip =
-                    "This variable's values contain strings, so it cannot be included in the analysis.";
-                } else if (constant) {
-                  tooltip =
-                    "This variable's values are all identical, so it cannot be included in the analysis.";
-                }
-                return {
-                  index: index,
-                  name: attribute.name,
-                  type: attribute.type,
-                  "Axis Type": constant || string ? "" : "Input",
-                  constant: constant,
-                  disabled: constant || string,
-                  hidden: string ? true : false,
-                  selected: false,
-                  lastSelected: false,
-                  tooltip: tooltip,
-                };
-              },
-            );
-            dispatch(setAttributes(attributes ?? []));
-            dispatch(setLoading(false));
-            setUploadStatus(true);
-            dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
-          },
-        });
+        return;
       }
+
+      client.get_model_arrayset_metadata({
+        mid,
+        aid: "data-table",
+        arrays: "0",
+        statistics: "0/...",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        success: (metadata: any) => {
+          setProgressValue(100);
+          setProgressStatusValue("Finished");
+
+          const attributes: Attribute[] = (metadata?.arrays[0]?.attributes as [])?.map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (attribute: any, index) => {
+              const constant = metadata.statistics[index].unique === 1;
+              const isString = attribute.type === "string";
+
+              let tooltip = "";
+              if (isString) {
+                tooltip =
+                  "This variable's values contain strings, so it cannot be included in the analysis.";
+              } else if (constant) {
+                tooltip =
+                  "This variable's values are all identical, so it cannot be included in the analysis.";
+              }
+
+              return {
+                index,
+                name: attribute.name,
+                type: attribute.type,
+                "Axis Type": constant || isString ? "" : "Input",
+                constant,
+                disabled: constant || isString,
+                hidden: isString,
+                selected: false,
+                lastSelected: false,
+                tooltip,
+              };
+            },
+          );
+
+          dispatch(setErrorMessages(undefined));
+          dispatch(setAttributes(attributes ?? []));
+          dispatch(setLoading(false));
+          setUploadStatus(true);
+          dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
+        },
+        error: () => {
+          client
+            .get_model_parameter_fetch({
+              mid,
+              aid: "error-messages",
+            })
+            .then((errors) => {
+              setProgressStatusValue("Error Processing File");
+              dispatch(setLoading(false));
+              dispatch(setErrorMessages(formatModelErrors(errors)));
+            });
+        },
+      });
     },
     [mid, dispatch],
   );
 };
 
 /**
- * Sets up a stable function for handling remote file uploads, including setting loading status, progress bar, and switching to the next tab.
+ * Sets up a stable function for handling remote file uploads, including setting loading status,
+ * progress bar, and switching to the next tab.
  * @returns a stable function for handling remote file upload
  */
 export const useHandleRemoteFileSubmit = () => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
   const fileDescriptor = useAppSelector(selectRemotePath);
-  let parser = useAppSelector(selectParser);
+  const selectedParser = useAppSelector(selectParser);
   const { hostname } = useAppSelector(selectAuthInfo);
+
   const dispatch = useAppDispatch();
-  const progress = useAppSelector(selectProgress);
-  const progressStatus = useAppSelector(selectProgressStatus);
+
   const fileUploadSuccess = useFileUploadSuccess();
   const setUploadStatus = useSetUploadStatus();
+  const { progressCallback, progressStatusCallback } = useUploadProgressCallbacks();
+
   return React.useCallback(() => {
     dispatch(setLoading(true));
+
     if (!fileDescriptor?.path) {
-      dialog.ajax_error(`no file selected`)();
+      dialog.ajax_error("no file selected")();
       dispatch(setLoading(false));
       return;
     }
+
     if (fileDescriptor.type !== "f") {
       dialog.ajax_error(
-        `Did you choose the correct file and filetype?  selected file: ${fileDescriptor?.path} is not a file `,
+        `Did you choose the correct file and filetype?  selected file: ${fileDescriptor.path} is not a file `,
       )();
       dispatch(setLoading(false));
       return;
     }
+
     client
-      .get_remote_file_fetch({ hostname: hostname, path: fileDescriptor?.path })
-      .then((response: any) => {
-        return response.text();
-      })
+      .get_remote_file_fetch({ hostname, path: fileDescriptor.path })
+      .then((response: any) => response.text())
       .then((file) => {
-        const progressCallback = (input?: number) => {
-          if (!input) {
-            return progress;
-          }
-          dispatch(setProgress(input));
-        };
-        const progressStatusCallback = (input?: string) => {
-          if (!input) {
-            return progressStatus;
-          }
-          dispatch(setProgressStatus(input));
-        };
+        const fileName = getBaseNameFromPath(fileDescriptor.path);
+        const parser = getParserFromFileName(fileName, selectedParser);
 
-        // Parse out file extension from the file path
-        const splitFilePath = fileDescriptor?.path?.split("/");
-        const splitFilePathLength = splitFilePath.length;
-        const fileName = splitFilePath[splitFilePathLength - 1];
-        const fileNameSplit = fileName.split(".");
-        const fileNameSplitLength = fileNameSplit.length;
-        const fileExtension = fileNameSplit[fileNameSplitLength - 1];
+        if (parser && parser !== selectedParser) {
+          dispatch(setParser(parser));
+        }
 
-        // Automatically detect file type from the file name, and select the parser accordingly
-        if (fileExtension == "csv") {
-          parser = "slycat-csv-parser";
-          dispatch(setParser("slycat-csv-parser"));
-        } else if (fileExtension == "dat") {
-          parser = "slycat-dakota-parser";
-          dispatch(setParser("slycat-dakota-parser"));
-        } else if (fileExtension == "h5" || fileExtension == "hdf5") {
-          parser = "slycat-hdf5-parser";
-          dispatch(setParser("slycat-hdf5-parser"));
-        } 
-
-        const fileObject = {
+        fileUploader.uploadFile({
           pid,
           mid,
           file,
@@ -525,45 +667,47 @@ export const useHandleRemoteFileSubmit = () => {
           progress: progressCallback,
           progress_status: progressStatusCallback,
           progress_final: 90,
-          success: function () {
-            setProgress(100);
-            setProgressStatus("File upload complete");
+          success: () => {
+            dispatch(setProgress(100));
+            dispatch(setProgressStatus("File upload complete"));
             dispatch(setLoading(false));
             dispatch(setTabName(TabNames.CCA_TABLE_INGESTION));
             setUploadStatus(true);
-            fileUploadSuccess(parser, setProgress, setProgressStatus, (status) =>
-              console.log(status),
+
+            fileUploadSuccess(
+              parser,
+              (value) => dispatch(setProgress(value)),
+              (value) => dispatch(setProgressStatus(value)),
+              () => {
+                // Preserve prior behavior: remote upload passed a no-op callback here.
+              },
             );
           },
-          error: function () {
+          error: () => {
             setUploadStatus(false);
             dispatch(setLoading(false));
-            dialog.ajax_error(
-              "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
-            )();
+            dialog.ajax_error(FILE_PARSE_ERROR_MESSAGE)();
             dispatch(setProgress(0));
             dispatch(setProgressStatus(""));
           },
-        };
-        fileUploader.uploadFile(fileObject);
+        });
       });
   }, [
     dispatch,
-    fileDescriptor?.path,
-    fileDescriptor?.type,
+    fileDescriptor,
     hostname,
     pid,
     mid,
-    parser,
-    progress,
-    progressStatus,
+    selectedParser,
     setUploadStatus,
     fileUploadSuccess,
+    progressCallback,
+    progressStatusCallback,
   ]);
 };
 
 /**
- * handle local file submission
+ * Handle local file submission.
  */
 export const useHandleLocalFileSubmit = (): [
   (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => void,
@@ -572,94 +716,113 @@ export const useHandleLocalFileSubmit = (): [
 ] => {
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid);
-  const progress = useAppSelector(selectProgress);
-  const progressStatus = useAppSelector(selectProgressStatus);
   const dispatch = useAppDispatch();
+
   const fileUploadSuccess = useFileUploadSuccess();
+  const { progressCallback, progressStatusCallback, progress, progressStatus } =
+    useUploadProgressCallbacks();
+
   const handleLocalFileSubmit = React.useCallback(
     (file: File, parser: string | undefined, setUploadStatus: (status: boolean) => void) => {
-      const fileNameSplit = file.name.split(".");
-      const fileExtension = fileNameSplit[fileNameSplit.length - 1];
+      const autoParser = getParserFromFileName(file.name, parser);
 
-      let autoParser: string | undefined = "";
-
-      if (fileExtension == "csv") {
-        autoParser = "slycat-csv-parser";
-        dispatch(setParser("slycat-csv-parser"));
-      } else if (fileExtension == "dat") {
-        autoParser = "slycat-dakota-parser";
-        dispatch(setParser("slycat-dakota-parser"));
-      } else if (fileExtension == "h5" || fileExtension == "hdf5") {
-        autoParser = "slycat-hdf5-parser";
-        dispatch(setParser("slycat-hdf5-parser"));
-      } else {
-        autoParser = parser;
+      if (autoParser && autoParser !== parser) {
+        dispatch(setParser(autoParser));
       }
 
-      dispatch(setFileName(file?.name));
-      const progressCallback = (input?: number) => {
-        if (!input) {
-          return progress;
-        }
-        dispatch(setProgress(input));
-      };
-
-      const progressStatusCallback = (input?: string) => {
-        if (!input) {
-          return progressStatus;
-        }
-        dispatch(setProgressStatus(input));
-      };
-
+      dispatch(setFileName(file.name));
       dispatch(setLoading(true));
-      const fileObject = {
+
+      fileUploader.uploadFile({
         pid,
         mid,
-        file: file,
+        file,
         parser: autoParser,
-        aids: [["data-table"], file?.name],
+        aids: [["data-table"], file.name],
         progress: progressCallback,
         progress_status: progressStatusCallback,
         progress_final: 90,
-        success: function () {
-          dispatch(setProgress(100));
-          dispatch(setProgressStatus("File upload complete"));
-          setUploadStatus(true);
-          fileUploadSuccess(autoParser, setProgress, setProgressStatus, setUploadStatus);
+        success: () => {
+          client
+            .get_model_parameter_fetch({
+              mid,
+              aid: "error-messages",
+            })
+            .then((errors) => {
+              const errorMessages = formatModelErrors(errors);
+
+              dispatch(setLoading(false));
+
+              if (errors.length >= 1) {
+                dispatch(setProgressStatus("Error Processing File"));
+                dispatch(setProgress(0));
+                dispatch(setProgressStatus("Failed"));
+                setUploadStatus(true);
+                dispatch(setErrorMessages(errorMessages));
+                dispatch(setLocalFileSelected(false));
+                const fileSelector = document.getElementById(
+                  "slycat-local-browser-file",
+                ) as HTMLInputElement | null;
+                if (fileSelector) {
+                  fileSelector.value = "";
+                }
+                return;
+              }
+
+              dispatch(setProgress(100));
+              dispatch(setProgressStatus("File upload complete"));
+              setUploadStatus(true);
+
+              fileUploadSuccess(
+                autoParser,
+                (value) => dispatch(setProgress(value)),
+                (value) => dispatch(setProgressStatus(value)),
+                setUploadStatus,
+              );
+            });
         },
-        error: function () {
+        error: () => {
           setUploadStatus(false);
           dispatch(setLoading(false));
-          dialog.ajax_error(
-            "Did you choose the correct file and filetype?  There was a problem parsing the file: ",
-          )();
+          dialog.ajax_error(FILE_PARSE_ERROR_MESSAGE)();
           dispatch(setProgress(0));
           dispatch(setProgressStatus(""));
+          const fileSelector = document.getElementById(
+            "slycat-local-browser-file",
+          ) as HTMLInputElement | null;
+          if (fileSelector) {
+            fileSelector.value = "";
+          }
         },
-      };
-      fileUploader.uploadFile(fileObject);
+      });
     },
-    [dispatch, fileUploadSuccess, mid, pid, progress, progressStatus],
+    [dispatch, fileUploadSuccess, mid, pid, progressCallback, progressStatusCallback],
   );
 
   return [handleLocalFileSubmit, progress, progressStatus];
 };
 
 /**
- * Returns a function that sets the callback "setParser" value to the selected parser
+ * Returns a function that sets the callback "setParser" value to the selected parser.
  */
 export const useHandleParserChange = (
-  setParser: (parser: string) => void | React.Dispatch<React.SetStateAction<string | undefined>>,
+  setParserCallback:
+    | ((parser: string) => void)
+    | React.Dispatch<React.SetStateAction<string | undefined>>,
 ) =>
   React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setParser(e?.target?.value ?? undefined);
+      setParserCallback(e?.target?.value ?? undefined);
     },
-    [setParser],
+    [setParserCallback],
   );
 
+/**
+ * Stable setter for upload status in redux.
+ */
 export const useSetUploadStatus = () => {
   const dispatch = useAppDispatch();
+
   return React.useCallback(
     (status: boolean) => {
       dispatch(setFileUploaded(status));
@@ -669,36 +832,40 @@ export const useSetUploadStatus = () => {
 };
 
 /**
- * A function to handle effects of selection on the radio buttons in the ingestion tab for CCA
+ * A function to handle effects of selection on the radio buttons in the ingestion tab for CCA.
  * @param attributes from redux
  * @returns memoized onChange function to handle radio button selection
  */
 export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
   const dispatch = useAppDispatch();
+
   return React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (input: any) => {
-      // this function is overloaded to handle batching so we need to check for target or batchTarget
-      if (
-        input?.currentTarget &&
-        (input as any)?.currentTarget?.name &&
-        (input as any)?.currentTarget?.value
-      ) {
+      // This handler supports both single updates and batched updates.
+      if (input?.currentTarget?.name && input?.currentTarget?.value) {
         const nextAttributes = produce(attributes, (draftState) => {
-          draftState[input?.currentTarget?.name] = {
-            ...draftState[input?.currentTarget?.name],
-            "Axis Type": input?.currentTarget?.value,
+          draftState[input.currentTarget.name] = {
+            ...draftState[input.currentTarget.name],
+            "Axis Type": input.currentTarget.value,
           };
         });
+
         dispatch(setAttributes(nextAttributes));
-      } else if (input?.batchTarget && input?.batchTarget?.length > 0) {
+        return;
+      }
+
+      if (input?.batchTarget?.length > 0) {
         const nextAttributes = produce(attributes, (draftState) => {
-          input?.batchTarget.forEach((row: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          input.batchTarget.forEach((row: any) => {
             draftState[row?.name] = {
               ...draftState[row?.name],
               "Axis Type": row?.value,
             };
           });
         });
+
         dispatch(setAttributes(nextAttributes));
       }
     },
@@ -707,7 +874,7 @@ export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
 };
 
 /**
- * Hook for dealing with submission to the server of the final model values such as name and description
+ * Hook for dealing with submission to the server of the final model values such as name and description.
  * @returns a function for finalizing the cca model
  */
 export const useFinishModel = () => {
@@ -715,41 +882,44 @@ export const useFinishModel = () => {
   const description = useAppSelector(selectDescription);
   const name = useAppSelector(selectName);
   const marking = useAppSelector(selectMarking);
+
   return React.useCallback(() => {
-    // update the final model meta data and trigger the post model finish script
+    // Update the final model metadata and trigger model completion.
     client.put_model({
-      mid: mid,
-      name: name,
-      description: description,
-      marking: marking,
+      mid,
+      name,
+      description,
+      marking,
       success: () => {
         client.post_model_finish({
-          mid: mid,
+          mid,
           success: () => {
-            location.href = server_root + "models/" + mid;
+            location.href = `${server_root}models/${mid}`;
           },
         });
       },
-      // throw up a dialog if we get into an error state
       error: dialog.ajax_error("Error updating model."),
     });
   }, [mid, name, description, marking]);
 };
 
 /**
- * Creates a function that uses authentication state to authenticate to  authenticate to remote server
+ * Creates a function that uses authentication state to authenticate to a remote server.
  * @returns callback function
  */
 export const useHandleAuthentication = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
+
   return React.useCallback(async () => {
     dispatch(setLoading(true));
+
     if (!authInfo.password) {
       dispatch(setLoading(false));
-      alert(`password is empty`);
+      alert("password is empty");
       return;
     }
+
     client
       .post_remotes_fetch({
         parameters: {
@@ -759,18 +929,20 @@ export const useHandleAuthentication = () => {
         },
       })
       .then(async () => {
-        return await client.get_remotes_fetch(authInfo.hostname).then((json: any) => {
+        return client.get_remotes_fetch(authInfo.hostname).then((json: any) => {
           if (json.status === false) {
-            alert(`connection could not be established`);
+            alert("connection could not be established");
           } else {
             dispatch(setAuthInfo({ ...authInfo, sessionExists: true }));
           }
+
           dispatch(setLoading(false));
           dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
         });
       })
       .catch((errorResponse: any) => {
         dispatch(setLoading(false));
+
         if (errorResponse.status == 403) {
           alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
         \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
@@ -786,7 +958,7 @@ export const useHandleAuthentication = () => {
 };
 
 /**
- * Hook for dealing with submission to the server of the inputs, outputs, and scale inputs to the server.
+ * Hook for dealing with submission to the server of the inputs, outputs, and scale inputs.
  * @returns a function for updating inputs and outputs
  */
 export const useUploadSelection = () => {
@@ -794,62 +966,70 @@ export const useUploadSelection = () => {
   const scaleInputs = useAppSelector(selectScaleInputs);
   const attributes = useAppSelector(selectAttributes);
   const dispatch = useAppDispatch();
+
   return React.useCallback(() => {
     const inputs = attributes
       .filter((attribute) => attribute["Axis Type"] === "Input")
       .map((attribute) => attribute.index);
+
     const outputs = attributes
       .filter((attribute) => attribute["Axis Type"] === "Output")
       .map((attribute) => attribute.index);
+
     if (inputs.length === 0) {
       dialog.dialog({
         message: "The number of inputs must be at least one.",
       });
-    } else if (outputs.length === 0) {
+      return;
+    }
+
+    if (outputs.length === 0) {
       dialog.dialog({
         message: "The number of outputs must be at least one.",
       });
-    } else {
-      client.put_model_parameter({
-        mid: mid,
-        aid: "input-columns",
-        value: inputs,
-        input: true,
-        success: function () {
-          client.put_model_parameter({
-            mid: mid,
-            aid: "output-columns",
-            value: outputs,
-            input: true,
-            success: function () {
-              client.put_model_parameter({
-                mid: mid,
-                aid: "scale-inputs",
-                value: scaleInputs,
-                input: true,
-                success: function () {
-                  // set the tab
-                  dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
-                },
-              });
-            },
-          });
-        },
-      });
+      return;
     }
+
+    client.put_model_parameter({
+      mid,
+      aid: "input-columns",
+      value: inputs,
+      input: true,
+      success: () => {
+        client.put_model_parameter({
+          mid,
+          aid: "output-columns",
+          value: outputs,
+          input: true,
+          success: () => {
+            client.put_model_parameter({
+              mid,
+              aid: "scale-inputs",
+              value: scaleInputs,
+              input: true,
+              success: () => {
+                dispatch(setTabName(TabNames.CCA_FINISH_MODEL));
+              },
+            });
+          },
+        });
+      },
+    });
   }, [mid, attributes, scaleInputs, dispatch]);
 };
 
 /**
- *  Builds and returns a stable function that will connect and authenticate to an smb server
+ * Builds and returns a stable function that will connect and authenticate to an SMB server.
  * @returns callback for connecting to smb server
  */
 export const useConnectSMB = () => {
   const authValues = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
+
   return React.useCallback(
     (callBackSuccess?: () => void) => {
       dispatch(setLoading(true));
+
       client
         .post_remotes_smb_fetch({
           user_name: authValues.username?.trim(),
@@ -858,20 +1038,21 @@ export const useConnectSMB = () => {
           share: authValues.share?.trim(),
         })
         .then(async (response: Response) => {
-          console.log("authenticated.", response);
           dispatch(setLoading(false));
-          const data = await response.json()
+
+          const data = await response.json();
+
           if (response.ok && data.status) {
             if (callBackSuccess) {
               callBackSuccess();
             }
-            console.log("connected");
           } else {
             alert(`could not connect ${response.statusText} , ${data.msg}`);
           }
         })
         .catch((errorResponse) => {
           dispatch(setLoading(false));
+
           if (errorResponse.status == 403) {
             alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
         \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);

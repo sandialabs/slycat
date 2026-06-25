@@ -149,6 +149,7 @@ def parse_file(file, model, database):
     except Exception as e:
         error_message = ['Oops, there was an error processing this request.  The model is unable to be created. Closing this dialogue will return you to the Slycat project.']
         slycat.web.server.put_model_parameter(database, model, "error-messages", error_message)
+        raise(e)
 
     # return data
     return attributes, dimensions, data

@@ -777,12 +777,10 @@ def post_model_file(
         if client is not None:
             with slycat.web.server.remote.get_session_server(client, sid) as session:
                 filename = "%s@%s:%s" % (session.username, session.hostname, path)
-                # TODO verify that the file exists first...
                 file = session.sftp.file(path).read()
         else:
             with slycat.web.server.remote.get_session(sid) as session:
                 filename = "%s@%s:%s" % (session.username, session.hostname, path)
-                # TODO verify that the file exists first...
                 file = session.sftp.file(path).read()
     else:
         cherrypy.log.error(

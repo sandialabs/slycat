@@ -5,15 +5,18 @@ import * as React from "react";
 import { SlycatParserControls } from "../slycat-parser-controls/SlycatParserControls";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import {
+  selectErrorMessages,
   selectProgress,
   selectProgressStatus,
   setParser,
 } from "../wizard-store/reducers/CCAWizardSlice";
+import { CCAError } from "../CCAError";
 
 export const SlycatLocalBrowser = (props: { callBack: (status: boolean) => void }) => {
   const dispatch = useAppDispatch();
   const progress = useAppSelector(selectProgress);
   const progressStatus = useAppSelector(selectProgressStatus);
+  const errorMessages = useAppSelector(selectErrorMessages);
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>): void => {
     if (e.target.files !== null && e.target.files.length >= 1) {
       if (e.target.files[0]) {
@@ -24,6 +27,7 @@ export const SlycatLocalBrowser = (props: { callBack: (status: boolean) => void 
   return (
     <div>
       <div className="form-group row">
+        {errorMessages && <CCAError errorMessage={errorMessages} />}
         <label className="col-sm-2 col-form-label">File</label>
         <div className="col-sm-6">
           <input
@@ -44,18 +48,21 @@ export const SlycatLocalBrowser = (props: { callBack: (status: boolean) => void 
           )}
         />
       </div>
-        <div className="progress" style={{ visibility: progress > 0 ? undefined : "hidden", marginTop: "10px"}}>
-          <div
-            className="progress-bar progress-bar-striped progress-bar-animated"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={100}
-            style={{ width: progress?.toString() + "%" }}
-          >
-            {progressStatus}
-          </div>
+      <div
+        className="progress"
+        style={{ visibility: progress > 0 ? undefined : "hidden", marginTop: "10px" }}
+      >
+        <div
+          className="progress-bar progress-bar-striped progress-bar-animated"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={100}
+          style={{ width: progress?.toString() + "%" }}
+        >
+          {progressStatus}
         </div>
+      </div>
     </div>
   );
 };
