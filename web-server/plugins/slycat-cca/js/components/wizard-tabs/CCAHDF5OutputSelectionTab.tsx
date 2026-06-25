@@ -3,7 +3,7 @@
  retains certain rights in this software. */
 import * as React from "react";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
-import { selectMid, selectPid, selectFileUploaded, setHdf5OutputTable } from "../wizard-store/reducers/CCAWizardSlice"
+import { selectErrorMessage, selectMid, selectPid, selectFileUploaded, setHdf5OutputTable } from "../wizard-store/reducers/CCAWizardSlice"
 import { onReauth } from "../CCAWizardUtils";
 import { useAppSelector, useAppDispatch } from "../wizard-store/hooks";
 
@@ -13,6 +13,7 @@ export const CCAHDF5OutputSelectionTab = (props: { hidden?: boolean }) => {
   const fileUploaded = useAppSelector(selectFileUploaded);
   const mid = useAppSelector(selectMid);
   const pid = useAppSelector(selectPid); // Get from state
+  const errorMessage = useAppSelector(selectErrorMessage);
   const hostname = "local";
   const dispatch = useAppDispatch();
   const handleTablePath = React.useCallback((fullPath:string, fileType:string) => {
@@ -29,6 +30,9 @@ export const CCAHDF5OutputSelectionTab = (props: { hidden?: boolean }) => {
       <div className="alert alert-primary" role="alert">
         Browse to and Select the Output dataset.
       </div>
+      {errorMessage && <div className="alert alert-danger" role="alert" style={{overflowWrap: "break-word"}}>
+         {errorMessage}
+      </div>}
       {!hidden && <HDF5Browser
         onSelectFileCallBack={handleTablePath}
         onReauthCallBack={OnReauth}

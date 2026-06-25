@@ -8,7 +8,7 @@ import api_root from "js/slycat-api-root";
 import * as dialog from "js/slycat-dialog";
 import Papa from "papaparse";
 import "jquery-ui";
-import { setupDropdownMenuHeight } from "./dropdown-menu-utils";
+import { setupDropdownMenuHeight } from "js/dropdown-menu-utils";
 
 $.widget("mp.controls", {
   options: {
