@@ -210,6 +210,14 @@ $(document).ready(function () {
         filter_manager.slidersPaneHeight(pane_state.innerHeight);
       },
     },
+    east: {
+      // UV V&V
+      initClosed: true,
+      size: $("#parameter-image-plus-layout").width() / 4,
+      onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
+        console.log("uq-vv-closed");
+      },
+    },
     south: {
       size: $("#parameter-image-plus-layout").height() / 4,
       resizeWhileDragging: false,
@@ -1103,6 +1111,7 @@ $(document).ready(function () {
       const controls_bar = (
         <PSControlsBar
           store={window.store}
+          layout={layout}
           axes_variables={axes_variables}
           indices={indices}
           mid={model_id}

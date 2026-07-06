@@ -61,6 +61,7 @@ interface PSControlsBarAxesVariablesType {
 
 interface PSControlsBarProps {
   store: any;
+  layout: any;
   auto_scale: boolean;
   variableRanges: VariableRangesType;
   active_filters: ActiveFiltersType;
@@ -698,21 +699,23 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 setColormap={this.props.setColormap}
               />
             </ControlsGroup>
-            {/* <ControlsGroup id="uq-vv-switcher" class="btn-group ms-3">
-              <ControlsDropdownColor
-                button_style={button_style}
-                colormaps={slycat_color_maps}
-                colormap={this.props.colormap}
-                key_id="uq-vv-switcher"
-                id="color-switcher"
+            <ControlsGroup id="uq-vv-switcher" class="btn-group ms-3">
+              <ControlsDropdown
+                key="uq-vv-dropdown"
+                id="uq-vv-dropdown"
                 label="UQ V&V"
                 title="Uncertainty Quantification, Verification and Validation"
-                state_label="color"
-                trigger="colormap-changed"
-                single={true}
-                setColormap={this.props.setColormap}
+                items={[{key: 'UQ', name: 'UQ'}, {key:'VV', name: 'VV'}]}
+                selected={'UQ'}
+                set_selected={(key, state_label, trigger, e, props) => {
+                    console.log(key);
+                    this.props.layout.open("east");
+                  }
+                }
+                state_label="UQ"
+                button_style={button_style}
               />
-            </ControlsGroup> */}
+            </ControlsGroup>
           </React.StrictMode>
         </React.Fragment>
       </Provider>
