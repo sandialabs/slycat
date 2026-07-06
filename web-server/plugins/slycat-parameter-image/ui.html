@@ -36,6 +36,22 @@
         <div id="react-controls"></div>
 
         <div id="add-note" class="btn-group ms-3"></div>
+
+        <!-- UQ V&V dropdown -->
+        <div id="uq-vv" class="btn-group ms-3">
+          <button
+            id="uq-vv-dropdown"
+            class="btn btn-sm btn-slycat-controls dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            title="Uncertainty Quantification, Verification and Validation"
+            data-bind="css: { disabled: allFilters().length == activeFilters().length }"
+          >
+            UQ V&V
+          </button>
+        </div>
+
       </div>
     </div>
   </div>

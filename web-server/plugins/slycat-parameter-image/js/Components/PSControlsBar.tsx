@@ -698,6 +698,21 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 setColormap={this.props.setColormap}
               />
             </ControlsGroup>
+            {/* <ControlsGroup id="uq-vv-switcher" class="btn-group ms-3">
+              <ControlsDropdownColor
+                button_style={button_style}
+                colormaps={slycat_color_maps}
+                colormap={this.props.colormap}
+                key_id="uq-vv-switcher"
+                id="color-switcher"
+                label="UQ V&V"
+                title="Uncertainty Quantification, Verification and Validation"
+                state_label="color"
+                trigger="colormap-changed"
+                single={true}
+                setColormap={this.props.setColormap}
+              />
+            </ControlsGroup> */}
           </React.StrictMode>
         </React.Fragment>
       </Provider>
