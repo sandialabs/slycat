@@ -42,6 +42,7 @@ import {
 } from "../store";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 import _ from "lodash";
+import client from "js/slycat-web-client";
 
 interface PSControlsBarDropdownsType {
   id: string;
@@ -557,6 +558,30 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
       }
     }
 
+    // UQ/SA controls information
+    const dropdown_UQSA_items=[
+      { type: "header", name: "Uncertainy Quantification" },
+      { key: "means-ci", name: "Means and Confidence Intervals"},
+      { type: "divider" },
+      { type: "header", name: "Sensitivity Analysis" },
+      { key: "pearsons", name: "Pearson's Correlation" },
+    ];
+
+    // UQ/SA methods
+    const _show_means_ci = () => {
+      
+      // call server to compute means and confidence intervals
+
+
+      // display table in east panel
+
+      console.log("show means ci");
+    }
+
+    const _show_pearsons = () => {
+      console.log("show pearsons");
+    }
+
     return (
       <Provider store={this.props.store}>
         <React.Fragment>
@@ -699,20 +724,22 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 setColormap={this.props.setColormap}
               />
             </ControlsGroup>
-            <ControlsGroup id="uq-vv-switcher" class="btn-group ms-3">
+            <ControlsGroup id="uq-sa-switcher" class="btn-group ms-3">
               <ControlsDropdown
-                key="uq-vv-dropdown"
-                id="uq-vv-dropdown"
-                label="UQ V&V"
-                title="Uncertainty Quantification, Verification and Validation"
-                items={[{key: 'UQ', name: 'UQ'}, {key:'VV', name: 'VV'}]}
-                selected={'UQ'}
+                key="uq-sa-dropdown"
+                id="uq-sa-dropdown"
+                label="UQ/SA"
+                title="Uncertainty Quantification, Sensitivity Analysis"
+                items={dropdown_UQSA_items}
                 set_selected={(key, state_label, trigger, e, props) => {
-                    console.log(key);
+                    if (key=="means-ci") {
+                      _show_means_ci();
+                    } else if (key=="pearsons") {
+                      _show_pearsons();
+                    }
                     this.props.layout.open("east");
                   }
                 }
-                state_label="UQ"
                 button_style={button_style}
               />
             </ControlsGroup>

@@ -215,7 +215,7 @@ $(document).ready(function () {
       initClosed: true,
       size: $("#parameter-image-plus-layout").width() / 4,
       onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
-        console.log("uq-vv-closed");
+        console.log("uq-sa-resized");
       },
     },
     south: {
