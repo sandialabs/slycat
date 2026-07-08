@@ -112,8 +112,6 @@ services:
     command: slycat:slycat:1001:1001
     networks:
       - sly-net
-    volumes:
-      - ../../../../slycat-data:/home/slycat/src/slycat-data:ro
     restart: always
 
 networks:
