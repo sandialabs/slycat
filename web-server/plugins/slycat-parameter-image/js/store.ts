@@ -85,8 +85,10 @@ export type OpenMediaType = {
   height: number;
   current_frame: boolean;
   ratio: string;
+  currentTime?: number;
   video?: boolean;
   playing?: boolean;
+  orbitPreview?: boolean;
   threeD?: boolean;
 }[];
 
