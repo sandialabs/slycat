@@ -1,14 +1,9 @@
 const FULL_ORBIT_PREVIEW_FILENAME = "fullorbitpreview.mp4";
 const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
 const FULL_ORBIT_PREVIEW_TIME_OFFSET = 0.1;
-const MAX_TIME_EPSILON = 0.000001;
 
 export const FULL_ORBIT_PREVIEW_VIDEO_TYPE = "full-orbit";
 export const FULL_ORBIT_PREVIEW_VIDEO_SELECTOR = `[data-preview-video='${FULL_ORBIT_PREVIEW_VIDEO_TYPE}']`;
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
 
 function getBasename(uri) {
   if (typeof uri !== "string") {
@@ -22,32 +17,21 @@ export function isFullOrbitPreviewVideo(uri) {
 }
 
 export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
-  const duration = Number(videoElement.duration);
-  if (!Number.isFinite(duration) || duration <= 0) {
-    return null;
-  }
-
   const rect = videoElement.getBoundingClientRect();
+  const x = mouseEvent.clientX - rect.left;
   const width = rect.width;
+  const y = mouseEvent.clientY - rect.top;
   const height = rect.height;
-  if (width <= 0 || height <= 0) {
-    return null;
-  }
 
-  const x = clamp(mouseEvent.clientX - rect.left, 0, width);
-  const y = clamp(mouseEvent.clientY - rect.top, 0, height);
+  const duration = videoElement.duration || 0;
   const perY = (height - y) / height;
   const perX = (width - x) / width;
-  const segmentDuration = duration / FULL_ORBIT_PREVIEW_GRID_SIZE;
-  const rowIndex = clamp(
-    Math.floor(perY * FULL_ORBIT_PREVIEW_GRID_SIZE),
-    0,
-    FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
-  );
-  const rowStartTime = rowIndex * segmentDuration;
-  const time = rowStartTime + perX * segmentDuration - FULL_ORBIT_PREVIEW_TIME_OFFSET;
 
-  return clamp(time, 0, Math.max(duration - MAX_TIME_EPSILON, 0));
+  return (
+    Math.round(perY * FULL_ORBIT_PREVIEW_GRID_SIZE) * (duration / FULL_ORBIT_PREVIEW_GRID_SIZE) +
+    perX * (duration / FULL_ORBIT_PREVIEW_GRID_SIZE) -
+    FULL_ORBIT_PREVIEW_TIME_OFFSET
+  );
 }
 
 export function installFullOrbitPreviewHover(videoElement) {
@@ -56,12 +40,7 @@ export function installFullOrbitPreviewHover(videoElement) {
       return;
     }
 
-    const time = calculateFullOrbitPreviewTime(videoElement, event);
-    if (time == null || Math.abs(videoElement.currentTime - time) < MAX_TIME_EPSILON) {
-      return;
-    }
-
-    videoElement.currentTime = time;
+    videoElement.currentTime = calculateFullOrbitPreviewTime(videoElement, event);
   };
 
   videoElement.addEventListener("mousemove", handleMouseMove);
