@@ -37,16 +37,18 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const x = clamp(mouseEvent.clientX - rect.left, 0, width);
   const y = clamp(mouseEvent.clientY - rect.top, 0, height);
   const perY = (height - y) / height;
-  const perX = clamp(x / width, 0, 1 - MAX_TIME_EPSILON);
+  const perX = (width - x) / width;
   const segmentDuration = duration / FULL_ORBIT_PREVIEW_GRID_SIZE;
   const rowIndex = clamp(
     Math.floor(perY * FULL_ORBIT_PREVIEW_GRID_SIZE),
     0,
     FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
   );
-  const time = rowIndex * segmentDuration + perX * segmentDuration - FULL_ORBIT_PREVIEW_TIME_OFFSET;
+  const rowStartTime = rowIndex * segmentDuration;
+  const rowEndTime = rowStartTime + segmentDuration - MAX_TIME_EPSILON;
+  const time = rowStartTime + perX * segmentDuration - FULL_ORBIT_PREVIEW_TIME_OFFSET;
 
-  return clamp(time, 0, Math.max(duration - MAX_TIME_EPSILON, 0));
+  return clamp(time, rowStartTime, Math.min(rowEndTime, Math.max(duration - MAX_TIME_EPSILON, 0)));
 }
 
 export function installFullOrbitPreviewHover(videoElement) {
