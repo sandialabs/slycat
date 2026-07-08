@@ -39,10 +39,12 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const perY = (height - y) / height;
   const perX = (width - x) / width;
   const segmentDuration = duration / FULL_ORBIT_PREVIEW_GRID_SIZE;
-  const time =
-    Math.round(perY * FULL_ORBIT_PREVIEW_GRID_SIZE) * segmentDuration +
-    perX * segmentDuration -
-    FULL_ORBIT_PREVIEW_TIME_OFFSET;
+  const rowIndex = clamp(
+    Math.floor(perY * FULL_ORBIT_PREVIEW_GRID_SIZE),
+    0,
+    FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
+  );
+  const time = rowIndex * segmentDuration + perX * segmentDuration - FULL_ORBIT_PREVIEW_TIME_OFFSET;
 
   return clamp(time, 0, Math.max(duration - MAX_TIME_EPSILON, 0));
 }
