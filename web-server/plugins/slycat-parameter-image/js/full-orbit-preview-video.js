@@ -5,8 +5,6 @@ const PREVIEW_FRAME_COUNT = 3;
 const PREVIEW_FRAME_RATE = 25;
 const PREVIEW_SKIP_DURATION = PREVIEW_FRAME_COUNT / PREVIEW_FRAME_RATE;
 const MAX_TIME_EPSILON = 0.000001;
-const DEBUG = true;
-const DEBUG_PREFIX = "[full-orbit-preview]";
 
 export const FULL_ORBIT_PREVIEW_DEFAULT_TIME = 0;
 export const FULL_ORBIT_PREVIEW_VIDEO_TYPE = "full-orbit";
@@ -14,12 +12,6 @@ export const FULL_ORBIT_PREVIEW_VIDEO_SELECTOR = `[data-preview-video='${FULL_OR
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
-}
-
-function debugLog(...args) {
-  if (DEBUG) {
-    console.debug(DEBUG_PREFIX, ...args);
-  }
 }
 
 function getBasename(uri) {
@@ -36,16 +28,15 @@ export function isFullOrbitPreviewVideo(uri) {
 /**
  * Map pointer position to a seek time in a full-orbit preview video.
  *
- * The timeline is split into 11 equal segments (camera elevations). Within each
- * Each sequence begins with 3 preview frames at 25 fps; horizontal scrubbing
- * skips that prefix and maps across the remaining orbit frames only.
+ * The timeline is split into 11 equal segments (camera elevations). Each
+ * sequence begins with 3 preview frames at 25 fps; horizontal scrubbing skips
+ * that prefix and maps across the remaining orbit frames only.
  *   - Y (up/down): selects which of the 11 sequences
  *   - X (right-to-left): position within the selected sequence
  */
 export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const duration = Number(videoElement.duration);
   if (!Number.isFinite(duration) || duration <= 0) {
-    debugLog("invalid duration", { duration });
     return null;
   }
 
@@ -53,7 +44,6 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const width = rect.width;
   const height = rect.height;
   if (width <= 0 || height <= 0) {
-    debugLog("invalid video dimensions", { width, height });
     return null;
   }
 
@@ -77,45 +67,13 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const timeInSegment = previewSkip + perX * scrubbableDuration;
   const time = clamp(rowStartTime + timeInSegment, segmentMinTime, rowEndTime);
 
-  debugLog("calculate time", {
-    rawX,
-    rawY,
-    x,
-    y,
-    width,
-    height,
-    perX,
-    perY,
-    duration,
-    segmentDuration,
-    previewSkip,
-    scrubbableDuration,
-    rowIndex,
-    rowStartTime,
-    rowEndTime,
-    segmentMinTime,
-    timeInSegment,
-    time,
-    currentTime: videoElement.currentTime,
-    seeking: videoElement.seeking,
-  });
-
   return time;
 }
 
 export function installFullOrbitPreviewHover(videoElement) {
-  debugLog("install hover", {
-    src: videoElement.currentSrc || videoElement.src,
-    duration: videoElement.duration,
-  });
-
   let hovering = false;
 
   const showDefaultFrame = () => {
-    debugLog("reset to default frame", {
-      previousTime: videoElement.currentTime,
-      time: FULL_ORBIT_PREVIEW_DEFAULT_TIME,
-    });
     videoElement.currentTime = FULL_ORBIT_PREVIEW_DEFAULT_TIME;
   };
 
@@ -138,32 +96,19 @@ export function installFullOrbitPreviewHover(videoElement) {
     hovering = true;
 
     if (videoElement.seeking) {
-      debugLog("skip mousemove: video seeking");
       return;
     }
 
     const previousTime = videoElement.currentTime;
     const time = calculateFullOrbitPreviewTime(videoElement, event);
     if (time == null) {
-      debugLog("skip mousemove: no time calculated");
       return;
     }
 
-    const delta = Math.abs(previousTime - time);
-    if (delta < MAX_TIME_EPSILON) {
-      debugLog("skip mousemove: time unchanged", {
-        previousTime,
-        time,
-        delta,
-      });
+    if (Math.abs(previousTime - time) < MAX_TIME_EPSILON) {
       return;
     }
 
-    debugLog("set currentTime", {
-      previousTime,
-      time,
-      delta,
-    });
     videoElement.currentTime = time;
   };
 
