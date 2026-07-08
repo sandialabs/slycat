@@ -109,17 +109,9 @@ export function installFullOrbitPreviewHover(videoElement) {
     duration: videoElement.duration,
   });
 
-  const resetToDefaultFrame = () => {
-    if (videoElement.seeking) {
-      debugLog("skip mouseleave: video seeking");
-      return;
-    }
+  let hovering = false;
 
-    if (Math.abs(videoElement.currentTime - FULL_ORBIT_PREVIEW_DEFAULT_TIME) < MAX_TIME_EPSILON) {
-      debugLog("skip mouseleave: already at default frame");
-      return;
-    }
-
+  const showDefaultFrame = () => {
     debugLog("reset to default frame", {
       previousTime: videoElement.currentTime,
       time: FULL_ORBIT_PREVIEW_DEFAULT_TIME,
@@ -127,7 +119,24 @@ export function installFullOrbitPreviewHover(videoElement) {
     videoElement.currentTime = FULL_ORBIT_PREVIEW_DEFAULT_TIME;
   };
 
+  const handleMouseEnter = () => {
+    hovering = true;
+  };
+
+  const handleMouseLeave = () => {
+    hovering = false;
+    showDefaultFrame();
+  };
+
+  const handleSeeked = () => {
+    if (!hovering) {
+      showDefaultFrame();
+    }
+  };
+
   const handleMouseMove = (event) => {
+    hovering = true;
+
     if (videoElement.seeking) {
       debugLog("skip mousemove: video seeking");
       return;
@@ -158,11 +167,16 @@ export function installFullOrbitPreviewHover(videoElement) {
     videoElement.currentTime = time;
   };
 
+  videoElement.addEventListener("mouseenter", handleMouseEnter);
   videoElement.addEventListener("mousemove", handleMouseMove);
-  videoElement.addEventListener("mouseleave", resetToDefaultFrame);
+  videoElement.addEventListener("mouseleave", handleMouseLeave);
+  videoElement.addEventListener("seeked", handleSeeked);
 
   return () => {
+    hovering = false;
+    videoElement.removeEventListener("mouseenter", handleMouseEnter);
     videoElement.removeEventListener("mousemove", handleMouseMove);
-    videoElement.removeEventListener("mouseleave", resetToDefaultFrame);
+    videoElement.removeEventListener("mouseleave", handleMouseLeave);
+    videoElement.removeEventListener("seeked", handleSeeked);
   };
 }
