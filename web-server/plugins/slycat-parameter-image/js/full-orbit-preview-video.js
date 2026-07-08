@@ -2,7 +2,7 @@ const FULL_ORBIT_PREVIEW_FILENAME = "fullorbitpreview.mp4";
 const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
 const FULL_ORBIT_PREVIEW_TIME_OFFSET = 0.1;
 const MAX_TIME_EPSILON = 0.000001;
-const DEBUG = true;
+const DEBUG = false;
 const DEBUG_PREFIX = "[full-orbit-preview]";
 
 export const FULL_ORBIT_PREVIEW_DEFAULT_TIME = 0;
@@ -66,8 +66,13 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
     FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
   );
   const rowStartTime = rowIndex * segmentDuration;
-  const unclampedTime = rowStartTime + perX * segmentDuration - FULL_ORBIT_PREVIEW_TIME_OFFSET;
-  const time = Math.max(unclampedTime, 0);
+  const rowEndTime = rowStartTime + segmentDuration - MAX_TIME_EPSILON;
+  const timeInSegment = perX * segmentDuration;
+  // Only apply the frame offset while scrubbing within the row; at the right
+  // edge (perX = 0) a flat -0.1 would seek into the previous sequence.
+  const offset = timeInSegment > 0 ? FULL_ORBIT_PREVIEW_TIME_OFFSET : 0;
+  const unclampedTime = rowStartTime + timeInSegment - offset;
+  const time = clamp(unclampedTime, rowStartTime, rowEndTime);
 
   debugLog("calculate time", {
     rawX,
@@ -82,6 +87,9 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
     segmentDuration,
     rowIndex,
     rowStartTime,
+    rowEndTime,
+    timeInSegment,
+    offset,
     unclampedTime,
     time,
     currentTime: videoElement.currentTime,
