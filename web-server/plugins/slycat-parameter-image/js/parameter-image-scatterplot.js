@@ -2685,6 +2685,7 @@ $.widget("parameter_image.scatterplot", {
               self._adjust_leader_line(frame_html);
               if (fullOrbitPreview) {
                 this.pause();
+                this.currentTime = 0;
                 installFullOrbitPreviewHover(this);
               } else if (
                 self.options["video-sync"] &&
@@ -2779,10 +2780,12 @@ $.widget("parameter_image.scatterplot", {
           } else {
             video.attr("controls", true).attr("loop", true);
           }
-          if (image.currentTime != undefined && image.currentTime > 0) {
-            if (!fullOrbitPreview) {
-              self.syncing_videos.push(image.uid);
-            }
+          if (
+            !fullOrbitPreview &&
+            image.currentTime != undefined &&
+            image.currentTime > 0
+          ) {
+            self.syncing_videos.push(image.uid);
             video.property("currentTime", image.currentTime);
           }
 
