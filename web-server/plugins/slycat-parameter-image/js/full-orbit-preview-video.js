@@ -2,7 +2,7 @@ const FULL_ORBIT_PREVIEW_FILENAME = "fullorbitpreview.mp4";
 const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
 const FULL_ORBIT_PREVIEW_TIME_OFFSET = 0.1;
 const MAX_TIME_EPSILON = 0.000001;
-const DEBUG = false;
+const DEBUG = true;
 const DEBUG_PREFIX = "[full-orbit-preview]";
 
 export const FULL_ORBIT_PREVIEW_DEFAULT_TIME = 0;
