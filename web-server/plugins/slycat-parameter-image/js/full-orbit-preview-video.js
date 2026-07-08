@@ -1,7 +1,11 @@
 const FULL_ORBIT_PREVIEW_FILENAME = "fullorbitpreview.mp4";
 const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
+// Each sequence begins with static preview frames before the orbit scrub range.
+const PREVIEW_FRAME_COUNT = 3;
+const PREVIEW_FRAME_RATE = 25;
+const PREVIEW_SKIP_DURATION = PREVIEW_FRAME_COUNT / PREVIEW_FRAME_RATE;
 const MAX_TIME_EPSILON = 0.000001;
-const DEBUG = false;
+const DEBUG = true;
 const DEBUG_PREFIX = "[full-orbit-preview]";
 
 export const FULL_ORBIT_PREVIEW_DEFAULT_TIME = 0;
@@ -33,7 +37,8 @@ export function isFullOrbitPreviewVideo(uri) {
  * Map pointer position to a seek time in a full-orbit preview video.
  *
  * The timeline is split into 11 equal segments (camera elevations). Within each
- * segment, horizontal scrubbing simulates rotation around the object:
+ * Each sequence begins with 3 preview frames at 25 fps; horizontal scrubbing
+ * skips that prefix and maps across the remaining orbit frames only.
  *   - Y (up/down): selects which of the 11 sequences
  *   - X (right-to-left): position within the selected sequence
  */
@@ -66,8 +71,11 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   );
   const rowStartTime = rowIndex * segmentDuration;
   const rowEndTime = rowStartTime + segmentDuration - MAX_TIME_EPSILON;
-  const timeInSegment = perX * segmentDuration;
-  const time = clamp(rowStartTime + timeInSegment, rowStartTime, rowEndTime);
+  const previewSkip = Math.min(PREVIEW_SKIP_DURATION, Math.max(segmentDuration - MAX_TIME_EPSILON, 0));
+  const scrubbableDuration = Math.max(segmentDuration - previewSkip, 0);
+  const segmentMinTime = rowStartTime + previewSkip;
+  const timeInSegment = previewSkip + perX * scrubbableDuration;
+  const time = clamp(rowStartTime + timeInSegment, segmentMinTime, rowEndTime);
 
   debugLog("calculate time", {
     rawX,
@@ -80,9 +88,12 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
     perY,
     duration,
     segmentDuration,
+    previewSkip,
+    scrubbableDuration,
     rowIndex,
     rowStartTime,
     rowEndTime,
+    segmentMinTime,
     timeInSegment,
     time,
     currentTime: videoElement.currentTime,
