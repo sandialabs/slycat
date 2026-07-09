@@ -29,10 +29,9 @@ export function isFullOrbitPreviewVideo(uri) {
 /**
  * Map pointer position to a seek time in a full-orbit preview video.
  *
- * The timeline is split into 11 equal segments (camera elevations). The video
- * opens with 3 preview frames at 25 fps (time 0); when hovering the first
- * sequence, horizontal scrubbing skips that prefix. Later sequences use their
- * full segment range.
+ * The video opens with 3 preview frames at 25 fps at time 0. The remaining
+ * duration is split into 11 equal orbit segments; all hover seeking starts
+ * after that global preview prefix.
  *   - Y (up/down): selects which of the 11 sequences
  *   - X (right-to-left): position within the selected sequence
  */
@@ -55,22 +54,21 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const y = clamp(rawY, 0, height);
   const perY = (height - y) / height;
   const perX = (width - x) / width;
-  const segmentDuration = duration / FULL_ORBIT_PREVIEW_GRID_SIZE;
+  const previewSkip = Math.min(
+    PREVIEW_SKIP_DURATION,
+    Math.max(duration - MAX_TIME_EPSILON, 0),
+  );
+  const scrubDuration = Math.max(duration - previewSkip, 0);
+  const segmentDuration = scrubDuration / FULL_ORBIT_PREVIEW_GRID_SIZE;
   const rowIndex = clamp(
     Math.round(perY * FULL_ORBIT_PREVIEW_GRID_SIZE),
     0,
     FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
   );
-  const rowStartTime = rowIndex * segmentDuration;
+  const rowStartTime = previewSkip + rowIndex * segmentDuration;
   const rowEndTime = rowStartTime + segmentDuration - MAX_TIME_EPSILON;
-  const previewSkip =
-    rowIndex === 0
-      ? Math.min(PREVIEW_SKIP_DURATION, Math.max(segmentDuration - MAX_TIME_EPSILON, 0))
-      : 0;
-  const scrubbableDuration = Math.max(segmentDuration - previewSkip, 0);
-  const segmentMinTime = rowStartTime + previewSkip;
-  const timeInSegment = previewSkip + perX * scrubbableDuration;
-  const time = clamp(rowStartTime + timeInSegment, segmentMinTime, rowEndTime);
+  const timeInSegment = perX * segmentDuration;
+  const time = clamp(rowStartTime + timeInSegment, rowStartTime, rowEndTime);
 
   return time;
 }
