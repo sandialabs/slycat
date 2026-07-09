@@ -83,7 +83,13 @@ export function installFullOrbitPreviewHover(videoElement) {
 
   let hovering = false;
 
+  const isAtDefaultFrame = () =>
+    Math.abs(videoElement.currentTime - FULL_ORBIT_PREVIEW_DEFAULT_TIME) < MAX_TIME_EPSILON;
+
   const showDefaultFrame = () => {
+    if (isAtDefaultFrame()) {
+      return;
+    }
     videoElement.currentTime = FULL_ORBIT_PREVIEW_DEFAULT_TIME;
   };
 
