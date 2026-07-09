@@ -9,6 +9,7 @@ const MAX_TIME_EPSILON = 0.000001;
 export const FULL_ORBIT_PREVIEW_DEFAULT_TIME = 0;
 export const FULL_ORBIT_PREVIEW_VIDEO_TYPE = "full-orbit";
 export const FULL_ORBIT_PREVIEW_VIDEO_SELECTOR = `[data-preview-video='${FULL_ORBIT_PREVIEW_VIDEO_TYPE}']`;
+const HOVER_CLEANUP_KEY = "_fullOrbitPreviewHoverCleanup";
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -70,7 +71,16 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   return time;
 }
 
+export function uninstallFullOrbitPreviewHover(videoElement) {
+  const cleanup = videoElement[HOVER_CLEANUP_KEY];
+  if (typeof cleanup === "function") {
+    cleanup();
+  }
+}
+
 export function installFullOrbitPreviewHover(videoElement) {
+  uninstallFullOrbitPreviewHover(videoElement);
+
   let hovering = false;
 
   const showDefaultFrame = () => {
@@ -117,11 +127,15 @@ export function installFullOrbitPreviewHover(videoElement) {
   videoElement.addEventListener("mouseleave", handleMouseLeave);
   videoElement.addEventListener("seeked", handleSeeked);
 
-  return () => {
+  const cleanup = () => {
     hovering = false;
     videoElement.removeEventListener("mouseenter", handleMouseEnter);
     videoElement.removeEventListener("mousemove", handleMouseMove);
     videoElement.removeEventListener("mouseleave", handleMouseLeave);
     videoElement.removeEventListener("seeked", handleSeeked);
+    delete videoElement[HOVER_CLEANUP_KEY];
   };
+
+  videoElement[HOVER_CLEANUP_KEY] = cleanup;
+  return cleanup;
 }
