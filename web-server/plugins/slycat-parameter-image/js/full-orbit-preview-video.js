@@ -4,7 +4,6 @@ const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
 const PREVIEW_FRAME_COUNT = 3;
 const PREVIEW_FRAME_RATE = 25;
 const PREVIEW_SKIP_DURATION = PREVIEW_FRAME_COUNT / PREVIEW_FRAME_RATE;
-const FRAME_DURATION = 1 / PREVIEW_FRAME_RATE;
 const MAX_TIME_EPSILON = 0.000001;
 
 export const FULL_ORBIT_PREVIEW_DEFAULT_TIME = 0;
@@ -30,10 +29,9 @@ export function isFullOrbitPreviewVideo(uri) {
 /**
  * Map pointer position to a seek time in a full-orbit preview video.
  *
- * The video is split into 11 equal segments. The first 3 frames at 25 fps at
- * time 0 are a global preview image; horizontal scrubbing in the first segment
- * skips that prefix. Row ends are clamped to one frame duration so seeks do
- * not snap into the next segment.
+ * The video is split into 11 equal row segments with 3 preview frames at 25 fps
+ * at time 0. Horizontal scrubbing is continuous within each row, mapped between
+ * the row start (skipping the preview in row 0) and a margin before the next row.
  *   - Y (up/down): selects which of the 11 sequences
  *   - X (right-to-left): position within the selected sequence
  */
@@ -56,10 +54,7 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const y = clamp(rawY, 0, height);
   const perY = (height - y) / height;
   const perX = (width - x) / width;
-  const previewSkip = Math.min(
-    PREVIEW_SKIP_DURATION,
-    Math.max(duration - FRAME_DURATION, 0),
-  );
+  const previewSkip = Math.min(PREVIEW_SKIP_DURATION, duration);
   const segmentDuration = duration / FULL_ORBIT_PREVIEW_GRID_SIZE;
   const rowIndex = clamp(
     Math.round(perY * FULL_ORBIT_PREVIEW_GRID_SIZE),
@@ -67,17 +62,14 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
     FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
   );
   const rowStartTime = rowIndex * segmentDuration;
-  const rowEndTime = Math.min(
-    rowStartTime + segmentDuration - FRAME_DURATION,
-    duration - FRAME_DURATION,
-  );
+  const segmentMaxTime = rowStartTime + segmentDuration - previewSkip;
   const segmentMinTime =
-    rowIndex === 0 ? Math.min(previewSkip, rowEndTime) : rowStartTime;
-  const scrubbableDuration = Math.max(rowEndTime - segmentMinTime, 0);
+    rowIndex === 0 ? Math.max(previewSkip, rowStartTime) : rowStartTime;
+  const scrubbableDuration = Math.max(segmentMaxTime - segmentMinTime, 0);
   const time = clamp(
     segmentMinTime + perX * scrubbableDuration,
     segmentMinTime,
-    rowEndTime,
+    segmentMaxTime,
   );
 
   return time;
