@@ -13,6 +13,7 @@ RUN git config --global http.sslVerify false
 RUN git config --global http.postBuffer 524288000
 RUN git clone --depth 1 https://github.com/sandialabs/slycat.git
 RUN mkdir -p /var/lib/slycat/data-store
+RUN mkdir -p /var/lib/slycat/data-store/project_data
 WORKDIR /usr/src/slycat/slycat
 ENV PYTHONPATH "${PYTHONPATH}:/usr/src/slycat/slycat/packages"
 

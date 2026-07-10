@@ -102,7 +102,7 @@ function constructor(params) {
       success: function (response) {
         var data = JSON.stringify(response);
         component.csv_data.push(data);
-        upload_success(component.browser);
+        component.get_error_messages();
       },
       error: dialog.ajax_error("There was an error retrieving the CSV data."),
     });
@@ -199,6 +199,8 @@ function constructor(params) {
               upload_success(component.browser);
             } else if (component.ps_type() == "remote") {
               upload_success(component.remote);
+            } else if (component.ps_type() == "server") {
+              upload_success(component.browser)
             }
             component.tab(4);
             $(".browser-continue").toggleClass("disabled", false);
@@ -374,7 +376,6 @@ function constructor(params) {
                   tooltip: "",
                 });
               mapping.fromJS(attributes, component.attributes);
-              // component.get_error_messages();
             },
             error: function (errorThrown) {
               window.alert("There was a fatal error with your CSV.");
