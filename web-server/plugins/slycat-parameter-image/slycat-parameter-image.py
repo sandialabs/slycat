@@ -14,6 +14,7 @@ def register_slycat_plugin(context):
     import datetime
     import json
     import numpy
+    import scipy.stats as stats
     import os
     import re
     import slycat.web.server
@@ -162,6 +163,75 @@ def register_slycat_plugin(context):
         response = {"success": "success changed linked models"}
         return json.dumps(response)
 
+    # compute means and confidence intervals from data table
+    def compute_means_ci(database, model, verb, type, command, **kwargs):
+
+        # get output columns
+        output_columns = slycat.web.server.get_model_parameter(
+            database, model, "output-columns")
+        cherrypy.log.error(str(output_columns))
+        
+        # check if output columns are empty
+        if len(output_columns) == 0:
+            response = {"error": "No output columns.  Cannot compute means/CI table without output columns."}
+            return json.dumps(response)
+
+        # get the table meta data (for output column names)
+        metadata = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "data-table", "0")["arrays"][0]
+        output_column_metadata = [metadata["attributes"][i] for i in output_columns]
+
+        # check that output columns are floats
+        for column in output_column_metadata:
+            if column['type'] != b'float64':
+                response = {"error": "Found non-numeric output column " + column['name'] +
+                            ".  Cannot compute means/CI table using non-numeric data."}
+                return json.dumps(response)
+
+        # get output column names
+        output_column_names = [column['name'] for column in output_column_metadata]
+
+        # get the output columns
+        data_table = []
+        for column in output_columns:
+            data_table.append(slycat.web.server.get_model_arrayset_data(
+                database, model, "data-table", "0/%s/..." % column)[0])
+
+        # compute means-ci table
+        mean_ci_table = [['Output', 'Mean', 'Lower CI', 'Upper CI']]
+        for i in range(len(output_columns)):
+            mean, lower_CI, upper_CI = _compute_CI (data_table[i])
+            mean_ci_table.append([output_column_names[i].decode(), 
+                                  mean, lower_CI, upper_CI])
+        
+        # return table
+        return json.dumps({"mean_ci_table": mean_ci_table})
+
+    # helper function to compute confidence intervals for a vector of data
+    def _compute_CI (data, confidence=0.95):
+        
+        # remove NaNs
+        cleaned_data = data[~numpy.isnan(data)]
+
+        # get mean
+        mean = numpy.mean(cleaned_data)
+
+        # get confidence intervals
+        ci_lower, ci_upper = stats.t.interval(
+            confidence, 
+            df=len(cleaned_data) - 1, 
+            loc=mean,
+            scale=stats.sem(cleaned_data)
+        )
+
+        # for constant columns use no CI
+        if numpy.isnan(ci_lower):
+            ci_lower = mean
+        if numpy.isnan(ci_upper):
+            ci_upper = mean
+
+        return mean, ci_lower, ci_upper
+        
     def finish(database, model):
         """
         Called to finish the model.
@@ -261,6 +331,11 @@ def register_slycat_plugin(context):
     )
     context.register_model_command(
         "POST", "parameter-image", "update-table", update_table
+    )
+
+    # Register commands for UQ/SA analysis
+    context.register_model_command(
+        "POST", "parameter-image", "compute-means-ci", compute_means_ci
     )
 
     # Register custom wizards for creating PI models.

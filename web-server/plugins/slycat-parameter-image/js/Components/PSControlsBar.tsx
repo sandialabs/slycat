@@ -571,11 +571,19 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
     const _show_means_ci = () => {
       
       // call server to compute means and confidence intervals
+      client.post_sensitive_model_command(
+        {
+          mid: this.props.mid,
+          type: "parameter-image",
+          command: "compute-means-ci",
+          parameters: {},
+          success: function (result) {
+            const mean_ci_table = JSON.parse(result)["mean_ci_table"];
 
-
-      // display table in east panel
-
-      console.log("show means ci");
+            // display table
+            console.table(mean_ci_table);
+          }
+        })
     }
 
     const _show_pearsons = () => {
