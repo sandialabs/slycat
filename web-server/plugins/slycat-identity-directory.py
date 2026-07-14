@@ -20,7 +20,10 @@ def user(uid):
     "name": uid,
     "email": "%s@%s" % (uid, configuration["domain"])
     }
-
+def user_groups(uid):
+   pass
+def groups(search_string):
+   pass
 def register_slycat_plugin(context):
-  context.register_directory("identity", init, user)
+  context.register_directory("identity", init, user, user_groups, groups)
 

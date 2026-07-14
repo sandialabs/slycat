@@ -3041,7 +3041,7 @@ def get_user(uid, time):
 
     if uid == "-":
         uid = cherrypy.request.login
-    user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
+    user = cherrypy.request.app.config["slycat-web-server"]["directory"]["user"](uid)
     if user is None:
         cherrypy.log.error(
             "slycat.web.server.handlers.py get_user",
@@ -3050,7 +3050,7 @@ def get_user(uid, time):
         raise cherrypy.HTTPError(404)
     # Add the uid to the record, since the caller may not know it.
     user["uid"] = uid
-    return user
+    return json.loads(json.dumps(user, cls=MyEncoder))
 
 
 @cherrypy.tools.json_out(on=True)
