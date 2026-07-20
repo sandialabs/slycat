@@ -1,0 +1,53 @@
+/* Edit Project modal — Display Settings / TableIngestion-inspired styling */
+
+.edit-project-metagroups-table-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+.edit-project-metagroups-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.edit-project-metagroups-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.edit-project-metagroups-table thead th.text-end {
+  text-align: right;
+}
+
+.edit-project-metagroups-table tbody td {
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.edit-project-metagroups-table tbody td.text-end {
+  text-align: right;
+}
+
+.edit-project-metagroups-table tbody tr {
+  cursor: pointer;
+}
+
+.edit-project-metagroups-table tbody tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+.edit-project-metagroups-table tbody tr.selected {
+  background-color: #337ab7;
+}
+
+.edit-project-metagroups-table tbody tr.selected td {
+  color: white;
+}

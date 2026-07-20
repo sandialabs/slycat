@@ -7,6 +7,7 @@ import * as dialog from "js/slycat-dialog";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import editUI from "./edit-ui.html";
+import "./edit-ui.css";
 import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 import "@fortawesome/fontawesome-free/css/all.css";
 
