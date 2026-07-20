@@ -580,6 +580,36 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
           success: function (result) {
             const mean_ci_table = JSON.parse(result)["mean_ci_table"];
 
+            // check for errors
+            // TO DO: display dialog box
+            if (result[0] === 'error') {
+              console.log(result[1]);
+              return;
+            }
+
+            // get table rows
+            const num_rows = mean_ci_table.length-1;
+            const row_labels = Array();
+            for (let i=1; i<num_rows+1; i++) {
+              row_labels.push(mean_ci_table[i][0]);
+            }
+
+            // get table columns
+            const num_cols = mean_ci_table.length-1;
+            const col_labels = mean_ci_table[0];
+            col_labels.shift();
+
+            // construct table data
+            const data = Array()
+            for (let i=0; i<num_rows; i++) {
+              for (let j=0; j<num_cols; j++) {
+                data.push({'x': col_labels[j], 
+                           'y': row_labels[i],
+                           'value': mean_ci_table[i+1][j+1]});
+              }
+            }
+            
+            
             // display table
             console.table(mean_ci_table);
           }
