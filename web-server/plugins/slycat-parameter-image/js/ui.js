@@ -59,6 +59,10 @@ import data_reducer, {
   setSelectedSimulations,
   setHiddenSimulations,
 } from "./dataSlice";
+import uqsa_reducer, {
+  SLICE_NAME as UQSA_SLICE_NAME,
+  setPaneSize,
+} from "./uqsaSlice";
 import {
   setXValues,
   setYValues,
@@ -103,9 +107,11 @@ import {
   selectVExtent,
 } from "./selectors";
 
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 import PSControlsBar from "./Components/PSControlsBar";
+import PSUQSAPanel from "./Components/PSUQSAPanel";
 import { COLUMN_LABELS } from "utils/ui-labels";
 
 let table_metadata = null;
@@ -211,11 +217,18 @@ $(document).ready(function () {
       },
     },
     east: {
-      // UV V&V
+      // UQ/SA
       initClosed: true,
       size: $("#parameter-image-plus-layout").width() / 4,
       onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
-        console.log("uq-sa-resized");
+        if (window.store) {
+          window.store.dispatch(
+            setPaneSize({
+              width: pane_state.innerWidth,
+              height: pane_state.innerHeight,
+            }),
+          );
+        }
       },
     },
     south: {
@@ -477,6 +490,7 @@ $(document).ready(function () {
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
             [DATA_SLICE_NAME]: data_reducer,
+            [UQSA_SLICE_NAME]: uqsa_reducer,
           });
 
           window.store = configureStore({
@@ -1127,6 +1141,26 @@ $(document).ready(function () {
       );
       const react_controls_root = createRoot(document.getElementById("react-controls"));
       react_controls_root.render(controls_bar);
+
+      // Mount UQ/SA panel into the east pane (React island + Redux Provider)
+      const uqsa_root = createRoot(document.getElementById("uq-sa"));
+      uqsa_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <PSUQSAPanel mid={model_id} />
+          </Provider>
+        </StrictMode>,
+      );
+
+      // Seed east pane size in Redux (pane may still be closed)
+      if (layout.state?.east) {
+        window.store.dispatch(
+          setPaneSize({
+            width: layout.state.east.innerWidth,
+            height: layout.state.east.innerHeight,
+          }),
+        );
+      }
     }
   }
 

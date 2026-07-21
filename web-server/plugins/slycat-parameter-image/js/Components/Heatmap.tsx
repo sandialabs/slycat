@@ -1,6 +1,8 @@
 // modified from https://www.react-graph-gallery.com/heatmap
+// Presentational only: D3 for scales/color, React for rendering rects.
+// Fetching and data shaping belong in PSUQSAPanel / Redux — not here.
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import * as d3 from "d3v7";
 
 const MARGIN = { top: 10, right: 10, bottom: 30, left: 30 };
@@ -8,11 +10,10 @@ const MARGIN = { top: 10, right: 10, bottom: 30, left: 30 };
 type HeatmapProps = {
   width: number;
   height: number;
-  data: { x: string; y: string; value: number }[];
+  data: { x: string; y: string; value: number | null }[];
 };
 
 export const Heatmap = ({ width, height, data }: HeatmapProps) => {
-
   // bounds = area inside the axis
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -23,39 +24,34 @@ export const Heatmap = ({ width, height, data }: HeatmapProps) => {
 
   // x and y scales
   const xScale = useMemo(() => {
-    return d3
-      .scaleBand()
-      .range([0, boundsWidth])
-      .domain(allXGroups)
-      .padding(0.01);
-  }, [data, width]);
+    return d3.scaleBand().range([0, boundsWidth]).domain(allXGroups).padding(0.01);
+  }, [allXGroups, boundsWidth]);
 
   const yScale = useMemo(() => {
-    return d3
-      .scaleBand()
-      .range([boundsHeight, 0])
-      .domain(allYGroups)
-      .padding(0.01);
-  }, [data, height]);
+    return d3.scaleBand().range([boundsHeight, 0]).domain(allYGroups).padding(0.01);
+  }, [allYGroups, boundsHeight]);
 
-  const [min, max] = d3.extent(data.map((d) => d.value));
+  const [min, max] = useMemo(
+    () => d3.extent(data.map((d) => d.value).filter((v): v is number => v != null)),
+    [data],
+  );
 
-  if (!min || !max) {
+  // Use == null so value 0 is valid
+  if (min == null || max == null) {
     return null;
   }
 
   // Color scale
-  const colorScale = d3
-    .scaleSequential()
-    .interpolator(d3.interpolateInferno)
-    .domain([min, max]);
+  const colorScale = d3.scaleSequential().interpolator(d3.interpolateInferno).domain([min, max]);
 
-  // Build the rectangles
+  // Build the rectangles (skip null values, per gallery pattern)
   const allRects = data.map((d, i) => {
+    if (d.value === null) {
+      return null;
+    }
     return (
       <rect
         key={i}
-        r={4}
         x={xScale(d.x)}
         y={yScale(d.y)}
         width={xScale.bandwidth()}

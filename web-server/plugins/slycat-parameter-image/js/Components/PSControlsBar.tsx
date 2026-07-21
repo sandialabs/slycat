@@ -42,7 +42,7 @@ import {
 } from "../store";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 import _ from "lodash";
-import client from "js/slycat-web-client";
+import { setActiveView, selectUqsaActiveView, UqsaActiveView } from "../uqsaSlice";
 
 interface PSControlsBarDropdownsType {
   id: string;
@@ -72,6 +72,7 @@ interface PSControlsBarProps {
   xy_pairs_items: { key: string; name: string }[];
   xy_pairs_indexes: number[];
   show_histogram: boolean;
+  uqsa_active_view: UqsaActiveView;
   metadata: TableMetadataType;
   xy_pair_selected: string;
   model: any;
@@ -558,67 +559,15 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
       }
     }
 
-    // UQ/SA controls information
-    const dropdown_UQSA_items=[
-      { type: "header", name: "Uncertainy Quantification" },
-      { key: "means-ci", name: "Means and Confidence Intervals"},
+    // UQ/SA controls — menu only dispatches view + opens east pane;
+    // PSUQSAPanel owns fetching and rendering.
+    const dropdown_UQSA_items = [
+      { type: "header", name: "Uncertainty Quantification" },
+      { key: "means-ci", name: "Means and Confidence Intervals" },
       { type: "divider" },
       { type: "header", name: "Sensitivity Analysis" },
       { key: "pearsons", name: "Pearson's Correlation" },
     ];
-
-    // UQ/SA methods
-    const _show_means_ci = () => {
-      
-      // call server to compute means and confidence intervals
-      client.post_sensitive_model_command(
-        {
-          mid: this.props.mid,
-          type: "parameter-image",
-          command: "compute-means-ci",
-          parameters: {},
-          success: function (result) {
-            const mean_ci_table = JSON.parse(result)["mean_ci_table"];
-
-            // check for errors
-            // TO DO: display dialog box
-            if (result[0] === 'error') {
-              console.log(result[1]);
-              return;
-            }
-
-            // get table rows
-            const num_rows = mean_ci_table.length-1;
-            const row_labels = Array();
-            for (let i=1; i<num_rows+1; i++) {
-              row_labels.push(mean_ci_table[i][0]);
-            }
-
-            // get table columns
-            const num_cols = mean_ci_table.length-1;
-            const col_labels = mean_ci_table[0];
-            col_labels.shift();
-
-            // construct table data
-            const data = Array()
-            for (let i=0; i<num_rows; i++) {
-              for (let j=0; j<num_cols; j++) {
-                data.push({'x': col_labels[j], 
-                           'y': row_labels[i],
-                           'value': mean_ci_table[i+1][j+1]});
-              }
-            }
-            
-            
-            // display table
-            console.table(mean_ci_table);
-          }
-        })
-    }
-
-    const _show_pearsons = () => {
-      console.log("show pearsons");
-    }
 
     return (
       <Provider store={this.props.store}>
@@ -768,16 +717,15 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 id="uq-sa-dropdown"
                 label="UQ/SA"
                 title="Uncertainty Quantification, Sensitivity Analysis"
+                state_label="uqsa_view"
                 items={dropdown_UQSA_items}
-                set_selected={(key, state_label, trigger, e, props) => {
-                    if (key=="means-ci") {
-                      _show_means_ci();
-                    } else if (key=="pearsons") {
-                      _show_pearsons();
-                    }
+                selected={this.props.uqsa_active_view ?? ""}
+                set_selected={(key) => {
+                  if (key === "means-ci" || key === "pearsons") {
+                    this.props.setActiveView(key);
                     this.props.layout.open("east");
                   }
-                }
+                }}
                 button_style={button_style}
               />
             </ControlsGroup>
@@ -825,6 +773,7 @@ const mapStateToProps = (state: RootState) => {
     show_histogram: state.scatterplot.show_histogram,
     auto_scale: state.scatterplot.auto_scale,
     metadata: state.derived.table_metadata,
+    uqsa_active_view: selectUqsaActiveView(state),
   };
 };
 
@@ -843,4 +792,5 @@ export default connect(mapStateToProps, {
   setHiddenSimulations,
   setManuallyHiddenSimulations,
   setSelectedSimulations,
+  setActiveView,
 })(PSControlsBar);

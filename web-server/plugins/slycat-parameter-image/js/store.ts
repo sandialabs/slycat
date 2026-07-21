@@ -20,6 +20,11 @@ import {
   initialState as dataInitialState,
   DataState,
 } from "./dataSlice";
+import {
+  SLICE_NAME as UQSA_SLICE_NAME,
+  initialState as uqsaInitialState,
+  UqsaState,
+} from "./uqsaSlice";
 import { TableMetadataType } from "types/slycat";
 
 export type AxisType = "Linear" | "Log" | "Date & Time";
@@ -133,6 +138,7 @@ export type RootState = {
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
   [DATA_SLICE_NAME]: DataState;
+  [UQSA_SLICE_NAME]: UqsaState;
   derived: DerivedStateType;
   media_index: number;
 };
@@ -175,6 +181,7 @@ export const initialState: RootState = {
   media_index: -1,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
+  [UQSA_SLICE_NAME]: { ...uqsaInitialState },
   derived: {
     variableAliases: {},
     xValues: [],
