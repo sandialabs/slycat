@@ -5,7 +5,7 @@
 import React, { useMemo } from "react";
 import * as d3 from "d3v7";
 
-const MARGIN = { top: 10, right: 10, bottom: 30, left: 30 };
+const MARGIN = { top: 10, right: 10, bottom: 30, left: 24 };
 
 type HeatmapProps = {
   width: number;
@@ -44,7 +44,7 @@ export const Heatmap = ({ width, height, data }: HeatmapProps) => {
   // Color scale
   const colorScale = d3.scaleSequential().interpolator(d3.interpolateInferno).domain([min, max]);
 
-  // Build the rectangles (skip null values, per gallery pattern)
+  // Build the rectangles (skip null values)
   const allRects = data.map((d, i) => {
     if (d.value === null) {
       return null;
@@ -81,15 +81,17 @@ export const Heatmap = ({ width, height, data }: HeatmapProps) => {
   });
 
   const yLabels = allYGroups.map((name, i) => {
-    const yPos = yScale(name) ?? 0;
+    const xPos = -8;
+    const yPos = (yScale(name) ?? 0) + yScale.bandwidth() / 2;
     return (
       <text
         key={i}
-        x={-5}
-        y={yPos + yScale.bandwidth() / 2}
-        textAnchor="end"
+        x={xPos}
+        y={yPos}
+        textAnchor="middle"
         dominantBaseline="middle"
         fontSize={10}
+        transform={`rotate(-90, ${xPos}, ${yPos})`}
       >
         {name}
       </text>

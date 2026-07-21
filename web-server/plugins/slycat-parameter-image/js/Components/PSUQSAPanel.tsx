@@ -38,7 +38,7 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
  *
  * Next steps:
  * - Pearson's: add a useEffect branch like means-ci; reshape the correlation
- *   matrix into gallery cells { x, y, value } and dispatch setHeatmapResult.
+ *   matrix into Heatmap cells { x, y, value } and dispatch setHeatmapResult.
  * - Heatmap polish: tooltips, color legend, responsive wrapper from
  *   https://www.react-graph-gallery.com/heatmap
  */
@@ -84,7 +84,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
             return;
           }
 
-          // Reshape server table into gallery cells for Heatmap
+          // Reshape server table into Heatmap cells { x, y, value }
           const header = mean_ci_table[0].slice(1).map(String);
           const cells: HeatmapCell[] = [];
           for (let i = 1; i < mean_ci_table.length; i++) {

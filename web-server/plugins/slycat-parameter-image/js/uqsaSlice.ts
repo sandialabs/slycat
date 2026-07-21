@@ -17,7 +17,7 @@ export interface UqsaState {
   activeView: UqsaActiveView;
   status: UqsaStatus;
   error: string | null;
-  // Gallery-shaped cells for Heatmap — used by both means-ci and pearsons
+  // Heatmap cells { x, y, value } — used by both means-ci and pearsons
   heatmapCells: HeatmapCell[] | null;
   paneWidth: number;
   paneHeight: number;
