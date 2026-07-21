@@ -33,7 +33,7 @@
           click: function() { tab(1); return false; }
         "
       >
-        <h5 class="mb-0">Permissions</h5>
+        <h5 class="mb-0">User Access</h5>
       </a>
     </li>
   </ul>
@@ -73,6 +73,16 @@
           </div>
         </div>
       </form>
+      <div class="mb-3 text-end">
+        <button
+          class="btn btn-danger"
+          type="button"
+          data-bind="click:delete_project_cache"
+          data-bs-dismiss="modal"
+        >
+          Delete Project Media Cache
+        </button>
+      </div>
     </div>
 
     <!-- Permissions tab -->
@@ -83,7 +93,7 @@
     >
       <!-- Users section -->
       <div class="mb-4 row">
-        <label class="col-sm-2 col-form-label">Users</label>
+        <label class="col-sm-2 col-form-label">Individual Users</label>
         <div class="col-sm-10">
           <form data-bind="submit: add_project_member" id="edit-project-members-form" novalidate>
             <div class="row">
@@ -192,7 +202,7 @@
             />
           </div>
 
-          <div class="edit-project-metagroups-table-wrap mb-2">
+          <div class="edit-project-metagroups-table-wrap mb-4">
             <table class="edit-project-metagroups-table">
               <thead>
                 <tr>
@@ -221,7 +231,7 @@
             data-bind="text: metagroup_search_helper, visible: metagroup_search_helper()"
           ></p>
 
-          <div class="row align-items-center mb-2">
+          <div class="row align-items-center mb-2 mt-4">
             <div class="col-sm-4">
               <select class="form-select form-select-sm" data-bind="value: metagroup_permission">
                 <option value="reader">Reader</option>
@@ -284,13 +294,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button
-    class="btn btn-danger me-auto"
-    data-bind="click:delete_project_cache"
-    data-bs-dismiss="modal"
-  >
-    Delete Project Media Cache
-  </button>
   <button
     class="btn btn-primary"
     data-bind="click: function(data, event) { save_project(document.getElementById('edit-project-form'), data, event) }"
