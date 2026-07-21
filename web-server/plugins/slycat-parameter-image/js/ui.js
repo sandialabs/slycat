@@ -65,6 +65,7 @@ import uqsa_reducer, {
   setPaneSize,
   setActiveView,
   selectUqsaActiveView,
+  selectUqsaPaneWidth,
 } from "./uqsaSlice";
 import {
   setXValues,
@@ -492,10 +493,12 @@ $(document).ready(function () {
             derivedState,
           );
 
-          // Persist only uqsa.activeView in bookmarks; strip cells/status so results refetch
+          // Persist uqsa.activeView and pane size; strip cells/status so results refetch
           preloadedState.uqsa = {
             ...uqsaInitialState,
             activeView: preloadedState.uqsa?.activeView ?? null,
+            paneWidth: preloadedState.uqsa?.paneWidth ?? 0,
+            paneHeight: preloadedState.uqsa?.paneHeight ?? 0,
           };
 
           // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
@@ -544,9 +547,11 @@ $(document).ready(function () {
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
                 derived: undefined,
-                // Only persist which UQ/SA analysis is selected; heatmap data is recomputed
+                // Persist selected analysis and pane size; heatmap data is recomputed
                 uqsa: {
                   activeView: uqsa?.activeView ?? null,
+                  paneWidth: uqsa?.paneWidth ?? 0,
+                  paneHeight: uqsa?.paneHeight ?? 0,
                 },
               },
             });
@@ -575,6 +580,10 @@ $(document).ready(function () {
 
           // Reopen UQ/SA east pane when a bookmarked analysis is restored
           if (selectUqsaActiveView(window.store.getState())) {
+            const bookmarkedPaneWidth = selectUqsaPaneWidth(window.store.getState());
+            if (bookmarkedPaneWidth > 0) {
+              layout.sizePane("east", bookmarkedPaneWidth);
+            }
             layout.open("east");
           }
 
