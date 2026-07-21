@@ -18,6 +18,7 @@ import {
 
 type PSUQSAPanelProps = {
   mid: string;
+  layout: { close: (pane: string) => void };
 };
 
 const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
@@ -33,6 +34,7 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
  * - This panel owns client API calls (in useEffect) and puts results in Redux.
  * - Both means-ci and pearsons render the same Heatmap from heatmapCells.
  * - Heatmap is presentational only — no fetching inside it.
+ * - Close button calls layout.close("east"); Redux clears via onclose_end in ui.js.
  *
  * Next steps:
  * - Pearson's: add a useEffect branch like means-ci; reshape the correlation
@@ -40,7 +42,7 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
  * - Heatmap polish: tooltips, color legend, responsive wrapper from
  *   https://www.react-graph-gallery.com/heatmap
  */
-const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid }) => {
+const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   const dispatch = useDispatch();
   const activeView = useSelector(selectUqsaActiveView);
   const status = useSelector(selectUqsaStatus);
@@ -117,64 +119,60 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid }) => {
     };
   }, [activeView, mid, dispatch]);
 
+  const title = activeView ? VIEW_TITLES[activeView] : null;
+
+  const closeButton = (
+    <button
+      type="button"
+      className="btn-close"
+      aria-label="Close"
+      onClick={() => layout.close("east")}
+    />
+  );
+
+  const panelShell = (body: React.ReactNode) => (
+    <div className="p-3 overflow-auto h-100 d-flex flex-column">
+      <div className="d-flex align-items-start justify-content-between gap-2 mb-3">
+        {title ? <h5 className="mb-0">{title}</h5> : <span />}
+        {closeButton}
+      </div>
+      <div className="flex-grow-1">{body}</div>
+    </div>
+  );
+
   if (activeView === null) {
-    return (
-      <div className="p-3 text-muted">Choose a UQ/SA analysis from the controls bar.</div>
+    return panelShell(
+      <div className="text-muted">Choose a UQ/SA analysis from the controls bar.</div>,
     );
   }
 
-  const title = VIEW_TITLES[activeView];
-
   if (status === "loading") {
-    return (
-      <div className="p-3">
-        <h5 className="mb-3">{title}</h5>
-        <div className="text-muted">Loading…</div>
-      </div>
-    );
+    return panelShell(<div className="text-muted">Loading…</div>);
   }
 
   if (status === "failed") {
-    return (
-      <div className="p-3">
-        <h5 className="mb-3">{title}</h5>
-        <div className="text-danger">{error ?? "Request failed."}</div>
-      </div>
-    );
+    return panelShell(<div className="text-danger">{error ?? "Request failed."}</div>);
   }
 
   // Pearson's stub: no fetch yet, so no cells — show guidance until implemented
   if (activeView === "pearsons" && (!heatmapCells || heatmapCells.length === 0)) {
-    return (
-      <div className="p-3">
-        <h5 className="mb-2">{title}</h5>
-        <p className="text-muted mb-0">
-          Not implemented yet. When ready: fetch the correlation matrix here, reshape into{" "}
-          <code>{"{ x, y, value }"}</code> cells, dispatch <code>setHeatmapResult</code>, and this
-          panel will render <code>Heatmap</code> the same way as Means/CI.
-        </p>
-      </div>
+    return panelShell(
+      <p className="text-muted mb-0">
+        Not implemented yet. When ready: fetch the correlation matrix here, reshape into{" "}
+        <code>{"{ x, y, value }"}</code> cells, dispatch <code>setHeatmapResult</code>, and this
+        panel will render <code>Heatmap</code> the same way as Means/CI.
+      </p>,
     );
   }
 
   if (!heatmapCells || heatmapCells.length === 0) {
-    return (
-      <div className="p-3">
-        <h5 className="mb-3">{title}</h5>
-        <div className="text-muted">No data yet.</div>
-      </div>
-    );
+    return panelShell(<div className="text-muted">No data yet.</div>);
   }
 
   const heatmapWidth = Math.max(paneWidth - 24, 120);
   const heatmapHeight = Math.max(paneHeight - 72, 120);
 
-  return (
-    <div className="p-3 overflow-auto h-100">
-      <h5 className="mb-3">{title}</h5>
-      <Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} />
-    </div>
-  );
+  return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} />);
 };
 
 export default PSUQSAPanel;

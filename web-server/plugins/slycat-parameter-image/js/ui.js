@@ -62,6 +62,7 @@ import data_reducer, {
 import uqsa_reducer, {
   SLICE_NAME as UQSA_SLICE_NAME,
   setPaneSize,
+  setActiveView,
 } from "./uqsaSlice";
 import {
   setXValues,
@@ -228,6 +229,11 @@ $(document).ready(function () {
               height: pane_state.innerHeight,
             }),
           );
+        }
+      },
+      onclose_end: function () {
+        if (window.store) {
+          window.store.dispatch(setActiveView(null));
         }
       },
     },
@@ -1147,7 +1153,7 @@ $(document).ready(function () {
       uqsa_root.render(
         <StrictMode>
           <Provider store={window.store}>
-            <PSUQSAPanel mid={model_id} />
+            <PSUQSAPanel mid={model_id} layout={layout} />
           </Provider>
         </StrictMode>,
       );
