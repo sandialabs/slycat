@@ -61,8 +61,10 @@ import data_reducer, {
 } from "./dataSlice";
 import uqsa_reducer, {
   SLICE_NAME as UQSA_SLICE_NAME,
+  initialState as uqsaInitialState,
   setPaneSize,
   setActiveView,
+  selectUqsaActiveView,
 } from "./uqsaSlice";
 import {
   setXValues,
@@ -490,6 +492,12 @@ $(document).ready(function () {
             derivedState,
           );
 
+          // Persist only uqsa.activeView in bookmarks; strip cells/status so results refetch
+          preloadedState.uqsa = {
+            ...uqsaInitialState,
+            activeView: preloadedState.uqsa?.activeView ?? null,
+          };
+
           // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
           // createSlice scatterplot_reducer and other new reducers.
@@ -523,8 +531,11 @@ $(document).ready(function () {
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkReduxStateTree = () => {
+            const fullState = window.store.getState();
+            const { uqsa, ...rest } = fullState;
             bookmarker.updateState({
-              state:
+              state: {
+                ...rest,
                 // Remove derived property from state tree because it should be computed
                 // from model data each time the model is loaded. Otherwise it has the
                 // potential of becoming huge. Plus we shouldn't be storing model data
@@ -532,7 +543,12 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined },
+                derived: undefined,
+                // Only persist which UQ/SA analysis is selected; heatmap data is recomputed
+                uqsa: {
+                  activeView: uqsa?.activeView ?? null,
+                },
+              },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
@@ -556,6 +572,11 @@ $(document).ready(function () {
           manually_hidden_simulations = _.cloneDeep(
             selectManuallyHiddenSimulations(store.getState()),
           );
+
+          // Reopen UQ/SA east pane when a bookmarked analysis is restored
+          if (selectUqsaActiveView(window.store.getState())) {
+            layout.open("east");
+          }
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
