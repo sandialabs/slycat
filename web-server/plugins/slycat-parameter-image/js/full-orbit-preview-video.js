@@ -1,8 +1,9 @@
 const FULL_ORBIT_PREVIEW_FILENAME = "fullorbitpreview.mp4";
-const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
-// The video opens with static preview frames before the orbit scrub range.
+const SEQUENCE_COUNT = 11;
 const PREVIEW_FRAME_COUNT = 3;
 const PREVIEW_FRAME_RATE = 25;
+// Used as (a) the global preview at t=0 and (b) an end-of-row margin so seeks
+// do not land on the next sequence boundary.
 const PREVIEW_SKIP_DURATION = PREVIEW_FRAME_COUNT / PREVIEW_FRAME_RATE;
 const MAX_TIME_EPSILON = 0.000001;
 
@@ -29,10 +30,12 @@ export function isFullOrbitPreviewVideo(uri) {
 /**
  * Map pointer position to a seek time in a full-orbit preview video.
  *
- * The video is split into 11 equal row segments with 3 preview frames at 25 fps
- * at time 0. Horizontal scrubbing is continuous within each row, mapped between
- * the row start (skipping the preview in row 0) and a margin before the next row.
- *   - Y (up/down): selects which of the 11 sequences
+ * The video is split into SEQUENCE_COUNT equal sequences. The first
+ * PREVIEW_FRAME_COUNT frames at PREVIEW_FRAME_RATE fps are a static preview at
+ * time 0. Horizontal scrubbing is continuous within each sequence, mapped
+ * between the sequence start (skipping the preview in sequence 0) and
+ * PREVIEW_SKIP_DURATION before the next sequence.
+ *   - Y (up/down): selects which of the sequences
  *   - X (right-to-left): position within the selected sequence
  */
 export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
@@ -55,12 +58,8 @@ export function calculateFullOrbitPreviewTime(videoElement, mouseEvent) {
   const perY = (height - y) / height;
   const perX = (width - x) / width;
   const previewSkip = Math.min(PREVIEW_SKIP_DURATION, duration);
-  const segmentDuration = duration / FULL_ORBIT_PREVIEW_GRID_SIZE;
-  const rowIndex = clamp(
-    Math.round(perY * FULL_ORBIT_PREVIEW_GRID_SIZE),
-    0,
-    FULL_ORBIT_PREVIEW_GRID_SIZE - 1,
-  );
+  const segmentDuration = duration / SEQUENCE_COUNT;
+  const rowIndex = clamp(Math.round(perY * SEQUENCE_COUNT), 0, SEQUENCE_COUNT - 1);
   const rowStartTime = rowIndex * segmentDuration;
   const segmentMaxTime = rowStartTime + segmentDuration - previewSkip;
   const segmentMinTime =
@@ -97,10 +96,6 @@ export function installFullOrbitPreviewHover(videoElement) {
     videoElement.currentTime = FULL_ORBIT_PREVIEW_DEFAULT_TIME;
   };
 
-  const handleMouseEnter = () => {
-    hovering = true;
-  };
-
   const handleMouseLeave = () => {
     hovering = false;
     showDefaultFrame();
@@ -132,14 +127,12 @@ export function installFullOrbitPreviewHover(videoElement) {
     videoElement.currentTime = time;
   };
 
-  videoElement.addEventListener("mouseenter", handleMouseEnter);
   videoElement.addEventListener("mousemove", handleMouseMove);
   videoElement.addEventListener("mouseleave", handleMouseLeave);
   videoElement.addEventListener("seeked", handleSeeked);
 
   const cleanup = () => {
     hovering = false;
-    videoElement.removeEventListener("mouseenter", handleMouseEnter);
     videoElement.removeEventListener("mousemove", handleMouseMove);
     videoElement.removeEventListener("mouseleave", handleMouseLeave);
     videoElement.removeEventListener("seeked", handleSeeked);
