@@ -63,6 +63,7 @@ import {
   FULL_ORBIT_PREVIEW_VIDEO_TYPE,
   installFullOrbitPreviewHover,
   isFullOrbitPreviewVideo,
+  uninstallFullOrbitPreviewHover,
 } from "./full-orbit-preview-video";
 
 // Events for vtk viewer
@@ -3568,6 +3569,10 @@ $.widget("parameter_image.scatterplot", {
     if (frame_html.node().querySelector(".vtp")) {
       frame_html.node().querySelector(".vtp").dispatchEvent(vtkclose_event);
     }
+
+    frame_html.selectAll(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR).each(function () {
+      uninstallFullOrbitPreviewHover(this);
+    });
 
     // Remove the frame and its line
     frame_html.remove();
