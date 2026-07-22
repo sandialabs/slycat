@@ -1,7 +1,7 @@
 const FULL_ORBIT_PREVIEW_FILENAME = "fullorbitpreview.mp4";
 const FULL_ORBIT_PREVIEW_GRID_SIZE = 11;
 // The video opens with static preview frames before the orbit scrub range.
-const PREVIEW_FRAME_COUNT = 4;
+const PREVIEW_FRAME_COUNT = 3;
 const PREVIEW_FRAME_RATE = 25;
 const PREVIEW_SKIP_DURATION = PREVIEW_FRAME_COUNT / PREVIEW_FRAME_RATE;
 const MAX_TIME_EPSILON = 0.000001;
@@ -29,7 +29,7 @@ export function isFullOrbitPreviewVideo(uri) {
 /**
  * Map pointer position to a seek time in a full-orbit preview video.
  *
- * The video is split into 11 equal row segments with 4 preview frames at 25 fps
+ * The video is split into 11 equal row segments with 3 preview frames at 25 fps
  * at time 0. Horizontal scrubbing is continuous within each row, mapped between
  * the row start (skipping the preview in row 0) and a margin before the next row.
  *   - Y (up/down): selects which of the 11 sequences
