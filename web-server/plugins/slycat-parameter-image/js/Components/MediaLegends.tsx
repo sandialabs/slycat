@@ -87,6 +87,7 @@ const mapStateToProps = (state: RootState) => {
   const three_d_colorvars = state.three_d_colorvars;
   const open_media = state.open_media ? state.open_media : [];
   const hidden_simulations = state.data.hidden_simulations;
+  const show_threeD_legends = state.show_threeD_legends;
   const not_hidden_open_media = _.filter(
     open_media,
     (o) => hidden_simulations.indexOf(o.index) < 0,
@@ -122,9 +123,11 @@ const mapStateToProps = (state: RootState) => {
     const width = measured ? measured.width : DEFAULT_LEGEND_WIDTH;
 
     return {
-      // only render if we have a color variable and it's a point or cell variable (not just solid color)
-      // and we have a range
-      render: Boolean(three_d_colorvar && pointOrCell && domain),
+      // only render if legends are enabled, we have a color variable that is a
+      // point or cell variable (not just solid color), and we have a range
+      render: Boolean(
+        show_threeD_legends && three_d_colorvar && pointOrCell && domain,
+      ),
       label: threeDLegendLabel,
       gradient_data,
       domain,

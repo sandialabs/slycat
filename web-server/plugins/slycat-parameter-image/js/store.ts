@@ -117,6 +117,7 @@ export type RootState = {
   fontFamily: string;
   axesVariables: AxesVariablesType;
   threeD_sync: boolean;
+  show_threeD_legends: boolean;
   colormap: string;
   threeDColormap: string;
   threeD_background_color: [number, number, number];
@@ -157,6 +158,7 @@ export const initialState: RootState = {
   fontFamily: DEFAULT_FONT_FAMILY,
   axesVariables: {},
   threeD_sync: false,
+  show_threeD_legends: true,
   colormap: "night",
   // First colormap is default
   threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],

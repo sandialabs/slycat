@@ -13,6 +13,7 @@ import {
   SET_THREE_D_COLORBY_LEGEND,
   UPDATE_THREE_D_CAMERAS,
   TOGGLE_THREE_D_SYNC,
+  TOGGLE_SHOW_THREE_D_LEGENDS,
   SET_UNSELECTED_POINT_SIZE,
   SET_UNSELECTED_BORDER_SIZE,
   SET_SELECTED_POINT_SIZE,
@@ -69,6 +70,7 @@ const initialState = {
   axesVariables: {},
   currentFrame: {},
   threeD_sync: false,
+  show_threeD_legends: true,
   three_d_colormaps: {},
   open_media: [],
 };
@@ -211,6 +213,11 @@ export default function ps_reducer(state = initialState, action) {
     case TOGGLE_THREE_D_SYNC:
       return Object.assign({}, state, {
         threeD_sync: !state.threeD_sync,
+      });
+
+    case TOGGLE_SHOW_THREE_D_LEGENDS:
+      return Object.assign({}, state, {
+        show_threeD_legends: !state.show_threeD_legends,
       });
 
     case SET_UNSELECTED_POINT_SIZE:
