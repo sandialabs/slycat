@@ -471,6 +471,10 @@
 #scatterplot g.legend:hover {
   cursor: move;
 }
+.threeD-media-legend text.label {
+  text-anchor: middle;
+  font-weight: bold;
+}
 #scatterplot .image-frame rect.outline {
   shape-rendering: crispEdges;
 }

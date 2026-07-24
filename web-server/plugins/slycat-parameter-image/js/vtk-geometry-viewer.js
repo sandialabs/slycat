@@ -30,31 +30,11 @@ import {
   setThreeDColorByRange,
   adjustThreeDVariableDataRange,
 } from "./actions";
+import { getThreeDDataRange } from "./three-d-data-range";
 import _ from "lodash";
 import watch from "redux-watch";
 
 var vtkstartinteraction_event = new Event("vtkstartinteraction");
-
-export function getDataRange(colorBy) {
-  if (colorBy == ":") {
-    return [0, 1];
-  }
-  const three_d_variable_data_ranges =
-    window.store.getState().three_d_variable_data_ranges[colorBy];
-  const three_d_variable_user_ranges =
-    window.store.getState().three_d_variable_user_ranges[colorBy];
-  // console.debug(`vtk-geometry-viewer three_d_variable_user_ranges for ${colorBy} is ${three_d_variable_user_ranges}`);
-  // console.debug(`vtk-geometry-viewer three_d_variable_data_ranges for ${colorBy} is ${three_d_variable_data_ranges}`);
-  const min =
-    three_d_variable_user_ranges && three_d_variable_user_ranges.min !== undefined
-      ? three_d_variable_user_ranges.min
-      : three_d_variable_data_ranges.min;
-  const max =
-    three_d_variable_user_ranges && three_d_variable_user_ranges.max !== undefined
-      ? three_d_variable_user_ranges.max
-      : three_d_variable_data_ranges.max;
-  return [min, max];
-}
 
 export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
@@ -216,9 +196,12 @@ export function load(container, buffer, uri, uid, type) {
           uri,
         );
         console.debug(`From this VTP file:                      %o`, vtpDataRange);
-        const newDataRange = getDataRange(colorBy);
+        const newDataRange = getThreeDDataRange(window.store.getState(), colorBy);
         console.debug(`From Display Settings > Variable Ranges: %o`, newDataRange);
         console.groupEnd();
+        if (!newDataRange) {
+          return;
+        }
         dataRange[0] = newDataRange[0];
         dataRange[1] = newDataRange[1];
         colorMode = ColorMode.MAP_SCALARS;
@@ -260,7 +243,9 @@ export function load(container, buffer, uri, uid, type) {
         window.store.getState().three_d_colorvars &&
         window.store.getState().three_d_colorvars[uid] &&
         window.store.getState().three_d_colorvars[uid] != colorBy;
-      const colorVariableRangeChanged = !_.isEqual(getDataRange(colorBy), dataRange);
+      const resolvedRange = getThreeDDataRange(window.store.getState(), colorBy);
+      const colorVariableRangeChanged =
+        resolvedRange != null && !_.isEqual(resolvedRange, dataRange);
       // console.log(`colorVariableRangeChanged: ${colorVariableRangeChanged}`);
 
       if (colorVariableChanged || colorVariableRangeChanged) {
