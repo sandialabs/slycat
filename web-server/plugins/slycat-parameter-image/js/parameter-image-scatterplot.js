@@ -2120,7 +2120,7 @@ $.widget("parameter_image.scatterplot", {
         }
         self._drag_from_button = false;
 
-        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Showing the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").show();
 
         var frame, sourceEventTarget;
@@ -2152,7 +2152,7 @@ $.widget("parameter_image.scatterplot", {
           return;
         }
 
-        // Hiding the mouseEventOverlay on all frames (currently PDF and videos only)
+        // Hiding the mouseEventOverlay on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").hide();
 
         self.state = "";
@@ -2226,7 +2226,7 @@ $.widget("parameter_image.scatterplot", {
       resize_start: function () {
         // console.log("resize_start");
 
-        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Showing the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").show();
 
         // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this
@@ -2250,7 +2250,7 @@ $.widget("parameter_image.scatterplot", {
       resize_end: function () {
         // console.log("resize_end");
 
-        // Hiding the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Hiding the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").hide();
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed(
@@ -2889,6 +2889,10 @@ $.widget("parameter_image.scatterplot", {
             },
             false,
           );
+
+          // Overlay to prevent VTK from capturing mouse events while resizing/dragging the frame
+          // (same pattern as PDF/video viewers above).
+          frame_html.append("div").classed("mouseEventOverlay", true);
 
           // Convert the blob to an array buffer and pass it to the geometry loader
           function passToGeometryLoaded(buffer) {
