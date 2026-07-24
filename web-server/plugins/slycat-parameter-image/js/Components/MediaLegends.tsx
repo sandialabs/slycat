@@ -57,10 +57,16 @@ class MediaLegends extends React.PureComponent<MediaLegendsProps> {
         // inner translate; do not add -BACKGROUND_X/Y again (that oversized the SVG).
         const svgWidth = legend.width + BACKGROUND_WIDTH_PAD;
         const svgHeight = legend.height - BACKGROUND_HEIGHT_INSET;
-        const stopLegendMouseDown = (e: React.MouseEvent) => {
+        const onLegendMouseDown = (e: React.MouseEvent) => {
           // Match .media-layer: don't start scatterplot rubber-band selection
           e.stopPropagation();
           e.preventDefault();
+          e.currentTarget.dispatchEvent(
+            new CustomEvent("slycat-bring-frame-to-front", {
+              bubbles: true,
+              detail: { uid: legend.uid },
+            }),
+          );
         };
         return (
           <svg
@@ -80,7 +86,7 @@ class MediaLegends extends React.PureComponent<MediaLegendsProps> {
             <g
               transform={`translate(${-BACKGROUND_X}, ${-BACKGROUND_Y})`}
               style={{ pointerEvents: "auto" }}
-              onMouseDown={stopLegendMouseDown}
+              onMouseDown={onLegendMouseDown}
             >
               <rect
                 height={legend.height - BACKGROUND_HEIGHT_INSET}

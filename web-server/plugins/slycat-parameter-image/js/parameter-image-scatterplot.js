@@ -265,6 +265,18 @@ $.widget("parameter_image.scatterplot", {
       event.preventDefault();
     });
 
+    // Bring matching media frame to front when its 3D legend is clicked
+    self.element[0].addEventListener("slycat-bring-frame-to-front", (e) => {
+      const uid = e.detail?.uid;
+      if (!uid) return;
+      const frame = self.element[0].querySelector(
+        `.media-layer .image-frame[data-uid="${CSS.escape(uid)}"]`,
+      );
+      if (frame) {
+        self._move_frame_to_front(frame);
+      }
+    });
+
     self.scatterplot_grid_root = d3
       .select(self.element.get(0))
       .append("div")
