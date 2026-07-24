@@ -473,6 +473,8 @@
 }
 .threeD-media-legend {
   cursor: default;
+  display: block;
+  overflow: visible;
 }
 .threeD-media-legend text.label {
   text-anchor: middle;
@@ -482,6 +484,9 @@
   font-size: 1.3em;
   position: relative;
   top: -1px;
+}
+#threeD_legends_root {
+  display: none;
 }
 #scatterplot .image-frame rect.outline {
   shape-rendering: crispEdges;

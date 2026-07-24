@@ -1,5 +1,6 @@
 import { connect } from "react-redux";
 import React from "react";
+import { createPortal } from "react-dom";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import ThreeDMediaLegend, { GradientStop } from "./ThreeDMediaLegend";
 import { setThreeDColorByLegend } from "../actions";
@@ -31,6 +32,7 @@ type MediaLegendItem = {
   uid: string;
   x: number;
   y: number;
+  z_index: number;
 };
 
 type MediaLegendsProps = {
@@ -43,43 +45,67 @@ type MediaLegendsProps = {
 
 class MediaLegends extends React.PureComponent<MediaLegendsProps> {
   render() {
+    const mediaLayer =
+      typeof document !== "undefined"
+        ? document.querySelector("#scatterplot .media-layer")
+        : null;
+
     const legends = this.props.legends
       .filter((legend) => legend.render && legend.domain != null)
-      .map((legend) => (
-        <g
-          key={legend.uid}
-          transform={`translate(${legend.x},${legend.y})`}
-          className="threeD-media-legend"
-          onMouseDown={(e) => {
-            // Match .media-layer: don't start scatterplot rubber-band selection
-            e.stopPropagation();
-            e.preventDefault();
-          }}
-        >
-          <rect
-            height={legend.height - BACKGROUND_HEIGHT_INSET}
-            width={legend.width + BACKGROUND_WIDTH_PAD}
-            fill={`rgb(${this.props.background_color})`}
-            stroke="black"
-            x={BACKGROUND_X}
-            y={BACKGROUND_Y}
-          />
-          <ThreeDMediaLegend
-            fontSize={this.props.font_size}
-            fontFamily={this.props.font_family}
-            label={legend.label}
-            gradient_data={legend.gradient_data}
-            domain={legend.domain as ThreeDDataRange}
-            height={legend.legend_height}
-            gradient_width={legend.gradient_width}
-            x_offset={LEGEND_CONTENT_X_OFFSET}
-            uid={legend.uid}
-            setThreeDColorByLegend={this.props.setThreeDColorByLegend}
-          />
-        </g>
-      ));
+      .map((legend) => {
+        const svgWidth = legend.width + BACKGROUND_WIDTH_PAD - BACKGROUND_X;
+        const svgHeight = legend.height - BACKGROUND_HEIGHT_INSET - BACKGROUND_Y;
+        return (
+          <svg
+            key={legend.uid}
+            className="threeD-media-legend"
+            width={svgWidth}
+            height={svgHeight}
+            style={{
+              position: "absolute",
+              left: legend.x + BACKGROUND_X,
+              top: legend.y + BACKGROUND_Y,
+              zIndex: legend.z_index,
+              overflow: "visible",
+              pointerEvents: "auto",
+            }}
+            onMouseDown={(e) => {
+              // Match .media-layer: don't start scatterplot rubber-band selection
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            <g transform={`translate(${-BACKGROUND_X}, ${-BACKGROUND_Y})`}>
+              <rect
+                height={legend.height - BACKGROUND_HEIGHT_INSET}
+                width={legend.width + BACKGROUND_WIDTH_PAD}
+                fill={`rgb(${this.props.background_color})`}
+                stroke="black"
+                x={BACKGROUND_X}
+                y={BACKGROUND_Y}
+              />
+              <ThreeDMediaLegend
+                fontSize={this.props.font_size}
+                fontFamily={this.props.font_family}
+                label={legend.label}
+                gradient_data={legend.gradient_data}
+                domain={legend.domain as ThreeDDataRange}
+                height={legend.legend_height}
+                gradient_width={legend.gradient_width}
+                x_offset={LEGEND_CONTENT_X_OFFSET}
+                uid={legend.uid}
+                setThreeDColorByLegend={this.props.setThreeDColorByLegend}
+              />
+            </g>
+          </svg>
+        );
+      });
 
-    return <React.Fragment>{legends}</React.Fragment>;
+    if (!mediaLayer) {
+      return null;
+    }
+
+    return createPortal(<React.Fragment>{legends}</React.Fragment>, mediaLayer);
   }
 }
 
@@ -138,6 +164,7 @@ const mapStateToProps = (state: RootState) => {
       uid: media.uid,
       x: media.x + media.width + LEGEND_X_GAP,
       y: media.y + LEGEND_Y_OFFSET,
+      z_index: media.z_index ?? 0,
     };
   });
 

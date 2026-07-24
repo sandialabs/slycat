@@ -291,7 +291,6 @@ $.widget("parameter_image.scatterplot", {
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.line_layer = self.svg.append("g").attr("class", "line-layer");
-    self.threeD_legends_layer = self.svg.append("g").attr("id", "threeD_legends");
 
     self.options.image_cache = {};
 
@@ -668,7 +667,12 @@ $.widget("parameter_image.scatterplot", {
       // console.groupEnd();
     };
 
-    const threeD_legends_root = createRoot(document.getElementById("threeD_legends"));
+    const threeD_legends_host = d3
+      .select(self.element.get(0))
+      .append("div")
+      .attr("id", "threeD_legends_root")
+      .node();
+    const threeD_legends_root = createRoot(threeD_legends_host);
     threeD_legends_root.render(
       <StrictMode>
         <Provider store={window.store}>
@@ -1946,6 +1950,7 @@ $.widget("parameter_image.scatterplot", {
           height: frame.outerHeight(),
           current_frame: frame.hasClass("selected"),
           ratio: frame.attr("data-ratio"),
+          z_index: parseInt(frame.css("z-index"), 10) || 0,
         };
         var video = frame.find("video")[0];
         if (video != undefined) {

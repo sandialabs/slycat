@@ -103,6 +103,7 @@ export type OpenMediaType = {
   video?: boolean;
   playing?: boolean;
   threeD?: boolean;
+  z_index?: number;
 }[];
 
 // Currently we are not storing any details of the filters
