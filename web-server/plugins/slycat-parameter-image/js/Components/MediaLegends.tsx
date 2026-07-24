@@ -53,8 +53,15 @@ class MediaLegends extends React.PureComponent<MediaLegendsProps> {
     const legends = this.props.legends
       .filter((legend) => legend.render && legend.domain != null)
       .map((legend) => {
-        const svgWidth = legend.width + BACKGROUND_WIDTH_PAD - BACKGROUND_X;
-        const svgHeight = legend.height - BACKGROUND_HEIGHT_INSET - BACKGROUND_Y;
+        // Background already sits in [0, width+pad] / [0, height-inset] after the
+        // inner translate; do not add -BACKGROUND_X/Y again (that oversized the SVG).
+        const svgWidth = legend.width + BACKGROUND_WIDTH_PAD;
+        const svgHeight = legend.height - BACKGROUND_HEIGHT_INSET;
+        const stopLegendMouseDown = (e: React.MouseEvent) => {
+          // Match .media-layer: don't start scatterplot rubber-band selection
+          e.stopPropagation();
+          e.preventDefault();
+        };
         return (
           <svg
             key={legend.uid}
@@ -67,15 +74,14 @@ class MediaLegends extends React.PureComponent<MediaLegendsProps> {
               top: legend.y + BACKGROUND_Y,
               zIndex: legend.z_index,
               overflow: "visible",
-              pointerEvents: "auto",
-            }}
-            onMouseDown={(e) => {
-              // Match .media-layer: don't start scatterplot rubber-band selection
-              e.stopPropagation();
-              e.preventDefault();
+              pointerEvents: "none",
             }}
           >
-            <g transform={`translate(${-BACKGROUND_X}, ${-BACKGROUND_Y})`}>
+            <g
+              transform={`translate(${-BACKGROUND_X}, ${-BACKGROUND_Y})`}
+              style={{ pointerEvents: "auto" }}
+              onMouseDown={stopLegendMouseDown}
+            >
               <rect
                 height={legend.height - BACKGROUND_HEIGHT_INSET}
                 width={legend.width + BACKGROUND_WIDTH_PAD}
