@@ -10,14 +10,17 @@ import _ from "lodash";
 
 const MIN_LEGEND_HEIGHT = 40;
 const LEGEND_HEIGHT_INSET = 60;
-const LEGEND_X_GAP = 40;
+// Horizontal spacing: tighter than the original, with a little breathing room.
+// LEGEND_X_GAP is derived from BACKGROUND_X so the legend never overlaps the frame.
+const FRAME_LEGEND_GAP = 0;
+const BACKGROUND_X = -28;
+const LEGEND_X_GAP = -BACKGROUND_X + FRAME_LEGEND_GAP;
 const LEGEND_Y_OFFSET = 20;
 const GRADIENT_WIDTH = 10;
-const LEGEND_CONTENT_X_OFFSET = 10;
+const LEGEND_CONTENT_X_OFFSET = 6;
 const DEFAULT_LEGEND_WIDTH = 200;
-const BACKGROUND_WIDTH_PAD = 40;
+const BACKGROUND_WIDTH_PAD = 16;
 const BACKGROUND_HEIGHT_INSET = 21;
-const BACKGROUND_X = -41;
 const BACKGROUND_Y = -19.5;
 
 type MediaLegendItem = {

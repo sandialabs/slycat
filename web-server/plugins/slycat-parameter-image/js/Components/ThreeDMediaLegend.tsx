@@ -126,9 +126,9 @@ export default class ThreeDMediaLegend extends React.PureComponent<ThreeDMediaLe
         />
         <text
           className="label"
-          x={-15}
+          x={-12}
           y={this.props.height / 2}
-          transform={`rotate(-90, ${-15}, ${this.props.height / 2})`}
+          transform={`rotate(-90, ${-12}, ${this.props.height / 2})`}
           style={{
             fontSize: this.props.fontSize,
             fontFamily: this.props.fontFamily,
