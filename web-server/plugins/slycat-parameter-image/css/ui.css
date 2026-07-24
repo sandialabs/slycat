@@ -471,6 +471,9 @@
 #scatterplot g.legend:hover {
   cursor: move;
 }
+.threeD-media-legend {
+  cursor: default;
+}
 .threeD-media-legend text.label {
   text-anchor: middle;
   font-weight: bold;

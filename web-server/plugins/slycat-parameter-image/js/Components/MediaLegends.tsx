@@ -50,6 +50,11 @@ class MediaLegends extends React.PureComponent<MediaLegendsProps> {
           key={legend.uid}
           transform={`translate(${legend.x},${legend.y})`}
           className="threeD-media-legend"
+          onMouseDown={(e) => {
+            // Match .media-layer: don't start scatterplot rubber-band selection
+            e.stopPropagation();
+            e.preventDefault();
+          }}
         >
           <rect
             height={legend.height - BACKGROUND_HEIGHT_INSET}
