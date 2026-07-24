@@ -478,6 +478,11 @@
   text-anchor: middle;
   font-weight: bold;
 }
+.threeD-legends-toggle-icon {
+  font-size: 1.3em;
+  position: relative;
+  top: -1px;
+}
 #scatterplot .image-frame rect.outline {
   shape-rendering: crispEdges;
 }

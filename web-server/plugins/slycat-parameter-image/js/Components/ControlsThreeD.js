@@ -9,7 +9,7 @@ import {
 import ControlsGroup from "components/ControlsGroup";
 import ControlsButtonToggle from "components/ControlsButtonToggle";
 import ControlsDropdown from "components/ControlsDropdown";
-import { faCubes, faRulerVertical } from "@fortawesome/free-solid-svg-icons";
+import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import d3 from "d3";
@@ -76,7 +76,9 @@ class ControlsThreeD extends React.Component {
           title={
             this.props.show_threeD_legends ? "Hide 3D Legends" : "Show 3D Legends"
           }
-          icon={faRulerVertical}
+          iconType="ruler"
+          rotation={315}
+          iconClassName="threeD-legends-toggle-icon"
           active={this.props.show_threeD_legends}
           toggle_active_state={this.toggle_show_threeD_legends}
           button_style={this.props.button_style}

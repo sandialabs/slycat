@@ -53,7 +53,7 @@ import { faWindowMinimize } from "@fortawesome/free-regular-svg-icons/faWindowMi
  *   // ...then in ICON_NAME_MAP:
  *   "text-columns": { library: "react-icons", component: PiTextColumns },
  */
-import { PiTextAlignJustify, PiTextColumns } from "react-icons/pi";
+import { PiTextAlignJustify, PiTextColumns, PiRulerBold } from "react-icons/pi";
 import type { IconType } from "react-icons";
 
 type FontAwesomeMapEntry = { icon: IconDefinition };
@@ -89,15 +89,16 @@ export const ICON_NAME_MAP = {
   // react-icons icons
   "text-columns": { library: "react-icons", component: PiTextColumns },
   "text-align-justify": { library: "react-icons", component: PiTextAlignJustify },
+  ruler: { library: "react-icons", component: PiRulerBold },
 } satisfies Record<string, IconMapEntry>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;
 
 /**
- * Quarter-turn rotation in degrees, applied uniformly via a CSS transform.
+ * Rotation in degrees (45° steps), applied uniformly via a CSS transform.
  * `0` is treated as no rotation.
  */
-export type IconRotation = 0 | 90 | 180 | 270;
+export type IconRotation = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 
 type IconProps = Omit<FontAwesomeIconProps, "icon" | "rotation"> & {
   type: IconName;
@@ -108,7 +109,7 @@ const isReactIconsMapEntry = (entry: IconMapEntry): entry is ReactIconsMapEntry 
   "library" in entry && entry.library === "react-icons";
 
 /**
- * Merge a quarter-turn rotation into a caller-provided style, preserving any
+ * Merge a rotation into a caller-provided style, preserving any
  * existing `transform` / `transformOrigin` they may have set.
  */
 const applyRotationStyle = (
@@ -125,7 +126,7 @@ const applyRotationStyle = (
       ? `${callerStyle.transform} ${rotateTransform}`
       : rotateTransform,
     // Top-level SVGs default to a center origin in modern browsers, but be
-    // explicit so a 90° icon always pivots around its visual center.
+    // explicit so a rotated icon always pivots around its visual center.
     transformOrigin: callerStyle?.transformOrigin ?? "center",
   };
 };
