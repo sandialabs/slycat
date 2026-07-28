@@ -18,6 +18,7 @@ import vtkMouseCameraTrackballZoomManipulator from "vtk.js/Sources/Interaction/M
 import vtkMouseCameraTrackballZoomToMouseManipulator from "vtk.js/Sources/Interaction/Manipulators/MouseCameraTrackballZoomToMouseManipulator";
 
 import vtkColorTransferFunction from "vtk.js/Sources/Rendering/Core/ColorTransferFunction";
+import vtkScalarBarActor from "vtk.js/Sources/Rendering/Core/ScalarBarActor";
 import vtkDataArray from "vtk.js/Sources/Common/Core/DataArray";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import { ColorMode, ScalarMode } from "vtk.js/Sources/Rendering/Core/Mapper/Constants";
@@ -54,7 +55,7 @@ export function load(container, buffer, uri, uid, type) {
   // Simple pipeline VTP reader Source --> Mapper --> Actor
   // ----------------------------------------------------------------------------
 
-  let mapper, lookupTable, source, scalars, dataRange, activeArray;
+  let mapper, lookupTable, source, scalars, dataRange, activeArray, scalarBarActor;
   if (type == "stl") {
     const stlReader = vtkSTLReader.newInstance();
     mapper = vtkMapper.newInstance({ scalarVisibility: false });
@@ -77,6 +78,36 @@ export function load(container, buffer, uri, uid, type) {
     dataRange = [].concat(scalars ? scalars.getRange() : [0, 1]);
     activeArray = vtkDataArray;
 
+    // In-viewer legend for comparison with the sidecar SVG MediaLegends
+    scalarBarActor = vtkScalarBarActor.newInstance({
+      automated: true,
+      orientation: "vertical",
+      drawNanAnnotation: false,
+      drawBelowRangeSwatch: false,
+      drawAboveRangeSwatch: false,
+    });
+    scalarBarActor.setScalarsToColors(lookupTable);
+    scalarBarActor.setVisibility(false);
+
+    function applyLegendTextStyle() {
+      if (!scalarBarActor) {
+        return;
+      }
+      const { fontSize, fontFamily } = window.store.getState();
+      const shared = {
+        fontColor: "black",
+        fontFamily: fontFamily || "Arial",
+        fontSize: fontSize,
+      };
+      // Match SVG MediaLegends / scatterplot axes (black text; bold title label)
+      scalarBarActor.setAxisTextStyle({ ...shared, fontStyle: "bold" });
+      scalarBarActor.setTickTextStyle({ ...shared, fontStyle: "normal" });
+      renderWindow.render();
+    }
+    applyLegendTextStyle();
+    window.store.subscribe(watch(window.store.getState, "fontSize")(applyLegendTextStyle));
+    window.store.subscribe(watch(window.store.getState, "fontFamily")(applyLegendTextStyle));
+
     // --------------------------------------------------------------------
     // Color handling
     // --------------------------------------------------------------------
@@ -89,6 +120,9 @@ export function load(container, buffer, uri, uid, type) {
       lookupTable.applyColorMap(colormap);
       lookupTable.setMappingRange(dataRange[0], dataRange[1]);
       lookupTable.updateRange();
+      if (scalarBarActor) {
+        scalarBarActor.setScalarsToColors(lookupTable);
+      }
 
       // Not part of VTK example, but needs to be done to get update after changing color options
       renderWindow.render();
@@ -235,6 +269,15 @@ export function load(container, buffer, uri, uid, type) {
         scalarMode,
         scalarVisibility,
       });
+      if (scalarBarActor) {
+        if (scalarVisibility) {
+          const axisLabel = `${colorByArrayName}${
+            componentString ? ` [${parseInt(componentString, 10) + 1}]` : ""
+          }`;
+          scalarBarActor.setAxisLabel(axisLabel);
+        }
+        scalarBarActor.setVisibility(scalarVisibility);
+      }
       applyPreset();
     }
 
@@ -290,6 +333,9 @@ export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
 
   renderer.addActor(actor);
+  if (scalarBarActor) {
+    renderer.addActor(scalarBarActor);
+  }
   renderer.resetCamera();
 
   // ----------------------------------------------------------------------------
