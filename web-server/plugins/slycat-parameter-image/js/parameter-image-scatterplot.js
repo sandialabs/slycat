@@ -24,6 +24,7 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
+import { ENABLE_SVG_THREE_D_LEGENDS } from "./svg-three-d-legends-gate";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -679,19 +680,21 @@ $.widget("parameter_image.scatterplot", {
       // console.groupEnd();
     };
 
-    const threeD_legends_host = d3
-      .select(self.element.get(0))
-      .append("div")
-      .attr("id", "threeD_legends_root")
-      .node();
-    const threeD_legends_root = createRoot(threeD_legends_host);
-    threeD_legends_root.render(
-      <StrictMode>
-        <Provider store={window.store}>
-          <MediaLegends />
-        </Provider>
-      </StrictMode>,
-    );
+    if (ENABLE_SVG_THREE_D_LEGENDS) {
+      const threeD_legends_host = d3
+        .select(self.element.get(0))
+        .append("div")
+        .attr("id", "threeD_legends_root")
+        .node();
+      const threeD_legends_root = createRoot(threeD_legends_host);
+      threeD_legends_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <MediaLegends />
+          </Provider>
+        </StrictMode>,
+      );
+    }
 
     const grid_root = createRoot(document.getElementById("scatterplot-grid-root"));
     grid_root.render(

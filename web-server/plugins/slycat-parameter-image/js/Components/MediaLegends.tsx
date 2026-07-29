@@ -5,6 +5,7 @@ import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import ThreeDMediaLegend, { GradientStop } from "./ThreeDMediaLegend";
 import { setThreeDColorByLegend } from "../actions";
 import { getThreeDDataRange, ThreeDDataRange } from "../three-d-data-range";
+import { ENABLE_SVG_THREE_D_LEGENDS } from "../svg-three-d-legends-gate";
 import { RootState } from "../store";
 import _ from "lodash";
 
@@ -48,6 +49,10 @@ type MediaLegendsProps = {
 
 class MediaLegends extends React.PureComponent<MediaLegendsProps> {
   render() {
+    if (!ENABLE_SVG_THREE_D_LEGENDS) {
+      return null;
+    }
+
     const mediaLayer =
       typeof document !== "undefined"
         ? document.querySelector("#scatterplot .media-layer")
