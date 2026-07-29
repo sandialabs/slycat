@@ -89,6 +89,15 @@ export function load(container, buffer, uri, uid, type) {
     scalarBarActor.setScalarsToColors(lookupTable);
     scalarBarActor.setVisibility(false);
 
+    function updateScalarBarVisibility(scalarVisibility) {
+      if (!scalarBarActor) {
+        return;
+      }
+      const show = window.store.getState().show_threeD_legends && scalarVisibility;
+      scalarBarActor.setVisibility(show);
+      renderWindow.render();
+    }
+
     function applyLegendTextStyle() {
       if (!scalarBarActor) {
         return;
@@ -276,7 +285,7 @@ export function load(container, buffer, uri, uid, type) {
           }`;
           scalarBarActor.setAxisLabel(axisLabel);
         }
-        scalarBarActor.setVisibility(scalarVisibility);
+        updateScalarBarVisibility(scalarVisibility);
       }
       applyPreset();
     }
@@ -322,6 +331,13 @@ export function load(container, buffer, uri, uid, type) {
         "three_d_variable_user_ranges",
         _.isEqual,
       )(updateColorByIfChanged),
+    );
+    // Match SVG MediaLegends: hide/show VTK scalar bar with the legends toggle
+    window.store.subscribe(
+      watch(window.store.getState, "show_threeD_legends")(() => {
+        const hasScalars = Boolean(colorBy && colorBy !== ":");
+        updateScalarBarVisibility(hasScalars);
+      }),
     );
   }
 
