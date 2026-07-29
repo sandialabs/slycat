@@ -36,6 +36,12 @@ import {
   selectXColumnName,
   selectYColumnName,
   selectVColumnName,
+  selectXColumnType,
+  selectYColumnType,
+  selectVColumnType,
+  selectXScaleType,
+  selectYScaleType,
+  selectVScaleType,
   selectXScale,
   selectYScale,
   selectVScale,
@@ -47,6 +53,8 @@ import {
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
+import { truncateString } from "js/slycat-string-truncate";
+import { measureSvgText } from "js/slycat-svg-text";
 import {
   selectHideLabels,
   selectHorizontalSpacing,
@@ -56,8 +64,67 @@ import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
 } from "components/ScatterplotOptions/ScatterplotOptionsCategoricalAxisLabels";
+import {
+  DEFAULT_SCATTERPLOT_MARGIN_TOP,
+  DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
+  DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
+  DEFAULT_SCATTERPLOT_MARGIN_LEFT,
+} from "components/ScatterplotOptions/ScatterplotOptions";
 import { TypeLabel, FrameMenu } from "./Components/TypeButton";
 import { MEDIA_TYPES } from "./constants/media-types";
+
+// Maximum width (in px) for a single y-axis tick label before it gets
+// truncated with an ellipsis.
+const Y_AXIS_TICK_MAX_WIDTH = 140;
+
+// Maximum width (in px) for a single x-axis tick label before it gets
+// truncated with an ellipsis. Measured along the text baseline; the visible
+// horizontal extent is slightly less since x-axis labels are rotated 15 degrees.
+const X_AXIS_TICK_MAX_WIDTH = 140;
+
+// Maximum width (in px) for a single legend axis tick label before it gets
+// truncated with an ellipsis.
+const LEGEND_AXIS_TICK_MAX_WIDTH = 140;
+
+// Hybrid numeric tick formatting: scale.tickFormat(tickCount, ",~f") for
+// human-scale magnitudes; compact d3 .2g outside this band.
+const HYBRID_AXIS_TICK_NORMAL_SPECIFIER = ",~f";
+const HYBRID_AXIS_TICK_COMPACT_ABOVE = 1e7;
+const HYBRID_AXIS_TICK_COMPACT_BELOW = 1e-4;
+const HYBRID_AXIS_TICK_COMPACT_FORMAT = d3v7.format(".2g");
+
+/**
+ * Apply a hybrid tick formatter for numeric axes. Human-scale values use
+ * adaptive grouped fixed notation (`,~f`); very large or very small
+ * magnitudes use compact `.2g` to avoid long comma strings and IEEE 754
+ * noise in tick labels. String and Date & Time axes keep D3's default.
+ */
+function applyNumericAxisTickFormat(
+  axis,
+  scale,
+  tickCount,
+  columnType,
+  scaleType,
+) {
+  if (columnType !== "string" && scaleType !== "Date & Time") {
+    const normalFormat = scale.tickFormat(
+      tickCount,
+      HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
+    );
+    const compactFormat = HYBRID_AXIS_TICK_COMPACT_FORMAT;
+    axis.tickFormat((d) => {
+      const abs = Math.abs(d);
+      if (
+        abs >= HYBRID_AXIS_TICK_COMPACT_ABOVE ||
+        (abs > 0 && abs < HYBRID_AXIS_TICK_COMPACT_BELOW)
+      ) {
+        return compactFormat(d);
+      }
+      return normalFormat(d);
+    });
+  }
+  return axis;
+}
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -67,6 +134,52 @@ var vtkclose_event = new Event("vtkclose");
 
 // WeakMap to store the root elements for the type buttons
 const rootsByPopupEl = new WeakMap();
+
+/**
+ * Append an SVG <title> child to `node` so hovering reveals `text` via the
+ * browser's native tooltip. Caller is responsible for ensuring the node
+ * has no stale title (typically by setting textContent first, which wipes
+ * prior children).
+ */
+function appendSvgTitle(node, text) {
+  const title = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "title",
+  );
+  title.textContent = text;
+  node.appendChild(title);
+}
+
+/**
+ * Truncate every `.tick text` inside an axis layer node to at most
+ * `maxWidth` pixels using a middle ellipsis. Truncated nodes get an SVG
+ * <title> child so hovering reveals the full text via the browser's
+ * native tooltip. Should be called after the v7 axis has rendered, since
+ * v7 axis sets each tick's text via .text(format), making node.textContent
+ * the fresh untruncated value at that point.
+ *
+ * Only runs against string columns. Date & Time scales are left alone
+ * (d3's formatter is preferable). Numeric columns use the hybrid
+ * scale.tickFormat / `.2g` formatter via `applyNumericAxisTickFormat`.
+ */
+function truncateAxisTickLabels(axisLayerNode, maxWidth, columnType, scaleType) {
+  if (columnType !== "string" || scaleType === "Date & Time") return;
+  axisLayerNode.querySelectorAll(".tick text").forEach((node) => {
+    const original = node.textContent;
+    if (!original) return;
+    const truncated = truncateString(original, {
+      maxWidth,
+      measure: measureSvgText(node),
+      position: "middle",
+    });
+    if (truncated !== original) {
+      // Setting textContent wipes any prior children (including a stale
+      // <title>), so we re-append a fresh title with the original text.
+      node.textContent = truncated;
+      appendSvgTitle(node, original);
+    }
+  });
+}
 
 $.widget("parameter_image.scatterplot", {
   options: {
@@ -110,11 +223,13 @@ $.widget("parameter_image.scatterplot", {
     pinned_width: 200,
     pinned_height: 200,
 
-    // Margins around scatterplot
-    margin_top: 25,
-    margin_right: 300,
-    margin_bottom: 25,
-    margin_left: 350,
+    // Margins around scatterplot. Defaults are imported from ScatterplotOptions
+    // so that this widget fallback stays in sync with the Redux store / UI
+    // defaults.
+    margin_top: DEFAULT_SCATTERPLOT_MARGIN_TOP,
+    margin_right: DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
+    margin_bottom: DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
+    margin_left: DEFAULT_SCATTERPLOT_MARGIN_LEFT,
 
     hover_time: 800,
     image_cache: {},
@@ -505,9 +620,18 @@ $.widget("parameter_image.scatterplot", {
       self.x_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
       self.y_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
       self.legend_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
-      self._schedule_update({ update_y_label: true });
-      self._schedule_update({ update_x_label: true });
-      self._schedule_update({ update_v_label: true });
+      // Rebuild the axes so tick string truncation and number formatting
+      // re-measure against the new font metrics. Axis-title labels are
+      // also rescheduled since update_y / update_legend_axis don't
+      // cascade into their labels (only update_x does).
+      self._schedule_update({
+        update_x: true,
+        update_y: true,
+        update_legend_axis: true,
+        update_x_label: true,
+        update_y_label: true,
+        update_v_label: true,
+      });
     };
 
     const update_axes_font_family = () => {
@@ -516,9 +640,18 @@ $.widget("parameter_image.scatterplot", {
       self.x_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
       self.y_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
       self.legend_layer.selectAll("text").style("font-family", self.options.axes_font_family);
-      self._schedule_update({ update_y_label: true });
-      self._schedule_update({ update_x_label: true });
-      self._schedule_update({ update_v_label: true });
+      // Rebuild the axes so tick string truncation and number formatting
+      // re-measure against the new font metrics. Axis-title labels are
+      // also rescheduled since update_y / update_legend_axis don't
+      // cascade into their labels (only update_x does).
+      self._schedule_update({
+        update_x: true,
+        update_y: true,
+        update_legend_axis: true,
+        update_x_label: true,
+        update_y_label: true,
+        update_v_label: true,
+      });
     };
 
     const update_axes_variables_scale = () => {
@@ -1310,18 +1443,29 @@ $.widget("parameter_image.scatterplot", {
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
       const x_scale_axis = selectXScaleAxis(window.store.getState());
+      const xColumnType = selectXColumnType(window.store.getState());
+      const xScaleType = selectXScaleType(window.store.getState());
 
-      self.x_axis = d3.svg
-        .axis()
-        .scale(x_scale_axis)
-        .orient("bottom")
+      const xTickCount = self.x_range_canvas[1] / 85;
+      self.x_axis = d3v7
+        .axisBottom(x_scale_axis)
         // Set number of ticks based on width of axis.
-        .ticks(self.x_range_canvas[1] / 85);
+        .ticks(xTickCount);
+      applyNumericAxisTickFormat(
+        self.x_axis,
+        x_scale_axis,
+        xTickCount,
+        xColumnType,
+        xScaleType,
+      );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded.
       // .tickValues( self.x_scale.ticks( self.x_range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
       // .tickSize(15)
-      self.x_axis_layer
+      // Wrap the v3 layer node in a v7 selection so the v7 axis (which uses
+      // v7-only selection methods like .merge()) can operate on it.
+      d3v7
+        .select(self.x_axis_layer.node())
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
         .call(self.x_axis)
         // Selecting all the labels and rotating them 45 degrees around their start
@@ -1335,6 +1479,15 @@ $.widget("parameter_image.scatterplot", {
         // .attr("x", "0")
         // .attr("y", "0")
         .attr("transform", "rotate(15)");
+
+      // Truncate long string x-axis tick labels with a middle ellipsis.
+      truncateAxisTickLabels(
+        self.x_axis_layer.node(),
+        X_AXIS_TICK_MAX_WIDTH,
+        xColumnType,
+        xScaleType,
+      );
+
       // Updating the x_label here because updating_x clears the label for some reason
       self._schedule_update({ update_x_label: true });
     }
@@ -1365,13 +1518,21 @@ $.widget("parameter_image.scatterplot", {
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
       const y_scale_axis = selectYScaleAxis(window.store.getState());
+      const yColumnType = selectYColumnType(window.store.getState());
+      const yScaleType = selectYScaleType(window.store.getState());
 
-      self.y_axis = d3.svg
-        .axis()
-        .scale(y_scale_axis)
-        .orient("left")
+      const yTickCount = self.y_range_canvas[0] / 50;
+      self.y_axis = d3v7
+        .axisLeft(y_scale_axis)
         // Set number of ticks based on height of axis.
-        .ticks(self.y_range_canvas[0] / 50);
+        .ticks(yTickCount);
+      applyNumericAxisTickFormat(
+        self.y_axis,
+        y_scale_axis,
+        yTickCount,
+        yColumnType,
+        yScaleType,
+      );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded and just create duplicate ticks.
       // Explored this again in December 2022 trying to address an issue where log scale
@@ -1381,12 +1542,22 @@ $.widget("parameter_image.scatterplot", {
       // So keeping this disable for now.
       // .tickValues( self.y_scale.ticks( self.y_range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
 
-      self.y_axis_layer
+      // Wrap the v3 layer node in a v7 selection so the v7 axis can operate on it.
+      d3v7
+        .select(self.y_axis_layer.node())
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
         .selectAll("text")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family);
+
+      // Truncate long string y-axis tick labels with a middle ellipsis.
+      truncateAxisTickLabels(
+        self.y_axis_layer.node(),
+        Y_AXIS_TICK_MAX_WIDTH,
+        yColumnType,
+        yScaleType,
+      );
     }
 
     if (self.updates.update_indices) {
@@ -1415,6 +1586,9 @@ $.widget("parameter_image.scatterplot", {
         .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
+        // D3 v7 axis sets fill="none" on the parent layer to keep the .domain
+        // path unfilled. Set an explicit fill here so the label text stays visible.
+        .style("fill", "currentColor")
         .text(self.options.x_label);
 
       // Check if the axis labels are hidden and if so, add a popover icon.
@@ -1439,8 +1613,16 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-bs-placement", "auto")
           .attr("x", xOffset) // Position after text with small gap
           .attr("y", y)
+          // D3 v7 axis sets text-anchor="middle" on the parent layer. Set an
+          // explicit "start" here so the icon's left edge sits at xOffset
+          // (matching xOffset's calculation), instead of inheriting "middle"
+          // and shifting the icon back over the label.
+          .style("text-anchor", "start")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
+          // D3 v7 axis sets fill="none" on the parent layer; set an explicit
+          // fill so the icon stays visible.
+          .style("fill", "currentColor")
           .text("\uf06a");
 
         label
@@ -1474,6 +1656,9 @@ $.widget("parameter_image.scatterplot", {
         .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
+        // D3 v7 axis sets fill="none" on the parent layer to keep the .domain
+        // path unfilled. Set an explicit fill here so the label text stays visible.
+        .style("fill", "currentColor")
         .text(self.options.y_label);
 
       // Check if the axis labels are hidden and if so, add a popover icon.
@@ -1502,6 +1687,9 @@ $.widget("parameter_image.scatterplot", {
           .style("text-anchor", "middle")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
+          // D3 v7 axis sets fill="none" on the parent layer; set an explicit
+          // fill so the icon stays visible.
+          .style("fill", "currentColor")
           .text("\uf06a");
 
         label
@@ -1815,16 +2003,26 @@ $.widget("parameter_image.scatterplot", {
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
       const legend_scale_axis = selectLegendScaleAxis(window.store.getState());
+      const vColumnType = selectVColumnType(window.store.getState());
+      const vScaleType = selectVScaleType(window.store.getState());
 
-      self.legend_axis = d3.svg
-        .axis()
-        .scale(legend_scale_axis)
-        .orient("right")
-        .ticks(range[1] / 50);
+      const legendTickCount = range[1] / 50;
+      self.legend_axis = d3v7
+        .axisRight(legend_scale_axis)
+        .ticks(legendTickCount);
+      applyNumericAxisTickFormat(
+        self.legend_axis,
+        legend_scale_axis,
+        legendTickCount,
+        vColumnType,
+        vScaleType,
+      );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded.
       // .tickValues( self.legend_scale.ticks( range[1]/50 ).concat( self.legend_scale.domain() ) )
-      self.legend_axis_layer
+      // Wrap the v3 layer node in a v7 selection so the v7 axis can operate on it.
+      d3v7
+        .select(self.legend_axis_layer.node())
         .attr(
           "transform",
           "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)",
@@ -1832,6 +2030,14 @@ $.widget("parameter_image.scatterplot", {
         .call(self.legend_axis)
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family);
+
+      // Truncate long string legend axis tick labels with a middle ellipsis.
+      truncateAxisTickLabels(
+        self.legend_axis_layer.node(),
+        LEGEND_AXIS_TICK_MAX_WIDTH,
+        vColumnType,
+        vScaleType,
+      );
     }
 
     if (self.updates.update_v_label) {
