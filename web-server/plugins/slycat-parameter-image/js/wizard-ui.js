@@ -709,7 +709,7 @@ function constructor(params) {
         component.remote.progress_status("");
       },
     };
-    fileUploader.uploadFile(fileObject);
+    fileUploader.uploadFile(fileObject, component.useProjectData());
   };
 
   component.set_input = function (attribute) {
