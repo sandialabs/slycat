@@ -24,6 +24,7 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
+import { ENABLE_SVG_THREE_D_LEGENDS } from "./svg-three-d-legends-gate";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -387,6 +388,18 @@ $.widget("parameter_image.scatterplot", {
       event.preventDefault();
     });
 
+    // Bring matching media frame to front when its 3D legend is clicked
+    self.element[0].addEventListener("slycat-bring-frame-to-front", (e) => {
+      const uid = e.detail?.uid;
+      if (!uid) return;
+      const frame = self.element[0].querySelector(
+        `.media-layer .image-frame[data-uid="${CSS.escape(uid)}"]`,
+      );
+      if (frame) {
+        self._move_frame_to_front(frame);
+      }
+    });
+
     self.scatterplot_grid_root = d3
       .select(self.element.get(0))
       .append("div")
@@ -413,7 +426,6 @@ $.widget("parameter_image.scatterplot", {
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.line_layer = self.svg.append("g").attr("class", "line-layer");
-    self.threeD_legends_layer = self.svg.append("g").attr("id", "threeD_legends");
 
     self.options.image_cache = {};
 
@@ -808,14 +820,21 @@ $.widget("parameter_image.scatterplot", {
       // console.groupEnd();
     };
 
-    const threeD_legends_root = createRoot(document.getElementById("threeD_legends"));
-    threeD_legends_root.render(
-      <StrictMode>
-        <Provider store={window.store}>
-          <MediaLegends />
-        </Provider>
-      </StrictMode>,
-    );
+    if (ENABLE_SVG_THREE_D_LEGENDS) {
+      const threeD_legends_host = d3
+        .select(self.element.get(0))
+        .append("div")
+        .attr("id", "threeD_legends_root")
+        .node();
+      const threeD_legends_root = createRoot(threeD_legends_host);
+      threeD_legends_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <MediaLegends />
+          </Provider>
+        </StrictMode>,
+      );
+    }
 
     const grid_root = createRoot(document.getElementById("scatterplot-grid-root"));
     grid_root.render(
@@ -2159,6 +2178,7 @@ $.widget("parameter_image.scatterplot", {
           height: frame.outerHeight(),
           current_frame: frame.hasClass("selected"),
           ratio: frame.attr("data-ratio"),
+          z_index: parseInt(frame.css("z-index"), 10) || 0,
         };
         var video = frame.find("video")[0];
         if (video != undefined) {
@@ -2337,7 +2357,7 @@ $.widget("parameter_image.scatterplot", {
         }
         self._drag_from_button = false;
 
-        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Showing the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").show();
 
         var frame, sourceEventTarget;
@@ -2369,7 +2389,7 @@ $.widget("parameter_image.scatterplot", {
           return;
         }
 
-        // Hiding the mouseEventOverlay on all frames (currently PDF and videos only)
+        // Hiding the mouseEventOverlay on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").hide();
 
         self.state = "";
@@ -2443,7 +2463,7 @@ $.widget("parameter_image.scatterplot", {
       resize_start: function () {
         // console.log("resize_start");
 
-        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Showing the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").show();
 
         // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this
@@ -2467,7 +2487,7 @@ $.widget("parameter_image.scatterplot", {
       resize_end: function () {
         // console.log("resize_end");
 
-        // Hiding the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Hiding the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").hide();
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed(
@@ -3134,6 +3154,10 @@ $.widget("parameter_image.scatterplot", {
             },
             false,
           );
+
+          // Overlay to prevent VTK from capturing mouse events while resizing/dragging the frame
+          // (same pattern as PDF/video viewers above).
+          frame_html.append("div").classed("mouseEventOverlay", true);
 
           // Convert the blob to an array buffer and pass it to the geometry loader
           function passToGeometryLoaded(buffer) {
