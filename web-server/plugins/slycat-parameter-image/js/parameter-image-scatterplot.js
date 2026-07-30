@@ -72,6 +72,13 @@ import {
 } from "components/ScatterplotOptions/ScatterplotOptions";
 import { TypeLabel, FrameMenu } from "./Components/TypeButton";
 import { MEDIA_TYPES } from "./constants/media-types";
+import {
+  FULL_ORBIT_PREVIEW_VIDEO_SELECTOR,
+  FULL_ORBIT_PREVIEW_VIDEO_TYPE,
+  installFullOrbitPreviewHover,
+  isFullOrbitPreviewVideo,
+  uninstallFullOrbitPreviewHover,
+} from "./full-orbit-preview-video";
 
 // Maximum width (in px) for a single y-axis tick label before it gets
 // truncated with an ellipsis.
@@ -2107,7 +2114,7 @@ $.widget("parameter_image.scatterplot", {
   _update_video_sync_time: function () {
     var self = this;
     // Updating videos' sync time should not fire off additional seeked events
-    $(".open-image video").each(function (index, video) {
+    self._getNormalVideos().each(function (index, video) {
       // Only update currentTime if the video is not playing
       var videoSyncTime = self.options["video-sync-time"];
       var playing = self._is_video_playing(video);
@@ -2155,10 +2162,14 @@ $.widget("parameter_image.scatterplot", {
         };
         var video = frame.find("video")[0];
         if (video != undefined) {
+          var orbitPreview = $(video).is(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR);
           var currentTime = video.currentTime;
           open_element["currentTime"] = currentTime;
           open_element["video"] = true;
-          open_element["playing"] = self._is_video_playing(video);
+          open_element["playing"] = !orbitPreview && self._is_video_playing(video);
+          if (orbitPreview) {
+            open_element["orbitPreview"] = true;
+          }
         }
         var threeD = frame.find(".vtp")[0];
         if (threeD != undefined) {
@@ -2843,14 +2854,13 @@ $.widget("parameter_image.scatterplot", {
           });
         } else if (blob.type.indexOf("video/") == 0) {
           media_type = MEDIA_TYPES.VIDEO;
+          const fullOrbitPreview = isFullOrbitPreviewVideo(image.uri);
           // Create the video ...
           var video = frame_html
             .append("video")
             .attr("data-uri", image.uri)
             .attr("data-uid", image.uid)
             .attr("src", image_url)
-            .attr("controls", true)
-            .attr("loop", true)
             .style({
               display: "none",
             })
@@ -2880,7 +2890,11 @@ $.widget("parameter_image.scatterplot", {
                 display: "block",
               });
               self._adjust_leader_line(frame_html);
-              if (
+              if (fullOrbitPreview) {
+                this.pause();
+                this.currentTime = 0;
+                installFullOrbitPreviewHover(this);
+              } else if (
                 self.options["video-sync"] &&
                 this.currentTime != self.options["video-sync-time"]
               ) {
@@ -2890,10 +2904,17 @@ $.widget("parameter_image.scatterplot", {
             })
             .on("playing", function () {
               // console.log("onplaying");
+              if (fullOrbitPreview) {
+                this.pause();
+                return;
+              }
               self._sync_open_media();
             })
             .on("pause", function () {
               // console.log("onpause");
+              if (fullOrbitPreview) {
+                return;
+              }
               var pausing_index = self.pausing_videos.indexOf(image.uid);
               // If video was directly paused by user, set a new video-sync-time and sync all other videos
               if (pausing_index < 0) {
@@ -2917,6 +2938,10 @@ $.widget("parameter_image.scatterplot", {
             })
             .on("seeked", function (event) {
               // console.log("onseeked");
+              if (fullOrbitPreview) {
+                self._sync_open_media();
+                return;
+              }
               var index = self.syncing_videos.indexOf(image.uid);
               if (index < 0) {
                 self.options["video-sync-time"] = this.currentTime;
@@ -2932,6 +2957,10 @@ $.widget("parameter_image.scatterplot", {
             })
             .on("play", function (event) {
               // console.log("onplay");
+              if (fullOrbitPreview) {
+                this.pause();
+                return;
+              }
               let frame = d3.select(this.parentElement);
               self._cancel_hover_state(frame, image);
 
@@ -2952,7 +2981,17 @@ $.widget("parameter_image.scatterplot", {
               // Chrome does not propagate any mouse events after controls are clicked.
               self._move_frame_to_front(this.closest(".image-frame"));
             });
-          if (image.currentTime != undefined && image.currentTime > 0) {
+          if (fullOrbitPreview) {
+            frame_html.attr("data-preview-video", FULL_ORBIT_PREVIEW_VIDEO_TYPE);
+            video.attr("data-preview-video", FULL_ORBIT_PREVIEW_VIDEO_TYPE);
+          } else {
+            video.attr("controls", true).attr("loop", true);
+          }
+          if (
+            !fullOrbitPreview &&
+            image.currentTime != undefined &&
+            image.currentTime > 0
+          ) {
             self.syncing_videos.push(image.uid);
             video.property("currentTime", image.currentTime);
           }
@@ -3737,6 +3776,10 @@ $.widget("parameter_image.scatterplot", {
       frame_html.node().querySelector(".vtp").dispatchEvent(vtkclose_event);
     }
 
+    frame_html.selectAll(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR).each(function () {
+      uninstallFullOrbitPreviewHover(this);
+    });
+
     // Remove the frame and its line
     frame_html.remove();
     line.remove();
@@ -3865,9 +3908,15 @@ $.widget("parameter_image.scatterplot", {
     return store.getState().currentFrame.uid;
   },
 
+  _getNormalVideos: function () {
+    return $(".open-image video").not(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR);
+  },
+
   _getCurrentFrameVideo: function () {
     let self = this;
-    let video = $(".open-image[data-uid='" + self._getCurrentFrameUID() + "'] video").get(0);
+    let video = $(".open-image[data-uid='" + self._getCurrentFrameUID() + "'] video")
+      .not(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR)
+      .get(0);
     return video;
   },
 
@@ -3875,7 +3924,7 @@ $.widget("parameter_image.scatterplot", {
     var self = this;
     if (self.options["video-sync"]) {
       // Pause all videos
-      $(".open-image video").each(function (index, video) {
+      self._getNormalVideos().each(function (index, video) {
         self.pausing_videos.push($(video.parentElement).data("uid"));
         video.pause();
       });
@@ -3900,7 +3949,7 @@ $.widget("parameter_image.scatterplot", {
     if (self.options["video-sync"]) {
       var minLength = Infinity;
       // Pause all videos and log highest length
-      $(".open-image video").each(function (index, video) {
+      self._getNormalVideos().each(function (index, video) {
         self.pausing_videos.push($(video.parentElement).data("uid"));
         video.pause();
         minLength = Math.min(video.duration, minLength);
@@ -3925,7 +3974,7 @@ $.widget("parameter_image.scatterplot", {
   frame_back: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      var videos = $(".open-image video");
+      var videos = self._getNormalVideos();
       var firstVideo = videos.get(0);
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = Math.max(
@@ -3956,7 +4005,7 @@ $.widget("parameter_image.scatterplot", {
   frame_forward: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      var videos = $(".open-image video");
+      var videos = self._getNormalVideos();
       var minLength = Infinity;
       var firstVideoDuration;
 
@@ -3993,7 +4042,7 @@ $.widget("parameter_image.scatterplot", {
   play: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      $(".open-image video").each(function (index, video) {
+      self._getNormalVideos().each(function (index, video) {
         self.playing_videos.push($(video.parentElement).data("uid"));
         video.play();
       });
@@ -4009,7 +4058,7 @@ $.widget("parameter_image.scatterplot", {
   pause: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      var videos = $(".open-image video");
+      var videos = self._getNormalVideos();
       var firstVideo = videos.get(0);
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = firstVideo.currentTime;
