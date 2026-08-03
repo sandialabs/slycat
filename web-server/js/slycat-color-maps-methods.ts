@@ -168,11 +168,6 @@ export default {
     return d3v7.scaleQuantize<d3.RGBColor>().domain([min, max]).range(colors);
   },
 
-  // Discrete-aware numeric color scale: quantize for discrete maps, otherwise linear.
-  get_color_scale_for_numeric: function (name: string, min: number, max: number) {
-    return this.get_color_scale(name, min, max);
-  },
-
   // Return a d3 log color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
   // Discrete maps use equal-width quantize bins on [min, max] (log does not change binning).
