@@ -113,19 +113,30 @@ export default {
   },
 
   // Return a d3 quantize color scale that bins [min, max] across discrete palette colors.
+  // When min === max (e.g. filtered to one numeric value), d3.scale.quantize is unreliable
+  // (undefined in v3; wrong bin in v7), so fall back to a constant first-palette color.
   get_color_scale_quantize: function (name: string, min: number, max: number) {
     if (name === undefined) name = window.store.getState().colormap;
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
-    return d3.scale.quantize().domain([min, max]).range(this.color_maps[name].colors);
+    const colors = this.color_maps[name].colors;
+    if (min === max) {
+      return d3.scale.ordinal().domain([min]).range([colors[0]]);
+    }
+    return d3.scale.quantize().domain([min, max]).range(colors);
   },
 
   // Return a d3v7 quantize color scale that bins [min, max] across discrete palette colors.
+  // See get_color_scale_quantize for the min === max fallback rationale.
   get_color_scale_quantize_d3v7: function (name: string, min: number, max: number) {
     if (name === undefined) name = window.store.getState().colormap;
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
-    return d3v7.scaleQuantize<d3.RGBColor>().domain([min, max]).range(this.color_maps[name].colors);
+    const colors = this.color_maps[name].colors;
+    if (min === max) {
+      return d3v7.scaleOrdinal<number | string, d3.RGBColor>().domain([min]).range([colors[0]]);
+    }
+    return d3v7.scaleQuantize<d3.RGBColor>().domain([min, max]).range(colors);
   },
 
   // Discrete-aware numeric color scale: quantize for discrete maps, otherwise linear.
