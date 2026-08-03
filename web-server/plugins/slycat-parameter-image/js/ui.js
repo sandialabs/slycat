@@ -445,6 +445,7 @@ $(document).ready(function () {
               variableAliases: variable_aliases,
               media_columns: image_columns,
               rating_variables: rating_columns,
+              category_columns: category_columns ?? [],
               xy_pairs: xy_pairs,
               // Set "embed" to true if the "embed" query parameter is present
               embed: URI(window.location).query(true).embed !== undefined,
@@ -1014,7 +1015,7 @@ $(document).ready(function () {
         v: v,
         x_string: table_metadata["column-types"][x_index] == "string",
         y_string: table_metadata["column-types"][y_index] == "string",
-        v_string: table_metadata["column-types"][v_index] == "string",
+        v_string: is_color_variable_categorical(v_index),
         x_index: x_index,
         y_index: y_index,
         v_index: v_index,
@@ -1024,7 +1025,7 @@ $(document).ready(function () {
         colorscale: colorscale,
         selection: selected_simulations,
         open_images: open_images,
-        gradient: slycat_color_maps.get_gradient_data(store.getState().colormap),
+        gradient: get_legend_gradient(store.getState().colormap),
         hidden_simulations: hidden_simulations,
         "auto-scale": auto_scale,
         "video-sync": video_sync,
@@ -1178,6 +1179,34 @@ $(document).ready(function () {
     });
   }
 
+  function is_color_variable_categorical(index) {
+    const columnType = table_metadata["column-types"][index];
+    if (columnType === "string") return true;
+    return Array.isArray(category_columns) && category_columns.indexOf(index) !== -1;
+  }
+
+  function get_unique_category_values(values, isStringColumn) {
+    if (isStringColumn) {
+      return d3.set(values).values().sort();
+    }
+    // Preserve numeric types and sort numerically (e.g. cylinders 3,4,6,8).
+    return _.uniq(Array.from(values))
+      .filter((value) => value !== null && value !== undefined && !Number.isNaN(value))
+      .sort((a, b) => a - b);
+  }
+
+  function get_legend_gradient(colormap) {
+    if (is_color_variable_categorical(v_index) && slycat_color_maps.is_discrete(colormap)) {
+      const values = auto_scale ? filterValues(v) : v;
+      const uniqueValues = get_unique_category_values(
+        values,
+        table_metadata["column-types"][v_index] === "string",
+      );
+      return slycat_color_maps.get_ordinal_legend_gradient(colormap, uniqueValues);
+    }
+    return slycat_color_maps.get_gradient_data(colormap);
+  }
+
   function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();
 
@@ -1188,7 +1217,7 @@ $(document).ready(function () {
     $("#scatterplot-pane").css("background", slycat_color_maps.get_background(colormap).toString());
     $("#scatterplot").scatterplot("option", {
       colorscale: colorscale,
-      gradient: slycat_color_maps.get_gradient_data(colormap),
+      gradient: get_legend_gradient(colormap),
     });
 
     $.ajax({
@@ -1296,10 +1325,13 @@ $(document).ready(function () {
     $("#scatterplot").scatterplot("option", "v_index", v_index);
     $("#scatterplot").scatterplot("update_color_scale_and_v", {
       v: v,
-      v_string: table_metadata["column-types"][v_index] == "string",
+      v_string: is_color_variable_categorical(v_index),
       colorscale: colorscale,
     });
-    $("#scatterplot").scatterplot("option", "v_label", selectVColumnName(window.store.getState()));
+    $("#scatterplot").scatterplot("option", {
+      v_label: selectVColumnName(window.store.getState()),
+      gradient: get_legend_gradient(store.getState().colormap),
+    });
   }
 
   function update_widgets_when_hidden_simulations_change() {
@@ -1324,6 +1356,7 @@ $(document).ready(function () {
         $("#scatterplot").scatterplot("option", {
           hidden_simulations: hidden_simulations,
           colorscale: colorscale,
+          gradient: get_legend_gradient(store.getState().colormap),
         });
     } else {
       if ($("#table").data("parameter_image-table"))
@@ -1353,25 +1386,25 @@ $(document).ready(function () {
     const axes_variable_scale = store.getState().axesVariables[v_index];
     const v_variable_scale_type = axes_variable_scale ?? "Linear";
     const colormap = store.getState().colormap;
+    const color_is_categorical = is_color_variable_categorical(v_index);
 
-    if (v_variable_scale_type == "Date & Time") {
+    if (color_is_categorical) {
+      // Strings and wizard-marked category columns (e.g. cylinders, origin) get
+      // one color per unique value instead of continuous/quantize binning.
+      var uniqueValues = get_unique_category_values(filtered_v, v_type === "string");
+      colorscale = slycat_color_maps.get_color_scale_ordinal(colormap, uniqueValues);
+    } else if (v_variable_scale_type == "Date & Time") {
       const v_extent = _.cloneDeep(selectVExtent(store.getState()));
       const min = v_extent[0];
       const max = v_extent[1];
       colorscale = slycat_color_maps.get_color_scale_time(colormap, min, max);
-    } else if (v_type != "string") {
+    } else {
       const min = custom_color_variable_range.min ?? d3.min(filtered_v);
       const max = custom_color_variable_range.max ?? d3.max(filtered_v);
       colorscale =
         v_variable_scale_type == "Log"
           ? slycat_color_maps.get_color_scale_log(colormap, min, max)
           : slycat_color_maps.get_color_scale(colormap, min, max);
-    } else {
-      var uniqueValues = d3.set(filtered_v).values().sort();
-      colorscale = slycat_color_maps.get_color_scale_ordinal(
-        colormap,
-        uniqueValues,
-      );
     }
   }
 

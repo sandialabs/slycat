@@ -66,6 +66,7 @@ export type DerivedStateType = {
   mediaValues: string[];
   media_columns: number[];
   rating_variables: number[];
+  category_columns: number[];
   xy_pairs: XYPairsType;
   // ToDo: Add more specific types for these
   three_d_colorby_range: {};
@@ -185,6 +186,7 @@ export const initialState: RootState = {
     three_d_colorby_legends: {},
     media_columns: [],
     rating_variables: [],
+    category_columns: [],
     xy_pairs: [],
     table_metadata: {
       "row-count": 0,

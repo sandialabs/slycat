@@ -74,6 +74,19 @@ export const selectVColumnType = createSelector(
   },
 );
 
+export const selectCategoryColumns = (state: RootState) =>
+  state.derived.category_columns ?? [];
+
+// True for string columns and wizard-marked categorical numerics (e.g. cylinders).
+export const selectVIsCategorical = createSelector(
+  selectVIndex,
+  selectVColumnType,
+  selectCategoryColumns,
+  (v_index: number, vColumnType: string, categoryColumns: number[]): boolean => {
+    return vColumnType === "string" || categoryColumns.indexOf(v_index) !== -1;
+  },
+);
+
 // xValues can be either a Float64Array or a string array or a number array.
 // So convert it to a normal array.
 export const selectXValuesArray = createSelector(selectXValues, (xValues): any[] => {
@@ -695,6 +708,7 @@ export const selectVScale = createSelector(
   selectVExtent,
   selectLegendScaleRange,
   selectVColumnType,
+  selectVIsCategorical,
   selectVValues,
   selectVValuesWithoutHidden,
   selectShowHistogram,
@@ -704,16 +718,20 @@ export const selectVScale = createSelector(
     vExtent: ExtentType,
     vScaleRange: ScaleRangeType,
     vColumnType: string,
+    vIsCategorical: boolean,
     vValues,
     vValuesWithoutHidden,
     showHistogram,
     autoScale,
   ): SlycatScaleType => {
-    // For string columns, the domain is derived from the values array. When
-    // autoScale is on, use the filtered values so the axis reflects active
+    // For string / categorical color variables, the domain is unique values.
+    // When autoScale is on, use the filtered values so the axis reflects active
     // filters (matching how getExtent handles numeric columns).
     const values = autoScale ? vValuesWithoutHidden : vValues;
-    return getScale(vScaleType, vExtent, vScaleRange, vColumnType, values, showHistogram);
+    // Treat wizard-marked category columns like strings for the color legend axis
+    // so each unique value gets a tick (e.g. cylinders 3,4,6,8).
+    const effectiveColumnType = vIsCategorical ? "string" : vColumnType;
+    return getScale(vScaleType, vExtent, vScaleRange, effectiveColumnType, values, showHistogram);
   },
 );
 
@@ -721,17 +739,17 @@ export const selectLegendScaleAxis = createSelector(
   selectVScale,
   selectVerticalSpacing,
   selectHideLabels,
-  selectVColumnType,
+  selectVIsCategorical,
   (
     legendScale: SlycatScaleType,
     verticalSpacing: number,
     hideLabels: boolean,
-    vColumnType: string,
+    vIsCategorical: boolean,
   ) => {
     return adjustScaleDomain(
       legendScale,
       verticalSpacing,
-      vColumnType === "string" && hideLabels,
+      vIsCategorical && hideLabels,
       1,
       true,
     );
@@ -762,10 +780,12 @@ const getScale = (
       else scale = d3.scalePoint();
   }
   // Domain is the min and max values for numeric values or Date & Time scales,
-  // otherwise the locale sorted unique values for string variables.
+  // otherwise the locale sorted unique values for string / categorical variables.
+  // Numeric categoricals (wizard-marked) keep numeric sort order (3,4,6,8 not 3,4,6,8 as strings).
   const domain =
     columnType === "string" && scaleType !== "Date & Time"
-      ? _.uniq(values).sort((a, b) => {
+      ? _.uniq(Array.from(values as any[])).sort((a, b) => {
+          if (typeof a === "number" && typeof b === "number") return a - b;
           return a.toString().localeCompare(b.toString());
         })
       : extent;
