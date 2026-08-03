@@ -21,16 +21,24 @@ export default {
       | d3v7.ScaleLinear<d3.RGBColor, string>
       | d3v7.ScaleQuantize<d3.RGBColor>,
   ) {
-    // Check against min and max only if value is a number or a Date object
+    const domain = colorscale.domain();
+
+    // Ordinal scales (string or numeric categories) have neither invert nor
+    // invertExtent. Require exact domain membership so values that fall in a
+    // numeric gap (e.g. 5 when domain is [3,4,6,8]) are treated as out of range
+    // instead of passing a min/max check and then getting undefined from the scale.
+    if (
+      typeof (colorscale as any).invert !== "function" &&
+      typeof (colorscale as any).invertExtent !== "function"
+    ) {
+      return domain.indexOf(value) !== -1;
+    }
+
+    // Continuous / quantize / time: inclusive span of domain endpoints.
     if (Number.isFinite(value) || (value as any) instanceof Date) {
-      const rangeMin = colorscale.domain()[0];
-      const rangeMax = colorscale.domain()[colorscale.domain().length - 1];
-      return rangeMin <= value && value <= rangeMax;
+      return domain[0] <= value && value <= domain[domain.length - 1];
     }
-    // otherwise check if it's in the domain
-    else {
-      return colorscale.domain().indexOf(value) != -1;
-    }
+    return domain.indexOf(value) !== -1;
   },
 
   // Return a d3 rgb object with the suggested background color for the given color map.

@@ -1196,7 +1196,11 @@ $(document).ready(function () {
   }
 
   function get_legend_gradient(colormap) {
-    if (is_color_variable_categorical(v_index) && slycat_color_maps.is_discrete(colormap)) {
+    if (
+      v != null &&
+      is_color_variable_categorical(v_index) &&
+      slycat_color_maps.is_discrete(colormap)
+    ) {
       const values = auto_scale ? filterValues(v) : v;
       const uniqueValues = get_unique_category_values(
         values,
@@ -1374,6 +1378,12 @@ $(document).ready(function () {
   }
 
   function update_current_colorscale() {
+    // Color column data loads asynchronously; filters / hidden-sim updates can
+    // fire before v is ready. Skip until the array is available.
+    if (v == null) {
+      return;
+    }
+
     set_custom_color_variable_range();
     // Check if numeric or string variable
     var v_type = table_metadata["column-types"][v_index];
