@@ -465,6 +465,9 @@ $(document).ready(function () {
             derivedState,
           );
 
+          // Unknown / renamed bookmarked colormaps fall back to Night.
+          preloadedState.colormap = slycat_color_maps.resolve_colormap_name(preloadedState.colormap);
+
           // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
           // createSlice scatterplot_reducer and other new reducers.
