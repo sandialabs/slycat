@@ -712,7 +712,6 @@ export const selectVScale = createSelector(
   selectVIsCategorical,
   selectVValues,
   selectVValuesWithoutHidden,
-  selectShowHistogram,
   selectAutoScale,
   (
     vScaleType: string,
@@ -722,7 +721,6 @@ export const selectVScale = createSelector(
     vIsCategorical: boolean,
     vValues,
     vValuesWithoutHidden,
-    showHistogram,
     autoScale,
   ): SlycatScaleType => {
     // For string / categorical color variables, the domain is unique values.
@@ -733,13 +731,14 @@ export const selectVScale = createSelector(
     // so each unique value gets a tick (e.g. cylinders 3,4,6,8).
     const effectiveColumnType = vIsCategorical ? "string" : vColumnType;
     const numericCategories = vIsCategorical && vColumnType !== "string";
+    // Band scale so d3v7 axisRight centers ticks in equal-height color bands.
     return getScale(
       vScaleType,
       vExtent,
       vScaleRange,
       effectiveColumnType,
       values,
-      showHistogram,
+      effectiveColumnType === "string",
       numericCategories,
     );
   },
@@ -772,7 +771,7 @@ const getScale = (
   scaleRange: ScaleRangeType,
   columnType: string | undefined,
   values: ValuesType,
-  showHistogram: boolean,
+  useBandScale: boolean,
   numericCategories: boolean = false,
 ): SlycatScaleType => {
   let scale;
@@ -786,8 +785,8 @@ const getScale = (
     default:
       // For numeric values, use a linear scale.
       if (columnType !== "string") scale = d3.scaleLinear();
-      // Otherwise, use a band scale for string values
-      else if (showHistogram) scale = d3.scaleBand();
+      // Band scale centers ticks in equal slabs (legend categories, histogram axes).
+      else if (useBandScale) scale = d3.scaleBand().paddingInner(0).paddingOuter(0);
       else scale = d3.scalePoint();
   }
   // Domain is the min and max values for numeric values or Date & Time scales,

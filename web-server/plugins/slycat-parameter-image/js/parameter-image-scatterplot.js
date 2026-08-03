@@ -1818,15 +1818,11 @@ $.widget("parameter_image.scatterplot", {
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
       const legend_scale_axis = selectLegendScaleAxis(window.store.getState());
 
-      self.legend_axis = d3.svg
-        .axis()
-        .scale(legend_scale_axis)
-        .orient("right")
-        .ticks(range[1] / 50);
-      // Forces ticks at min and max axis values, but sometimes they collide
-      // with other ticks and sometimes they get rounded.
-      // .tickValues( self.legend_scale.ticks( range[1]/50 ).concat( self.legend_scale.domain() ) )
-      self.legend_axis_layer
+      // d3v7 axis centers ticks in scaleBand domains (categorical color legends).
+      // Must call it on a d3v7 selection — legend_axis_layer is a d3 v3 selection.
+      self.legend_axis = d3v7.axisRight(legend_scale_axis).ticks(range[1] / 50);
+      d3v7
+        .select(self.legend_axis_layer.node())
         .attr(
           "transform",
           "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)",
