@@ -6,9 +6,20 @@ import d3 from "d3";
 import * as d3v7 from "d3v7";
 
 export default {
+  is_discrete: function (name: string): boolean {
+    if (name === undefined) name = window.store.getState().colormap;
+    return this.color_maps[name]?.type === "discrete";
+  },
+
   isValueInColorscaleRange: function (
     value: number,
-    colorscale: d3.ScaleLinear | d3.ScaleLogarithmic | d3.ScaleOrdinal,
+    colorscale:
+      | d3.ScaleLinear
+      | d3.ScaleLogarithmic
+      | d3.ScaleOrdinal
+      | d3.ScaleQuantize
+      | d3v7.ScaleLinear<d3.RGBColor, string>
+      | d3v7.ScaleQuantize<d3.RGBColor>,
   ) {
     // Check against min and max only if value is a number or a Date object
     if (Number.isFinite(value) || (value as any) instanceof Date) {
@@ -66,6 +77,9 @@ export default {
     if (name === undefined) name = window.store.getState().colormap;
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
+    if (this.is_discrete(name)) {
+      return this.get_color_scale_quantize(name, min, max);
+    }
     var domain = [];
     var domain_scale = d3.scale
       .linear()
@@ -81,6 +95,9 @@ export default {
     if (name === undefined) name = window.store.getState().colormap;
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
+    if (this.is_discrete(name)) {
+      return this.get_color_scale_quantize_d3v7(name, min, max);
+    }
     var domain = [];
     var domain_scale = d3v7
       .scaleLinear()
@@ -95,11 +112,37 @@ export default {
     return this.get_color_scale(name, min, max);
   },
 
+  // Return a d3 quantize color scale that bins [min, max] across discrete palette colors.
+  get_color_scale_quantize: function (name: string, min: number, max: number) {
+    if (name === undefined) name = window.store.getState().colormap;
+    if (min === undefined) min = 0.0;
+    if (max === undefined) max = 1.0;
+    return d3.scale.quantize().domain([min, max]).range(this.color_maps[name].colors);
+  },
+
+  // Return a d3v7 quantize color scale that bins [min, max] across discrete palette colors.
+  get_color_scale_quantize_d3v7: function (name: string, min: number, max: number) {
+    if (name === undefined) name = window.store.getState().colormap;
+    if (min === undefined) min = 0.0;
+    if (max === undefined) max = 1.0;
+    return d3v7.scaleQuantize<d3.RGBColor>().domain([min, max]).range(this.color_maps[name].colors);
+  },
+
+  // Discrete-aware numeric color scale: quantize for discrete maps, otherwise linear.
+  get_color_scale_for_numeric: function (name: string, min: number, max: number) {
+    return this.get_color_scale(name, min, max);
+  },
+
   // Return a d3 log color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
+  // Discrete maps use equal-width quantize bins on [min, max] (log does not change binning).
   get_color_scale_log: function (colormap: string, min: number, max: number) {
     const rangeMin = min === undefined ? 0.0 : min;
     const rangeMax = max === undefined ? 1.0 : max;
+
+    if (this.is_discrete(colormap)) {
+      return this.get_color_scale_quantize(colormap, rangeMin, rangeMax);
+    }
 
     let domain = [];
     let domain_scale = d3.scale
@@ -120,9 +163,15 @@ export default {
 
   // Return a d3 ordinal color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing an array of values to suit their own needs.
-  get_color_scale_ordinal: function (name: string, values: number[]) {
+  get_color_scale_ordinal: function (name: string, values: (number | string)[]) {
     if (name === undefined) name = window.store.getState().colormap;
     if (values === undefined) values = [0, 1];
+
+    if (this.is_discrete(name)) {
+      const colors = this.color_maps[name].colors;
+      const rgbRange = values.map((_, i) => colors[i % colors.length]);
+      return d3.scale.ordinal().domain(values).range(rgbRange);
+    }
 
     var tempOrdinal = d3.scale.ordinal().domain(values).rangePoints([0, 100], 0);
     var tempColorscale = this.get_color_scale(name, 0, 100);
@@ -135,10 +184,14 @@ export default {
 
   // Return a d3 time scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
+  // Discrete maps use equal-width quantize bins on [min, max].
   get_color_scale_time: function (name: string, min: number, max: number) {
     if (name === undefined) name = window.store.getState().colormap;
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
+    if (this.is_discrete(name)) {
+      return this.get_color_scale_quantize(name, min, max);
+    }
     var domain = [];
     var domain_scale = d3.scale
       .linear()
@@ -149,7 +202,7 @@ export default {
   },
 
   // Deprecated
-  get_color_map_ordinal: function (name: string, values: number[]) {
+  get_color_map_ordinal: function (name: string, values: (number | string)[]) {
     return this.get_color_scale_ordinal(name, values);
   },
 
@@ -161,8 +214,44 @@ export default {
     var colors = self.color_maps[name]["colors"];
     var length = colors.length;
     var data = [];
+
+    if (self.is_discrete(name)) {
+      // Hard-edged equal bands for discrete palettes (reversed for top→bottom legend).
+      for (var i = 0; i < length; i++) {
+        const color = colors[length - 1 - i];
+        const start = (i / length) * 100;
+        const end = ((i + 1) / length) * 100;
+        data.push({ offset: start, color: color });
+        data.push({ offset: end, color: color });
+      }
+      return data;
+    }
+
     for (var i = 0; i < length; i++) {
       data.push({ offset: i * (100 / (length - 1)), color: colors[length - 1 - i] });
+    }
+    return data;
+  },
+
+  // Hard-edged legend stops aligned to unique category order for discrete maps.
+  // For continuous maps, falls back to get_gradient_data.
+  get_ordinal_legend_gradient: function (name: string, values: (number | string)[]) {
+    if (name === undefined) name = window.store.getState().colormap;
+    if (!this.is_discrete(name) || !values || values.length === 0) {
+      return this.get_gradient_data(name);
+    }
+
+    const colorscale = this.get_color_scale_ordinal(name, values);
+    const length = values.length;
+    const data = [];
+    for (var i = 0; i < length; i++) {
+      // Reverse so top of legend matches first category when axis is reversed.
+      const value = values[length - 1 - i];
+      const color = colorscale(value);
+      const start = (i / length) * 100;
+      const end = ((i + 1) / length) * 100;
+      data.push({ offset: start, color: color });
+      data.push({ offset: end, color: color });
     }
     return data;
   },
