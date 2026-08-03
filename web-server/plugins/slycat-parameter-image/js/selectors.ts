@@ -4,7 +4,6 @@ import _ from "lodash";
 import {
   selectScatterplotPaneWidth,
   selectScatterplotPaneHeight,
-  selectShowHistogram,
   selectHideLabels,
   selectHorizontalSpacing,
   selectVerticalSpacing,
@@ -79,13 +78,31 @@ export const selectCategoryColumns = (state: RootState) =>
   state.derived.category_columns ?? [];
 
 // True for string columns and wizard-marked categorical numerics (e.g. cylinders).
+const columnIsCategorical = (
+  index: number,
+  columnType: string | undefined,
+  categoryColumns: number[],
+): boolean => columnType === "string" || categoryColumns.indexOf(index) !== -1;
+
 export const selectVIsCategorical = createSelector(
   selectVIndex,
   selectVColumnType,
   selectCategoryColumns,
-  (v_index: number, vColumnType: string, categoryColumns: number[]): boolean => {
-    return vColumnType === "string" || categoryColumns.indexOf(v_index) !== -1;
-  },
+  columnIsCategorical,
+);
+
+export const selectXIsCategorical = createSelector(
+  selectXIndex,
+  selectXColumnType,
+  selectCategoryColumns,
+  columnIsCategorical,
+);
+
+export const selectYIsCategorical = createSelector(
+  selectYIndex,
+  selectYColumnType,
+  selectCategoryColumns,
+  columnIsCategorical,
 );
 
 // xValues can be either a Float64Array or a string array or a number array.
@@ -630,25 +647,35 @@ export const selectXScale = createSelector(
   selectXExtent,
   selectXScaleRange,
   selectXColumnType,
+  selectXIsCategorical,
   selectXValues,
   selectXValuesWithoutHidden,
-  selectShowHistogram,
   selectAutoScale,
   (
     xScaleType: string,
     xExtent: ExtentType,
     xScaleRange: ScaleRangeType,
     xColumnType: string | undefined,
+    xIsCategorical: boolean,
     xValues,
     xValuesWithoutHidden,
-    selectShowHistogram,
     autoScale,
   ): SlycatScaleType => {
-    // For string columns, the domain is derived from the values array. When
+    // For string / categorical columns, the domain is unique values. When
     // autoScale is on, use the filtered values so the axis reflects active
     // filters (matching how getExtent handles numeric columns).
     const values = autoScale ? xValuesWithoutHidden : xValues;
-    return getScale(xScaleType, xExtent, xScaleRange, xColumnType, values, selectShowHistogram);
+    const effectiveColumnType = xIsCategorical ? "string" : xColumnType;
+    const numericCategories = xIsCategorical && xColumnType !== "string";
+    return getScale(
+      xScaleType,
+      xExtent,
+      xScaleRange,
+      effectiveColumnType,
+      values,
+      xIsCategorical,
+      numericCategories,
+    );
   },
 );
 
@@ -656,14 +683,14 @@ export const selectXScaleAxis = createSelector(
   selectXScale,
   selectHorizontalSpacing,
   selectHideLabels,
-  selectXColumnType,
+  selectXIsCategorical,
   (
     xScale: SlycatScaleType,
     horizontalSpacing: number,
     hideLabels: boolean,
-    xColumnType: string | undefined,
+    xIsCategorical: boolean,
   ): SlycatScaleType => {
-    return adjustScaleDomain(xScale, horizontalSpacing, xColumnType === "string" && hideLabels);
+    return adjustScaleDomain(xScale, horizontalSpacing, xIsCategorical && hideLabels);
   },
 );
 
@@ -672,25 +699,35 @@ export const selectYScale = createSelector(
   selectYExtent,
   selectYScaleRange,
   selectYColumnType,
+  selectYIsCategorical,
   selectYValues,
   selectYValuesWithoutHidden,
-  selectShowHistogram,
   selectAutoScale,
   (
     yScaleType: string,
     yExtent: ExtentType,
     yScaleRange: ScaleRangeType,
     yColumnType: string,
+    yIsCategorical: boolean,
     yValues,
     yValuesWithoutHidden,
-    selectShowHistogram,
     autoScale,
   ): SlycatScaleType => {
-    // For string columns, the domain is derived from the values array. When
+    // For string / categorical columns, the domain is unique values. When
     // autoScale is on, use the filtered values so the axis reflects active
     // filters (matching how getExtent handles numeric columns).
     const values = autoScale ? yValuesWithoutHidden : yValues;
-    return getScale(yScaleType, yExtent, yScaleRange, yColumnType, values, selectShowHistogram);
+    const effectiveColumnType = yIsCategorical ? "string" : yColumnType;
+    const numericCategories = yIsCategorical && yColumnType !== "string";
+    return getScale(
+      yScaleType,
+      yExtent,
+      yScaleRange,
+      effectiveColumnType,
+      values,
+      yIsCategorical,
+      numericCategories,
+    );
   },
 );
 
@@ -698,9 +735,14 @@ export const selectYScaleAxis = createSelector(
   selectYScale,
   selectVerticalSpacing,
   selectHideLabels,
-  selectYColumnType,
-  (yScale: SlycatScaleType, verticalSpacing: number, hideLabels: boolean, yColumnType: string) => {
-    return adjustScaleDomain(yScale, verticalSpacing, yColumnType === "string" && hideLabels, 1);
+  selectYIsCategorical,
+  (
+    yScale: SlycatScaleType,
+    verticalSpacing: number,
+    hideLabels: boolean,
+    yIsCategorical: boolean,
+  ) => {
+    return adjustScaleDomain(yScale, verticalSpacing, yIsCategorical && hideLabels, 1);
   },
 );
 
@@ -738,7 +780,7 @@ export const selectVScale = createSelector(
       vScaleRange,
       effectiveColumnType,
       values,
-      effectiveColumnType === "string",
+      vIsCategorical,
       numericCategories,
     );
   },
@@ -775,19 +817,21 @@ const getScale = (
   numericCategories: boolean = false,
 ): SlycatScaleType => {
   let scale;
-  switch (scaleType) {
-    case "Date & Time":
-      scale = d3.scaleTime();
-      break;
-    case "Log":
-      scale = d3.scaleLog();
-      break;
-    default:
-      // For numeric values, use a linear scale.
-      if (columnType !== "string") scale = d3.scaleLinear();
-      // Band scale centers ticks in equal slabs (legend categories, histogram axes).
-      else if (useBandScale) scale = d3.scaleBand().paddingInner(0).paddingOuter(0);
-      else scale = d3.scalePoint();
+  // Categorical / string axes always use a band scale (including wizard-marked
+  // numeric categoricals). Prefer this over Log so unique values stay discrete.
+  if (useBandScale && columnType === "string" && scaleType !== "Date & Time") {
+    scale = d3.scaleBand().paddingInner(0).paddingOuter(0);
+  } else {
+    switch (scaleType) {
+      case "Date & Time":
+        scale = d3.scaleTime();
+        break;
+      case "Log":
+        scale = d3.scaleLog();
+        break;
+      default:
+        scale = d3.scaleLinear();
+    }
   }
   // Domain is the min and max values for numeric values or Date & Time scales,
   // otherwise unique category values (shared helper keeps legend ticks aligned

@@ -24,7 +24,7 @@ import {
   selectXValuesAndIndexesWithoutHidden,
   selectXValuesLogAndIndexesWithoutHidden,
   selectXValuesDateAndIndexesWithoutHidden,
-  selectXColumnType,
+  selectXIsCategorical,
 } from "../selectors";
 import {
   selectShowHistogram,
@@ -93,7 +93,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_label_y = X_LABEL_VERTICAL_OFFSET;
   const x_label_x = useSelector(selectXLabelX);
   const x_name = useSelector(selectXColumnName);
-  const x_column_type = useSelector(selectXColumnType);
+  const x_is_categorical = useSelector(selectXIsCategorical);
   const y_label_y = useSelector(selectYLabelY);
   const show_grid = useSelector(selectShowGrid);
   const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
@@ -209,15 +209,15 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
 
       return bins;
     }
-    // If the x variable is a string, we can't use d3.bin() to create the bins
-    // because d3.bin() only works with numeric values.
-    // So doing it manually here.
-    else if (x_column_type === "string" && x_scale_type !== "Date & Time") {
+    // If the x variable is a string or wizard-marked categorical, we can't use
+    // d3.bin() (numeric thresholds). Build one bin per unique category instead.
+    else if (x_is_categorical && x_scale_type !== "Date & Time") {
       // Group the values by value
       const grouped = d3.group(values_and_indexes, (d) => d.value);
-      // Sort the groups by value (values are all strings, so let's use localeCompare)
+      // Sort by numeric order for wizard-marked categoricals, otherwise localeCompare.
       const groupedSorted = new Map(
         [...grouped.entries()].sort((a, b) => {
+          if (typeof a[0] === "number" && typeof b[0] === "number") return a[0] - b[0];
           return a[0].toString().localeCompare(b[0].toString());
         }),
       );
@@ -260,8 +260,9 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   // Make bins for the histogram.
   const bins_without_hidden = makeBins(x_values_and_indexes_without_hidden);
 
-  // For non-string variables or Date & Time scales, adjusting x_scale domain to match the bins.
-  if (x_column_type !== "string" || x_scale_type == "Date & Time") {
+  // For continuous variables or Date & Time scales, adjust x_scale domain to match the bins.
+  // Categorical (string or wizard-marked) band domains already match unique values.
+  if (!x_is_categorical || x_scale_type == "Date & Time") {
     const bins_with_hidden = makeBins(x_values_and_indexes);
 
     // With auto_scale true, we use bins without hidden values to set the domain.

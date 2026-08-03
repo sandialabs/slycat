@@ -102,6 +102,7 @@ import {
   selectScatterplotMarginBottom,
   selectAxesVariables,
   selectVExtent,
+  selectVIsCategorical,
 } from "./selectors";
 
 import React from "react";
@@ -1017,9 +1018,6 @@ $(document).ready(function () {
         x: x,
         y: y,
         v: v,
-        x_string: table_metadata["column-types"][x_index] == "string",
-        y_string: table_metadata["column-types"][y_index] == "string",
-        v_string: is_color_variable_categorical(v_index),
         x_index: x_index,
         y_index: y_index,
         v_index: v_index,
@@ -1183,12 +1181,6 @@ $(document).ready(function () {
     });
   }
 
-  function is_color_variable_categorical(index) {
-    const columnType = table_metadata["column-types"][index];
-    if (columnType === "string") return true;
-    return Array.isArray(category_columns) && category_columns.indexOf(index) !== -1;
-  }
-
   function get_unique_category_values(values, isStringColumn) {
     // Shared with legend tick domain in selectors.ts so bands and labels stay aligned.
     return getUniqueCategoryValues(values, { numeric: !isStringColumn });
@@ -1197,7 +1189,7 @@ $(document).ready(function () {
   function get_legend_gradient(colormap) {
     if (
       v != null &&
-      is_color_variable_categorical(v_index) &&
+      selectVIsCategorical(window.store.getState()) &&
       slycat_color_maps.is_discrete(colormap)
     ) {
       const values = auto_scale ? filterValues(v) : v;
@@ -1328,7 +1320,6 @@ $(document).ready(function () {
     $("#scatterplot").scatterplot("option", "v_index", v_index);
     $("#scatterplot").scatterplot("update_color_scale_and_v", {
       v: v,
-      v_string: is_color_variable_categorical(v_index),
       colorscale: colorscale,
     });
     $("#scatterplot").scatterplot("option", {
@@ -1395,7 +1386,7 @@ $(document).ready(function () {
     const axes_variable_scale = store.getState().axesVariables[v_index];
     const v_variable_scale_type = axes_variable_scale ?? "Linear";
     const colormap = store.getState().colormap;
-    const color_is_categorical = is_color_variable_categorical(v_index);
+    const color_is_categorical = selectVIsCategorical(store.getState());
 
     if (color_is_categorical) {
       // Strings and wizard-marked category columns (e.g. cylinders, origin) get
@@ -1637,7 +1628,6 @@ $(document).ready(function () {
         window.store.dispatch(setXValues(x));
         $("#scatterplot").scatterplot("option", {
           x_index: variable,
-          x_string: table_metadata["column-types"][variable] == "string",
           x: x,
           x_label: selectXColumnName(window.store.getState()),
         });
@@ -1659,7 +1649,6 @@ $(document).ready(function () {
         window.store.dispatch(setYValues(y));
         $("#scatterplot").scatterplot("option", {
           y_index: variable,
-          y_string: table_metadata["column-types"][variable] == "string",
           y: y,
           y_label: selectYColumnName(window.store.getState()),
         });
