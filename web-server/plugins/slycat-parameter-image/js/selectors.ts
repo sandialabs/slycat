@@ -20,6 +20,7 @@ import {
 } from "./store";
 import { ColumnTypesType } from "types/slycat";
 import { parseDate } from "js/slycat-dates";
+import { getUniqueCategoryValues } from "./unique-category-values";
 
 // Constants
 const X_AXIS_TICK_LABEL_HEIGHT = 40;
@@ -731,7 +732,16 @@ export const selectVScale = createSelector(
     // Treat wizard-marked category columns like strings for the color legend axis
     // so each unique value gets a tick (e.g. cylinders 3,4,6,8).
     const effectiveColumnType = vIsCategorical ? "string" : vColumnType;
-    return getScale(vScaleType, vExtent, vScaleRange, effectiveColumnType, values, showHistogram);
+    const numericCategories = vIsCategorical && vColumnType !== "string";
+    return getScale(
+      vScaleType,
+      vExtent,
+      vScaleRange,
+      effectiveColumnType,
+      values,
+      showHistogram,
+      numericCategories,
+    );
   },
 );
 
@@ -763,6 +773,7 @@ const getScale = (
   columnType: string | undefined,
   values: ValuesType,
   showHistogram: boolean,
+  numericCategories: boolean = false,
 ): SlycatScaleType => {
   let scale;
   switch (scaleType) {
@@ -780,14 +791,11 @@ const getScale = (
       else scale = d3.scalePoint();
   }
   // Domain is the min and max values for numeric values or Date & Time scales,
-  // otherwise the locale sorted unique values for string / categorical variables.
-  // Numeric categoricals (wizard-marked) keep numeric sort order (3,4,6,8 not 3,4,6,8 as strings).
+  // otherwise unique category values (shared helper keeps legend ticks aligned
+  // with colorscale / discrete legend bands).
   const domain =
     columnType === "string" && scaleType !== "Date & Time"
-      ? _.uniq(Array.from(values as any[])).sort((a, b) => {
-          if (typeof a === "number" && typeof b === "number") return a - b;
-          return a.toString().localeCompare(b.toString());
-        })
+      ? getUniqueCategoryValues(values as any[], { numeric: numericCategories })
       : extent;
   return scale.range(scaleRange).domain(domain);
 };

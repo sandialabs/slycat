@@ -88,6 +88,7 @@ import {
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";
+import { getUniqueCategoryValues } from "./unique-category-values";
 import watch from "redux-watch";
 import combinedReduction from "combined-reduction";
 import { configureStore } from "@reduxjs/toolkit";
@@ -1186,13 +1187,8 @@ $(document).ready(function () {
   }
 
   function get_unique_category_values(values, isStringColumn) {
-    if (isStringColumn) {
-      return d3.set(values).values().sort();
-    }
-    // Preserve numeric types and sort numerically (e.g. cylinders 3,4,6,8).
-    return _.uniq(Array.from(values))
-      .filter((value) => value !== null && value !== undefined && !Number.isNaN(value))
-      .sort((a, b) => a - b);
+    // Shared with legend tick domain in selectors.ts so bands and labels stay aligned.
+    return getUniqueCategoryValues(values, { numeric: !isStringColumn });
   }
 
   function get_legend_gradient(colormap) {
