@@ -47,6 +47,7 @@ import {
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
+import { getUniqueCategoryValues } from "./unique-category-values";
 import {
   selectHideLabels,
   selectHorizontalSpacing,
@@ -917,10 +918,11 @@ $.widget("parameter_image.scatterplot", {
       // Linear scale otherwise
       return d3v7.scaleLinear().domain(domain).range(range);
     }
-    // For string variables, make an ordinal scale
-    var uniqueValues = d3.set(values).values().sort();
+    // For string variables, make an ordinal scale.
+    // Shared helper keeps point domains aligned with Redux axis tick order.
+    var uniqueValues = getUniqueCategoryValues(values, { numeric: false });
     if (reverse === true) {
-      uniqueValues.reverse();
+      uniqueValues = uniqueValues.slice().reverse();
     }
     return d3v7.scalePoint().domain(uniqueValues).range(range);
   },
