@@ -25,6 +25,7 @@ import {
   selectXValuesLogAndIndexesWithoutHidden,
   selectXValuesDateAndIndexesWithoutHidden,
   selectXIsCategorical,
+  selectXColumnType,
 } from "../selectors";
 import {
   selectShowHistogram,
@@ -40,6 +41,7 @@ import {
   selectSelectedSimulations,
   selectSelectedSimulationsWithoutHidden,
 } from "../dataSlice";
+import { getUniqueCategoryValues } from "../unique-category-values";
 import * as d3 from "d3v7";
 import _ from "lodash";
 
@@ -94,6 +96,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_label_x = useSelector(selectXLabelX);
   const x_name = useSelector(selectXColumnName);
   const x_is_categorical = useSelector(selectXIsCategorical);
+  const x_column_type = useSelector(selectXColumnType);
   const y_label_y = useSelector(selectYLabelY);
   const show_grid = useSelector(selectShowGrid);
   const plot_grid_color = slycat_color_maps.get_plot_grid_color(colormap);
@@ -212,29 +215,33 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     // If the x variable is a string or wizard-marked categorical, we can't use
     // d3.bin() (numeric thresholds). Build one bin per unique category instead.
     else if (x_is_categorical && x_scale_type !== "Date & Time") {
-      // Group the values by value
-      const grouped = d3.group(values_and_indexes, (d) => d.value);
-      // Sort by numeric order for wizard-marked categoricals, otherwise localeCompare.
-      const groupedSorted = new Map(
-        [...grouped.entries()].sort((a, b) => {
-          if (typeof a[0] === "number" && typeof b[0] === "number") return a[0] - b[0];
-          return a[0].toString().localeCompare(b[0].toString());
-        }),
+      // Same unique-domain rules as Redux band scales / colorscales (drops nullish).
+      const numeric = x_column_type !== "string";
+      const uniqueKeys = getUniqueCategoryValues(
+        values_and_indexes.map((d) => d.value),
+        { numeric },
       );
-      // Reformat the groupedSorted Map into same format as d3.bin() output,
-      // which is an array of arrays with each array containing the following:
-      // the values of the group
-      // x0 property: lower bound of the bin
-      // x1 property: upper bound of the bin
-      // length property: number of elements in the bin
-      const groupedSortedArray = Array.from(groupedSorted, ([key, values]) => {
-        let bin = [...values];
-        bin.x0 = key;
-        bin.x1 = key;
-        bin.length = values.length;
-        return bin;
-      });
-      return groupedSortedArray;
+      // Drop nullish before grouping so String(null) does not collide with a "null" category.
+      const countable = values_and_indexes.filter(
+        (d) =>
+          d.value !== null &&
+          d.value !== undefined &&
+          !(typeof d.value === "number" && Number.isNaN(d.value)),
+      );
+      // Group key must match uniqueKeys: numbers for wizard categoricals, String for strings.
+      const grouped = d3.group(countable, (d) => (numeric ? d.value : String(d.value)));
+      // Reformat into same shape as d3.bin() output: array of arrays with x0, x1, length.
+      return uniqueKeys
+        .map((key) => {
+          const values = grouped.get(key);
+          if (!values || values.length === 0) return null;
+          let bin = [...values];
+          bin.x0 = key;
+          bin.x1 = key;
+          bin.length = values.length;
+          return bin;
+        })
+        .filter((bin) => bin != null);
     } else {
       // For numeric variables, use d3.bin() to create the bins.
       const bin = d3
