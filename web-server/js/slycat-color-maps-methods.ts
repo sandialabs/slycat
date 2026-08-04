@@ -269,11 +269,12 @@ export default {
     return data;
   },
 
-  // Hard-edged legend stops aligned to unique category order for discrete maps.
-  // For continuous maps, falls back to get_gradient_data.
+  // Hard-edged legend stops aligned to unique category order.
+  // Works for discrete and continuous maps (continuous maps are sampled per category
+  // via get_color_scale_ordinal, matching point colors). Falls back when values empty.
   get_ordinal_legend_gradient: function (name: string, values: (number | string)[]) {
     name = this.resolve_colormap_name(name);
-    if (!this.is_discrete(name) || !values || values.length === 0) {
+    if (!values || values.length === 0) {
       return this.get_gradient_data(name);
     }
 

@@ -665,11 +665,8 @@ export default function initialize_timeseries_model(
   //////////////////////////////////////////////////////////////////////////////////////////
 
   function get_legend_gradient(colormap) {
-    if (
-      selected_column_type[cluster_index] === "string" &&
-      slycat_color_maps.is_discrete(colormap) &&
-      uniqueValues
-    ) {
+    // String color-by: category-aligned bands for discrete and continuous maps.
+    if (selected_column_type[cluster_index] === "string" && uniqueValues) {
       return slycat_color_maps.get_ordinal_legend_gradient(colormap, uniqueValues);
     }
     return slycat_color_maps.get_gradient_data(colormap);

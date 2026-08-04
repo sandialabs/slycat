@@ -1187,11 +1187,9 @@ $(document).ready(function () {
   }
 
   function get_legend_gradient(colormap) {
-    if (
-      v != null &&
-      selectVIsCategorical(window.store.getState()) &&
-      slycat_color_maps.is_discrete(colormap)
-    ) {
+    // Categorical color-by: one hard band per unique value so legend ticks (band
+    // scale) align with color slabs for both discrete and continuous maps.
+    if (v != null && selectVIsCategorical(window.store.getState())) {
       const values = auto_scale ? filterValues(v) : v;
       const uniqueValues = get_unique_category_values(
         values,
