@@ -1,6 +1,7 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 import * as d3 from "d3v7";
+import slycat_color_maps from "js/slycat-color-maps";
 
 $.widget("timeseries.legend", {
   options: {
@@ -13,6 +14,7 @@ $.widget("timeseries.legend", {
     border: 20,
     v_type: null,
     uniqueValues: null,
+    colormap: null,
   },
 
   _create: function () {
@@ -60,11 +62,15 @@ $.widget("timeseries.legend", {
         update_label: true,
       });
     } else if (key == "gradient") {
-      self._schedule_update({ update_legend_colors: true });
+      self._schedule_update({ update_legend_colors: true, update_legend_axis: true });
+    } else if (key == "colormap") {
+      self._schedule_update({ update_legend_axis: true });
     } else if (key == "min" || key == "max") {
       self._schedule_update({ update_legend_axis: true });
     } else if (key == "label") {
       self._schedule_update({ update_label: true });
+    } else if (key == "v_type" || key == "uniqueValues") {
+      self._schedule_update({ update_legend_axis: true });
     }
   },
 
@@ -163,6 +169,20 @@ $.widget("timeseries.legend", {
         };
       }
       self.legend_axis = d3.axisRight(self.legend_scale).tickFormat(tickFormat);
+      // Continuous + discrete: ticks on quantize bin edges (hard band boundaries).
+      if (
+        self.options.v_type != "string" &&
+        self.options.colormap &&
+        slycat_color_maps.is_discrete(self.options.colormap)
+      ) {
+        self.legend_axis.tickValues(
+          slycat_color_maps.get_discrete_bin_edges(
+            self.options.colormap,
+            self.options.min,
+            self.options.max,
+          ),
+        );
+      }
       self.legend_axis_layer
         .attr(
           "transform",

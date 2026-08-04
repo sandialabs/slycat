@@ -141,6 +141,23 @@ export default {
     return this.get_color_scale(name, min, max);
   },
 
+  // Equal-width bin edges for a discrete colormap over [min, max] (n colors → n+1 edges).
+  // Matches get_color_scale_quantize and equal-height discrete legend gradient bands.
+  get_discrete_bin_edges: function (name: string, min: number, max: number): number[] {
+    name = this.resolve_colormap_name(name);
+    if (min === undefined) min = 0.0;
+    if (max === undefined) max = 1.0;
+    if (min === max) {
+      return [min];
+    }
+    const n = this.color_maps[name].colors.length;
+    const edges: number[] = [];
+    for (var i = 0; i <= n; i++) {
+      edges.push(min + ((max - min) * i) / n);
+    }
+    return edges;
+  },
+
   // Return a d3 quantize color scale that bins [min, max] across discrete palette colors.
   // When min === max (e.g. filtered to one numeric value), d3.scale.quantize is unreliable
   // (undefined in v3; wrong bin in v7), so fall back to a constant first-palette color.

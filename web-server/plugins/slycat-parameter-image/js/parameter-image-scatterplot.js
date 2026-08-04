@@ -49,6 +49,8 @@ import {
   selectXColumnType,
   selectYColumnType,
   selectVColumnType,
+  selectVExtent,
+  selectVScaleType,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
@@ -1091,7 +1093,9 @@ $.widget("parameter_image.scatterplot", {
         update_v_label: true,
       });
     } else if (key == "gradient") {
-      self._schedule_update({ update_legend_colors: true });
+      // Gradient often changes with colormap (continuous ↔ discrete); rebuild ticks too
+      // so bin-edge vs nice ticks stay in sync with the color bar.
+      self._schedule_update({ update_legend_colors: true, update_legend_axis: true });
     } else if (key == "hidden_simulations") {
       // console.group(`parameter-image-scatterplot setOption "hidden_simulations"`);
       self._filterIndices();
@@ -1836,11 +1840,40 @@ $.widget("parameter_image.scatterplot", {
       );
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
-      const legend_scale_axis = selectLegendScaleAxis(window.store.getState());
+      let legend_scale_axis = selectLegendScaleAxis(window.store.getState());
+      const colormap = window.store.getState().colormap;
+      const vIsCategorical = selectVIsCategorical(window.store.getState());
 
       // d3v7 axis centers ticks in scaleBand domains (categorical color legends).
       // Must call it on a d3v7 selection — legend_axis_layer is a d3 v3 selection.
-      self.legend_axis = d3v7.axisRight(legend_scale_axis).ticks(range[1] / 50);
+      // Continuous + discrete: ticks on quantize bin edges (hard band boundaries).
+      self.legend_axis = d3v7.axisRight(legend_scale_axis);
+      if (!vIsCategorical && slycat_color_maps.is_discrete(colormap)) {
+        const extent = selectVExtent(window.store.getState());
+        const numericExtent = extent.map((value) =>
+          value instanceof Date ? value.valueOf() : Number(value),
+        );
+        if (numericExtent.length >= 2 && numericExtent.every((value) => Number.isFinite(value))) {
+          const lo = Math.min(...numericExtent);
+          const hi = Math.max(...numericExtent);
+          // Equal-height discrete bands are linear in data space; use linear legend
+          // when the color variable is Log so edge ticks sit on band boundaries.
+          if (selectVScaleType(window.store.getState()) === "Log") {
+            legend_scale_axis = d3v7
+              .scaleLinear()
+              .domain([hi, lo])
+              .range(legend_scale_axis.range());
+            self.legend_axis = d3v7.axisRight(legend_scale_axis);
+          }
+          self.legend_axis.tickValues(
+            slycat_color_maps.get_discrete_bin_edges(colormap, lo, hi),
+          );
+        } else {
+          self.legend_axis.ticks(range[1] / 50);
+        }
+      } else if (!vIsCategorical) {
+        self.legend_axis.ticks(range[1] / 50);
+      }
       d3v7
         .select(self.legend_axis_layer.node())
         .attr(

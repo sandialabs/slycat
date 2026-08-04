@@ -446,6 +446,7 @@ export default function initialize_timeseries_model(
         width: $("#legend-pane").width(),
         height: $("#legend-pane").height(),
         gradient: get_legend_gradient(get_state().controls.colormap),
+        colormap: get_state().controls.colormap,
         label: table_metadata["column-names"][selected_column[cluster_index]],
         min: table_metadata["column-min"][selected_column[cluster_index]],
         max: table_metadata["column-max"][selected_column[cluster_index]],
@@ -873,6 +874,7 @@ export default function initialize_timeseries_model(
             v_type: selected_column_type[cluster_index],
             uniqueValues: uniqueValues,
             gradient: get_legend_gradient(get_state().controls.colormap),
+            colormap: get_state().controls.colormap,
           });
         },
       });
