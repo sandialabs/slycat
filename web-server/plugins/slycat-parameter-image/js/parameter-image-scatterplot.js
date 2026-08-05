@@ -24,6 +24,7 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
+import { ENABLE_SVG_THREE_D_LEGENDS } from "./svg-three-d-legends-gate";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -36,6 +37,12 @@ import {
   selectXColumnName,
   selectYColumnName,
   selectVColumnName,
+  selectXColumnType,
+  selectYColumnType,
+  selectVColumnType,
+  selectXScaleType,
+  selectYScaleType,
+  selectVScaleType,
   selectXScale,
   selectYScale,
   selectVScale,
@@ -46,16 +53,14 @@ import {
   selectXIsCategorical,
   selectYIsCategorical,
   selectVIsCategorical,
-  selectXColumnType,
-  selectYColumnType,
-  selectVColumnType,
   selectVExtent,
-  selectVScaleType,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
 import { getUniqueCategoryValues } from "./unique-category-values";
+import { truncateString } from "js/slycat-string-truncate";
+import { measureSvgText } from "js/slycat-svg-text";
 import {
   selectHideLabels,
   selectHorizontalSpacing,
@@ -65,8 +70,74 @@ import {
   CATEGORICAL_AXIS_LABELS_POPOVER_TITLE,
   CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT,
 } from "components/ScatterplotOptions/ScatterplotOptionsCategoricalAxisLabels";
+import {
+  DEFAULT_SCATTERPLOT_MARGIN_TOP,
+  DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
+  DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
+  DEFAULT_SCATTERPLOT_MARGIN_LEFT,
+} from "components/ScatterplotOptions/ScatterplotOptions";
 import { TypeLabel, FrameMenu } from "./Components/TypeButton";
 import { MEDIA_TYPES } from "./constants/media-types";
+import {
+  FULL_ORBIT_PREVIEW_VIDEO_SELECTOR,
+  FULL_ORBIT_PREVIEW_VIDEO_TYPE,
+  installFullOrbitPreviewHover,
+  isFullOrbitPreviewVideo,
+  uninstallFullOrbitPreviewHover,
+} from "./full-orbit-preview-video";
+
+// Maximum width (in px) for a single y-axis tick label before it gets
+// truncated with an ellipsis.
+const Y_AXIS_TICK_MAX_WIDTH = 140;
+
+// Maximum width (in px) for a single x-axis tick label before it gets
+// truncated with an ellipsis. Measured along the text baseline; the visible
+// horizontal extent is slightly less since x-axis labels are rotated 15 degrees.
+const X_AXIS_TICK_MAX_WIDTH = 140;
+
+// Maximum width (in px) for a single legend axis tick label before it gets
+// truncated with an ellipsis.
+const LEGEND_AXIS_TICK_MAX_WIDTH = 140;
+
+// Hybrid numeric tick formatting: scale.tickFormat(tickCount, ",~f") for
+// human-scale magnitudes; compact d3 .2g outside this band.
+const HYBRID_AXIS_TICK_NORMAL_SPECIFIER = ",~f";
+const HYBRID_AXIS_TICK_COMPACT_ABOVE = 1e7;
+const HYBRID_AXIS_TICK_COMPACT_BELOW = 1e-4;
+const HYBRID_AXIS_TICK_COMPACT_FORMAT = d3v7.format(".2g");
+
+/**
+ * Apply a hybrid tick formatter for numeric axes. Human-scale values use
+ * adaptive grouped fixed notation (`,~f`); very large or very small
+ * magnitudes use compact `.2g` to avoid long comma strings and IEEE 754
+ * noise in tick labels. String and Date & Time axes keep D3's default.
+ */
+function applyNumericAxisTickFormat(
+  axis,
+  scale,
+  tickCount,
+  columnType,
+  scaleType,
+) {
+  if (columnType !== "string" && scaleType !== "Date & Time") {
+    const normalFormat = scale.tickFormat(
+      tickCount,
+      HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
+    );
+    const compactFormat = HYBRID_AXIS_TICK_COMPACT_FORMAT;
+    axis.tickFormat((d) => {
+      const abs = Math.abs(d);
+      if (
+        abs >= HYBRID_AXIS_TICK_COMPACT_ABOVE ||
+        (abs > 0 && abs < HYBRID_AXIS_TICK_COMPACT_BELOW)
+      ) {
+        return compactFormat(d);
+      }
+      return normalFormat(d);
+    });
+  }
+  return axis;
+}
 
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
@@ -76,6 +147,52 @@ var vtkclose_event = new Event("vtkclose");
 
 // WeakMap to store the root elements for the type buttons
 const rootsByPopupEl = new WeakMap();
+
+/**
+ * Append an SVG <title> child to `node` so hovering reveals `text` via the
+ * browser's native tooltip. Caller is responsible for ensuring the node
+ * has no stale title (typically by setting textContent first, which wipes
+ * prior children).
+ */
+function appendSvgTitle(node, text) {
+  const title = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "title",
+  );
+  title.textContent = text;
+  node.appendChild(title);
+}
+
+/**
+ * Truncate every `.tick text` inside an axis layer node to at most
+ * `maxWidth` pixels using a middle ellipsis. Truncated nodes get an SVG
+ * <title> child so hovering reveals the full text via the browser's
+ * native tooltip. Should be called after the v7 axis has rendered, since
+ * v7 axis sets each tick's text via .text(format), making node.textContent
+ * the fresh untruncated value at that point.
+ *
+ * Only runs against string columns. Date & Time scales are left alone
+ * (d3's formatter is preferable). Numeric columns use the hybrid
+ * scale.tickFormat / `.2g` formatter via `applyNumericAxisTickFormat`.
+ */
+function truncateAxisTickLabels(axisLayerNode, maxWidth, columnType, scaleType) {
+  if (columnType !== "string" || scaleType === "Date & Time") return;
+  axisLayerNode.querySelectorAll(".tick text").forEach((node) => {
+    const original = node.textContent;
+    if (!original) return;
+    const truncated = truncateString(original, {
+      maxWidth,
+      measure: measureSvgText(node),
+      position: "middle",
+    });
+    if (truncated !== original) {
+      // Setting textContent wipes any prior children (including a stale
+      // <title>), so we re-append a fresh title with the original text.
+      node.textContent = truncated;
+      appendSvgTitle(node, original);
+    }
+  });
+}
 
 $.widget("parameter_image.scatterplot", {
   options: {
@@ -116,11 +233,13 @@ $.widget("parameter_image.scatterplot", {
     pinned_width: 200,
     pinned_height: 200,
 
-    // Margins around scatterplot
-    margin_top: 25,
-    margin_right: 300,
-    margin_bottom: 25,
-    margin_left: 350,
+    // Margins around scatterplot. Defaults are imported from ScatterplotOptions
+    // so that this widget fallback stays in sync with the Redux store / UI
+    // defaults.
+    margin_top: DEFAULT_SCATTERPLOT_MARGIN_TOP,
+    margin_right: DEFAULT_SCATTERPLOT_MARGIN_RIGHT,
+    margin_bottom: DEFAULT_SCATTERPLOT_MARGIN_BOTTOM,
+    margin_left: DEFAULT_SCATTERPLOT_MARGIN_LEFT,
 
     hover_time: 800,
     image_cache: {},
@@ -271,6 +390,18 @@ $.widget("parameter_image.scatterplot", {
       event.preventDefault();
     });
 
+    // Bring matching media frame to front when its 3D legend is clicked
+    self.element[0].addEventListener("slycat-bring-frame-to-front", (e) => {
+      const uid = e.detail?.uid;
+      if (!uid) return;
+      const frame = self.element[0].querySelector(
+        `.media-layer .image-frame[data-uid="${CSS.escape(uid)}"]`,
+      );
+      if (frame) {
+        self._move_frame_to_front(frame);
+      }
+    });
+
     self.scatterplot_grid_root = d3
       .select(self.element.get(0))
       .append("div")
@@ -297,7 +428,6 @@ $.widget("parameter_image.scatterplot", {
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.line_layer = self.svg.append("g").attr("class", "line-layer");
-    self.threeD_legends_layer = self.svg.append("g").attr("id", "threeD_legends");
 
     self.options.image_cache = {};
 
@@ -518,9 +648,18 @@ $.widget("parameter_image.scatterplot", {
       self.legend_layer
         .selectAll(".tick text")
         .style("font-size", self.options.axes_font_size + "px");
-      self._schedule_update({ update_y_label: true });
-      self._schedule_update({ update_x_label: true });
-      self._schedule_update({ update_v_label: true });
+      // Rebuild the axes so tick string truncation and number formatting
+      // re-measure against the new font metrics. Axis-title labels are
+      // also rescheduled since update_y / update_legend_axis don't
+      // cascade into their labels (only update_x does).
+      self._schedule_update({
+        update_x: true,
+        update_y: true,
+        update_legend_axis: true,
+        update_x_label: true,
+        update_y_label: true,
+        update_v_label: true,
+      });
     };
 
     const update_axes_font_family = () => {
@@ -535,9 +674,18 @@ $.widget("parameter_image.scatterplot", {
       self.legend_layer
         .selectAll(".tick text")
         .style("font-family", self.options.axes_font_family);
-      self._schedule_update({ update_y_label: true });
-      self._schedule_update({ update_x_label: true });
-      self._schedule_update({ update_v_label: true });
+      // Rebuild the axes so tick string truncation and number formatting
+      // re-measure against the new font metrics. Axis-title labels are
+      // also rescheduled since update_y / update_legend_axis don't
+      // cascade into their labels (only update_x does).
+      self._schedule_update({
+        update_x: true,
+        update_y: true,
+        update_legend_axis: true,
+        update_x_label: true,
+        update_y_label: true,
+        update_v_label: true,
+      });
     };
 
     const update_axes_variables_scale = () => {
@@ -687,14 +835,21 @@ $.widget("parameter_image.scatterplot", {
       // console.groupEnd();
     };
 
-    const threeD_legends_root = createRoot(document.getElementById("threeD_legends"));
-    threeD_legends_root.render(
-      <StrictMode>
-        <Provider store={window.store}>
-          <MediaLegends />
-        </Provider>
-      </StrictMode>,
-    );
+    if (ENABLE_SVG_THREE_D_LEGENDS) {
+      const threeD_legends_host = d3
+        .select(self.element.get(0))
+        .append("div")
+        .attr("id", "threeD_legends_root")
+        .node();
+      const threeD_legends_root = createRoot(threeD_legends_host);
+      threeD_legends_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <MediaLegends />
+          </Provider>
+        </StrictMode>,
+      );
+    }
 
     const grid_root = createRoot(document.getElementById("scatterplot-grid-root"));
     grid_root.render(
@@ -1339,9 +1494,26 @@ $.widget("parameter_image.scatterplot", {
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
       const x_scale_axis = selectXScaleAxis(window.store.getState());
+      const xColumnType = selectXColumnType(window.store.getState());
+      const xScaleType = selectXScaleType(window.store.getState());
 
+      const xTickCount = self.x_range_canvas[1] / 85;
       // d3v7 axis (must use a d3v7 selection — x_axis_layer is a d3 v3 selection).
-      self.x_axis = d3v7.axisBottom(x_scale_axis).ticks(self.x_range_canvas[1] / 85);
+      self.x_axis = d3v7
+        .axisBottom(x_scale_axis)
+        // Set number of ticks based on width of axis.
+        .ticks(xTickCount);
+      applyNumericAxisTickFormat(
+        self.x_axis,
+        x_scale_axis,
+        xTickCount,
+        xColumnType,
+        xScaleType,
+      );
+      // Forces ticks at min and max axis values, but sometimes they collide
+      // with other ticks and sometimes they get rounded.
+      // .tickValues( self.x_scale.ticks( self.x_range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
+      // .tickSize(15)
       d3v7
         .select(self.x_axis_layer.node())
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
@@ -1352,6 +1524,15 @@ $.widget("parameter_image.scatterplot", {
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
         .attr("transform", "rotate(15)");
+
+      // Truncate long string x-axis tick labels with a middle ellipsis.
+      truncateAxisTickLabels(
+        self.x_axis_layer.node(),
+        X_AXIS_TICK_MAX_WIDTH,
+        xColumnType,
+        xScaleType,
+      );
+
       // Recreate the title in this same _update pass (scheduling would be wiped by
       // self.updates = {} at the end of _update).
       self.updates.update_x_label = true;
@@ -1384,9 +1565,22 @@ $.widget("parameter_image.scatterplot", {
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
       const y_scale_axis = selectYScaleAxis(window.store.getState());
+      const yColumnType = selectYColumnType(window.store.getState());
+      const yScaleType = selectYScaleType(window.store.getState());
 
+      const yTickCount = self.y_range_canvas[0] / 50;
       // d3v7 axis (must use a d3v7 selection — y_axis_layer is a d3 v3 selection).
-      self.y_axis = d3v7.axisLeft(y_scale_axis).ticks(self.y_range_canvas[0] / 50);
+      self.y_axis = d3v7
+        .axisLeft(y_scale_axis)
+        // Set number of ticks based on height of axis.
+        .ticks(yTickCount);
+      applyNumericAxisTickFormat(
+        self.y_axis,
+        y_scale_axis,
+        yTickCount,
+        yColumnType,
+        yScaleType,
+      );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded and just create duplicate ticks.
       // Explored this again in December 2022 trying to address an issue where log scale
@@ -1403,6 +1597,14 @@ $.widget("parameter_image.scatterplot", {
         .selectAll(".tick text")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family);
+
+      // Truncate long string y-axis tick labels with a middle ellipsis.
+      truncateAxisTickLabels(
+        self.y_axis_layer.node(),
+        Y_AXIS_TICK_MAX_WIDTH,
+        yColumnType,
+        yScaleType,
+      );
       self.updates.update_y_label = true;
     }
 
@@ -1434,6 +1636,9 @@ $.widget("parameter_image.scatterplot", {
         .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
+        // D3 v7 axis sets fill="none" on the parent layer to keep the .domain
+        // path unfilled. Set an explicit fill here so the label text stays visible.
+        .style("fill", "currentColor")
         .text(self.options.x_label);
 
       // Check if the axis labels are hidden and if so, add a popover icon.
@@ -1459,11 +1664,16 @@ $.widget("parameter_image.scatterplot", {
           .attr("x", xOffset) // Position after text with small gap
           .attr("y", y)
           .attr("fill", "currentColor")
-          // d3v7 bottom axes set text-anchor="middle" on the group; keep start so
-          // xOffset is the icon's left edge (not its center), preserving the gap.
+          // D3 v7 axis sets text-anchor="middle" on the parent layer. Set an
+          // explicit "start" here so the icon's left edge sits at xOffset
+          // (matching xOffset's calculation), instead of inheriting "middle"
+          // and shifting the icon back over the label.
           .style("text-anchor", "start")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
+          // D3 v7 axis sets fill="none" on the parent layer; set an explicit
+          // fill so the icon stays visible.
+          .style("fill", "currentColor")
           .text("\uf06a");
 
         label
@@ -1499,6 +1709,9 @@ $.widget("parameter_image.scatterplot", {
         .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
+        // D3 v7 axis sets fill="none" on the parent layer to keep the .domain
+        // path unfilled. Set an explicit fill here so the label text stays visible.
+        .style("fill", "currentColor")
         .text(self.options.y_label);
 
       // Check if the axis labels are hidden and if so, add a popover icon.
@@ -1528,6 +1741,9 @@ $.widget("parameter_image.scatterplot", {
           .style("text-anchor", "middle")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
+          // D3 v7 axis sets fill="none" on the parent layer; set an explicit
+          // fill so the icon stays visible.
+          .style("fill", "currentColor")
           .text("\uf06a");
 
         label
@@ -1843,7 +2059,10 @@ $.widget("parameter_image.scatterplot", {
       let legend_scale_axis = selectLegendScaleAxis(window.store.getState());
       const colormap = window.store.getState().colormap;
       const vIsCategorical = selectVIsCategorical(window.store.getState());
+      const vColumnType = selectVColumnType(window.store.getState());
+      const vScaleType = selectVScaleType(window.store.getState());
 
+      const legendTickCount = range[1] / 50;
       // d3v7 axis centers ticks in scaleBand domains (categorical color legends).
       // Must call it on a d3v7 selection — legend_axis_layer is a d3 v3 selection.
       // Continuous + discrete: ticks on quantize bin edges (hard band boundaries).
@@ -1858,7 +2077,7 @@ $.widget("parameter_image.scatterplot", {
           const hi = Math.max(...numericExtent);
           // Equal-height discrete bands are linear in data space; use linear legend
           // when the color variable is Log so edge ticks sit on band boundaries.
-          if (selectVScaleType(window.store.getState()) === "Log") {
+          if (vScaleType === "Log") {
             legend_scale_axis = d3v7
               .scaleLinear()
               .domain([hi, lo])
@@ -1869,10 +2088,24 @@ $.widget("parameter_image.scatterplot", {
             slycat_color_maps.get_discrete_bin_edges(colormap, lo, hi),
           );
         } else {
-          self.legend_axis.ticks(range[1] / 50);
+          self.legend_axis.ticks(legendTickCount);
         }
+        applyNumericAxisTickFormat(
+          self.legend_axis,
+          legend_scale_axis,
+          legendTickCount,
+          vColumnType,
+          vScaleType,
+        );
       } else if (!vIsCategorical) {
-        self.legend_axis.ticks(range[1] / 50);
+        self.legend_axis.ticks(legendTickCount);
+        applyNumericAxisTickFormat(
+          self.legend_axis,
+          legend_scale_axis,
+          legendTickCount,
+          vColumnType,
+          vScaleType,
+        );
       }
       d3v7
         .select(self.legend_axis_layer.node())
@@ -1883,6 +2116,14 @@ $.widget("parameter_image.scatterplot", {
         .call(self.legend_axis)
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family);
+
+      // Truncate long string legend axis tick labels with a middle ellipsis.
+      truncateAxisTickLabels(
+        self.legend_axis_layer.node(),
+        LEGEND_AXIS_TICK_MAX_WIDTH,
+        vColumnType,
+        vScaleType,
+      );
     }
 
     if (self.updates.update_v_label) {
@@ -1952,7 +2193,7 @@ $.widget("parameter_image.scatterplot", {
   _update_video_sync_time: function () {
     var self = this;
     // Updating videos' sync time should not fire off additional seeked events
-    $(".open-image video").each(function (index, video) {
+    self._getNormalVideos().each(function (index, video) {
       // Only update currentTime if the video is not playing
       var videoSyncTime = self.options["video-sync-time"];
       var playing = self._is_video_playing(video);
@@ -1997,13 +2238,18 @@ $.widget("parameter_image.scatterplot", {
           height: frame.outerHeight(),
           current_frame: frame.hasClass("selected"),
           ratio: frame.attr("data-ratio"),
+          z_index: parseInt(frame.css("z-index"), 10) || 0,
         };
         var video = frame.find("video")[0];
         if (video != undefined) {
+          var orbitPreview = $(video).is(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR);
           var currentTime = video.currentTime;
           open_element["currentTime"] = currentTime;
           open_element["video"] = true;
-          open_element["playing"] = self._is_video_playing(video);
+          open_element["playing"] = !orbitPreview && self._is_video_playing(video);
+          if (orbitPreview) {
+            open_element["orbitPreview"] = true;
+          }
         }
         var threeD = frame.find(".vtp")[0];
         if (threeD != undefined) {
@@ -2171,7 +2417,7 @@ $.widget("parameter_image.scatterplot", {
         }
         self._drag_from_button = false;
 
-        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Showing the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").show();
 
         var frame, sourceEventTarget;
@@ -2203,7 +2449,7 @@ $.widget("parameter_image.scatterplot", {
           return;
         }
 
-        // Hiding the mouseEventOverlay on all frames (currently PDF and videos only)
+        // Hiding the mouseEventOverlay on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").hide();
 
         self.state = "";
@@ -2277,7 +2523,7 @@ $.widget("parameter_image.scatterplot", {
       resize_start: function () {
         // console.log("resize_start");
 
-        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Showing the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").show();
 
         // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this
@@ -2301,7 +2547,7 @@ $.widget("parameter_image.scatterplot", {
       resize_end: function () {
         // console.log("resize_end");
 
-        // Hiding the mouseEventOverlays on all frames (currently PDF and videos only)
+        // Hiding the mouseEventOverlays on all frames (PDF, video, and 3D viewers)
         $(".mouseEventOverlay").hide();
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed(
@@ -2688,14 +2934,13 @@ $.widget("parameter_image.scatterplot", {
           });
         } else if (blob.type.indexOf("video/") == 0) {
           media_type = MEDIA_TYPES.VIDEO;
+          const fullOrbitPreview = isFullOrbitPreviewVideo(image.uri);
           // Create the video ...
           var video = frame_html
             .append("video")
             .attr("data-uri", image.uri)
             .attr("data-uid", image.uid)
             .attr("src", image_url)
-            .attr("controls", true)
-            .attr("loop", true)
             .style({
               display: "none",
             })
@@ -2725,7 +2970,11 @@ $.widget("parameter_image.scatterplot", {
                 display: "block",
               });
               self._adjust_leader_line(frame_html);
-              if (
+              if (fullOrbitPreview) {
+                this.pause();
+                this.currentTime = 0;
+                installFullOrbitPreviewHover(this);
+              } else if (
                 self.options["video-sync"] &&
                 this.currentTime != self.options["video-sync-time"]
               ) {
@@ -2735,10 +2984,17 @@ $.widget("parameter_image.scatterplot", {
             })
             .on("playing", function () {
               // console.log("onplaying");
+              if (fullOrbitPreview) {
+                this.pause();
+                return;
+              }
               self._sync_open_media();
             })
             .on("pause", function () {
               // console.log("onpause");
+              if (fullOrbitPreview) {
+                return;
+              }
               var pausing_index = self.pausing_videos.indexOf(image.uid);
               // If video was directly paused by user, set a new video-sync-time and sync all other videos
               if (pausing_index < 0) {
@@ -2762,6 +3018,10 @@ $.widget("parameter_image.scatterplot", {
             })
             .on("seeked", function (event) {
               // console.log("onseeked");
+              if (fullOrbitPreview) {
+                self._sync_open_media();
+                return;
+              }
               var index = self.syncing_videos.indexOf(image.uid);
               if (index < 0) {
                 self.options["video-sync-time"] = this.currentTime;
@@ -2777,6 +3037,10 @@ $.widget("parameter_image.scatterplot", {
             })
             .on("play", function (event) {
               // console.log("onplay");
+              if (fullOrbitPreview) {
+                this.pause();
+                return;
+              }
               let frame = d3.select(this.parentElement);
               self._cancel_hover_state(frame, image);
 
@@ -2797,7 +3061,17 @@ $.widget("parameter_image.scatterplot", {
               // Chrome does not propagate any mouse events after controls are clicked.
               self._move_frame_to_front(this.closest(".image-frame"));
             });
-          if (image.currentTime != undefined && image.currentTime > 0) {
+          if (fullOrbitPreview) {
+            frame_html.attr("data-preview-video", FULL_ORBIT_PREVIEW_VIDEO_TYPE);
+            video.attr("data-preview-video", FULL_ORBIT_PREVIEW_VIDEO_TYPE);
+          } else {
+            video.attr("controls", true).attr("loop", true);
+          }
+          if (
+            !fullOrbitPreview &&
+            image.currentTime != undefined &&
+            image.currentTime > 0
+          ) {
             self.syncing_videos.push(image.uid);
             video.property("currentTime", image.currentTime);
           }
@@ -2940,6 +3214,10 @@ $.widget("parameter_image.scatterplot", {
             },
             false,
           );
+
+          // Overlay to prevent VTK from capturing mouse events while resizing/dragging the frame
+          // (same pattern as PDF/video viewers above).
+          frame_html.append("div").classed("mouseEventOverlay", true);
 
           // Convert the blob to an array buffer and pass it to the geometry loader
           function passToGeometryLoaded(buffer) {
@@ -3582,6 +3860,10 @@ $.widget("parameter_image.scatterplot", {
       frame_html.node().querySelector(".vtp").dispatchEvent(vtkclose_event);
     }
 
+    frame_html.selectAll(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR).each(function () {
+      uninstallFullOrbitPreviewHover(this);
+    });
+
     // Remove the frame and its line
     frame_html.remove();
     line.remove();
@@ -3710,9 +3992,15 @@ $.widget("parameter_image.scatterplot", {
     return store.getState().currentFrame.uid;
   },
 
+  _getNormalVideos: function () {
+    return $(".open-image video").not(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR);
+  },
+
   _getCurrentFrameVideo: function () {
     let self = this;
-    let video = $(".open-image[data-uid='" + self._getCurrentFrameUID() + "'] video").get(0);
+    let video = $(".open-image[data-uid='" + self._getCurrentFrameUID() + "'] video")
+      .not(FULL_ORBIT_PREVIEW_VIDEO_SELECTOR)
+      .get(0);
     return video;
   },
 
@@ -3720,7 +4008,7 @@ $.widget("parameter_image.scatterplot", {
     var self = this;
     if (self.options["video-sync"]) {
       // Pause all videos
-      $(".open-image video").each(function (index, video) {
+      self._getNormalVideos().each(function (index, video) {
         self.pausing_videos.push($(video.parentElement).data("uid"));
         video.pause();
       });
@@ -3745,7 +4033,7 @@ $.widget("parameter_image.scatterplot", {
     if (self.options["video-sync"]) {
       var minLength = Infinity;
       // Pause all videos and log highest length
-      $(".open-image video").each(function (index, video) {
+      self._getNormalVideos().each(function (index, video) {
         self.pausing_videos.push($(video.parentElement).data("uid"));
         video.pause();
         minLength = Math.min(video.duration, minLength);
@@ -3770,7 +4058,7 @@ $.widget("parameter_image.scatterplot", {
   frame_back: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      var videos = $(".open-image video");
+      var videos = self._getNormalVideos();
       var firstVideo = videos.get(0);
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = Math.max(
@@ -3801,7 +4089,7 @@ $.widget("parameter_image.scatterplot", {
   frame_forward: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      var videos = $(".open-image video");
+      var videos = self._getNormalVideos();
       var minLength = Infinity;
       var firstVideoDuration;
 
@@ -3838,7 +4126,7 @@ $.widget("parameter_image.scatterplot", {
   play: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      $(".open-image video").each(function (index, video) {
+      self._getNormalVideos().each(function (index, video) {
         self.playing_videos.push($(video.parentElement).data("uid"));
         video.play();
       });
@@ -3854,7 +4142,7 @@ $.widget("parameter_image.scatterplot", {
   pause: function () {
     var self = this;
     if (self.options["video-sync"]) {
-      var videos = $(".open-image video");
+      var videos = self._getNormalVideos();
       var firstVideo = videos.get(0);
       if (firstVideo != undefined) {
         self.options["video-sync-time"] = firstVideo.currentTime;

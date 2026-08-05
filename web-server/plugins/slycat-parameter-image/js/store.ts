@@ -56,6 +56,21 @@ export type XYPairsType = {
   label: string;
 }[];
 
+export type ThreeDVariableDataRange = {
+  min: number;
+  max: number;
+};
+
+export type ThreeDVariableUserRange = {
+  min?: number;
+  max?: number;
+};
+
+export type ThreeDColorByLegendSize = {
+  width: number;
+  height: number;
+};
+
 export type DerivedStateType = {
   xValues: ValuesType;
   yValues: ValuesType;
@@ -68,9 +83,9 @@ export type DerivedStateType = {
   rating_variables: number[];
   category_columns: number[];
   xy_pairs: XYPairsType;
-  // ToDo: Add more specific types for these
+  // ToDo: Add more specific types for three_d_colorby_range
   three_d_colorby_range: {};
-  three_d_colorby_legends: {};
+  three_d_colorby_legends: Record<string, ThreeDColorByLegendSize>;
 };
 
 export type OpenMediaType = {
@@ -86,9 +101,12 @@ export type OpenMediaType = {
   height: number;
   current_frame: boolean;
   ratio: string;
+  currentTime?: number;
   video?: boolean;
   playing?: boolean;
+  orbitPreview?: boolean;
   threeD?: boolean;
+  z_index?: number;
 }[];
 
 // Currently we are not storing any details of the filters
@@ -103,6 +121,7 @@ export type RootState = {
   fontFamily: string;
   axesVariables: AxesVariablesType;
   threeD_sync: boolean;
+  show_threeD_legends: boolean;
   colormap: string;
   threeDColormap: string;
   threeD_background_color: [number, number, number];
@@ -119,8 +138,8 @@ export type RootState = {
   variableRanges: VariableRangesType;
   three_d_cameras: Record<string, any>;
   three_d_colorvars: Record<string, string>;
-  three_d_variable_data_ranges: Record<string, [number, number]>;
-  three_d_variable_user_ranges: Record<string, [number, number]>;
+  three_d_variable_data_ranges: Record<string, ThreeDVariableDataRange>;
+  three_d_variable_user_ranges: Record<string, ThreeDVariableUserRange>;
   open_media: OpenMediaType;
   closed_media: any[];
   currentFrame: Record<string, any>;
@@ -143,6 +162,7 @@ export const initialState: RootState = {
   fontFamily: DEFAULT_FONT_FAMILY,
   axesVariables: {},
   threeD_sync: false,
+  show_threeD_legends: true,
   colormap: "night",
   // First colormap is default
   threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],

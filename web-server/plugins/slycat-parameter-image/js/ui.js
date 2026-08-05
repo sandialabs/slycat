@@ -1373,6 +1373,11 @@ $(document).ready(function () {
     }
 
     set_custom_color_variable_range();
+    // Bail out if the color variable data hasn't finished loading yet.
+    // Callers (e.g. update_widgets_when_hidden_simulations_change) can fire
+    // before `v` arrives from the server; this function will be re-invoked
+    // once it does, so an early return is safe.
+    if (v == null) return;
     // Check if numeric or string variable
     var v_type = table_metadata["column-types"][v_index];
     if (auto_scale) {

@@ -471,6 +471,23 @@
 #scatterplot g.legend:hover {
   cursor: move;
 }
+.threeD-media-legend {
+  cursor: default;
+  display: block;
+  overflow: visible;
+}
+.threeD-media-legend text.label {
+  text-anchor: middle;
+  font-weight: bold;
+}
+.threeD-legends-toggle-icon {
+  font-size: 1.3em;
+  position: relative;
+  top: -1px;
+}
+#threeD_legends_root {
+  display: none;
+}
 #scatterplot .image-frame rect.outline {
   shape-rendering: crispEdges;
 }
