@@ -508,7 +508,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
     let current_frame_video = false;
     let current_frame_video_playing = false;
     for (let open_media of this.props.open_media) {
-      if (open_media.video) {
+      if (open_media.video && !open_media.orbitPreview) {
         any_video_open = true;
         if (open_media.current_frame) {
           current_frame_video = true;

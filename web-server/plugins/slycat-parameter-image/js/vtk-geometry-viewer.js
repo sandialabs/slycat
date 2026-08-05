@@ -23,6 +23,7 @@ import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import { ColorMode, ScalarMode } from "vtk.js/Sources/Rendering/Core/Mapper/Constants";
 
 import { addCamera } from "./vtk-camera-synchronizer";
+import { createVtkScalarBar } from "./vtk-scalar-bar";
 
 import {
   updateThreeDCameras,
@@ -30,31 +31,11 @@ import {
   setThreeDColorByRange,
   adjustThreeDVariableDataRange,
 } from "./actions";
+import { getThreeDDataRange } from "./three-d-data-range";
 import _ from "lodash";
 import watch from "redux-watch";
 
 var vtkstartinteraction_event = new Event("vtkstartinteraction");
-
-export function getDataRange(colorBy) {
-  if (colorBy == ":") {
-    return [0, 1];
-  }
-  const three_d_variable_data_ranges =
-    window.store.getState().three_d_variable_data_ranges[colorBy];
-  const three_d_variable_user_ranges =
-    window.store.getState().three_d_variable_user_ranges[colorBy];
-  // console.debug(`vtk-geometry-viewer three_d_variable_user_ranges for ${colorBy} is ${three_d_variable_user_ranges}`);
-  // console.debug(`vtk-geometry-viewer three_d_variable_data_ranges for ${colorBy} is ${three_d_variable_data_ranges}`);
-  const min =
-    three_d_variable_user_ranges && three_d_variable_user_ranges.min !== undefined
-      ? three_d_variable_user_ranges.min
-      : three_d_variable_data_ranges.min;
-  const max =
-    three_d_variable_user_ranges && three_d_variable_user_ranges.max !== undefined
-      ? three_d_variable_user_ranges.max
-      : three_d_variable_data_ranges.max;
-  return [min, max];
-}
 
 export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
@@ -74,7 +55,7 @@ export function load(container, buffer, uri, uid, type) {
   // Simple pipeline VTP reader Source --> Mapper --> Actor
   // ----------------------------------------------------------------------------
 
-  let mapper, lookupTable, source, scalars, dataRange, activeArray;
+  let mapper, lookupTable, source, scalars, dataRange, activeArray, scalarBar;
   if (type == "stl") {
     const stlReader = vtkSTLReader.newInstance();
     mapper = vtkMapper.newInstance({ scalarVisibility: false });
@@ -97,6 +78,13 @@ export function load(container, buffer, uri, uid, type) {
     dataRange = [].concat(scalars ? scalars.getRange() : [0, 1]);
     activeArray = vtkDataArray;
 
+    scalarBar = createVtkScalarBar({
+      lookupTable,
+      renderWindow,
+      store: window.store,
+      renderer,
+    });
+
     // --------------------------------------------------------------------
     // Color handling
     // --------------------------------------------------------------------
@@ -109,6 +97,9 @@ export function load(container, buffer, uri, uid, type) {
       lookupTable.applyColorMap(colormap);
       lookupTable.setMappingRange(dataRange[0], dataRange[1]);
       lookupTable.updateRange();
+      if (scalarBar) {
+        scalarBar.syncLookupTable(lookupTable);
+      }
 
       // Not part of VTK example, but needs to be done to get update after changing color options
       renderWindow.render();
@@ -216,9 +207,12 @@ export function load(container, buffer, uri, uid, type) {
           uri,
         );
         console.debug(`From this VTP file:                      %o`, vtpDataRange);
-        const newDataRange = getDataRange(colorBy);
+        const newDataRange = getThreeDDataRange(window.store.getState(), colorBy);
         console.debug(`From Display Settings > Variable Ranges: %o`, newDataRange);
         console.groupEnd();
+        if (!newDataRange) {
+          return;
+        }
         dataRange[0] = newDataRange[0];
         dataRange[1] = newDataRange[1];
         colorMode = ColorMode.MAP_SCALARS;
@@ -252,6 +246,13 @@ export function load(container, buffer, uri, uid, type) {
         scalarMode,
         scalarVisibility,
       });
+      if (scalarBar) {
+        scalarBar.updateFromColorBy({
+          colorByArrayName,
+          componentString,
+          scalarVisibility,
+        });
+      }
       applyPreset();
     }
 
@@ -260,7 +261,9 @@ export function load(container, buffer, uri, uid, type) {
         window.store.getState().three_d_colorvars &&
         window.store.getState().three_d_colorvars[uid] &&
         window.store.getState().three_d_colorvars[uid] != colorBy;
-      const colorVariableRangeChanged = !_.isEqual(getDataRange(colorBy), dataRange);
+      const resolvedRange = getThreeDDataRange(window.store.getState(), colorBy);
+      const colorVariableRangeChanged =
+        resolvedRange != null && !_.isEqual(resolvedRange, dataRange);
       // console.log(`colorVariableRangeChanged: ${colorVariableRangeChanged}`);
 
       if (colorVariableChanged || colorVariableRangeChanged) {
@@ -305,6 +308,9 @@ export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
 
   renderer.addActor(actor);
+  if (scalarBar) {
+    renderer.addActor(scalarBar.actor);
+  }
   renderer.resetCamera();
 
   // ----------------------------------------------------------------------------
@@ -542,4 +548,10 @@ export function load(container, buffer, uri, uid, type) {
 
   // Pass the active camera and interactor style to camera synchronizer
   addCamera(camera, container, interactor, uid, renderer, interactorStyle);
+
+  if (scalarBar) {
+    container.addEventListener("vtkclose", () => {
+      scalarBar.dispose();
+    });
+  }
 }
