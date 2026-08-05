@@ -406,14 +406,11 @@ def delete_project(pid):
         couchdb.delete(bookmark)
     for model in couchdb.scan("slycat/project-models", startkey=pid, endkey=pid):
         couchdb.delete(model)
-    # for project_data in couchdb.scan("slycat/project_datas", startkey=pid, endkey=pid):
-    # TODO - Find all project datas in the project and delete the files (/data-store/project_data)
     for data in project_datas:
         if data['project'] == pid:
             hdf5_name = data["hdf5_name"]
             hdf5_path = (
                 cherrypy.request.app.config["slycat-web-server"]["data-store"]
-                + "/"
                 + "/project_data/"
                 + hdf5_name
             )
@@ -481,7 +478,6 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 hdf5_name = item["hdf5_name"]
                 hdf5_path = (
                     cherrypy.request.app.config["slycat-web-server"]["data-store"]
-                    + "/"
                     + "/project_data/"
                     + hdf5_name
                 )
