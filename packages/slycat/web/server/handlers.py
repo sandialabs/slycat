@@ -392,6 +392,7 @@ def delete_project(pid):
 
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
+    project_datas = [data for data in couchdb.scan("slycat/project_datas")]
     slycat.web.server.authentication.require_project_administrator(project)
     for cache_object in couchdb.scan(
         "slycat/project-cache-objects", startkey=pid, endkey=pid
@@ -405,8 +406,16 @@ def delete_project(pid):
         couchdb.delete(bookmark)
     for model in couchdb.scan("slycat/project-models", startkey=pid, endkey=pid):
         couchdb.delete(model)
-    for project_data in couchdb.scan("slycat/project_datas", startkey=pid, endkey=pid):
-        couchdb.delete(project_data)
+    for data in project_datas:
+        if data['project'] == pid:
+            hdf5_name = data["hdf5_name"]
+            hdf5_path = (
+                cherrypy.request.app.config["slycat-web-server"]["data-store"]
+                + "/project_data/"
+                + hdf5_name
+            )
+            os.remove(hdf5_path)
+            couchdb.delete(data)
 
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
@@ -469,7 +478,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 hdf5_name = item["hdf5_name"]
                 hdf5_path = (
                     cherrypy.request.app.config["slycat-web-server"]["data-store"]
-                    + "/"
+                    + "/project_data/"
                     + hdf5_name
                 )
 
@@ -530,7 +539,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     if isinstance(aids, str):
         aids = aids.split(",")
     slycat.web.server.parse_existing_file(
-        database, parser, True, attachment, model, aids
+        database, parser, True, attachment, model, aids[0]
     )
     return {"Status": "Success"}
 
@@ -722,7 +731,7 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
         except:
             pass
 
-    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+    hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/"
     unique_name = uuid.uuid4().hex
     hdf5_name = f"{unique_name}.hdf5"
     hdf5_file_path = os.path.join(hdf5_path, hdf5_name)
@@ -788,7 +797,7 @@ def create_project_data(mid, aid, file):
             f_buffer.seek(0)
 
             hdf5_path = (
-                cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+                cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/"
             )
             unique_name = uuid.uuid4().hex
             hdf5_name = f"{unique_name}.hdf5"
@@ -862,12 +871,13 @@ def create_project_data(mid, aid, file):
     # We didn't get an HDF5 file, so do everything normally.
     else:
         rows = []
-        split_file = file[0].split("\n")
+        split_file = file[0].strip().split("\n")
 
         for row in split_file:
             row_list = [row]
             split_row = row_list[0].split(",")
-            rows.append(split_row)
+            stripped_row = [s.strip() for s in split_row]
+            rows.append(stripped_row)
 
         columns = numpy.array(rows).T
 
@@ -896,7 +906,7 @@ def create_project_data(mid, aid, file):
                 pass
 
         # Edit with path to store HDF5
-        hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/"
+        hdf5_path = cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/"
         # Edit with name for HDF5 file
         unique_name = uuid.uuid4().hex
         hdf5_name = f"{unique_name}.hdf5"

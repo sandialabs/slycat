@@ -41,7 +41,7 @@ import scatterplot_reducer, {
   SLICE_NAME as SCATTERPLOT_SLICE_NAME,
   setScatterplotPaneWidth,
   setScatterplotPaneHeight,
-  toggleShowHistogram,
+  setShowHistogram,
   selectAutoScale,
   selectUnselectedPointSize,
   selectUnselectedBorderSize,
@@ -1517,7 +1517,7 @@ $(document).ready(function () {
     // Hide histogram if it's being displayed.
     // There is probably a better place to put this.
     if (window.store.getState().scatterplot.show_histogram) {
-      window.store.dispatch(toggleShowHistogram());
+      window.store.dispatch(setShowHistogram(false));
     }
   }
 

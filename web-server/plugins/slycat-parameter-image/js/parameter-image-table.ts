@@ -26,6 +26,7 @@ import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import _ from "lodash";
 import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
+import { setShowHistogram } from "./scatterplotSlice";
 import { selectAxesVariables, selectVIndex } from "./selectors";
 import { parseDate } from "js/slycat-dates";
 
@@ -193,6 +194,9 @@ $.widget("parameter_image.table", {
       // Special options for non-image and non-index columns
       else if (self.options.metadata["column-count"] - 1 != column_index) {
         column.headerCssClass += " headerNumeric";
+        const y_selected =
+          !window.store.getState().scatterplot.show_histogram &&
+          self.options["y-variable"] == column_index;
         column.header.buttons.push(
           {
             cssClass: self.options["x-variable"] == column_index ? "icon-x-on" : "icon-x-off",
@@ -203,11 +207,8 @@ $.widget("parameter_image.table", {
             command: "x-on",
           },
           {
-            cssClass: self.options["y-variable"] == column_index ? "icon-y-on" : "icon-y-off",
-            tooltip:
-              self.options["y-variable"] == column_index
-                ? CURRENT_Y_VARIABLE_TEXT
-                : SET_Y_VARIABLE_TEXT,
+            cssClass: y_selected ? "icon-y-on" : "icon-y-off",
+            tooltip: y_selected ? CURRENT_Y_VARIABLE_TEXT : SET_Y_VARIABLE_TEXT,
             command: "y-on",
           },
         );
@@ -342,6 +343,9 @@ $.widget("parameter_image.table", {
         self.options.x_y_variables.y = column.id;
         grid.invalidate();
         // Dispatch update to y index in Redux
+        if (window.store.getState().scatterplot.show_histogram) {
+          window.store.dispatch(setShowHistogram(false));
+        }
         window.store.dispatch(setYIndex(column.id));
       }
     });
@@ -399,6 +403,13 @@ $.widget("parameter_image.table", {
     // Subscribing to changes in derived.variableAliases
     window.store.subscribe(
       watch(window.store.getState, "derived.variableAliases", _.isEqual)(update_variable_aliases),
+    );
+
+    // Keep Y header buttons in sync with histogram mode (deselect when frequency is shown)
+    window.store.subscribe(
+      watch(window.store.getState, "scatterplot.show_histogram", _.isEqual)(() => {
+        self._set_selected_y();
+      }),
     );
   },
 
@@ -495,12 +506,13 @@ $.widget("parameter_image.table", {
 
   _set_selected_y: function () {
     var self = this;
+    const show_histogram = window.store.getState().scatterplot.show_histogram;
     for (var i in self.columns) {
       if (
         self.options.images.indexOf(self.columns[i].id) == -1 &&
         self.options.metadata["column-count"] - 1 != self.columns[i].id
       ) {
-        if (self.columns[i].id == self.options["y-variable"]) {
+        if (!show_histogram && self.columns[i].id == self.options["y-variable"]) {
           self.columns[i].header.buttons[2].cssClass = "icon-y-on";
           self.columns[i].header.buttons[2].tooltip = CURRENT_Y_VARIABLE_TEXT;
         } else {
