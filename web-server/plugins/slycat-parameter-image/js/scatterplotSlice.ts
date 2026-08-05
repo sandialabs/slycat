@@ -56,6 +56,9 @@ export const scatterplotSlice = createSlice({
     toggleShowHistogram: (state) => {
       state.show_histogram = !state.show_histogram;
     },
+    setShowHistogram: (state, action: PayloadAction<boolean>) => {
+      state.show_histogram = action.payload;
+    },
     toggleAutoScale: (state) => {
       state.auto_scale = !state.auto_scale;
     },
@@ -83,6 +86,7 @@ export const {
   setScatterplotPaneHeight,
   toggleShowGrid,
   toggleShowHistogram,
+  setShowHistogram,
   toggleAutoScale,
   toggleHideLabels,
   setHorizontalSpacing,

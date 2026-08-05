@@ -31,7 +31,7 @@ import {
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
-import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
+import { toggleShowHistogram, setShowHistogram, toggleAutoScale } from "../scatterplotSlice";
 import {
   RootState,
   VariableRangesType,
@@ -95,6 +95,7 @@ interface PSControlsBarProps {
   v_index: number;
   toggleAutoScale: () => void;
   toggleShowHistogram: () => void;
+  setShowHistogram: (value: boolean) => void;
   setVideoSyncTime: (value: number) => void;
   toggleSyncScaling: () => void;
   toggleSyncThreeDColorvar: () => void;
@@ -393,6 +394,9 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
         items: y_axis_dropdown_items,
         selected: this.props.y_index,
         set_selected: (key, state_label, trigger, e, props) => {
+          if (this.props.show_histogram) {
+            this.props.setShowHistogram(false);
+          }
           this.props.setYIndex(Number(key));
         },
       },
@@ -756,6 +760,7 @@ export default connect(mapStateToProps, {
   setVIndex,
   setMediaIndex,
   toggleShowHistogram,
+  setShowHistogram,
   toggleAutoScale,
   setHiddenSimulations,
   setManuallyHiddenSimulations,
