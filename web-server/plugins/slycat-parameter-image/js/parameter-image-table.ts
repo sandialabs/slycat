@@ -26,6 +26,7 @@ import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import _ from "lodash";
 import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
+import { setShowHistogram } from "./scatterplotSlice";
 import { selectAxesVariables, selectVIndex } from "./selectors";
 import { parseDate } from "js/slycat-dates";
 
@@ -342,6 +343,9 @@ $.widget("parameter_image.table", {
         self.options.x_y_variables.y = column.id;
         grid.invalidate();
         // Dispatch update to y index in Redux
+        if (window.store.getState().scatterplot.show_histogram) {
+          window.store.dispatch(setShowHistogram(false));
+        }
         window.store.dispatch(setYIndex(column.id));
       }
     });
