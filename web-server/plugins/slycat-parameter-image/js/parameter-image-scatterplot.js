@@ -119,7 +119,13 @@ function applyNumericAxisTickFormat(
   columnType,
   scaleType,
 ) {
-  if (columnType !== "string" && scaleType !== "Date & Time") {
+  // Band/ordinal scales (e.g. wizard-marked categoricals) have no tickFormat.
+  // Only continuous numeric scales support the hybrid formatter.
+  if (
+    columnType !== "string" &&
+    scaleType !== "Date & Time" &&
+    typeof scale.tickFormat === "function"
+  ) {
     const normalFormat = scale.tickFormat(
       tickCount,
       HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
