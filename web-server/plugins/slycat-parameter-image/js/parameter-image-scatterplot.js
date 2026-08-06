@@ -2130,6 +2130,19 @@ $.widget("parameter_image.scatterplot", {
         vColumnType,
         vScaleType,
       );
+
+      // When hide-labels would crowd a categorical color legend, hide the whole
+      // legend rather than thinning ticks (which misaligns them with color bands).
+      const hideLabels = selectHideLabels(window.store.getState());
+      const verticalSpacing = selectVerticalSpacing(window.store.getState());
+      const legendScale = selectVScale(window.store.getState());
+      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
+      const hideCrowdedCategoricalLegend =
+        vIsCategorical &&
+        hideLabels &&
+        legendScaleStep !== undefined &&
+        legendScaleStep < verticalSpacing;
+      self.legend_layer.style("display", hideCrowdedCategoricalLegend ? "none" : null);
     }
 
     if (self.updates.update_v_label) {
@@ -2140,7 +2153,7 @@ $.widget("parameter_image.scatterplot", {
       var x = -15;
       var y = rectHeight / 2;
 
-      const label = self.legend_layer
+      self.legend_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -2149,44 +2162,6 @@ $.widget("parameter_image.scatterplot", {
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label);
-
-      // Check if the axis labels are hidden and if so, add a popover icon.
-      const hideLabels = selectHideLabels(window.store.getState());
-      const verticalSpacing = selectVerticalSpacing(window.store.getState());
-      const legendScale = selectVScale(window.store.getState());
-      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
-
-      if (hideLabels && verticalSpacing > legendScaleStep) {
-        // Get the bounding box of the text to position the icon
-        const bbox = label.node().getBBox();
-        const fontSize = self.options.axes_font_size;
-        const xOffset = x + bbox.width / 2 + Number(fontSize);
-
-        self.legend_layer
-          .append("text")
-          .attr("class", "label warning-icon")
-          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-bs-toggle", "popover")
-          .attr("data-bs-trigger", "hover")
-          .attr("data-bs-placement", "auto")
-          .attr("x", xOffset)
-          .attr("y", y)
-          .attr("transform", `rotate(-90,${x},${y})`)
-          .style("text-anchor", "middle")
-          .style("font-size", fontSize + "px")
-          .style("font-family", "FontAwesome")
-          .text("\uf06a");
-
-        label
-          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-bs-toggle", "popover")
-          .attr("data-bs-trigger", "hover")
-          .attr("data-bs-placement", "auto");
-
-        $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
-      }
     }
 
     if (self.updates.update_video_sync_time) {

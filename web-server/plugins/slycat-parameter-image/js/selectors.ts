@@ -786,26 +786,13 @@ export const selectVScale = createSelector(
   },
 );
 
-export const selectLegendScaleAxis = createSelector(
-  selectVScale,
-  selectVerticalSpacing,
-  selectHideLabels,
-  selectVIsCategorical,
-  (
-    legendScale: SlycatScaleType,
-    verticalSpacing: number,
-    hideLabels: boolean,
-    vIsCategorical: boolean,
-  ) => {
-    return adjustScaleDomain(
-      legendScale,
-      verticalSpacing,
-      vIsCategorical && hideLabels,
-      1,
-      true,
-    );
-  },
-);
+export const selectLegendScaleAxis = createSelector(selectVScale, (legendScale: SlycatScaleType) => {
+  // Never thin legend ticks: ordinal color legends use one equal-height band
+  // per category (get_ordinal_legend_gradient). Thinning would redistribute
+  // ticks across the full height and misalign them with color bands.
+  // Reverse only for top→bottom legend orientation.
+  return adjustScaleDomain(legendScale, 0, false, 1, true);
+});
 
 const getScale = (
   scaleType: string,
