@@ -157,9 +157,14 @@ $.widget("timeseries.legend", {
           .domain([self.options.max, self.options.min])
           .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
       } else {
+        // scaleBand centers ticks in equal-height category bands (matches
+        // get_ordinal_legend_gradient). Copy before reverse so we don't mutate
+        // the shared uniqueValues array used for colorscales / gradients.
         self.legend_scale = d3
-          .scalePoint()
-          .domain(self.options.uniqueValues?.reverse() ?? [])
+          .scaleBand()
+          .paddingInner(0)
+          .paddingOuter(0)
+          .domain([...(self.options.uniqueValues ?? [])].reverse())
           .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
         // Truncate string tick labels to avoid overflow.
         const maxChars = 7;
