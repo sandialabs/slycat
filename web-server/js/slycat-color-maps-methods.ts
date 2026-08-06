@@ -7,6 +7,38 @@ import * as d3v7 from "d3v7";
 
 const DEFAULT_COLORMAP = "night";
 
+/** Color-by variable kind for shared legend model (Phase 0 / #1483). */
+export type ColorByLegendVariableKind = "numeric" | "categorical" | "string";
+
+/** Axis scale the legend should use. Log+discrete is forced to linear (equal-height bands). */
+export type ColorByLegendScaleKind = "linear" | "band" | "log";
+
+/** Host color-by axis type (PS); only Log affects discrete legend scaleKind. */
+export type ColorByLegendScaleType = "Linear" | "Log" | "Date & Time";
+
+export type ColorByLegendGradientStop = {
+  offset: number;
+  color: d3.RGBColor | string;
+};
+
+export type ColorByLegendModelInput = {
+  colormap?: string | null;
+  variableKind: ColorByLegendVariableKind;
+  min?: number;
+  max?: number;
+  uniqueValues?: (number | string)[];
+  scaleType?: ColorByLegendScaleType;
+};
+
+export type ColorByLegendModel = {
+  gradientStops: ColorByLegendGradientStop[];
+  /** Discrete numeric: bin edges. Categorical/string: top→bottom domain (reversed). Else undefined (nice ticks). */
+  tickValues: (number | string)[] | undefined;
+  scaleKind: ColorByLegendScaleKind;
+  resolvedColormap: string;
+  isDiscrete: boolean;
+};
+
 export default {
   // Resolve a colormap name to a known key. Undefined/empty falls back to the
   // current store selection when available; unknown bookmark or renamed maps
@@ -308,6 +340,61 @@ export default {
       data.push({ offset: end, color: color });
     }
     return data;
+  },
+
+  // Shared color-by legend inputs for ColorByLegend (#1483). Hosts still own layout/fonts/drag;
+  // this only centralizes gradient stops, tick values, and scale kind from existing helpers.
+  // Does not change discrete colormap policy from #1256.
+  buildColorByLegendModel: function (input: ColorByLegendModelInput): ColorByLegendModel {
+    const resolvedColormap = this.resolve_colormap_name(input.colormap);
+    const isDiscrete = this.is_discrete(resolvedColormap);
+    const isCategorical =
+      input.variableKind === "categorical" || input.variableKind === "string";
+
+    const gradientStops: ColorByLegendGradientStop[] = isCategorical
+      ? this.get_ordinal_legend_gradient(resolvedColormap, input.uniqueValues ?? [])
+      : this.get_gradient_data(resolvedColormap);
+
+    let scaleKind: ColorByLegendScaleKind;
+    let tickValues: (number | string)[] | undefined;
+
+    if (isCategorical) {
+      scaleKind = "band";
+      // Top→bottom order matches get_ordinal_legend_gradient and timeseries/PS band domains.
+      tickValues =
+        input.uniqueValues && input.uniqueValues.length > 0
+          ? [...input.uniqueValues].reverse()
+          : undefined;
+    } else if (isDiscrete) {
+      // Equal-height discrete bands are linear in data space; Log color-by still uses linear legend.
+      scaleKind = "linear";
+      const min = input.min;
+      const max = input.max;
+      if (
+        min !== undefined &&
+        max !== undefined &&
+        Number.isFinite(min) &&
+        Number.isFinite(max)
+      ) {
+        tickValues = this.get_discrete_bin_edges(resolvedColormap, min, max);
+      } else {
+        tickValues = undefined;
+      }
+    } else if (input.scaleType === "Log") {
+      scaleKind = "log";
+      tickValues = undefined;
+    } else {
+      scaleKind = "linear";
+      tickValues = undefined;
+    }
+
+    return {
+      gradientStops,
+      tickValues,
+      scaleKind,
+      resolvedColormap,
+      isDiscrete,
+    };
   },
 
   setUpColorMapsForAllColumns: function (
