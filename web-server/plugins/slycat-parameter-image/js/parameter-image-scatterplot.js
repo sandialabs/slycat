@@ -54,7 +54,7 @@ import {
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
-import { getUniqueCategoryValues } from "./unique-category-values";
+import { getUniqueCategoryValues, isStructuralMissingValue } from "./unique-category-values";
 import { truncateSvgAxisTickLabels } from "js/slycat-svg-text";
 import { applyNumericAxisTickFormat } from "js/slycat-axis-tick-format";
 import {
@@ -1004,8 +1004,11 @@ $.widget("parameter_image.scatterplot", {
 
   _validateValue: function (value) {
     var self = this;
-    if (typeof value == "number" && !isNaN(value)) return true;
-    if (typeof value == "string" && value.trim() !== "") return true;
+    // Structural missing (null, undefined, NaN, blank string) → null_color.
+    // Literal "null"/"undefined" strings remain valid categories.
+    if (isStructuralMissingValue(value)) return false;
+    if (typeof value == "number") return true;
+    if (typeof value == "string") return true;
     // Check for valid Date objects
     if (value instanceof Date && !isNaN(value.valueOf())) return true;
     return false;
