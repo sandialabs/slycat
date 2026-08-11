@@ -55,8 +55,8 @@ import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
 import { getUniqueCategoryValues } from "./unique-category-values";
-import { truncateString } from "js/slycat-string-truncate";
-import { measureSvgText } from "js/slycat-svg-text";
+import { truncateSvgAxisTickLabels } from "js/slycat-svg-text";
+import { applyNumericAxisTickFormat } from "js/slycat-axis-tick-format";
 import {
   selectHideLabels,
   selectHorizontalSpacing,
@@ -91,52 +91,6 @@ const Y_AXIS_TICK_MAX_WIDTH = 140;
 // horizontal extent is slightly less since x-axis labels are rotated 15 degrees.
 const X_AXIS_TICK_MAX_WIDTH = 140;
 
-// Hybrid numeric tick formatting: scale.tickFormat(tickCount, ",~f") for
-// human-scale magnitudes; compact d3 .2g outside this band.
-const HYBRID_AXIS_TICK_NORMAL_SPECIFIER = ",~f";
-const HYBRID_AXIS_TICK_COMPACT_ABOVE = 1e7;
-const HYBRID_AXIS_TICK_COMPACT_BELOW = 1e-4;
-const HYBRID_AXIS_TICK_COMPACT_FORMAT = d3v7.format(".2g");
-
-/**
- * Apply a hybrid tick formatter for numeric axes. Human-scale values use
- * adaptive grouped fixed notation (`,~f`); very large or very small
- * magnitudes use compact `.2g` to avoid long comma strings and IEEE 754
- * noise in tick labels. String and Date & Time axes keep D3's default.
- */
-function applyNumericAxisTickFormat(
-  axis,
-  scale,
-  tickCount,
-  columnType,
-  scaleType,
-) {
-  // Band/ordinal scales (e.g. wizard-marked categoricals) have no tickFormat.
-  // Only continuous numeric scales support the hybrid formatter.
-  if (
-    columnType !== "string" &&
-    scaleType !== "Date & Time" &&
-    typeof scale.tickFormat === "function"
-  ) {
-    const normalFormat = scale.tickFormat(
-      tickCount,
-      HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
-    );
-    const compactFormat = HYBRID_AXIS_TICK_COMPACT_FORMAT;
-    axis.tickFormat((d) => {
-      const abs = Math.abs(d);
-      if (
-        abs >= HYBRID_AXIS_TICK_COMPACT_ABOVE ||
-        (abs > 0 && abs < HYBRID_AXIS_TICK_COMPACT_BELOW)
-      ) {
-        return compactFormat(d);
-      }
-      return normalFormat(d);
-    });
-  }
-  return axis;
-}
-
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
 var vtkunselect_event = new Event("vtkunselect");
@@ -147,49 +101,12 @@ var vtkclose_event = new Event("vtkclose");
 const rootsByPopupEl = new WeakMap();
 
 /**
- * Append an SVG <title> child to `node` so hovering reveals `text` via the
- * browser's native tooltip. Caller is responsible for ensuring the node
- * has no stale title (typically by setting textContent first, which wipes
- * prior children).
- */
-function appendSvgTitle(node, text) {
-  const title = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "title",
-  );
-  title.textContent = text;
-  node.appendChild(title);
-}
-
-/**
- * Truncate every `.tick text` inside an axis layer node to at most
- * `maxWidth` pixels using a middle ellipsis. Truncated nodes get an SVG
- * <title> child so hovering reveals the full text via the browser's
- * native tooltip. Should be called after the v7 axis has rendered, since
- * v7 axis sets each tick's text via .text(format), making node.textContent
- * the fresh untruncated value at that point.
- *
- * Only runs against string columns. Date & Time scales are left alone
- * (d3's formatter is preferable). Numeric columns use the hybrid
- * scale.tickFormat / `.2g` formatter via `applyNumericAxisTickFormat`.
+ * Truncate string-column axis tick labels after the v7 axis has rendered.
+ * Date & Time and numeric axes are left alone (numeric uses hybrid format).
  */
 function truncateAxisTickLabels(axisLayerNode, maxWidth, columnType, scaleType) {
   if (columnType !== "string" || scaleType === "Date & Time") return;
-  axisLayerNode.querySelectorAll(".tick text").forEach((node) => {
-    const original = node.textContent;
-    if (!original) return;
-    const truncated = truncateString(original, {
-      maxWidth,
-      measure: measureSvgText(node),
-      position: "middle",
-    });
-    if (truncated !== original) {
-      // Setting textContent wipes any prior children (including a stale
-      // <title>), so we re-append a fresh title with the original text.
-      node.textContent = truncated;
-      appendSvgTitle(node, original);
-    }
-  });
+  truncateSvgAxisTickLabels(axisLayerNode, maxWidth);
 }
 
 $.widget("parameter_image.scatterplot", {
@@ -1446,8 +1363,7 @@ $.widget("parameter_image.scatterplot", {
         self.x_axis,
         x_scale_axis,
         xTickCount,
-        xColumnType,
-        xScaleType,
+        { columnType: xColumnType, scaleType: xScaleType },
       );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded.
@@ -1517,8 +1433,7 @@ $.widget("parameter_image.scatterplot", {
         self.y_axis,
         y_scale_axis,
         yTickCount,
-        yColumnType,
-        yScaleType,
+        { columnType: yColumnType, scaleType: yScaleType },
       );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded and just create duplicate ticks.

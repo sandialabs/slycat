@@ -8,7 +8,6 @@ import { selectLegend } from "../js/services/legendSlice";
 const LEGEND_BORDER = 20;
 /** Matches legacy timeseries-legend label offset (border + label height). */
 const LEGEND_LABEL_OFFSET = 23;
-const TICK_LABEL_MAX_CHARS = 7;
 
 export const Legend: React.FC = () => {
   const colormap = useAppSelector(selectColormap);
@@ -50,7 +49,6 @@ export const Legend: React.FC = () => {
             as="svg"
             svgWidth={legend.width}
             svgHeight={legend.height}
-            tickLabelMaxChars={TICK_LABEL_MAX_CHARS}
           />
         )}
       </div>

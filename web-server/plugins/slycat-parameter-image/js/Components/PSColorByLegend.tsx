@@ -35,9 +35,6 @@ import { getUniqueCategoryValues } from "../unique-category-values";
 /** Matches legacy update_legend_position offset past the plot right margin. */
 const LEGEND_X_OFFSET = 100;
 
-/** Rough char budget approximating LEGEND_AXIS_TICK_MAX_WIDTH (140px) for categorical labels. */
-const CATEGORICAL_TICK_MAX_CHARS = 18;
-
 function numericExtentFromVExtent(
   extent: [unknown, unknown] | undefined,
 ): { min?: number; max?: number } {
@@ -152,7 +149,6 @@ export const PSColorByLegend: React.FC = () => {
         fontFamily={fontFamily}
         position={position}
         hidden={hidden}
-        tickLabelMaxChars={vIsCategorical ? CATEGORICAL_TICK_MAX_CHARS : undefined}
         draggable
         dragBounds={{ width: paneWidth, height: paneHeight }}
       />

@@ -10,6 +10,12 @@ import type {
   ColorByLegendModel,
   ColorByLegendScaleKind,
 } from "js/slycat-color-maps-methods";
+import { createHybridNumericTickFormat } from "js/slycat-axis-tick-format";
+import type { HybridTickFormatScale } from "js/slycat-axis-tick-format";
+import { truncateSvgAxisTickLabels } from "js/slycat-svg-text";
+
+/** Legacy PS legend axis tick max width (pixels). */
+const DEFAULT_TICK_LABEL_MAX_WIDTH = 140;
 
 export type ColorByLegendProps = {
   label: string;
@@ -50,8 +56,11 @@ export type ColorByLegendProps = {
   /** When true, hide the legend (e.g. PS crowded categorical + hide-labels). */
   hidden?: boolean;
 
-  /** Truncate band/string tick labels to this many characters (Timeseries uses 7). */
-  tickLabelMaxChars?: number;
+  /**
+   * Max pixel width for band/string tick labels before middle-ellipsis truncation.
+   * Default 140 (legacy PS legend). Continuous ticks use hybrid numeric format.
+   */
+  tickLabelMaxWidth?: number;
 
   /** Override gradient id when multiple legends can appear on one page. */
   gradientId?: string;
@@ -113,7 +122,7 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
     dragBounds,
     onMoved,
     hidden = false,
-    tickLabelMaxChars,
+    tickLabelMaxWidth = DEFAULT_TICK_LABEL_MAX_WIDTH,
     className,
     style,
   } = props;
@@ -160,27 +169,20 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
     );
 
     const axis = d3.axisRight(scale as d3.AxisScale<d3.AxisDomain>);
+    const tickCount = height / 50;
 
-    if (model.scaleKind === "band") {
-      if (tickLabelMaxChars !== undefined) {
-        axis.tickFormat((domainValue: d3.AxisDomain) => {
-          const text = String(domainValue);
-          return text.length <= tickLabelMaxChars
-            ? text
-            : text.slice(0, tickLabelMaxChars - 1) + "…";
-        });
-      }
-    } else {
-      axis.tickFormat(((domainValue: d3.AxisDomain) =>
-        d3.format(".3~g")(domainValue as d3.NumberValue)) as (
-        domainValue: d3.AxisDomain,
-        index: number,
-      ) => string);
+    if (model.scaleKind !== "band") {
       if (model.tickValues && model.tickValues.length > 0) {
         axis.tickValues(model.tickValues as number[]);
       } else {
-        axis.ticks(height / 50);
+        axis.ticks(tickCount);
       }
+      axis.tickFormat(
+        createHybridNumericTickFormat(scale as HybridTickFormatScale, tickCount) as (
+          domainValue: d3.AxisDomain,
+          index: number,
+        ) => string,
+      );
     }
 
     const axisSelection = d3
@@ -200,6 +202,10 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
       axisSelection.style("font-family", fontFamily);
     }
 
+    if (model.scaleKind === "band") {
+      truncateSvgAxisTickLabels(axisNode, tickLabelMaxWidth);
+    }
+
     // Firefox: re-bind gradient fill after URI/id changes (bookmarking).
     // https://bugzilla.mozilla.org/show_bug.cgi?id=652991
     if (colorRectRef.current) {
@@ -215,7 +221,7 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
     barWidth,
     fontSize,
     fontFamily,
-    tickLabelMaxChars,
+    tickLabelMaxWidth,
     gradientId,
   ]);
 
