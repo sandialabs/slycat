@@ -81,6 +81,12 @@ export const PSColorByLegend: React.FC = () => {
     return null;
   }
 
+  // Values cleared on v_index change until the new column arrives — avoid
+  // painting a mismatched categorical/numeric legend from stale vValues.
+  if (vValues.length === 0) {
+    return null;
+  }
+
   const legendHeight = Math.max(0, legendRange[1] - legendRange[0]);
   if (legendHeight <= 0 || paneWidth <= 0 || paneHeight <= 0) {
     return null;
