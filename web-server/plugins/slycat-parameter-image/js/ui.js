@@ -1027,7 +1027,6 @@ $(document).ready(function () {
         colorscale: colorscale,
         selection: selected_simulations,
         open_images: open_images,
-        gradient: get_legend_gradient(store.getState().colormap),
         hidden_simulations: hidden_simulations,
         "auto-scale": auto_scale,
         "video-sync": video_sync,
@@ -1186,20 +1185,6 @@ $(document).ready(function () {
     return getUniqueCategoryValues(values, { numeric: !isStringColumn });
   }
 
-  function get_legend_gradient(colormap) {
-    // Categorical color-by: one hard band per unique value so legend ticks (band
-    // scale) align with color slabs for both discrete and continuous maps.
-    if (v != null && selectVIsCategorical(window.store.getState())) {
-      const values = auto_scale ? filterValues(v) : v;
-      const uniqueValues = get_unique_category_values(
-        values,
-        table_metadata["column-types"][v_index] === "string",
-      );
-      return slycat_color_maps.get_ordinal_legend_gradient(colormap, uniqueValues);
-    }
-    return slycat_color_maps.get_gradient_data(colormap);
-  }
-
   function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();
 
@@ -1210,7 +1195,6 @@ $(document).ready(function () {
     $("#scatterplot-pane").css("background", slycat_color_maps.get_background(colormap).toString());
     $("#scatterplot").scatterplot("option", {
       colorscale: colorscale,
-      gradient: get_legend_gradient(colormap),
     });
 
     $.ajax({
@@ -1322,7 +1306,6 @@ $(document).ready(function () {
     });
     $("#scatterplot").scatterplot("option", {
       v_label: selectVColumnName(window.store.getState()),
-      gradient: get_legend_gradient(store.getState().colormap),
     });
   }
 
@@ -1348,7 +1331,6 @@ $(document).ready(function () {
         $("#scatterplot").scatterplot("option", {
           hidden_simulations: hidden_simulations,
           colorscale: colorscale,
-          gradient: get_legend_gradient(store.getState().colormap),
         });
     } else {
       if ($("#table").data("parameter_image-table"))

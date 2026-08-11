@@ -284,9 +284,19 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
       transform={`translate(${positionRef.current.x}, ${positionRef.current.y})`}
       data-transx={positionRef.current.x}
       data-transy={positionRef.current.y}
+      // When the host SVG uses pointer-events:none (PS overlay), re-enable hits
+      // on the legend so drag works without blocking scatterplot selection.
+      onMouseDown={
+        draggable
+          ? (event) => {
+              event.stopPropagation();
+            }
+          : undefined
+      }
       style={{
         display: hidden ? "none" : undefined,
         cursor: draggable ? "move" : undefined,
+        pointerEvents: draggable ? "all" : undefined,
         ...style,
       }}
     >
