@@ -47,7 +47,8 @@ import traceback
 # Values are populated by init(). The cache is used by user() to avoid repeated
 # LDAP queries for the same uid during the process lifetime.
 configuration = {
-    "cache": {},
+    "user-cache": {},
+    "user-groups-cache": {},
     "server": None,
     "base": None,
     "who": None,
@@ -58,7 +59,6 @@ configuration = {
     "people_base_dn": None,
     "group_base_dn": None,
 }
-
 
 def init(
     server,
@@ -154,8 +154,12 @@ def user(uid):
 
     if uid:
         # Only perform an LDAP query if this uid is not already cached.
-        if uid not in configuration["cache"]:
+        if uid not in configuration["user-cache"]:
             try:
+                cherrypy.log.error(
+                    "slycat-ldap-directory.py user",
+                    "User ID, %s" % uid,
+                )
                 # Import ldap lazily so the module can be loaded in environments
                 # where LDAP support may not be installed until this function is used.
                 import ldap
@@ -195,7 +199,7 @@ def user(uid):
 
                 # Cache the information needed for faster future lookups.
                 result = result[0][1]
-                configuration["cache"][uid] = {
+                configuration["user-cache"][uid] = {
                     "name": result["displayName"][0],
                     "email": result[configuration["ldapEmail"]][0],
                 }
@@ -226,7 +230,7 @@ def user(uid):
                 )
                 raise cherrypy.HTTPError(500)
 
-        return configuration["cache"][uid]
+        return configuration["user-cache"][uid]
 
     # Return a blank user record when no uid is supplied.
     return {
@@ -389,51 +393,61 @@ def user_groups(uid):
         404 for LDAP no-such-object and selected assertion errors.
         500 for unexpected LDAP or runtime errors.
     """
-
+    group_session_timeout = datetime.timedelta(minutes=1000)
     if uid:
-        try:
-            # Lookup the given uid in LDAP.
-            import ldap
+        if uid in configuration["user-groups-cache"]:
+            cutoff = (
+                datetime.datetime.now(datetime.timezone.utc) - group_session_timeout
+            ).isoformat()
+            if configuration["user-groups-cache"][uid]["timeout"] < cutoff:
+                del configuration["user-groups-cache"][uid]
+        if uid not in configuration["user-groups-cache"]:
+            try:
+                # Lookup the given uid in LDAP.
+                import ldap
 
-            trace_level = 0  # 0=quiet, 1=verbose, 2=veryVerbose
+                trace_level = 0  # 0=quiet, 1=verbose, 2=veryVerbose
 
-            ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-            ldap.set_option(
-                ldap.OPT_NETWORK_TIMEOUT, configuration["timeout"].total_seconds()
-            )
+                ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+                ldap.set_option(
+                    ldap.OPT_NETWORK_TIMEOUT, configuration["timeout"].total_seconds()
+                )
 
-            connection = ldap.initialize(configuration["server"], trace_level)
-            connection.simple_bind_s(
-                configuration["who"], configuration["cred"]
-            )  # Empty strings may be accepted for anonymous bind.
+                connection = ldap.initialize(configuration["server"], trace_level)
+                connection.simple_bind_s(
+                    configuration["who"], configuration["cred"]
+                )  # Empty strings may be accepted for anonymous bind.
 
-            # Perform the group lookup and log the result.
-            result = get_user_groups(connection, uid)
-            cherrypy.log.error("get_user_groups(connection, uid) %s" % result)
-            return result
+                # Perform the group lookup and log the result.
+                configuration["user-groups-cache"][uid] = {
+                    "result": get_user_groups(connection, uid),
+                    "timeout": datetime.datetime.now(datetime.timezone.utc),
+                }
 
-        except ldap.NO_SUCH_OBJECT:
-            cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
-            cherrypy.log.error(
-                "slycat-ldap-directory.py user",
-                "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT",
-            )
-            raise cherrypy.HTTPError(404)
+            except ldap.NO_SUCH_OBJECT:
+                cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
+                cherrypy.log.error(
+                    "slycat-ldap-directory.py user",
+                    "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT",
+                )
+                raise cherrypy.HTTPError(404)
 
-        except AssertionError as e:
-            cherrypy.log.error(e.message)
-            cherrypy.log.error(
-                "slycat-ldap-directory.py user", "cherrypy.HTTPError 404 %s" % e.message
-            )
-            raise cherrypy.HTTPError(404)
+            except AssertionError as e:
+                cherrypy.log.error(e.message)
+                cherrypy.log.error(
+                    "slycat-ldap-directory.py user",
+                    "cherrypy.HTTPError 404 %s" % e.message,
+                )
+                raise cherrypy.HTTPError(404)
 
-        except:
-            cherrypy.log.error(traceback.format_exc())
-            cherrypy.log.error(
-                "slycat-ldap-directory.py user",
-                "cherrypy.HTTPError 500 %s" % traceback.format_exc(),
-            )
-            raise cherrypy.HTTPError(500)
+            except:
+                cherrypy.log.error(traceback.format_exc())
+                cherrypy.log.error(
+                    "slycat-ldap-directory.py user",
+                    "cherrypy.HTTPError 500 %s" % traceback.format_exc(),
+                )
+                raise cherrypy.HTTPError(500)
+        return configuration["user-groups-cache"][uid]["result"]
 
 
 def groups(search_string):
