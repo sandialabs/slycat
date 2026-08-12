@@ -43,6 +43,7 @@ export type ApplyNumericAxisTickFormatOptions = {
  * Build a hybrid tick formatter from a continuous scale.
  * Human-scale values use `scale.tickFormat(tickCount, ",~f")`; very large or
  * very small magnitudes use compact `.2g`.
+ * Note: log scales' tickFormat may return "" to thin labels.
  */
 export function createHybridNumericTickFormat(
   scale: HybridTickFormatScale,
@@ -52,6 +53,28 @@ export function createHybridNumericTickFormat(
     tickCount,
     HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
   );
+  const compactFormat = HYBRID_AXIS_TICK_COMPACT_FORMAT;
+  return (d: d3.NumberValue) => {
+    const abs = Math.abs(+d);
+    if (
+      abs >= HYBRID_AXIS_TICK_COMPACT_ABOVE ||
+      (abs > 0 && abs < HYBRID_AXIS_TICK_COMPACT_BELOW)
+    ) {
+      return compactFormat(d);
+    }
+    return normalFormat(d);
+  };
+}
+
+/**
+ * Hybrid magnitude policy without scale tick thinning — always labels finite
+ * values. Use for explicit tickValues (e.g. discrete color-by bin edges) where
+ * log scale.tickFormat would blank intermediate ticks.
+ */
+export function createHybridNumericTickFormatFixed(): (
+  d: d3.NumberValue,
+) => string {
+  const normalFormat = d3.format(HYBRID_AXIS_TICK_NORMAL_SPECIFIER);
   const compactFormat = HYBRID_AXIS_TICK_COMPACT_FORMAT;
   return (d: d3.NumberValue) => {
     const abs = Math.abs(+d);

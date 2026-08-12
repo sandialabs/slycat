@@ -10,7 +10,10 @@ import type {
   ColorByLegendModel,
   ColorByLegendScaleKind,
 } from "js/slycat-color-maps-methods";
-import { createHybridNumericTickFormat } from "js/slycat-axis-tick-format";
+import {
+  createHybridNumericTickFormat,
+  createHybridNumericTickFormatFixed,
+} from "js/slycat-axis-tick-format";
 import type { HybridTickFormatScale } from "js/slycat-axis-tick-format";
 import { truncateSvgAxisTickLabels } from "js/slycat-svg-text";
 
@@ -172,16 +175,22 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
     const tickCount = height / 50;
 
     if (model.scaleKind !== "band") {
-      if (model.tickValues && model.tickValues.length > 0) {
+      const hasExplicitTicks =
+        model.tickValues != null && model.tickValues.length > 0;
+      if (hasExplicitTicks) {
         axis.tickValues(model.tickValues as number[]);
       } else {
         axis.ticks(tickCount);
       }
+      // Explicit ticks (discrete bin edges): always label. Continuous log uses
+      // scale.tickFormat thinning via createHybridNumericTickFormat.
       axis.tickFormat(
-        createHybridNumericTickFormat(scale as HybridTickFormatScale, tickCount) as (
-          domainValue: d3.AxisDomain,
-          index: number,
-        ) => string,
+        (hasExplicitTicks
+          ? createHybridNumericTickFormatFixed()
+          : createHybridNumericTickFormat(
+              scale as HybridTickFormatScale,
+              tickCount,
+            )) as (domainValue: d3.AxisDomain, index: number) => string,
       );
     }
 
