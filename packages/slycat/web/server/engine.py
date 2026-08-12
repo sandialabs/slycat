@@ -181,6 +181,18 @@ def start(root_path, config_file):
         conditions={"method": ["GET"]},
     )
     dispatcher.connect(
+        "get_groups",
+        "/groups/:search_string",
+        slycat.web.server.handlers.get_groups,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
+        "get_user_groups",
+        "/user-groups/:search_string",
+        slycat.web.server.handlers.get_user_groups,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
         "get-time-series-names",
         "/remotes/:hostname/time_series_names/file{path:.*}",
         slycat.web.server.handlers.get_time_series_names,

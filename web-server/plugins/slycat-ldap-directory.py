@@ -408,9 +408,9 @@ def user_groups(uid):
             )  # Empty strings may be accepted for anonymous bind.
 
             # Perform the group lookup and log the result.
-            cherrypy.log.error(
-                "get_user_groups(connection, uid) %s" % get_user_groups(connection, uid)
-            )
+            result = get_user_groups(connection, uid)
+            cherrypy.log.error("get_user_groups(connection, uid) %s" % result)
+            return result
 
         except ldap.NO_SUCH_OBJECT:
             cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
@@ -660,12 +660,7 @@ def groups(search_string):
                 }
             )
 
-        cherrypy.log.error("matches %s" % str(matches))
-
-        # NOTE:
-        # The original implementation logs matches but does not return them.
-        # Uncomment the following line if callers expect group search results.
-        # return matches
+        return matches
 
     except ldap.NO_SUCH_OBJECT:
         cherrypy.log.error("groups() ldap.NO_SUCH_OBJECT")
