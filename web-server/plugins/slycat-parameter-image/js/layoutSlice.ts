@@ -5,11 +5,11 @@ import { RootState } from "./store";
 export const SLICE_NAME = "layout";
 
 // size === 0 means not user-set: auto-fit / default.
-// south and east can be added later without a new bookmark scheme.
 export interface LayoutPaneState {
   size: number;
 }
 
+// East (UQ/SA) pane size lives on uqsaSlice until uq-vv-ps lands, see #1492.
 export interface LayoutState {
   west: LayoutPaneState;
 }
