@@ -59,6 +59,14 @@ import data_reducer, {
   setSelectedSimulations,
   setHiddenSimulations,
 } from "./dataSlice";
+import uqsa_reducer, {
+  SLICE_NAME as UQSA_SLICE_NAME,
+  initialState as uqsaInitialState,
+  setPaneSize,
+  setActiveView,
+  selectUqsaActiveView,
+  selectUqsaPaneWidth,
+} from "./uqsaSlice";
 import {
   setXValues,
   setYValues,
@@ -103,9 +111,11 @@ import {
   selectVExtent,
 } from "./selectors";
 
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 import PSControlsBar from "./Components/PSControlsBar";
+import PSUQSAPanel from "./Components/PSUQSAPanel";
 import { COLUMN_LABELS } from "utils/ui-labels";
 
 let table_metadata = null;
@@ -208,6 +218,26 @@ $(document).ready(function () {
       size: $("#parameter-image-plus-layout").width() / 4,
       onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
         filter_manager.slidersPaneHeight(pane_state.innerHeight);
+      },
+    },
+    east: {
+      // UQ/SA
+      initClosed: true,
+      size: $("#parameter-image-plus-layout").width() / 4,
+      onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
+        if (window.store) {
+          window.store.dispatch(
+            setPaneSize({
+              width: pane_state.innerWidth,
+              height: pane_state.innerHeight,
+            }),
+          );
+        }
+      },
+      onclose_end: function () {
+        if (window.store) {
+          window.store.dispatch(setActiveView(null));
+        }
       },
     },
     south: {
@@ -463,12 +493,21 @@ $(document).ready(function () {
             derivedState,
           );
 
+          // Persist uqsa.activeView and pane size; strip cells/status so results refetch
+          preloadedState.uqsa = {
+            ...uqsaInitialState,
+            activeView: preloadedState.uqsa?.activeView ?? null,
+            paneWidth: preloadedState.uqsa?.paneWidth ?? 0,
+            paneHeight: preloadedState.uqsa?.paneHeight ?? 0,
+          };
+
           // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
           // createSlice scatterplot_reducer and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
             [DATA_SLICE_NAME]: data_reducer,
+            [UQSA_SLICE_NAME]: uqsa_reducer,
           });
 
           window.store = configureStore({
@@ -495,8 +534,11 @@ $(document).ready(function () {
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkReduxStateTree = () => {
+            const fullState = window.store.getState();
+            const { uqsa, ...rest } = fullState;
             bookmarker.updateState({
-              state:
+              state: {
+                ...rest,
                 // Remove derived property from state tree because it should be computed
                 // from model data each time the model is loaded. Otherwise it has the
                 // potential of becoming huge. Plus we shouldn't be storing model data
@@ -504,7 +546,14 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined },
+                derived: undefined,
+                // Persist selected analysis and pane size; heatmap data is recomputed
+                uqsa: {
+                  activeView: uqsa?.activeView ?? null,
+                  paneWidth: uqsa?.paneWidth ?? 0,
+                  paneHeight: uqsa?.paneHeight ?? 0,
+                },
+              },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
@@ -528,6 +577,15 @@ $(document).ready(function () {
           manually_hidden_simulations = _.cloneDeep(
             selectManuallyHiddenSimulations(store.getState()),
           );
+
+          // Reopen UQ/SA east pane when a bookmarked analysis is restored
+          if (selectUqsaActiveView(window.store.getState())) {
+            const bookmarkedPaneWidth = selectUqsaPaneWidth(window.store.getState());
+            if (bookmarkedPaneWidth > 0) {
+              layout.sizePane("east", bookmarkedPaneWidth);
+            }
+            layout.open("east");
+          }
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
@@ -1103,6 +1161,7 @@ $(document).ready(function () {
       const controls_bar = (
         <PSControlsBar
           store={window.store}
+          layout={layout}
           axes_variables={axes_variables}
           indices={indices}
           mid={model_id}
@@ -1118,6 +1177,26 @@ $(document).ready(function () {
       );
       const react_controls_root = createRoot(document.getElementById("react-controls"));
       react_controls_root.render(controls_bar);
+
+      // Mount UQ/SA panel into the east pane (React island + Redux Provider)
+      const uqsa_root = createRoot(document.getElementById("uq-sa"));
+      uqsa_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <PSUQSAPanel mid={model_id} layout={layout} />
+          </Provider>
+        </StrictMode>,
+      );
+
+      // Seed east pane size in Redux (pane may still be closed)
+      if (layout.state?.east) {
+        window.store.dispatch(
+          setPaneSize({
+            width: layout.state.east.innerWidth,
+            height: layout.state.east.innerHeight,
+          }),
+        );
+      }
     }
   }
 
