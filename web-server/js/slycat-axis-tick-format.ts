@@ -88,6 +88,29 @@ export function createHybridNumericTickFormatFixed(): (
   };
 }
 
+const MS_HOUR = 3600e3;
+const MS_DAY = 864e5;
+
+/**
+ * Format explicit time tickValues from the domain span, not the gap between
+ * consecutive ticks. d3's default time tickFormat keys off tick interval and
+ * can drop to milliseconds for equal-duration discrete bin edges.
+ */
+export function createTimeTickFormatForSpan(
+  min: number | Date | undefined,
+  max: number | Date | undefined,
+): (d: d3.NumberValue | Date) => string {
+  const span = Math.abs(+(max ?? 0) - +(min ?? 0));
+
+  let specifier = "%H:%M:%S";
+  if (span >= 3 * 365 * MS_DAY) specifier = "%Y";
+  else if (span >= 60 * MS_DAY) specifier = "%b %Y";
+  else if (span >= 3 * MS_DAY) specifier = "%b %d";
+  else if (span >= 3 * MS_HOUR) specifier = "%H:%M";
+  const format = d3.timeFormat(specifier);
+  return (d: d3.NumberValue | Date) => format(d instanceof Date ? d : new Date(+d));
+}
+
 /**
  * Apply hybrid numeric tick formatting to a d3 axis when the scale supports
  * `tickFormat` and optional PS-style guards pass.

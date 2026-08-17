@@ -50,6 +50,23 @@ function numericExtentFromVExtent(
   return { min: Math.min(...numeric), max: Math.max(...numeric) };
 }
 
+function dateExtentFromVExtent(
+  extent: [unknown, unknown] | undefined,
+): { min?: Date; max?: Date } {
+  if (!extent || extent.length < 2) {
+    return {};
+  }
+  const dates = extent.map((value) =>
+    value instanceof Date ? value : new Date(value as number | string),
+  );
+  if (dates.length < 2 || dates.some((date) => Number.isNaN(date.valueOf()))) {
+    return {};
+  }
+  return dates[0].valueOf() <= dates[1].valueOf()
+    ? { min: dates[0], max: dates[1] }
+    : { min: dates[1], max: dates[0] };
+}
+
 /**
  * Parameter Space color-by legend: Redux host for shared ColorByLegend.
  * Overlay SVG stays pointer-events:none; ColorByLegend re-enables hits when
@@ -92,19 +109,24 @@ export const PSColorByLegend: React.FC = () => {
     return null;
   }
 
-  const uniqueValues = vIsCategorical
+  const useTimeScale = scaleType === "Date & Time";
+  const useCategoricalLegend = vIsCategorical && !useTimeScale;
+
+  const uniqueValues = useCategoricalLegend
     ? getUniqueCategoryValues(autoScale ? vValuesWithoutHidden : vValues, {
         numeric: columnType !== "string",
       })
     : undefined;
 
-  const { min, max } = vIsCategorical
+  const { min, max } = useCategoricalLegend
     ? { min: undefined, max: undefined }
-    : numericExtentFromVExtent(extent as [unknown, unknown]);
+    : useTimeScale
+      ? dateExtentFromVExtent(extent as [unknown, unknown])
+      : numericExtentFromVExtent(extent as [unknown, unknown]);
 
   const model = slycat_color_maps.buildColorByLegendModel({
     colormap,
-    variableKind: vIsCategorical
+    variableKind: useCategoricalLegend
       ? columnType === "string"
         ? "string"
         : "categorical"
@@ -126,7 +148,7 @@ export const PSColorByLegend: React.FC = () => {
       ? (vScale as { step: () => number }).step()
       : undefined;
   const hidden =
-    vIsCategorical &&
+    useCategoricalLegend &&
     hideLabels &&
     legendScaleStep !== undefined &&
     legendScaleStep < verticalSpacing;

@@ -10,10 +10,10 @@ const DEFAULT_COLORMAP = "night";
 /** Color-by variable kind for shared legend model (Phase 0 / #1483). */
 export type ColorByLegendVariableKind = "numeric" | "categorical" | "string";
 
-/** Axis scale the legend should use. Discrete+Log uses log (equal-ratio bands). */
-export type ColorByLegendScaleKind = "linear" | "band" | "log";
+/** Axis scale the legend should use. Discrete+Log uses log. Date & Time uses time. */
+export type ColorByLegendScaleKind = "linear" | "band" | "log" | "time";
 
-/** Host color-by axis type (PS); Log selects log-spaced discrete bins when applicable. */
+/** Host color-by axis type (PS). Log/Date & Time select matching legend scales. */
 export type ColorByLegendScaleType = "Linear" | "Log" | "Date & Time";
 
 /** Discrete numeric bin spacing: equal absolute width vs equal ratio (log). */
@@ -27,8 +27,8 @@ export type ColorByLegendGradientStop = {
 export type ColorByLegendModelInput = {
   colormap?: string | null;
   variableKind: ColorByLegendVariableKind;
-  min?: number;
-  max?: number;
+  min?: number | Date;
+  max?: number | Date;
   uniqueValues?: (number | string)[];
   scaleType?: ColorByLegendScaleType;
 };
@@ -36,7 +36,7 @@ export type ColorByLegendModelInput = {
 export type ColorByLegendModel = {
   gradientStops: ColorByLegendGradientStop[];
   /** Discrete numeric: bin edges. Categorical/string: top→bottom domain (reversed). Else undefined (nice ticks). */
-  tickValues: (number | string)[] | undefined;
+  tickValues: (number | string | Date)[] | undefined;
   scaleKind: ColorByLegendScaleKind;
   resolvedColormap: string;
   isDiscrete: boolean;
@@ -396,17 +396,43 @@ export default {
   buildColorByLegendModel: function (input: ColorByLegendModelInput): ColorByLegendModel {
     const resolvedColormap = this.resolve_colormap_name(input.colormap);
     const isDiscrete = this.is_discrete(resolvedColormap);
+    const isTime = input.scaleType === "Date & Time";
+    // Date & Time wins over string/categorical (same precedence as scatterplot getScale).
     const isCategorical =
-      input.variableKind === "categorical" || input.variableKind === "string";
+      !isTime &&
+      (input.variableKind === "categorical" || input.variableKind === "string");
 
     const gradientStops: ColorByLegendGradientStop[] = isCategorical
       ? this.get_ordinal_legend_gradient(resolvedColormap, input.uniqueValues ?? [])
       : this.get_gradient_data(resolvedColormap);
 
     let scaleKind: ColorByLegendScaleKind;
-    let tickValues: (number | string)[] | undefined;
+    let tickValues: (number | string | Date)[] | undefined;
 
-    if (isCategorical) {
+    if (isTime) {
+      // Match scatterplot axes: d3 time scale. Discrete bins are equal duration.
+      scaleKind = "time";
+      const minMs =
+        input.min instanceof Date ? input.min.valueOf() : input.min;
+      const maxMs =
+        input.max instanceof Date ? input.max.valueOf() : input.max;
+      if (
+        isDiscrete &&
+        minMs !== undefined &&
+        maxMs !== undefined &&
+        Number.isFinite(minMs) &&
+        Number.isFinite(maxMs)
+      ) {
+        tickValues = this.get_discrete_bin_edges(
+          resolvedColormap,
+          minMs,
+          maxMs,
+          "linear",
+        ).map((ms: number) => new Date(ms));
+      } else {
+        tickValues = undefined;
+      }
+    } else if (isCategorical) {
       scaleKind = "band";
       // Top→bottom order matches get_ordinal_legend_gradient and timeseries/PS band domains.
       tickValues =
@@ -417,23 +443,25 @@ export default {
       // Equal-height bands: linear bins with linear axis, or log-spaced bins with log axis.
       const min = input.min;
       const max = input.max;
+      const minNum = typeof min === "number" ? min : undefined;
+      const maxNum = typeof max === "number" ? max : undefined;
       const useLog =
         input.scaleType === "Log" &&
-        min !== undefined &&
-        max !== undefined &&
-        min > 0 &&
-        max > 0;
+        minNum !== undefined &&
+        maxNum !== undefined &&
+        minNum > 0 &&
+        maxNum > 0;
       scaleKind = useLog ? "log" : "linear";
       if (
-        min !== undefined &&
-        max !== undefined &&
-        Number.isFinite(min) &&
-        Number.isFinite(max)
+        minNum !== undefined &&
+        maxNum !== undefined &&
+        Number.isFinite(minNum) &&
+        Number.isFinite(maxNum)
       ) {
         tickValues = this.get_discrete_bin_edges(
           resolvedColormap,
-          min,
-          max,
+          minNum,
+          maxNum,
           useLog ? "log" : "linear",
         );
       } else {

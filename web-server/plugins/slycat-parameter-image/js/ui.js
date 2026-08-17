@@ -1373,16 +1373,17 @@ $(document).ready(function () {
     const colormap = store.getState().colormap;
     const color_is_categorical = selectVIsCategorical(store.getState());
 
-    if (color_is_categorical) {
-      // Strings and wizard-marked category columns (e.g. cylinders, origin) get
-      // one color per unique value instead of continuous/quantize binning.
-      var uniqueValues = get_unique_category_values(filtered_v, v_type === "string");
-      colorscale = slycat_color_maps.get_color_scale_ordinal(colormap, uniqueValues);
-    } else if (v_variable_scale_type == "Date & Time") {
+    if (v_variable_scale_type == "Date & Time") {
+      // Date & Time wins over string/categorical (same as scatterplot axes).
       const v_extent = _.cloneDeep(selectVExtent(store.getState()));
       const min = v_extent[0];
       const max = v_extent[1];
       colorscale = slycat_color_maps.get_color_scale_time(colormap, min, max);
+    } else if (color_is_categorical) {
+      // Strings and wizard-marked category columns (e.g. cylinders, origin) get
+      // one color per unique value instead of continuous/quantize binning.
+      var uniqueValues = get_unique_category_values(filtered_v, v_type === "string");
+      colorscale = slycat_color_maps.get_color_scale_ordinal(colormap, uniqueValues);
     } else {
       const min = custom_color_variable_range.min ?? d3.min(filtered_v);
       const max = custom_color_variable_range.max ?? d3.max(filtered_v);

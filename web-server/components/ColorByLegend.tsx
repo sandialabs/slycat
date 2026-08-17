@@ -13,6 +13,7 @@ import type {
 import {
   createHybridNumericTickFormat,
   createHybridNumericTickFormatFixed,
+  createTimeTickFormatForSpan,
 } from "js/slycat-axis-tick-format";
 import type { HybridTickFormatScale } from "js/slycat-axis-tick-format";
 import { truncateSvgAxisTickLabels } from "js/slycat-svg-text";
@@ -33,9 +34,9 @@ export type ColorByLegendProps = {
    */
   model: ColorByLegendModel;
 
-  /** Numeric domain (used when scaleKind is linear or log). Top of legend is max. */
-  min?: number;
-  max?: number;
+  /** Domain (used when scaleKind is linear, log, or time). Top of legend is max. */
+  min?: number | Date;
+  max?: number | Date;
 
   fontSize?: number | string;
   fontFamily?: string;
@@ -79,10 +80,14 @@ function stopColor(color: ColorByLegendGradientStop["color"]): string {
 function createLegendScale(
   scaleKind: ColorByLegendScaleKind,
   height: number,
-  min: number | undefined,
-  max: number | undefined,
-  tickValues: (number | string)[] | undefined,
-): d3.ScaleLinear<number, number> | d3.ScaleLogarithmic<number, number> | d3.ScaleBand<string> {
+  min: number | Date | undefined,
+  max: number | Date | undefined,
+  tickValues: (number | string | Date)[] | undefined,
+):
+  | d3.ScaleLinear<number, number>
+  | d3.ScaleLogarithmic<number, number>
+  | d3.ScaleTime<number, number>
+  | d3.ScaleBand<string> {
   const range: [number, number] = [0, height];
 
   if (scaleKind === "band") {
@@ -98,9 +103,14 @@ function createLegendScale(
   const hi = max ?? 1;
   // Top of vertical legend is max (matches existing PS/CCA/Timeseries legends).
   if (scaleKind === "log") {
-    return d3.scaleLog().domain([hi, lo]).range(range);
+    return d3.scaleLog().domain([hi as number, lo as number]).range(range);
   }
-  return d3.scaleLinear().domain([hi, lo]).range(range);
+  if (scaleKind === "time") {
+    const loDate = lo instanceof Date ? lo : new Date(lo);
+    const hiDate = hi instanceof Date ? hi : new Date(hi);
+    return d3.scaleTime().domain([hiDate, loDate]).range(range);
+  }
+  return d3.scaleLinear().domain([hi as number, lo as number]).range(range);
 }
 
 /**
@@ -178,20 +188,33 @@ export const ColorByLegend: React.FC<ColorByLegendProps> = (props) => {
       const hasExplicitTicks =
         model.tickValues != null && model.tickValues.length > 0;
       if (hasExplicitTicks) {
-        axis.tickValues(model.tickValues as number[]);
+        axis.tickValues(model.tickValues as (number | Date)[]);
       } else {
         axis.ticks(tickCount);
       }
-      // Explicit ticks (discrete bin edges): always label. Continuous log uses
-      // scale.tickFormat thinning via createHybridNumericTickFormat.
-      axis.tickFormat(
-        (hasExplicitTicks
-          ? createHybridNumericTickFormatFixed()
-          : createHybridNumericTickFormat(
-              scale as HybridTickFormatScale,
-              tickCount,
-            )) as (domainValue: d3.AxisDomain, index: number) => string,
-      );
+      // Explicit numeric ticks (discrete bin edges): always label. Continuous
+      // log uses scale.tickFormat thinning via createHybridNumericTickFormat.
+      // Explicit time ticks: format from domain span (not consecutive-tick delta).
+      // Continuous time (no explicit ticks) keeps d3's default nice date ticks.
+      if (model.scaleKind === "time") {
+        if (hasExplicitTicks) {
+          axis.tickFormat(
+            createTimeTickFormatForSpan(min, max) as (
+              domainValue: d3.AxisDomain,
+              index: number,
+            ) => string,
+          );
+        }
+      } else {
+        axis.tickFormat(
+          (hasExplicitTicks
+            ? createHybridNumericTickFormatFixed()
+            : createHybridNumericTickFormat(
+                scale as HybridTickFormatScale,
+                tickCount,
+              )) as (domainValue: d3.AxisDomain, index: number) => string,
+        );
+      }
     }
 
     const axisSelection = d3
