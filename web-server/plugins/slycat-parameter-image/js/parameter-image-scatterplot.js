@@ -3185,7 +3185,11 @@ $.widget("parameter_image.scatterplot", {
                 .append("div")
                 .attr("class", "react-component-vtp-time-label");
               const timeLabelRoot = createRoot(timeLabelMount.node());
-              timeLabelRoot.render(<VtpTimeLabel timeValue={timeValue} />);
+              timeLabelRoot.render(
+                <Provider store={window.store}>
+                  <VtpTimeLabel timeValue={timeValue} uid={image.uid} />
+                </Provider>,
+              );
               registerFrameRoot(frame_html.node(), timeLabelRoot);
             }
             // dispatch vtk select event so we know which camera to sync
