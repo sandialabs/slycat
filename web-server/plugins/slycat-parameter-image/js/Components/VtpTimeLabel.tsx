@@ -71,7 +71,7 @@ export const VtpTimeLabel: React.FC<VtpTimeLabelProps> = ({
         measure,
         position: "end",
       });
-      setText(next);
+      setText((current) => (current === next ? current : next));
     };
 
     update();

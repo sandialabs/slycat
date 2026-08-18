@@ -11,13 +11,24 @@ retains certain rights in this software. */
 
 import type { Measurer } from "./slycat-string-truncate";
 
+let measureCanvas: HTMLCanvasElement | null = null;
+
+function getMeasureContext(): CanvasRenderingContext2D | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+  if (!measureCanvas) {
+    measureCanvas = document.createElement("canvas");
+  }
+  return measureCanvas.getContext("2d");
+}
+
 /**
  * Build a `Measurer` that reports the rendered pixel width of any candidate
  * string when drawn with the given computed CSS font.
  */
 export function measureCssText(style: CSSStyleDeclaration): Measurer {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = getMeasureContext();
   const font =
     style.font && style.font.trim().length > 0
       ? style.font
