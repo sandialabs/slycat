@@ -1014,6 +1014,7 @@ button#controls-button-var-options {
   left: 6px;
   color: black;
   pointer-events: none;
+  white-space: nowrap;
   /* Using custom font size and family. These are set by the user 
      and defined in ConstrolsButtonVarOptions.js */
   font-size: var(--custom-font-size, 15px);
