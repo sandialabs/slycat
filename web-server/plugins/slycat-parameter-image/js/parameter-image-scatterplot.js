@@ -72,6 +72,7 @@ import {
   DEFAULT_SCATTERPLOT_MARGIN_LEFT,
 } from "components/ScatterplotOptions/ScatterplotOptions";
 import { TypeLabel, FrameMenu } from "./Components/TypeButton";
+import { VtpTimeLabel } from "./Components/VtpTimeLabel";
 import { MEDIA_TYPES } from "./constants/media-types";
 import {
   FULL_ORBIT_PREVIEW_VIDEO_SELECTOR,
@@ -140,8 +141,17 @@ var vtkunselect_event = new Event("vtkunselect");
 var vtkresize_event = new Event("vtkresize");
 var vtkclose_event = new Event("vtkclose");
 
-// WeakMap to store the root elements for the type buttons
+// WeakMap of React roots mounted on each media frame (TypeLabel, FrameMenu, VtpTimeLabel).
 const rootsByPopupEl = new WeakMap();
+
+function registerFrameRoot(frameEl, root) {
+  const roots = rootsByPopupEl.get(frameEl);
+  if (roots) {
+    roots.push(root);
+  } else {
+    rootsByPopupEl.set(frameEl, [root]);
+  }
+}
 
 /**
  * Append an SVG <title> child to `node` so hovering reveals `text` via the
@@ -2399,10 +2409,12 @@ $.widget("parameter_image.scatterplot", {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
 
-        // Unmount the TypeButton root
-        const root = rootsByPopupEl.get(frame.node());
-        if (root) {
-          root.unmount();
+        // Unmount React roots mounted on this frame
+        const roots = rootsByPopupEl.get(frame.node());
+        if (roots) {
+          for (const root of roots) {
+            root.unmount();
+          }
         } else {
           console.error("No root found for frame", frame);
         }
@@ -3161,7 +3173,21 @@ $.widget("parameter_image.scatterplot", {
 
           // Convert the blob to an array buffer and pass it to the geometry loader
           function passToGeometryLoaded(buffer) {
-            geometryLoad(vtk.node(), buffer, image.uri, image.uid, isStl ? "stl" : "vtp");
+            const timeValue = geometryLoad(
+              vtk.node(),
+              buffer,
+              image.uri,
+              image.uid,
+              isStl ? "stl" : "vtp",
+            );
+            if (timeValue != null) {
+              const timeLabelMount = vtk
+                .append("div")
+                .attr("class", "react-component-vtp-time-label");
+              const timeLabelRoot = createRoot(timeLabelMount.node());
+              timeLabelRoot.render(<VtpTimeLabel timeValue={timeValue} />);
+              registerFrameRoot(frame_html.node(), timeLabelRoot);
+            }
             // dispatch vtk select event so we know which camera to sync
             if (image.current_frame) {
               frame_html.node().querySelector(".vtp").dispatchEvent(vtkselect_event);
@@ -3226,6 +3252,7 @@ $.widget("parameter_image.scatterplot", {
       typeLabelRoot.render(
         <TypeLabel mediaType={media_type} tableIndex={image.index} />,
       );
+      registerFrameRoot(frame_html.node(), typeLabelRoot);
 
       let frameMenuMount = add_react_mount(footer, "react-component-frame-menu");
       const frameMenuRoot = createRoot(frameMenuMount.node());
@@ -3251,7 +3278,7 @@ $.widget("parameter_image.scatterplot", {
           downloadFilename={!link ? image.uri.split("/").pop() : undefined}
         />,
       );
-      rootsByPopupEl.set(frame_html.node(), frameMenuRoot);
+      registerFrameRoot(frame_html.node(), frameMenuRoot);
 
       if (!image.no_sync) self._sync_open_media();
 
