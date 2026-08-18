@@ -153,6 +153,16 @@ function registerFrameRoot(frameEl, root) {
   }
 }
 
+function unmountFrameRoots(frameEl) {
+  const roots = rootsByPopupEl.get(frameEl);
+  if (roots) {
+    for (const root of roots) {
+      root.unmount();
+    }
+    rootsByPopupEl.delete(frameEl);
+  }
+}
+
 /**
  * Append an SVG <title> child to `node` so hovering reveals `text` via the
  * browser's native tooltip. Caller is responsible for ensuring the node
@@ -2409,17 +2419,6 @@ $.widget("parameter_image.scatterplot", {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
 
-        // Unmount React roots mounted on this frame
-        const roots = rootsByPopupEl.get(frame.node());
-        if (roots) {
-          for (const root of roots) {
-            root.unmount();
-          }
-        } else {
-          console.error("No root found for frame", frame);
-        }
-        rootsByPopupEl.delete(frame.node());
-
         self._remove_image_and_leader_line(frame);
         self._sync_open_media();
       },
@@ -3173,6 +3172,10 @@ $.widget("parameter_image.scatterplot", {
 
           // Convert the blob to an array buffer and pass it to the geometry loader
           function passToGeometryLoaded(buffer) {
+            const frameNode = frame_html.node();
+            if (!frameNode || !frameNode.isConnected) {
+              return;
+            }
             const timeValue = geometryLoad(
               vtk.node(),
               buffer,
@@ -3190,7 +3193,7 @@ $.widget("parameter_image.scatterplot", {
                   <VtpTimeLabel timeValue={timeValue} uid={image.uid} />
                 </Provider>,
               );
-              registerFrameRoot(frame_html.node(), timeLabelRoot);
+              registerFrameRoot(frameNode, timeLabelRoot);
             }
             // dispatch vtk select event so we know which camera to sync
             if (image.current_frame) {
@@ -3825,6 +3828,8 @@ $.widget("parameter_image.scatterplot", {
     let media_index = frame_html.attr("data-media-index");
     let line = self.line_layer.select("line[data-uid='" + uid + "']");
     let hover = frame_html.classed("hover-image");
+
+    unmountFrameRoots(frame_html.node());
 
     // Let vtk viewer know it was closed
     if (frame_html.node().querySelector(".vtp")) {
