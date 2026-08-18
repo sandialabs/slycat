@@ -372,10 +372,15 @@ def get_user_groups(connection, uid):
 
 def user_groups(uid):
     """
-    Look up and log LDAP group membership for a user.
+    Return LDAP group membership for a user, using a time-limited in-memory cache.
 
-    This function establishes an LDAP connection, binds using the configured
-    credentials, calls ``get_user_groups()``, and logs the returned group data.
+    This function checks ``configuration["user-groups-cache"]`` for cached LDAP group
+    membership for the given user. If a valid, non-expired cache entry exists, the
+    cached group list is returned. Otherwise, the function connects to LDAP, looks up
+    the user's group membership using ``get_user_groups()``, stores the result in the
+    cache, and returns it.
+
+    Cache entries older than ``group_session_timeout`` are removed and refreshed.
 
     Parameters
     ----------
@@ -384,70 +389,82 @@ def user_groups(uid):
 
     Returns
     -------
-    None
-        The current implementation logs the group data but does not return it.
+    object
+        The result returned by ``get_user_groups(connection, uid)``. In normal usage,
+        this is expected to be a collection of LDAP group names.
 
     Raises
     ------
     cherrypy.HTTPError
-        404 for LDAP no-such-object and selected assertion errors.
-        500 for unexpected LDAP or runtime errors.
+        Raises 404 if the LDAP user object does not exist or an assertion fails.
+        Raises 500 for unexpected LDAP or runtime errors.
     """
+
     group_session_timeout = datetime.timedelta(minutes=1000)
-    if uid:
-        if uid in configuration["user-groups-cache"]:
-            cutoff = (
-                datetime.datetime.now(datetime.timezone.utc) - group_session_timeout
-            ).isoformat()
-            if configuration["user-groups-cache"][uid]["timeout"] < cutoff:
-                del configuration["user-groups-cache"][uid]
-        if uid not in configuration["user-groups-cache"]:
-            try:
-                # Lookup the given uid in LDAP.
-                import ldap
 
-                trace_level = 0  # 0=quiet, 1=verbose, 2=veryVerbose
+    if not uid:
+        return None
 
-                ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-                ldap.set_option(
-                    ldap.OPT_NETWORK_TIMEOUT, configuration["timeout"].total_seconds()
-                )
+    user_groups_cache = configuration["user-groups-cache"]
 
-                connection = ldap.initialize(configuration["server"], trace_level)
-                connection.simple_bind_s(
-                    configuration["who"], configuration["cred"]
-                )  # Empty strings may be accepted for anonymous bind.
+    if uid in user_groups_cache:
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - group_session_timeout
+        cached_timeout = user_groups_cache[uid].get("timeout")
 
-                # Perform the group lookup and log the result.
-                configuration["user-groups-cache"][uid] = {
-                    "result": get_user_groups(connection, uid),
-                    "timeout": datetime.datetime.now(datetime.timezone.utc),
-                }
+        if cached_timeout is None or cached_timeout < cutoff:
+            del user_groups_cache[uid]
 
-            except ldap.NO_SUCH_OBJECT:
-                cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
-                cherrypy.log.error(
-                    "slycat-ldap-directory.py user",
-                    "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT",
-                )
-                raise cherrypy.HTTPError(404)
+    if uid not in user_groups_cache:
+        try:
+            # Lookup the given uid in LDAP.
+            import ldap
 
-            except AssertionError as e:
-                cherrypy.log.error(e.message)
-                cherrypy.log.error(
-                    "slycat-ldap-directory.py user",
-                    "cherrypy.HTTPError 404 %s" % e.message,
-                )
-                raise cherrypy.HTTPError(404)
+            trace_level = 0  # 0=quiet, 1=verbose, 2=veryVerbose
 
-            except:
-                cherrypy.log.error(traceback.format_exc())
-                cherrypy.log.error(
-                    "slycat-ldap-directory.py user",
-                    "cherrypy.HTTPError 500 %s" % traceback.format_exc(),
-                )
-                raise cherrypy.HTTPError(500)
-        return configuration["user-groups-cache"][uid]["result"]
+            ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+            ldap.set_option(
+                ldap.OPT_NETWORK_TIMEOUT,
+                configuration["timeout"].total_seconds(),
+            )
+
+            connection = ldap.initialize(configuration["server"], trace_level)
+            connection.simple_bind_s(
+                configuration["who"],
+                configuration["cred"],
+            )
+
+            user_groups_cache[uid] = {
+                "result": get_user_groups(connection, uid),
+                "timeout": datetime.datetime.now(datetime.timezone.utc),
+            }
+
+        except ldap.NO_SUCH_OBJECT:
+            cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
+            cherrypy.log.error(
+                "slycat-ldap-directory.py user",
+                "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT",
+            )
+            raise cherrypy.HTTPError(404)
+
+        except AssertionError as e:
+            message = str(e)
+            cherrypy.log.error(message)
+            cherrypy.log.error(
+                "slycat-ldap-directory.py user",
+                "cherrypy.HTTPError 404 %s" % message,
+            )
+            raise cherrypy.HTTPError(404)
+
+        except Exception:
+            error = traceback.format_exc()
+            cherrypy.log.error(error)
+            cherrypy.log.error(
+                "slycat-ldap-directory.py user",
+                "cherrypy.HTTPError 500 %s" % error,
+            )
+            raise cherrypy.HTTPError(500)
+
+    return user_groups_cache[uid]["result"]
 
 
 def groups(search_string):

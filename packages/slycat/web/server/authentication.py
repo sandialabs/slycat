@@ -1,9 +1,11 @@
-# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract 
-# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government 
+# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
 # retains certain rights in this software.
 
-import cherrypy
+from typing import Any
 
+import cherrypy
+# TODO: based on users groups check if any are in the projects groups
 def project_acl(project):
   """Extract ACL information from a project."""
   if "acl" not in project:
@@ -24,20 +26,93 @@ def is_project_administrator(project):
     return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
 
 def is_project_writer(project):
-  """Return True if the current request is from a project writer."""
-  try:
-    return cherrypy.request.login in [writer["user"] for writer in project_acl(project)["writers"]]
-  except TypeError:
-    cherrypy.log.error("error in acl for project %s" % project["_id"])
-    return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
+    # TODO: based on users groups check if any are in the projects groups
+    """Return True if the current request is from a project writer."""
 
-def is_project_reader(project):
-  """Return True if the current request is from a project reader."""
-  try:
-    return cherrypy.request.login in [reader["user"] for reader in project_acl(project)["readers"]]
-  except TypeError:
-    cherrypy.log.error("error in acl for project %s" % project["_id"])
-    return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
+    try:
+        return cherrypy.request.login in [
+            writer["user"] for writer in project_acl(project)["writers"]
+        ]
+    except TypeError:
+        cherrypy.log.error("error in acl for project %s" % project["_id"])
+        return cherrypy.request.login in {
+            "administrators": {},
+            "writers": {},
+            "readers": {},
+        }
+
+
+from typing import Any
+
+
+def is_project_reader(project: Any) -> bool:
+    """
+    Return whether the current CherryPy request user has reader access to a project.
+
+    A user is considered a project reader if either:
+
+    1. Their username appears directly in the project's ACL ``readers`` list.
+    2. At least one of their directory groups appears in the project's ACL ``groups`` list.
+
+    Parameters
+    ----------
+    project : Any
+        Project object or dictionary passed to ``project_acl``. The project is expected
+        to contain an ``"_id"`` field for logging purposes if ACL parsing fails.
+
+    Returns
+    -------
+    bool
+        ``True`` if the current request user is explicitly listed as a reader or belongs
+        to a group with read access. Otherwise, ``False``.
+
+    Notes
+    -----
+    This function depends on the active CherryPy request context and expects:
+
+    - ``cherrypy.request.login`` to contain the current username.
+    - ``cherrypy.request.app.config["slycat-web-server"]["directory"]["user_groups"]``
+      to be a callable that returns the user's groups.
+    - ``project_acl(project)`` to return a dictionary containing optional ``"readers"``
+      and ``"groups"`` entries.
+    """
+
+    try:
+        acl = project_acl(project)
+
+        acl_groups = acl.get("groups") or []
+        acl_readers = acl.get("readers") or []
+
+        username = cherrypy.request.login
+
+        user_groups = (
+            cherrypy.request.app.config["slycat-web-server"]["directory"][
+                "user_groups"
+            ](username)["group_names"]
+            or []
+        )
+        cherrypy.log.error(f"ACL for project acl_groups::: {user_groups}")
+
+        acl_reader_users = {
+            reader.get("user") for reader in acl_readers if isinstance(reader, dict)
+        }
+
+        if username in acl_reader_users:
+            return True
+
+        return any(group in acl_groups for group in user_groups)
+
+    except (TypeError, KeyError, AttributeError) as error:
+        project_id = (
+            project.get("_id", "<unknown>")
+            if isinstance(project, dict)
+            else "<unknown>"
+        )
+        cherrypy.log.error(
+            f"Error checking reader ACL for project {project_id}: {error}\n"
+        )
+        return False
+
 
 def test_server_administrator():
   """Return True if the current request has server administrator privileges."""
@@ -94,4 +169,3 @@ def require_project_reader(project):
   """Raise an exception if the current request doesn't have project read privileges."""
   if not test_project_reader(project):
     raise cherrypy.HTTPError(403)
-

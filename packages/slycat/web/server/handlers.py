@@ -254,7 +254,10 @@ def post_projects():
                 "administrators": [{"user": cherrypy.request.login}],
                 "readers": [],
                 "writers": [],
-                "groups": [],
+                "groups": {
+                    "readers": [],
+                    "writers": [],
+                },
             },
             "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "creator": cherrypy.request.login,
@@ -345,6 +348,7 @@ def put_project(pid):
       cherrypy.HTTPError
         400 missing readers
     """
+    # TODO: update this func for meta groups
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -3041,6 +3045,10 @@ def get_user(uid, time):
 
     if uid == "-":
         uid = cherrypy.request.login
+    cherrypy.log.error(
+        "slycat.web.server.handlers.py get_user",
+        "uid: %s" % uid,
+    )
     user = cherrypy.request.app.config["slycat-web-server"]["directory"]["user"](uid)
     if user is None:
         cherrypy.log.error(
@@ -3150,7 +3158,7 @@ def get_user_groups(search_string: str):
 
     # Convert results to a JSON-compatible structure using the custom encoder,
     # then log the serialized result.
-    cherrypy.log.error("result %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+    # cherrypy.log.error("result %s" % json.loads(json.dumps(results, cls=MyEncoder)))
 
     # If the directory lookup returns no results, log the error and return 404.
     if results is None:
@@ -3161,7 +3169,7 @@ def get_user_groups(search_string: str):
         raise cherrypy.HTTPError(404)
 
     # Log the final result before returning it.
-    cherrypy.log.error("result3 %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+    # cherrypy.log.error("result3 %s" % json.loads(json.dumps(results, cls=MyEncoder)))
 
     # Return the results as a JSON-compatible Python object. The json_out tool
     # will serialize this return value to JSON for the HTTP response.
