@@ -7,7 +7,8 @@ import { RootState } from "../store";
 
 const TIME_LABEL_LEFT_PX = 6;
 const TIME_LABEL_RIGHT_PAD_PX = 8;
-const SCALAR_BAR_WIDTH_FRACTION = 0.3;
+const SCALAR_BAR_GUTTER_MIN_PX = 80;
+const SCALAR_BAR_GUTTER_FONT_FACTOR = 6;
 
 interface VtpTimeLabelProps {
   timeValue: number;
@@ -19,8 +20,14 @@ function formatTimeLabel(timeValue: number): string {
   return `Time: ${timeValue}`;
 }
 
-function timeLabelMaxWidth(containerWidth: number, legendVisible: boolean): number {
-  const legendGutter = legendVisible ? containerWidth * SCALAR_BAR_WIDTH_FRACTION : 0;
+function timeLabelMaxWidth(
+  containerWidth: number,
+  legendVisible: boolean,
+  fontSize: number,
+): number {
+  const legendGutter = legendVisible
+    ? Math.max(SCALAR_BAR_GUTTER_MIN_PX, fontSize * SCALAR_BAR_GUTTER_FONT_FACTOR)
+    : 0;
   return Math.max(
     0,
     containerWidth - TIME_LABEL_LEFT_PX - TIME_LABEL_RIGHT_PAD_PX - legendGutter,
@@ -54,7 +61,11 @@ export const VtpTimeLabel: React.FC<VtpTimeLabelProps> = ({
 
     const update = () => {
       const measure = measureCssText(getComputedStyle(node));
-      const maxWidth = timeLabelMaxWidth(container.clientWidth, legendVisible);
+      const maxWidth = timeLabelMaxWidth(
+        container.clientWidth,
+        legendVisible,
+        fontSize,
+      );
       const next = truncateString(fullText, {
         maxWidth,
         measure,
