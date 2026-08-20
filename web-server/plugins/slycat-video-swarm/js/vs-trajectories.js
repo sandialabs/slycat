@@ -522,6 +522,8 @@ $.widget("mp.trajectories",
         waveform_subset.push(self.waveforms[node_index]);
     }
 
+    self.canvas_hover.style.cursor = waveform_subset.length > 0 ? "pointer" : "";
+
     // Clear the canvas
     self.canvas_hover_ctx.clearRect(0, 0, self.canvas_hover.width, self.canvas_hover.height);
     // Apply semi transparent background if we are displaying any waveforms
