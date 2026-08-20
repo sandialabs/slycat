@@ -48,6 +48,8 @@ $.widget("mp.scatterplot", {
         diagram_time: 0,
         frame: 0,
         video_sync_time: 0,
+        min_time: null,
+        max_time: null,
         color_var_index: [],
         current_video: null,
         null_color: null,
@@ -55,9 +57,6 @@ $.widget("mp.scatterplot", {
 
     _create: function()
     {
-        // Set frame option according to diagram_time option
-        this.options.frame = Math.round(this.options.diagram_time * 25); // 1001 frames per video, 40 seconds per video, ~25 frames per second
-
         this.container = d3.select("#mp-mds-scatterplot");
 
         this.xy_coords = this.options.xy_coords;
@@ -146,15 +145,9 @@ $.widget("mp.scatterplot", {
             self.options.filtered_selection = [];
           }
 
-          var x = self.options.x;
-          var y = self.options.y;
-          var count = x.length;
           var x_coord, y_coord;
-
-          //This is a test, frame # should be diagram_time * 25 because there are 25 frames per second in each video
-
-          var test_count = self.options.xy_coords[self.options.frame].length;
-          var one_set_xy_data = self.options.xy_coords[self.options.frame];
+          var one_set_xy_data = self._coords_for_time(self.options.diagram_time);
+          var test_count = one_set_xy_data.length;
 
           if(self.state == "rubber-band-drag") // Rubber-band selection ...
           {
@@ -293,6 +286,37 @@ $.widget("mp.scatterplot", {
         return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
     },
 
+    _frame_from_time: function(time)
+    {
+        var coords = this.xy_coords || this.options.xy_coords;
+        if (!coords || !coords.length) {
+            return 0;
+        }
+        var last = coords.length - 1;
+        var t = Number(time);
+        if (!isFinite(t)) {
+            return 0;
+        }
+        var t0 = this.options.min_time;
+        var t1 = this.options.max_time;
+        var frame = 0;
+        if (t0 != null && t1 != null && t1 !== t0) {
+            frame = Math.round((t - t0) / (t1 - t0) * last);
+        }
+        if (!isFinite(frame)) {
+            return 0;
+        }
+        return Math.max(0, Math.min(last, frame));
+    },
+
+    _coords_for_time: function(time)
+    {
+        var coords = this.xy_coords || this.options.xy_coords || [];
+        var frame = this._frame_from_time(time);
+        this.options.frame = frame;
+        return coords[frame] || [];
+    },
+
     draw: function()
     {
         var width = $("#mp-mds-pane").width();
@@ -324,11 +348,9 @@ $.widget("mp.scatterplot", {
           });
         };
 
-        // console.log("inputting new points with frame");
-        // console.log("Frame is: " + self.options.frame);
-        //input new points
+        var frame_coords = this._coords_for_time(this.options.diagram_time);
         var scatter_points = this.scatter_plot.selectAll("circle")
-            .data(this.xy_coords[this.options.frame])
+            .data(frame_coords)
             .enter()
             .append("circle");
 
@@ -486,7 +508,6 @@ $.widget("mp.scatterplot", {
         {
             this.options[key] = value;
             this.options.diagram_time = value;
-            this.options.frame = Math.round(value * 25); // 1001 frames per video, 40 seconds per video, ~25 frames per second
 
             this.draw();
         }
