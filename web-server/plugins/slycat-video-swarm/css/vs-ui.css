@@ -48,6 +48,11 @@ retains certain rights in this software.
 	cursor: pointer;
 }
 
+#mp-mds-pane.rubber-band-drag,
+#mp-mds-pane.rubber-band-drag circle {
+  cursor: crosshair;
+}
+
 
 /* Page header */
 

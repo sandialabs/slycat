@@ -115,6 +115,7 @@ $.widget("mp.scatterplot", {
               if(Math.abs(self._offsetX(e) - self.start_drag[0]) > self.options.drag_threshold || Math.abs(self._offsetY(e) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
               {
                 self.state = "rubber-band-drag";
+                self.element.parent().addClass("rubber-band-drag");
                 self.end_drag = [self._offsetX(e), self._offsetY(e)];
                 self.selection_layer.append("rect")
                   .attr("class", "rubberband")
@@ -209,6 +210,7 @@ $.widget("mp.scatterplot", {
           self.start_drag = null;
           self.end_drag = null;
           self.state = "";
+          self.element.parent().removeClass("rubber-band-drag");
 
           // self._filterIndices();
           // self.options.selection = self.options.filtered_selection.slice(0);
