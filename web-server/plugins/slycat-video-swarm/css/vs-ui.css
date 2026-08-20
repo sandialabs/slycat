@@ -28,7 +28,6 @@ retains certain rights in this software.
 #mp-mds-pane
 {
 	overflow: hidden !important;
-	cursor: pointer;
 }
 
 .brush .extent
@@ -42,6 +41,10 @@ retains certain rights in this software.
 #mp-mds-scatterplot
 {
 	stroke-width: 1px;
+}
+
+#mp-mds-scatterplot circle
+{
 	cursor: pointer;
 }
 
