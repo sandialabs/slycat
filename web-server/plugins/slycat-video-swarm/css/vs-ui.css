@@ -1059,10 +1059,6 @@ a {
   display: block;
 }
 
-#mp-trajectories canvas {
-  cursor: pointer;
-}
-
 .slycat-scrubber {
   cursor: pointer;
 }
