@@ -79,20 +79,19 @@ $.widget("mp.scatterplot", {
 
         var self = this;
 
+        self._unbind_window_drag = function()
+        {
+          window.removeEventListener("mousemove", self._on_window_mousemove, true);
+          window.removeEventListener("mouseup", self._on_window_mouseup, true);
+        };
+
+        // Drop leftover window listeners if this widget is created again.
+        self._unbind_window_drag();
+
         // Remove any existing event handlers because we are about to assign them and we don't want to keep old one and have them fire too.
         self.element.parent().off();
 
-        self.element.parent().mousedown(function(e)
-        {
-          e.preventDefault();
-          var output = e;
-          self.start_drag = [self._offsetX(e), self._offsetY(e)];
-          var s_d = self.start_drag;
-          self.end_drag = null;
-          var s_e = self.start_drag;
-        });
-
-        self.element.parent().mousemove(function(e)
+        self._on_window_mousemove = function(e)
         {
           if(self.start_drag) // Mouse is down ...
           {
@@ -130,10 +129,13 @@ $.widget("mp.scatterplot", {
               }
             }
           }
-        });
+        };
 
-        self.element.parent().mouseup(function(e)
+        self._on_window_mouseup = function(e)
         {
+          self._unbind_window_drag();
+          self.element.parent().removeClass("rubber-band-drag");
+
           if(self.state == "resizing" || self.state == "moving") {
                 return;
             }
@@ -216,6 +218,16 @@ $.widget("mp.scatterplot", {
           // self.options.selection = self.options.filtered_selection.slice(0);
           // self._schedule_update({render_selection:true});
           self.element.trigger("scatterplot-selection-changed", [self.options.selection]);
+        };
+
+        self.element.parent().mousedown(function(e)
+        {
+          e.preventDefault();
+          self.start_drag = [self._offsetX(e), self._offsetY(e)];
+          self.end_drag = null;
+          self._unbind_window_drag();
+          window.addEventListener("mousemove", self._on_window_mousemove, true);
+          window.addEventListener("mouseup", self._on_window_mouseup, true);
         });
 
 
@@ -263,12 +275,14 @@ $.widget("mp.scatterplot", {
     },
     _offsetX: function(e)
     {
-        return e.pageX - e.currentTarget.getBoundingClientRect().left - $(document).scrollLeft();
+        var rect = this.element.parent()[0].getBoundingClientRect();
+        return e.clientX - rect.left;
     },
 
     _offsetY: function(e)
     {
-        return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
+        var rect = this.element.parent()[0].getBoundingClientRect();
+        return e.clientY - rect.top;
     },
 
     _frame_from_time: function(time)
