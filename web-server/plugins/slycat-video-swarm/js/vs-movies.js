@@ -112,10 +112,9 @@ $.widget("mp.movies", {
         .css({
           "border-color": border_color,
         })
-        .on("click", function () {
-          // console.log("CLICK event handler starting" + movie_index);
-          // Setting current_video on click so we know which video is "selected" and which to interact with
-          // using controls when they're not synced
+        .on("click pointerdown", function () {
+          // Click selects the movie. Pointerdown also covers native video controls,
+          // which often do not fire click (Chrome/Safari) but may retarget pointerdown.
           self._set_current_video(movie_index);
         })
         .prependTo(self.videos_container);
@@ -154,11 +153,6 @@ $.widget("mp.movies", {
             self.options.playing_videos.push(movie_index);
             self.element.trigger("playing_videos", [self.options.playing_videos.slice()]);
           }
-
-          // Also setting current_video on play because Chrome and Safari don't fire the click event on play
-          if (!self.options.video_sync && self.options.current_video != movie_index) {
-            self._set_current_video(movie_index);
-          }
         })
         .on("pause", function () {
           // console.log("PAUSE event handler starting" + movie_index);
@@ -183,10 +177,6 @@ $.widget("mp.movies", {
             self.options.playing_videos.splice(self.options.playing_videos.indexOf(movie_index), 1);
             self.element.trigger("playing_videos", [self.options.playing_videos.slice()]);
           }
-          // Also setting current_video on pause because Chrome and Safari don't fire the click event on pause
-          if (!self.options.video_sync && self.options.current_video != movie_index) {
-            self._set_current_video(movie_index);
-          }
           // Triggering event for tracking current video's time
           self.element.trigger("video_time", { id: movie_index, time: this.currentTime });
         })
@@ -197,10 +187,6 @@ $.widget("mp.movies", {
             self._update_video_sync_time();
           }
           self.element.trigger("video_sync_time", self.options.video_sync_time);
-          // Also setting current_video on seek because Chrome and Safari don't fire the click event on seek
-          if (!self.options.video_sync && self.options.current_video != movie_index) {
-            self._set_current_video(movie_index);
-          }
           // Triggering event for tracking current video's time
           self.element.trigger("video_time", { id: movie_index, time: this.currentTime });
         })
