@@ -439,6 +439,8 @@ function model_loaded() {
         highlighted_simulations: highlighted_simulations.slice(),
         selection: highlighted_simulations.slice(), // scatterplot calls it 'selection', so going with that for now but leaving 'highlighted_simulations' too for when we standardize on a common vocab for state variables
         diagram_time: diagram_time,
+        min_time: min_time,
+        max_time: max_time,
         null_color: null_color,
         current_video: current_video,
       };
