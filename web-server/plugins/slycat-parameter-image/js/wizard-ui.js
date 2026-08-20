@@ -197,10 +197,10 @@ function constructor(params) {
           } else {
             if (component.ps_type() == "local") {
               upload_success(component.browser);
-            } else if (component.ps_type() == "remote") {
+            } else if (component.ps_type() == "remote" || component.ps_type() == "smb") {
               upload_success(component.remote);
             } else if (component.ps_type() == "server") {
-              upload_success(component.browser)
+              upload_success(component.browser);
             }
             component.tab(4);
             $(".browser-continue").toggleClass("disabled", false);
