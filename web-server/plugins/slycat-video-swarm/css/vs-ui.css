@@ -28,6 +28,7 @@ retains certain rights in this software.
 #mp-mds-pane
 {
 	overflow: hidden !important;
+	cursor: pointer;
 }
 
 .brush .extent
@@ -41,6 +42,7 @@ retains certain rights in this software.
 #mp-mds-scatterplot
 {
 	stroke-width: 1px;
+	cursor: pointer;
 }
 
 
@@ -956,10 +958,12 @@ a {
   padding-bottom: 20px;
   background-color: black;
   width: calc(100% - 32px);
+  cursor: pointer;
 }
 .videoContainer video {
   display: block;
   height: auto;
+  cursor: auto;
 }
 .videoContainer .frame-footer {
   position: absolute;
@@ -973,10 +977,10 @@ a {
   font-size: 14px;
   color: #c8c8c8 !important;
   padding: 2px 4px;
+  cursor: pointer;
 }
 .frame-button:hover {
   color: white !important;
-  cursor: pointer;
 }
 .frame-button.close-button {
   float: left;
@@ -1053,4 +1057,21 @@ a {
 }
 #waveform-pane:hover #waveform-selector-progress-wrapper {
   display: block;
+}
+
+#mp-trajectories canvas {
+  cursor: pointer;
+}
+
+.slycat-scrubber {
+  cursor: pointer;
+}
+
+.slycat-scrubber .thumb {
+  cursor: grab;
+}
+
+.slycat-scrubber.dragging,
+.slycat-scrubber.dragging .thumb {
+  cursor: grabbing;
 }
