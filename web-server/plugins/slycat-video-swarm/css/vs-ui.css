@@ -971,7 +971,6 @@ a {
 .videoContainer video {
   display: block;
   height: auto;
-  cursor: auto;
 }
 .videoContainer .frame-footer {
   position: absolute;
