@@ -12,6 +12,8 @@ import client from "js/slycat-web-client";
 // @ts-ignore
 import bookmark_manager from "js/slycat-bookmark-manager";
 import _ from "lodash";
+// @ts-ignore
+import slycat_color_maps from "js/slycat-color-maps";
 
 // We need to hydrate the store with the bookmarked state before rendering the app.
 // First we need to get the model because the bookmark manager needs the model ID and project ID.
@@ -95,6 +97,13 @@ const store = client
           controls: { ...controlsInitialState, ...legacyBookmarkState.controls },
           [DATA_SLICE_NAME]: { ...dataInitialState, ...legacyBookmarkState[DATA_SLICE_NAME] },
         };
+      }
+
+      // Unknown / renamed bookmarked colormaps fall back to Night.
+      if (preloadedState?.controls) {
+        preloadedState.controls.colormap = slycat_color_maps.resolve_colormap_name(
+          preloadedState.controls.colormap,
+        );
       }
 
       const store = configureStore({

@@ -24,6 +24,7 @@ import {
   selectXValuesAndIndexesWithoutHidden,
   selectXValuesLogAndIndexesWithoutHidden,
   selectXValuesDateAndIndexesWithoutHidden,
+  selectXIsCategorical,
   selectXColumnType,
 } from "../selectors";
 import {
@@ -40,6 +41,7 @@ import {
   selectSelectedSimulations,
   selectSelectedSimulationsWithoutHidden,
 } from "../dataSlice";
+import { getUniqueCategoryValues } from "../unique-category-values";
 import * as d3 from "d3v7";
 import _ from "lodash";
 
@@ -93,6 +95,7 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   const x_label_y = X_LABEL_VERTICAL_OFFSET;
   const x_label_x = useSelector(selectXLabelX);
   const x_name = useSelector(selectXColumnName);
+  const x_is_categorical = useSelector(selectXIsCategorical);
   const x_column_type = useSelector(selectXColumnType);
   const y_label_y = useSelector(selectYLabelY);
   const show_grid = useSelector(selectShowGrid);
@@ -209,32 +212,36 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
 
       return bins;
     }
-    // If the x variable is a string, we can't use d3.bin() to create the bins
-    // because d3.bin() only works with numeric values.
-    // So doing it manually here.
-    else if (x_column_type === "string" && x_scale_type !== "Date & Time") {
-      // Group the values by value
-      const grouped = d3.group(values_and_indexes, (d) => d.value);
-      // Sort the groups by value (values are all strings, so let's use localeCompare)
-      const groupedSorted = new Map(
-        [...grouped.entries()].sort((a, b) => {
-          return a[0].toString().localeCompare(b[0].toString());
-        }),
+    // If the x variable is a string or wizard-marked categorical, we can't use
+    // d3.bin() (numeric thresholds). Build one bin per unique category instead.
+    else if (x_is_categorical && x_scale_type !== "Date & Time") {
+      // Same unique-domain rules as Redux band scales / colorscales (drops nullish).
+      const numeric = x_column_type !== "string";
+      const uniqueKeys = getUniqueCategoryValues(
+        values_and_indexes.map((d) => d.value),
+        { numeric },
       );
-      // Reformat the groupedSorted Map into same format as d3.bin() output,
-      // which is an array of arrays with each array containing the following:
-      // the values of the group
-      // x0 property: lower bound of the bin
-      // x1 property: upper bound of the bin
-      // length property: number of elements in the bin
-      const groupedSortedArray = Array.from(groupedSorted, ([key, values]) => {
-        let bin = [...values];
-        bin.x0 = key;
-        bin.x1 = key;
-        bin.length = values.length;
-        return bin;
-      });
-      return groupedSortedArray;
+      // Drop nullish before grouping so String(null) does not collide with a "null" category.
+      const countable = values_and_indexes.filter(
+        (d) =>
+          d.value !== null &&
+          d.value !== undefined &&
+          !(typeof d.value === "number" && Number.isNaN(d.value)),
+      );
+      // Group key must match uniqueKeys: numbers for wizard categoricals, String for strings.
+      const grouped = d3.group(countable, (d) => (numeric ? d.value : String(d.value)));
+      // Reformat into same shape as d3.bin() output: array of arrays with x0, x1, length.
+      return uniqueKeys
+        .map((key) => {
+          const values = grouped.get(key);
+          if (!values || values.length === 0) return null;
+          let bin = [...values];
+          bin.x0 = key;
+          bin.x1 = key;
+          bin.length = values.length;
+          return bin;
+        })
+        .filter((bin) => bin != null);
     } else {
       // For numeric variables, use d3.bin() to create the bins.
       const bin = d3
@@ -260,8 +267,9 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
   // Make bins for the histogram.
   const bins_without_hidden = makeBins(x_values_and_indexes_without_hidden);
 
-  // For non-string variables or Date & Time scales, adjusting x_scale domain to match the bins.
-  if (x_column_type !== "string" || x_scale_type == "Date & Time") {
+  // For continuous variables or Date & Time scales, adjust x_scale domain to match the bins.
+  // Categorical (string or wizard-marked) band domains already match unique values.
+  if (!x_is_categorical || x_scale_type == "Date & Time") {
     const bins_with_hidden = makeBins(x_values_and_indexes);
 
     // With auto_scale true, we use bins without hidden values to set the domain.

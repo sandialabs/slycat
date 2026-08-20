@@ -1004,11 +1004,17 @@ button#controls-button-var-options {
   font-weight: bold;
 }
 
-.vtp .timeLabel {
+.vtp {
+  position: relative;
+}
+
+.vtp .vtp-time-label {
   position: absolute;
   top: 3px;
   left: 6px;
   color: black;
+  pointer-events: none;
+  white-space: nowrap;
   /* Using custom font size and family. These are set by the user 
      and defined in ConstrolsButtonVarOptions.js */
   font-size: var(--custom-font-size, 15px);

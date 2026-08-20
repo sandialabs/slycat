@@ -69,8 +69,27 @@ class CCALegend extends React.Component
     this.legend_axis = d3.svg.axis()
       .scale(legend_scale)
       .orient("right")
-      .ticks(range[1]/50)
       ;
+
+    // Continuous + discrete: ticks on quantize bin edges (hard band boundaries).
+    // Categorical / continuous maps keep default nice ticks (or ordinal band centers).
+    if (
+      !this.props.v_string &&
+      slycat_color_maps.is_discrete(this.props.colormap)
+    ) {
+      const lo = d3.min(this.props.scale_v);
+      const hi = d3.max(this.props.scale_v);
+      if (Number.isFinite(lo) && Number.isFinite(hi)) {
+        this.legend_axis.tickValues(
+          slycat_color_maps.get_discrete_bin_edges(this.props.colormap, lo, hi),
+        );
+      } else {
+        this.legend_axis.ticks(range[1] / 50);
+      }
+    } else {
+      this.legend_axis.ticks(range[1] / 50);
+    }
+
     this.legend_axis_layer
       .attr("transform", "translate(" + parseInt(this.legend_layer.select("rect.color").attr("width")) + ",0)")
       .call(this.legend_axis)
@@ -257,6 +276,7 @@ const mapStateToProps = (state, ownProps) => {
     scatterplot_font_family: state.scatterplot_font_family,
     scatterplot_font_size: state.scatterplot_font_size,
     gradient: slycat_color_maps.get_gradient_data(state.colormap),
+    colormap: state.colormap,
     scale_v: scale_v,
   }
 };

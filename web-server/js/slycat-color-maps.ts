@@ -5,9 +5,12 @@ retains certain rights in this software. */
 import d3 from "d3";
 import slycat_color_maps_methods from "js/slycat-color-maps-methods";
 
+export type ColorMapType = "continuous" | "discrete";
+
 interface ColorMapsInterface {
   [key: string]: {
     label: string;
+    type: ColorMapType;
     background: string;
     null_color: string;
     outofdomain_color: string;
@@ -26,10 +29,24 @@ const GRAY4 = "rgb(102 102 102)";
 const BLACK = "rgb(0 0 0)";
 const HISTOGRAM_BLUE = "rgb(102 170 215)";
 
+function hexColors(hexes: string[]): d3.RGBColor[] {
+  return hexes.map((hex) => d3.rgb(hex));
+}
+
+const dayChrome = {
+  background: WHITE,
+  null_color: GRAY2,
+  outofdomain_color: BLACK,
+  scatterplot_grid_color: GRAY1,
+  histogram_bar_color: HISTOGRAM_BLUE,
+  opacity: "0.7",
+};
+
 export default {
   color_maps: {
     night: {
       label: "Night",
+      type: "continuous",
       background: GRAY2,
       null_color: GRAY4,
       outofdomain_color: BLACK,
@@ -74,6 +91,7 @@ export default {
     },
     day: {
       label: "Day",
+      type: "continuous",
       background: WHITE,
       null_color: GRAY2,
       outofdomain_color: BLACK,
@@ -118,6 +136,7 @@ export default {
     },
     rainbow: {
       label: "Rainbow Night",
+      type: "continuous",
       background: GRAY2,
       null_color: GRAY4,
       outofdomain_color: BLACK,
@@ -128,6 +147,7 @@ export default {
     },
     rainbow_day: {
       label: "Rainbow Day",
+      type: "continuous",
       background: WHITE,
       null_color: GRAY2,
       outofdomain_color: BLACK,
@@ -138,6 +158,7 @@ export default {
     },
     grayscale_night: {
       label: "Grayscale Night",
+      type: "continuous",
       background: GRAY2,
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
       null_color: GRAY4,
@@ -149,6 +170,7 @@ export default {
     },
     grayscale_day: {
       label: "Grayscale Day",
+      type: "continuous",
       background: WHITE,
       // ToDo: fix this, null and outofdomain colors need to be different than normal colors
       null_color: GRAY2,
@@ -157,6 +179,251 @@ export default {
       histogram_bar_color: HISTOGRAM_BLUE,
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
+    },
+    // Discrete / qualitative ColorBrewer (max scheme sizes) and Matplotlib palettes
+    accent: {
+      label: "Accent",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#7fc97f",
+        "#beaed4",
+        "#fdc086",
+        "#ffff99",
+        "#386cb0",
+        "#f0027f",
+        "#bf5b17",
+        "#666666",
+      ]),
+    },
+    dark2: {
+      label: "Dark2",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#1b9e77",
+        "#d95f02",
+        "#7570b3",
+        "#e7298a",
+        "#66a61e",
+        "#e6ab02",
+        "#a6761d",
+        "#666666",
+      ]),
+    },
+    paired: {
+      label: "Paired",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#a6cee3",
+        "#1f78b4",
+        "#b2df8a",
+        "#33a02c",
+        "#fb9a99",
+        "#e31a1c",
+        "#fdbf6f",
+        "#ff7f00",
+        "#cab2d6",
+        "#6a3d9a",
+        "#ffff99",
+        "#b15928",
+      ]),
+    },
+    pastel1: {
+      label: "Pastel1",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#fbb4ae",
+        "#b3cde3",
+        "#ccebc5",
+        "#decbe4",
+        "#fed9a6",
+        "#ffffcc",
+        "#e5d8bd",
+        "#fddaec",
+        "#f2f2f2",
+      ]),
+    },
+    pastel2: {
+      label: "Pastel2",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#b3e2cd",
+        "#fdcdac",
+        "#cbd5e8",
+        "#f4cae4",
+        "#e6f5c9",
+        "#fff2ae",
+        "#f1e2cc",
+        "#cccccc",
+      ]),
+    },
+    set1: {
+      label: "Set1",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#e41a1c",
+        "#377eb8",
+        "#4daf4a",
+        "#984ea3",
+        "#ff7f00",
+        "#ffff33",
+        "#a65628",
+        "#f781bf",
+        "#999999",
+      ]),
+    },
+    set2: {
+      label: "Set2",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#66c2a5",
+        "#fc8d62",
+        "#8da0cb",
+        "#e78ac3",
+        "#a6d854",
+        "#ffd92f",
+        "#e5c494",
+        "#b3b3b3",
+      ]),
+    },
+    set3: {
+      label: "Set3",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#8dd3c7",
+        "#ffffb3",
+        "#bebada",
+        "#fb8072",
+        "#80b1d3",
+        "#fdb462",
+        "#b3de69",
+        "#fccde5",
+        "#d9d9d9",
+        "#bc80bd",
+        "#ccebc5",
+        "#ffed6f",
+      ]),
+    },
+    // Matplotlib qualitative: CVD-friendly Okabe–Ito (black first, matching mpl order)
+    okabe_ito: {
+      label: "Okabe Ito",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#000000",
+        "#e69f00",
+        "#56b4e9",
+        "#009e73",
+        "#f0e442",
+        "#0072b2",
+        "#d55e00",
+        "#cc79a7",
+      ]),
+    },
+    tab10: {
+      label: "Tab10",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+      ]),
+    },
+    tab20: {
+      label: "Tab20",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#1f77b4",
+        "#aec7e8",
+        "#ff7f0e",
+        "#ffbb78",
+        "#2ca02c",
+        "#98df8a",
+        "#d62728",
+        "#ff9896",
+        "#9467bd",
+        "#c5b0d5",
+        "#8c564b",
+        "#c49c94",
+        "#e377c2",
+        "#f7b6d2",
+        "#7f7f7f",
+        "#c7c7c7",
+        "#bcbd22",
+        "#dbdb8d",
+        "#17becf",
+        "#9edae5",
+      ]),
+    },
+    tab20b: {
+      label: "Tab20b",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#393b79",
+        "#5254a3",
+        "#6b6ecf",
+        "#9c9ede",
+        "#637939",
+        "#8ca252",
+        "#b5cf6b",
+        "#cedb9c",
+        "#8c6d31",
+        "#bd9e39",
+        "#e7ba52",
+        "#e7cb94",
+        "#843c39",
+        "#ad494a",
+        "#d6616b",
+        "#e7969c",
+        "#7b4173",
+        "#a55194",
+        "#ce6dbd",
+        "#de9ed6",
+      ]),
+    },
+    tab20c: {
+      label: "Tab20c",
+      type: "discrete",
+      ...dayChrome,
+      colors: hexColors([
+        "#3182bd",
+        "#6baed6",
+        "#9ecae1",
+        "#c6dbef",
+        "#e6550d",
+        "#fd8d3c",
+        "#fdae6b",
+        "#fdd0a2",
+        "#31a354",
+        "#74c476",
+        "#a1d99b",
+        "#c7e9c0",
+        "#756bb1",
+        "#9e9ac8",
+        "#bcbddc",
+        "#dadaeb",
+        "#636363",
+        "#969696",
+        "#bdbdbd",
+        "#d9d9d9",
+      ]),
     },
   } as ColorMapsInterface,
   ...slycat_color_maps_methods,
