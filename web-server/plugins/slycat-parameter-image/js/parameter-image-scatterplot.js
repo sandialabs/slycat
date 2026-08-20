@@ -50,10 +50,15 @@ import {
   selectYScaleAxis,
   selectLegendScaleAxis,
   selectAxesVariables,
+  selectXIsCategorical,
+  selectYIsCategorical,
+  selectVIsCategorical,
+  selectVExtent,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
+import { getUniqueCategoryValues } from "./unique-category-values";
 import { truncateString } from "js/slycat-string-truncate";
 import { measureSvgText } from "js/slycat-svg-text";
 import {
@@ -115,7 +120,13 @@ function applyNumericAxisTickFormat(
   columnType,
   scaleType,
 ) {
-  if (columnType !== "string" && scaleType !== "Date & Time") {
+  // Band/ordinal scales (e.g. wizard-marked categoricals) have no tickFormat.
+  // Only continuous numeric scales support the hybrid formatter.
+  if (
+    columnType !== "string" &&
+    scaleType !== "Date & Time" &&
+    typeof scale.tickFormat === "function"
+  ) {
     const normalFormat = scale.tickFormat(
       tickCount,
       HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
@@ -223,9 +234,6 @@ $.widget("parameter_image.scatterplot", {
     x: [],
     y: [],
     v: [],
-    x_string: false,
-    y_string: false,
-    v_string: false,
     x_index: null,
     y_index: null,
     v_index: null,
@@ -656,9 +664,16 @@ $.widget("parameter_image.scatterplot", {
     const update_axes_font_size = () => {
       // console.log('1 update_axes_font_size');
       self.options.axes_font_size = store.getState().fontSize;
-      self.x_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
-      self.y_axis_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
-      self.legend_layer.selectAll("text").style("font-size", self.options.axes_font_size + "px");
+      // Style tick labels only — axis title .label nodes keep their own styles.
+      self.x_axis_layer
+        .selectAll(".tick text")
+        .style("font-size", self.options.axes_font_size + "px");
+      self.y_axis_layer
+        .selectAll(".tick text")
+        .style("font-size", self.options.axes_font_size + "px");
+      self.legend_layer
+        .selectAll(".tick text")
+        .style("font-size", self.options.axes_font_size + "px");
       // Rebuild the axes so tick string truncation and number formatting
       // re-measure against the new font metrics. Axis-title labels are
       // also rescheduled since update_y / update_legend_axis don't
@@ -676,9 +691,15 @@ $.widget("parameter_image.scatterplot", {
     const update_axes_font_family = () => {
       // console.log('2 update_axes_font_family');
       self.options.axes_font_family = store.getState().fontFamily;
-      self.x_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
-      self.y_axis_layer.selectAll("text").style("font-family", self.options.axes_font_family);
-      self.legend_layer.selectAll("text").style("font-family", self.options.axes_font_family);
+      self.x_axis_layer
+        .selectAll(".tick text")
+        .style("font-family", self.options.axes_font_family);
+      self.y_axis_layer
+        .selectAll(".tick text")
+        .style("font-family", self.options.axes_font_family);
+      self.legend_layer
+        .selectAll(".tick text")
+        .style("font-family", self.options.axes_font_family);
       // Rebuild the axes so tick string truncation and number formatting
       // re-measure against the new font metrics. Axis-title labels are
       // also rescheduled since update_y / update_legend_axis don't
@@ -1039,7 +1060,7 @@ $.widget("parameter_image.scatterplot", {
     return clone;
   },
 
-  _createScale: function (variableIsString, values, range, reverse, type, axis) {
+  _createScale: function (variableIsCategorical, values, range, reverse, type, axis) {
     let self = this;
     // console.log("_createScale: " + type);
     const customMin = self.custom_axes_ranges[axis].min;
@@ -1080,7 +1101,7 @@ $.widget("parameter_image.scatterplot", {
       return d3v7.scaleTime().domain(domain).range(range);
     }
     // For numeric variables
-    else if (!variableIsString) {
+    else if (!variableIsCategorical) {
       // Use custom range for min or max if we have one
       const min = customMin != undefined ? customMin : d3.min(values);
       const max = customMax != undefined ? customMax : d3.max(values);
@@ -1096,12 +1117,22 @@ $.widget("parameter_image.scatterplot", {
       // Linear scale otherwise
       return d3v7.scaleLinear().domain(domain).range(range);
     }
-    // For string variables, make an ordinal scale
-    var uniqueValues = d3.set(values).values().sort();
+    // For string / categorical variables, make a band scale so ticks and points
+    // share mid-category slots (d3v7 axis centers in bands; point helpers add bandwidth/2).
+    // Numeric category sort follows column type (same rule as Redux getScale).
+    const columnType =
+      axis === "x"
+        ? selectXColumnType(window.store.getState())
+        : axis === "y"
+          ? selectYColumnType(window.store.getState())
+          : selectVColumnType(window.store.getState());
+    var uniqueValues = getUniqueCategoryValues(values, {
+      numeric: columnType !== "string",
+    });
     if (reverse === true) {
-      uniqueValues.reverse();
+      uniqueValues = uniqueValues.slice().reverse();
     }
-    return d3v7.scalePoint().domain(uniqueValues).range(range);
+    return d3v7.scaleBand().domain(uniqueValues).range(range).paddingInner(0).paddingOuter(0);
   },
 
   _getDefaultXPosition: function (imageIndex, imageWidth) {
@@ -1243,7 +1274,9 @@ $.widget("parameter_image.scatterplot", {
         update_v_label: true,
       });
     } else if (key == "gradient") {
-      self._schedule_update({ update_legend_colors: true });
+      // Gradient often changes with colormap (continuous ↔ discrete); rebuild ticks too
+      // so bin-edge vs nice ticks stay in sync with the color bar.
+      self._schedule_update({ update_legend_colors: true, update_legend_axis: true });
     } else if (key == "hidden_simulations") {
       // console.group(`parameter-image-scatterplot setOption "hidden_simulations"`);
       self._filterIndices();
@@ -1311,9 +1344,6 @@ $.widget("parameter_image.scatterplot", {
     self.set_x_y_v_axes_types();
     self.options.colorscale = data.colorscale;
     self.options.v = data.v;
-    if (data.v_string !== undefined) {
-      self.options.v_string = data.v_string;
-    }
     if (self.options["auto-scale"]) {
       self.options.filtered_v = self._filterValues(self.options.v);
       self.options.scale_v = self.options.filtered_v;
@@ -1468,8 +1498,9 @@ $.widget("parameter_image.scatterplot", {
       self.x_range_canvas = selectXRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
+      const xIsCategorical = selectXIsCategorical(window.store.getState());
       self.x_scale = self._createScale(
-        self.options.x_string,
+        xIsCategorical,
         self.options.scale_x,
         self.x_scale_range,
         false,
@@ -1477,7 +1508,7 @@ $.widget("parameter_image.scatterplot", {
         "x",
       );
       self.x_scale_canvas = self._createScale(
-        self.options.x_string,
+        xIsCategorical,
         self.options.scale_x,
         self.x_range_canvas,
         false,
@@ -1493,6 +1524,7 @@ $.widget("parameter_image.scatterplot", {
       const xScaleType = selectXScaleType(window.store.getState());
 
       const xTickCount = self.x_range_canvas[1] / 85;
+      // d3v7 axis (must use a d3v7 selection — x_axis_layer is a d3 v3 selection).
       self.x_axis = d3v7
         .axisBottom(x_scale_axis)
         // Set number of ticks based on width of axis.
@@ -1508,22 +1540,15 @@ $.widget("parameter_image.scatterplot", {
       // with other ticks and sometimes they get rounded.
       // .tickValues( self.x_scale.ticks( self.x_range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
       // .tickSize(15)
-      // Wrap the v3 layer node in a v7 selection so the v7 axis (which uses
-      // v7-only selection methods like .merge()) can operate on it.
       d3v7
         .select(self.x_axis_layer.node())
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
         .call(self.x_axis)
-        // Selecting all the labels and rotating them 45 degrees around their start
-        .selectAll("text")
-        // .style("text-anchor", "end")
+        // Style tick labels only — axis title .label nodes keep their own styles.
+        .selectAll(".tick text")
         .style("text-anchor", "start")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
-        // .attr("dx", "0em")
-        // .attr("dy", "0em")
-        // .attr("x", "0")
-        // .attr("y", "0")
         .attr("transform", "rotate(15)");
 
       // Truncate long string x-axis tick labels with a middle ellipsis.
@@ -1534,8 +1559,9 @@ $.widget("parameter_image.scatterplot", {
         xScaleType,
       );
 
-      // Updating the x_label here because updating_x clears the label for some reason
-      self._schedule_update({ update_x_label: true });
+      // Recreate the title in this same _update pass (scheduling would be wiped by
+      // self.updates = {} at the end of _update).
+      self.updates.update_x_label = true;
     }
 
     if (self.updates.update_y) {
@@ -1545,8 +1571,9 @@ $.widget("parameter_image.scatterplot", {
       self.y_range_canvas = selectYRangeCanvas(window.store.getState());
 
       self.set_custom_axes_ranges();
+      const yIsCategorical = selectYIsCategorical(window.store.getState());
       self.y_scale = self._createScale(
-        self.options.y_string,
+        yIsCategorical,
         self.options.scale_y,
         self.y_scale_range,
         false,
@@ -1554,7 +1581,7 @@ $.widget("parameter_image.scatterplot", {
         "y",
       );
       self.y_scale_canvas = self._createScale(
-        self.options.y_string,
+        yIsCategorical,
         self.options.scale_y,
         self.y_range_canvas,
         false,
@@ -1568,6 +1595,7 @@ $.widget("parameter_image.scatterplot", {
       const yScaleType = selectYScaleType(window.store.getState());
 
       const yTickCount = self.y_range_canvas[0] / 50;
+      // d3v7 axis (must use a d3v7 selection — y_axis_layer is a d3 v3 selection).
       self.y_axis = d3v7
         .axisLeft(y_scale_axis)
         // Set number of ticks based on height of axis.
@@ -1588,12 +1616,11 @@ $.widget("parameter_image.scatterplot", {
       // So keeping this disable for now.
       // .tickValues( self.y_scale.ticks( self.y_range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
 
-      // Wrap the v3 layer node in a v7 selection so the v7 axis can operate on it.
       d3v7
         .select(self.y_axis_layer.node())
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
-        .selectAll("text")
+        .selectAll(".tick text")
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family);
 
@@ -1604,6 +1631,7 @@ $.widget("parameter_image.scatterplot", {
         yColumnType,
         yScaleType,
       );
+      self.updates.update_y_label = true;
     }
 
     if (self.updates.update_indices) {
@@ -1623,11 +1651,13 @@ $.widget("parameter_image.scatterplot", {
       let x = self.options.margin_left + x_axis_width + 40;
 
       self.x_axis_layer.selectAll(".label").remove();
+      // Explicit fill: d3v7 axis sets fill="none" on the axis group; labels inherit it.
       const label = self.x_axis_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
         .attr("y", y)
+        .attr("fill", "currentColor")
         .style("text-anchor", "start")
         .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + "px")
@@ -1659,6 +1689,7 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-bs-placement", "auto")
           .attr("x", xOffset) // Position after text with small gap
           .attr("y", y)
+          .attr("fill", "currentColor")
           // D3 v7 axis sets text-anchor="middle" on the parent layer. Set an
           // explicit "start" here so the icon's left edge sits at xOffset
           // (matching xOffset's calculation), instead of inheriting "middle"
@@ -1692,12 +1723,14 @@ $.widget("parameter_image.scatterplot", {
       var x = -(y_axis_width + 25);
       var y = self.options.margin_top + scatterplot_height / 2;
 
+      // Explicit fill: d3v7 axis sets fill="none" on the axis group; labels inherit it.
       const label = self.y_axis_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
         .attr("y", y)
         .attr("transform", "rotate(-90," + x + "," + y + ")")
+        .attr("fill", "currentColor")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + "px")
@@ -1730,6 +1763,7 @@ $.widget("parameter_image.scatterplot", {
           .attr("x", xOffset)
           .attr("y", y)
           .attr("transform", `rotate(-90,${x},${y})`)
+          .attr("fill", "currentColor")
           .style("text-anchor", "middle")
           .style("font-size", fontSize + "px")
           .style("font-family", "FontAwesome")
@@ -2039,7 +2073,7 @@ $.widget("parameter_image.scatterplot", {
       self.set_custom_axes_ranges();
 
       self.legend_scale = self._createScale(
-        self.options.v_string,
+        selectVIsCategorical(window.store.getState()),
         self.options.scale_v,
         range,
         true,
@@ -2048,25 +2082,57 @@ $.widget("parameter_image.scatterplot", {
       );
 
       // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
-      const legend_scale_axis = selectLegendScaleAxis(window.store.getState());
+      let legend_scale_axis = selectLegendScaleAxis(window.store.getState());
+      const colormap = window.store.getState().colormap;
+      const vIsCategorical = selectVIsCategorical(window.store.getState());
       const vColumnType = selectVColumnType(window.store.getState());
       const vScaleType = selectVScaleType(window.store.getState());
 
       const legendTickCount = range[1] / 50;
-      self.legend_axis = d3v7
-        .axisRight(legend_scale_axis)
-        .ticks(legendTickCount);
-      applyNumericAxisTickFormat(
-        self.legend_axis,
-        legend_scale_axis,
-        legendTickCount,
-        vColumnType,
-        vScaleType,
-      );
-      // Forces ticks at min and max axis values, but sometimes they collide
-      // with other ticks and sometimes they get rounded.
-      // .tickValues( self.legend_scale.ticks( range[1]/50 ).concat( self.legend_scale.domain() ) )
-      // Wrap the v3 layer node in a v7 selection so the v7 axis can operate on it.
+      // d3v7 axis centers ticks in scaleBand domains (categorical color legends).
+      // Must call it on a d3v7 selection — legend_axis_layer is a d3 v3 selection.
+      // Continuous + discrete: ticks on quantize bin edges (hard band boundaries).
+      self.legend_axis = d3v7.axisRight(legend_scale_axis);
+      if (!vIsCategorical && slycat_color_maps.is_discrete(colormap)) {
+        const extent = selectVExtent(window.store.getState());
+        const numericExtent = extent.map((value) =>
+          value instanceof Date ? value.valueOf() : Number(value),
+        );
+        if (numericExtent.length >= 2 && numericExtent.every((value) => Number.isFinite(value))) {
+          const lo = Math.min(...numericExtent);
+          const hi = Math.max(...numericExtent);
+          // Equal-height discrete bands are linear in data space; use linear legend
+          // when the color variable is Log so edge ticks sit on band boundaries.
+          if (vScaleType === "Log") {
+            legend_scale_axis = d3v7
+              .scaleLinear()
+              .domain([hi, lo])
+              .range(legend_scale_axis.range());
+            self.legend_axis = d3v7.axisRight(legend_scale_axis);
+          }
+          self.legend_axis.tickValues(
+            slycat_color_maps.get_discrete_bin_edges(colormap, lo, hi),
+          );
+        } else {
+          self.legend_axis.ticks(legendTickCount);
+        }
+        applyNumericAxisTickFormat(
+          self.legend_axis,
+          legend_scale_axis,
+          legendTickCount,
+          vColumnType,
+          vScaleType,
+        );
+      } else if (!vIsCategorical) {
+        self.legend_axis.ticks(legendTickCount);
+        applyNumericAxisTickFormat(
+          self.legend_axis,
+          legend_scale_axis,
+          legendTickCount,
+          vColumnType,
+          vScaleType,
+        );
+      }
       d3v7
         .select(self.legend_axis_layer.node())
         .attr(
@@ -2084,6 +2150,19 @@ $.widget("parameter_image.scatterplot", {
         vColumnType,
         vScaleType,
       );
+
+      // When hide-labels would crowd a categorical color legend, hide the whole
+      // legend rather than thinning ticks (which misaligns them with color bands).
+      const hideLabels = selectHideLabels(window.store.getState());
+      const verticalSpacing = selectVerticalSpacing(window.store.getState());
+      const legendScale = selectVScale(window.store.getState());
+      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
+      const hideCrowdedCategoricalLegend =
+        vIsCategorical &&
+        hideLabels &&
+        legendScaleStep !== undefined &&
+        legendScaleStep < verticalSpacing;
+      self.legend_layer.style("display", hideCrowdedCategoricalLegend ? "none" : null);
     }
 
     if (self.updates.update_v_label) {
@@ -2094,7 +2173,7 @@ $.widget("parameter_image.scatterplot", {
       var x = -15;
       var y = rectHeight / 2;
 
-      const label = self.legend_layer
+      self.legend_layer
         .append("text")
         .attr("class", "label")
         .attr("x", x)
@@ -2103,44 +2182,6 @@ $.widget("parameter_image.scatterplot", {
         .style("font-size", self.options.axes_font_size + "px")
         .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label);
-
-      // Check if the axis labels are hidden and if so, add a popover icon.
-      const hideLabels = selectHideLabels(window.store.getState());
-      const verticalSpacing = selectVerticalSpacing(window.store.getState());
-      const legendScale = selectVScale(window.store.getState());
-      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
-
-      if (hideLabels && verticalSpacing > legendScaleStep) {
-        // Get the bounding box of the text to position the icon
-        const bbox = label.node().getBBox();
-        const fontSize = self.options.axes_font_size;
-        const xOffset = x + bbox.width / 2 + Number(fontSize);
-
-        self.legend_layer
-          .append("text")
-          .attr("class", "label warning-icon")
-          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-bs-toggle", "popover")
-          .attr("data-bs-trigger", "hover")
-          .attr("data-bs-placement", "auto")
-          .attr("x", xOffset)
-          .attr("y", y)
-          .attr("transform", `rotate(-90,${x},${y})`)
-          .style("text-anchor", "middle")
-          .style("font-size", fontSize + "px")
-          .style("font-family", "FontAwesome")
-          .text("\uf06a");
-
-        label
-          .attr("title", CATEGORICAL_AXIS_LABELS_POPOVER_TITLE)
-          .attr("data-bs-content", CATEGORICAL_AXIS_LABELS_POPOVER_CONTENT)
-          .attr("data-bs-toggle", "popover")
-          .attr("data-bs-trigger", "hover")
-          .attr("data-bs-placement", "auto");
-
-        $('.scatterplot-svg [data-bs-toggle="popover"]').popover();
-      }
     }
 
     if (self.updates.update_video_sync_time) {
@@ -4163,22 +4204,40 @@ $.widget("parameter_image.scatterplot", {
 
   x_scale_canvas_format: function (coordinate) {
     var self = this;
-    return self.x_scale_canvas(self.format_for_scale(coordinate, self.options.x_axis_type));
+    return self._scale_position(
+      self.x_scale_canvas,
+      self.format_for_scale(coordinate, self.options.x_axis_type),
+    );
   },
 
   y_scale_canvas_format: function (coordinate) {
     var self = this;
-    return self.y_scale_canvas(self.format_for_scale(coordinate, self.options.y_axis_type));
+    return self._scale_position(
+      self.y_scale_canvas,
+      self.format_for_scale(coordinate, self.options.y_axis_type),
+    );
   },
 
   x_scale_format: function (coordinate) {
     var self = this;
-    return self.x_scale(self.format_for_scale(coordinate, self.options.x_axis_type));
+    return self._scale_position(
+      self.x_scale,
+      self.format_for_scale(coordinate, self.options.x_axis_type),
+    );
   },
 
   y_scale_format: function (coordinate) {
     var self = this;
-    return self.y_scale(self.format_for_scale(coordinate, self.options.y_axis_type));
+    return self._scale_position(
+      self.y_scale,
+      self.format_for_scale(coordinate, self.options.y_axis_type),
+    );
+  },
+
+  // Map a value through a scale, centering in the band when using scaleBand.
+  _scale_position: function (scale, value) {
+    const position = scale(value);
+    return typeof scale.bandwidth === "function" ? position + scale.bandwidth() / 2 : position;
   },
 
   format_for_scale: function (coordinate, scale_type) {

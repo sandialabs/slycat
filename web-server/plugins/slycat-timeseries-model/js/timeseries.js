@@ -445,7 +445,8 @@ export default function initialize_timeseries_model(
       $("#legend").legend({
         width: $("#legend-pane").width(),
         height: $("#legend-pane").height(),
-        gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
+        gradient: get_legend_gradient(get_state().controls.colormap),
+        colormap: get_state().controls.colormap,
         label: table_metadata["column-names"][selected_column[cluster_index]],
         min: table_metadata["column-min"][selected_column[cluster_index]],
         max: table_metadata["column-max"][selected_column[cluster_index]],
@@ -664,6 +665,14 @@ export default function initialize_timeseries_model(
   // Event handlers.
   //////////////////////////////////////////////////////////////////////////////////////////
 
+  function get_legend_gradient(colormap) {
+    // String color-by: category-aligned bands for discrete and continuous maps.
+    if (selected_column_type[cluster_index] === "string" && uniqueValues) {
+      return slycat_color_maps.get_ordinal_legend_gradient(colormap, uniqueValues);
+    }
+    return slycat_color_maps.get_gradient_data(colormap);
+  }
+
   // Using redux-watch to react to colormap changing
   let watch_controls_colormap = watch(get_state, "controls.colormap");
   subscribe(
@@ -673,32 +682,27 @@ export default function initialize_timeseries_model(
   );
 
   function selected_colormap_changed(newColormap) {
-    // First we change background colors, gradients, and other things that don't require recalculating the colorscale
+    // Update chrome immediately from the new colormap. Legend gradient is set later
+    // in update_waveform_dendrogram_table_legend_on_selected_variable_changed, after
+    // uniqueValues / colorscale are refreshed (avoids a brief wrong discrete legend).
     $("#legend-pane").css(
       "background",
-      slycat_color_maps.get_background(get_state().controls.colormap).toString(),
+      slycat_color_maps.get_background(newColormap).toString(),
     );
-    $("#legend").legend("option", {
-      gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
-    });
 
     $("#dendrogram-sparkline-backdrop").css({
-      "background-color": slycat_color_maps
-        .get_background(get_state().controls.colormap)
-        .toString(),
+      "background-color": slycat_color_maps.get_background(newColormap).toString(),
     });
 
     $("#waveform-pane").css({
-      "background-color": slycat_color_maps
-        .get_background(get_state().controls.colormap)
-        .toString(),
+      "background-color": slycat_color_maps.get_background(newColormap).toString(),
     });
     $("#waveform-viewer rect.selectionMask").css({
-      fill: slycat_color_maps.get_background(get_state().controls.colormap),
-      "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
+      fill: slycat_color_maps.get_background(newColormap),
+      "fill-opacity": slycat_color_maps.get_opacity(newColormap),
     });
 
-    // Now we get the new colorscale and update components
+    // Refresh colorscale, widgets, and legend gradient
     update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
     $.ajax({
@@ -869,6 +873,8 @@ export default function initialize_timeseries_model(
             label: table_metadata["column-names"][selected_column[cluster_index]],
             v_type: selected_column_type[cluster_index],
             uniqueValues: uniqueValues,
+            gradient: get_legend_gradient(get_state().controls.colormap),
+            colormap: get_state().controls.colormap,
           });
         },
       });
