@@ -34,7 +34,6 @@ $.widget("mp.scatterplot", {
         color_scale: null,
         color_array: null,
         scatter_plot: null,
-        pick_distance : 3,
         x : [],
         y : [],
         state: null,
@@ -189,37 +188,21 @@ $.widget("mp.scatterplot", {
           }
           else // Pick selection ...
           {
-            var x1 = self._offsetX(e) - self.options.pick_distance;
-            var x2 = self._offsetX(e) + self.options.pick_distance;
-            var y1 = self._offsetY(e) - self.options.pick_distance;
-            var y2 = self._offsetY(e) + self.options.pick_distance;
-
-            for(var i = test_count - 1; i > -1; i--)
+            var circle = e.target.closest ? e.target.closest("circle[data-index]") : null;
+            if (circle)
             {
-              var one_point_xy_data = one_set_xy_data[i];
-              x_coord = self.x_scale(one_point_xy_data[0]);
-              y_coord = self.y_scale(one_point_xy_data[1]);
-              // x_coord = self.x_scale(x[i]);
-              // y_coord = self.y_scale(y[i]);
-              if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
+              var i = parseInt(circle.getAttribute("data-index"), 10);
+              var index = self.options.selection.indexOf(i);
+              if (index == -1)
               {
-                // Update the list of selected points ...
-                var index = self.options.selection.indexOf(i);
-                if(index == -1)
-                {
-                  // Selecting a new point.
-                  self.options.selection.push(i);
-                  self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]); // Passing copy of self.options.highlighted_simulations to ensure that others don't make changes to it
-                }
-                else
-                {
-                  // Deselecting an existing point.
-                  self.options.selection.splice(index, 1);
-                  self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]); // Passing copy of self.options.highlighted_simulations to ensure that others don't make changes to it
-                }
-                break;
+                self.options.selection.push(i);
+                self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]);
               }
-
+              else
+              {
+                self.options.selection.splice(index, 1);
+                self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]);
+              }
             }
           }
 
