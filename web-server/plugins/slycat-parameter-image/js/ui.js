@@ -59,6 +59,7 @@ import data_reducer, {
   setSelectedSimulations,
   setHiddenSimulations,
 } from "./dataSlice";
+import layout_reducer, { SLICE_NAME as LAYOUT_SLICE_NAME, setWestPaneSize } from "./layoutSlice";
 import {
   setXValues,
   setYValues,
@@ -198,6 +199,9 @@ $(document).ready(function () {
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
 
+  // jquery.layout applies the new size after ondrag_end, then fires onresize_end with the final size.
+  let westUserDragging = false;
+
   layout = $("#parameter-image-plus-layout").layout({
     north: {
       size: 39,
@@ -205,11 +209,25 @@ $(document).ready(function () {
     },
     center: {},
     west: {
-      // Sliders
+      // Sliders. One-filter width: 20px #sliders margin + 115px filter + 5px padding + 20px filter margin.
       initClosed: true,
-      size: $("#parameter-image-plus-layout").width() / 4,
+      size: 160,
+      ondrag_end: function () {
+        westUserDragging = true;
+      },
       onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
-        filter_manager.slidersPaneHeight(pane_state.innerHeight);
+        if (filter_manager) {
+          filter_manager.slidersPaneHeight(pane_state.innerHeight);
+        }
+        if (westUserDragging && window.store) {
+          westUserDragging = false;
+          window.store.dispatch(setWestPaneSize(pane_state.size));
+        }
+      },
+      onopen_end: function () {
+        if (filter_manager && typeof filter_manager.applyWestPaneSize === "function") {
+          filter_manager.applyWestPaneSize();
+        }
       },
     },
     south: {
@@ -475,6 +493,7 @@ $(document).ready(function () {
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
             [DATA_SLICE_NAME]: data_reducer,
+            [LAYOUT_SLICE_NAME]: layout_reducer,
           });
 
           window.store = configureStore({
