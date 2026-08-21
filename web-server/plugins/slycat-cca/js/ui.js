@@ -239,7 +239,9 @@ $(document).ready(function () {
           let bookmark_state_tree = {};
 
           if (bookmark["colormap"] !== undefined) {
-            bookmark_state_tree.colormap = bookmark["colormap"];
+            bookmark_state_tree.colormap = slycat_color_maps.resolve_colormap_name(
+              bookmark["colormap"],
+            );
           }
           if (bookmark["simulation-selection"] !== undefined) {
             bookmark_state_tree.simulations_selected = bookmark["simulation-selection"];
@@ -266,6 +268,10 @@ $(document).ready(function () {
 
           redux_state_tree = Object.assign({}, redux_state_tree, bookmark_state_tree);
         }
+        // Unknown / renamed bookmarked colormaps fall back to Night.
+        redux_state_tree.colormap = slycat_color_maps.resolve_colormap_name(
+          redux_state_tree.colormap,
+        );
         resolve(bookmark);
       });
     });

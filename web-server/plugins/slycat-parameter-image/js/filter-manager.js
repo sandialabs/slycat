@@ -10,6 +10,10 @@ import mapping from "knockout-mapping";
 import { setActiveFilters } from "./actions";
 import { setupDropdownMenuHeight } from "js/dropdown-menu-utils";
 import watch from "redux-watch";
+import { selectLayoutWestSize, setWestPaneSize } from "./layoutSlice";
+
+// Max fraction of the PS layout width the filters pane may occupy when auto-fitting.
+export const FILTER_PANE_MAX_LAYOUT_FRACTION = 1 / 3;
 
 function FilterManager(
   model_id,
@@ -19,7 +23,7 @@ function FilterManager(
   output_columns,
   image_columns,
   rating_columns,
-  category_columns
+  category_columns,
 ) {
   var self = this;
 
@@ -126,10 +130,81 @@ FilterManager.prototype.notify_store_ready = function () {
 
   // Subscribing to changes in derived.variableAliases
   window.store.subscribe(
-    watch(window.store.getState, "derived.variableAliases", _.isEqual)(this.update_variable_aliases)
+    watch(
+      window.store.getState,
+      "derived.variableAliases",
+      _.isEqual,
+    )(this.update_variable_aliases),
   );
 
   this.build_sliders();
+};
+
+FilterManager.prototype.getUserWestPaneSize = function () {
+  if (!window.store) {
+    return 0;
+  }
+  return selectLayoutWestSize(window.store.getState()) || 0;
+};
+
+FilterManager.prototype.isWestPaneClosed = function () {
+  return !this.layout || this.layout.state.west.isClosed || this.layout.state.west.isHidden;
+};
+
+FilterManager.prototype.measureFiltersContentWidth = function () {
+  const pane = document.getElementById("sliders-pane");
+  const filters = pane && pane.querySelectorAll(".slycat-pim-filter");
+  const last = filters && filters[filters.length - 1];
+  if (!last) {
+    return 0;
+  }
+  const marginRight = parseFloat(getComputedStyle(last).marginRight) || 0;
+  // pane is the scroll container; add scrollLeft so a scrolled last-filter
+  // still measures from the content origin, not the visible viewport.
+  return (
+    last.getBoundingClientRect().right -
+    pane.getBoundingClientRect().left +
+    pane.scrollLeft +
+    marginRight
+  );
+};
+
+FilterManager.prototype.sizeWestPaneToFilters = function () {
+  if (this.getUserWestPaneSize() > 0) {
+    return;
+  }
+  if (this.isWestPaneClosed()) {
+    return;
+  }
+
+  const contentWidth = this.measureFiltersContentWidth();
+  if (contentWidth <= 0) {
+    return;
+  }
+
+  const layoutWidth = $("#parameter-image-plus-layout").width();
+  const newSize = Math.min(contentWidth, layoutWidth * FILTER_PANE_MAX_LAYOUT_FRACTION);
+  if (newSize > 0) {
+    this.layout.sizePane("west", newSize);
+  }
+};
+
+FilterManager.prototype.applyWestPaneSize = function () {
+  if (this.isWestPaneClosed()) {
+    return;
+  }
+  const userSize = this.getUserWestPaneSize();
+  if (userSize > 0) {
+    this.layout.sizePane("west", userSize);
+    return;
+  }
+  this.sizeWestPaneToFilters();
+};
+
+FilterManager.prototype.scheduleWestPaneSize = function () {
+  requestAnimationFrame(() => {
+    this.applyWestPaneSize();
+  });
 };
 
 /* Loads unique categories for categorical variable from table data.
@@ -246,7 +321,7 @@ FilterManager.prototype.build_sliders = function () {
       self.output_columns,
       self.rating_columns,
       self.category_columns,
-      self.other_columns
+      self.other_columns,
     );
     var numeric_variables = [];
     for (var i = 0; i < self.table_metadata["column-count"]; i++) {
@@ -443,9 +518,10 @@ FilterManager.prototype.build_sliders = function () {
       vm.availableFilters = ko.observableArray(
         vm.allFilters.slice(0).sort(function (one, two) {
           return one.order() < two.order() ? -1 : 1;
-        })
+        }),
       );
-      vm.hideFilters = window.store.getState().derived.embed && window.store.getState().derived.hideFilters;
+      vm.hideFilters =
+        window.store.getState().derived.embed && window.store.getState().derived.hideFilters;
 
       if (vm.activeFilters().length > 0 && !vm.hideFilters) {
         self.layout.open("west");
@@ -475,8 +551,8 @@ FilterManager.prototype.build_sliders = function () {
         // Called when a filter is activated. Not called when a model with an activated filter is loaded.
         // console.debug(`vm.activateFilter function in filter-manager.js`);
 
-        // Open filter pane if it's not already open (no active filters)
-        if (vm.activeFilters().length === 0 && !vm.hideFilters) {
+        // Open filter pane if it's closed (first filter, or toggler-closed with filters still on)
+        if (self.isWestPaneClosed() && !vm.hideFilters) {
           self.layout.open("west");
         }
         var activateFilter = event.target.dataset.value;
@@ -502,12 +578,18 @@ FilterManager.prototype.build_sliders = function () {
         }
         $("#sliders-pane #sliders .slycat-pim-filter:last-child").get(0).scrollIntoView();
         self.bookmarker.updateState({ allFilters: mapping.toJS(vm.allFilters()) });
+        self.scheduleWestPaneSize();
       };
 
       vm.removeFilter = function (filter, event) {
         filter.active(false);
         if (vm.activeFilters().length == 0) {
           self.layout.close("west");
+          if (window.store) {
+            window.store.dispatch(setWestPaneSize(0));
+          }
+        } else {
+          self.scheduleWestPaneSize();
         }
         self.bookmarker.updateState({ allFilters: mapping.toJS(vm.allFilters()) });
       };
@@ -519,6 +601,7 @@ FilterManager.prototype.build_sliders = function () {
           filter.autowidth(true);
         }
         self.bookmarker.updateState({ allFilters: mapping.toJS(vm.allFilters()) });
+        self.scheduleWestPaneSize();
       };
 
       vm.toggleNull = function (filter, event) {
@@ -729,6 +812,7 @@ FilterManager.prototype.build_sliders = function () {
     if (self.foundMismatches) {
       self.allFilters.valueHasMutated();
     }
+    self.scheduleWestPaneSize();
   }
 };
 

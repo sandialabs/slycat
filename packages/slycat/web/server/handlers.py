@@ -3898,6 +3898,8 @@ def get_remote_file(hostname, path, **kwargs):
         with slycat.web.server.smb.get_session(sid) as session:
             split_list = path.split("/")
             del split_list[0]
+            if "collab" in split_list[0].lower():
+                del split_list[0]
             content_type, encoding = slycat.mime_type.guess_type(path)
             if content_type is None:
                 content_type = "application/octet-stream"

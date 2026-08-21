@@ -20,6 +20,11 @@ import {
   initialState as dataInitialState,
   DataState,
 } from "./dataSlice";
+import {
+  SLICE_NAME as LAYOUT_SLICE_NAME,
+  initialState as layoutInitialState,
+  LayoutState,
+} from "./layoutSlice";
 import { TableMetadataType } from "types/slycat";
 
 export type AxisType = "Linear" | "Log" | "Date & Time";
@@ -81,6 +86,7 @@ export type DerivedStateType = {
   mediaValues: string[];
   media_columns: number[];
   rating_variables: number[];
+  category_columns: number[];
   xy_pairs: XYPairsType;
   // ToDo: Add more specific types for three_d_colorby_range
   three_d_colorby_range: {};
@@ -152,6 +158,7 @@ export type RootState = {
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
   [DATA_SLICE_NAME]: DataState;
+  [LAYOUT_SLICE_NAME]: LayoutState;
   derived: DerivedStateType;
   media_index: number;
 };
@@ -195,6 +202,7 @@ export const initialState: RootState = {
   media_index: -1,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
+  [LAYOUT_SLICE_NAME]: { ...layoutInitialState },
   derived: {
     variableAliases: {},
     xValues: [],
@@ -205,6 +213,7 @@ export const initialState: RootState = {
     three_d_colorby_legends: {},
     media_columns: [],
     rating_variables: [],
+    category_columns: [],
     xy_pairs: [],
     table_metadata: {
       "row-count": 0,

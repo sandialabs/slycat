@@ -421,8 +421,18 @@ export default function ps_reducer(state = initialState, action) {
       });
 
     case SET_V_INDEX:
+      // Same index redispatched after setVValues must not wipe fresh column data.
+      if (action.index === state.v_index) {
+        return state;
+      }
+      // Clear stale vValues so legend/selectors do not mix new index metadata
+      // with the previous column's values while the new column loads.
       return Object.assign({}, state, {
         v_index: action.index,
+        derived: {
+          ...state.derived,
+          vValues: [],
+        },
       });
 
     case SET_MEDIA_INDEX:
