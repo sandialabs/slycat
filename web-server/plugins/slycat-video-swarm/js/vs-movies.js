@@ -158,15 +158,16 @@ $.widget("mp.movies", {
           // console.log("PAUSE event handler starting" + movie_index);
           window.clearInterval(self.timeupdateTimeout);
           if (!self.interact) {
-            self.options.video_sync_time = this.currentTime;
-            // Due to a Firefox bug, I need to set the paused video's time to it's currentTime because
+            // Due to a Firefox bug, I need to set the paused video's time to its currentTime because
             // Firefox pauses it a frame or two past where it claims the video is. Only need to do this
             // when video sync is off because when it's on, all videos, including current one, have their
             // currentTime updated.
             if (!self.options.video_sync) {
-              this.currentTime = self.options.video_sync_time;
+              var paused_time = this.currentTime;
+              this.currentTime = paused_time;
             }
             if (self.options.video_sync) {
+              self.options.video_sync_time = this.currentTime;
               self.pause();
               self._update_video_sync_time();
             }
@@ -182,11 +183,11 @@ $.widget("mp.movies", {
         })
         .on("seeked", function () {
           // console.log("SEEKED event handler starting" + movie_index);
-          self.options.video_sync_time = this.currentTime;
           if (self.options.video_sync) {
+            self.options.video_sync_time = this.currentTime;
             self._update_video_sync_time();
+            self.element.trigger("video_sync_time", self.options.video_sync_time);
           }
-          self.element.trigger("video_sync_time", self.options.video_sync_time);
           // Triggering event for tracking current video's time
           self.element.trigger("video_time", { id: movie_index, time: this.currentTime });
         })
@@ -366,6 +367,9 @@ $.widget("mp.movies", {
 
   _handle_timeupdate: function (self, video) {
     // console.log("handling timeupdate by sending current video time of: " + video.currentTime);
+    if (!self.options.video_sync) {
+      return;
+    }
     self.options.video_sync_time = video.currentTime;
     self.element.trigger("video_sync_time", self.options.video_sync_time);
   },
@@ -611,20 +615,16 @@ $.widget("mp.movies", {
       var video = $("video[data-index='" + self.options.current_video + "']").get(0);
       if (video != null) {
         video.pause();
-        self.options.video_sync_time = video.currentTime;
-        video.currentTime = self.options.video_sync_time;
-        self.element.trigger("video_sync_time", self.options.video_sync_time);
+        var paused_time = video.currentTime;
+        video.currentTime = paused_time;
       }
     }
   },
 
   _set_single_video_time: function (video, time) {
-    var self = this;
     if (video != null) {
       video.pause();
       video.currentTime = time;
-      self.options.video_sync_time = time;
-      self.element.trigger("video_sync_time", self.options.video_sync_time);
     }
   },
 
