@@ -103,6 +103,18 @@ export default {
     return this.color_maps[name].background;
   },
 
+  // Contrast color for marks/text on the pane background (scrubber thumb, axes).
+  get_foreground: function (name: string): string {
+    name = this.resolve_colormap_name(name);
+    return this.color_maps[name]?.foreground ?? "rgb(255 255 255)";
+  },
+
+  // Secondary/hover background for the given color map.
+  get_background_2: function (name: string): string {
+    name = this.resolve_colormap_name(name);
+    return this.color_maps[name]?.background_2 ?? "rgb(204 204 204)";
+  },
+
   // Return the null color value for the given color map.
   get_null_color: function (name: string): string {
     name = this.resolve_colormap_name(name);

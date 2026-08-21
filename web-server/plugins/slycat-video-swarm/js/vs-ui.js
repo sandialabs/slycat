@@ -15,15 +15,16 @@ import * as remotes from "js/slycat-remotes";
 import client from "js/slycat-web-client";
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 // import TestReact from "../plugin-components/TestReact"
 import VSLoadingPage from "../plugin-components/VSLoadingPage";
+import VSColorSwitcher from "../plugin-components/VSColorSwitcher";
 import * as dialog from "js/slycat-dialog";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import ko from "knockout";
 import URI from "urijs";
 import request from "./vs-request-data.js";
 import layout from "./vs-layout.js";
-import colorswitcher from "./color-switcher.js";
 import traj_plot from "./vs-trajectories.js";
 import scatter_plot from "./vs-scatter-plot.js";
 import table_pane from "./vs-table.js";
@@ -31,6 +32,9 @@ import movie_pane from "./vs-movies.js";
 import d3 from "d3";
 import control from "./vs-controls";
 import { COLUMN_LABELS } from "utils/ui-labels";
+import slycat_color_maps from "js/slycat-color-maps";
+import watch from "redux-watch";
+import { createVSStore } from "./store";
 // global parameters to set up movie-plex UI
 // -----------------------------------------
 
@@ -75,6 +79,7 @@ var max_value = null;
 
 var bookmarker = null;
 var bookmark = null;
+var store = null;
 
 var video_sync_time_changed_throttle_timeout = null;
 var video_sync_time_changed_throttle_ms = 500;
@@ -172,7 +177,7 @@ function launch_model() {
       // Retrieve bookmarked state information ...
       bookmarker.getState(function (state) {
         bookmark = state;
-        colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+        colormap = slycat_color_maps.resolve_colormap_name(bookmark["colormap"]);
         color_variable =
           bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : 1;
         highlighted_simulations =
@@ -256,15 +261,19 @@ function model_loaded() {
         color_variable = color_variables[0];
       }
 
-      $("#color-switcher").colorswitcher({ colormap: colormap });
-      $("#color-switcher").bind("colormap-changed", function (event, colormap) {
-        update_colormap(colormap);
-        update_current_colorscale(null, null);
-      });
+      store = createVSStore({ controls: { colormap: colormap } });
+      createRoot(document.getElementById("color-switcher")).render(
+        <Provider store={store}>
+          <VSColorSwitcher />
+        </Provider>,
+      );
+      store.subscribe(
+        watch(store.getState, "controls.colormap")(function (newColormap) {
+          selected_colormap_changed(newColormap);
+        }),
+      );
 
-      foreground_color = $("#color-switcher").colorswitcher("get_foreground");
-      hover_background_color = $("#color-switcher").colorswitcher("get_background_2");
-      null_color = $("#color-switcher").colorswitcher("get_null_color");
+      apply_colormap_chrome();
 
       //Gets the min and max from the default data set (velocity for now) to calculate the color scale
       var default_data = table_data[0].data[color_variable];
@@ -295,34 +304,23 @@ function model_loaded() {
       // set up the trajetories pane
       // traj_plot.setup(time_data, traj_data);
 
-      color_scale = $("#color-switcher").colorswitcher(
-        "get_color_scale",
-        undefined,
-        min_value,
-        max_value,
-      );
-      color_array = $("#color-switcher").colorswitcher("get_gradient_data", undefined);
+      color_scale = slycat_color_maps.get_color_scale(colormap, min_value, max_value);
+      color_array = slycat_color_maps.get_gradient_data(colormap);
 
       //background defaults to "night"
       $("#mp-trajectories").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
-          .toString(),
+        "background-color": colormap_background(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        fill: $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", colormap),
+        fill: colormap_background(),
+        "fill-opacity": colormap_opacity(),
       });
       $("#mp-movies").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
-          .toString(),
+        "background-color": colormap_background(),
       });
 
       $("#mp-mds-pane").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
-          .toString(),
+        "background-color": colormap_background(),
       });
 
       var trajectories_options = {
@@ -335,7 +333,9 @@ function model_loaded() {
         selection: selection,
         foreground_color: ko.observable(foreground_color),
         hover_background_color: ko.observable(hover_background_color),
-        null_color: ko.observable(null_color),
+        null_color: null_color,
+        background: colormap_background(),
+        opacity: colormap_opacity(),
         min_time: min_time,
         max_time: max_time,
         diagram_time: diagram_time,
@@ -751,7 +751,7 @@ function update_table_color() {
 
 function update_movies_color() {
   $("#mp-movies").css({
-    "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "background-color": colormap_background(),
   });
 
   var color_options = {
@@ -778,7 +778,7 @@ function update_coloring_var(newVar) {
 
 function update_scatterplot_color() {
   $("#mp-mds-pane").css({
-    "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "background-color": colormap_background(),
   });
 
   var color_options = {
@@ -792,16 +792,14 @@ function update_scatterplot_color() {
 
 function update_waveform_color() {
   $("#mp-trajectories").css({
-    "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "background-color": colormap_background(),
   });
   $("#waveform-viewer rect.selectionMask").css({
-    fill: $("#color-switcher").colorswitcher("get_background", undefined).toString(),
-    "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", undefined),
+    fill: colormap_background(),
+    "fill-opacity": colormap_opacity(),
   });
 
-  foreground_color = $("#color-switcher").colorswitcher("get_foreground");
-  hover_background_color = $("#color-switcher").colorswitcher("get_background_2");
-  null_color = $("#color-switcher").colorswitcher("get_null_color");
+  apply_colormap_chrome();
 
   var color_options = {
     color_array: color_array,
@@ -809,9 +807,30 @@ function update_waveform_color() {
     foreground_color: foreground_color,
     hover_background_color: hover_background_color,
     null_color: null_color,
+    background: colormap_background(),
+    opacity: colormap_opacity(),
   };
 
   $("#waveform-viewer").trajectories("option", "color-options", color_options);
+}
+
+function colormap_background() {
+  return slycat_color_maps.get_background(colormap).toString();
+}
+
+function colormap_opacity() {
+  return slycat_color_maps.get_opacity(colormap);
+}
+
+function apply_colormap_chrome() {
+  foreground_color = slycat_color_maps.get_foreground(colormap);
+  hover_background_color = slycat_color_maps.get_background_2(colormap);
+  null_color = slycat_color_maps.get_null_color(colormap);
+}
+
+function selected_colormap_changed(newColormap) {
+  update_colormap(newColormap);
+  update_current_colorscale(null, null);
 }
 
 function update_colormap(new_colormap) {
@@ -832,13 +851,8 @@ function update_current_colorscale(table_data, new_color_variable) {
     min_value = Math.min.apply(null, new_data);
   }
 
-  color_scale = $("#color-switcher").colorswitcher(
-    "get_color_scale",
-    undefined,
-    min_value,
-    max_value,
-  );
-  color_array = $("#color-switcher").colorswitcher("get_gradient_data", undefined);
+  color_scale = slycat_color_maps.get_color_scale(colormap, min_value, max_value);
+  color_array = slycat_color_maps.get_gradient_data(colormap);
 
   update_movies_color();
   update_waveform_color();
