@@ -408,18 +408,6 @@ retains certain rights in this software.
 .center {
   text-align: center;
 }
-#color-switcher ul.dropdown-menu
-{
-  background-color: #F2F2F2;
-}
-.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
-{
-  background-color: #E4E4E4;
-}
-.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
-{
-  background-color: #337AB7;
-}
 #controls {
   height: 100%;
 }
