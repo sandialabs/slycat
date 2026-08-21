@@ -439,6 +439,8 @@ function model_loaded() {
         highlighted_simulations: highlighted_simulations.slice(),
         selection: highlighted_simulations.slice(), // scatterplot calls it 'selection', so going with that for now but leaving 'highlighted_simulations' too for when we standardize on a common vocab for state variables
         diagram_time: diagram_time,
+        min_time: min_time,
+        max_time: max_time,
         null_color: null_color,
         current_video: current_video,
       };
@@ -463,6 +465,8 @@ function model_loaded() {
         highlighted_simulations: highlighted_simulations.slice(),
         video_sync: video_sync,
         video_sync_time: video_sync_time,
+        min_time: min_time,
+        max_time: max_time,
         pinned_simulations: pinned_simulations.slice(),
       };
 
@@ -486,6 +490,10 @@ function model_loaded() {
       $("#controls").bind("video_sync_time", function (event, new_video_sync_time) {
         // Handle the change to video_sync_time
         video_sync_time_changed(new_video_sync_time);
+      });
+
+      $("#controls").bind("diagram_time_changed", function (event, new_diagram_time) {
+        diagram_time_changed(new_diagram_time);
       });
 
       // Clicking jump-to-start updates the scatterplot and logs it ...
@@ -595,10 +603,21 @@ function pinned_simulations_changed(waveform_indexes) {
   }
 }
 
+function clamp_diagram_time(time) {
+  if (min_time != null && time < min_time) {
+    return min_time;
+  }
+  if (max_time != null && time > max_time) {
+    return max_time;
+  }
+  return time;
+}
+
 function diagram_time_changed(new_diagram_time) {
+  var clamped = clamp_diagram_time(new_diagram_time);
   // Make sure new value is different before continuing
-  if (new_diagram_time != diagram_time) {
-    diagram_time = new_diagram_time;
+  if (clamped != diagram_time) {
+    diagram_time = clamped;
     // Update the widgets ...
     $("#controls").controls("option", "diagram_time", diagram_time);
     $("#mp-movies").movies("option", "diagram_time", diagram_time);
@@ -612,6 +631,9 @@ function diagram_time_changed(new_diagram_time) {
     $("#mp-mds-scatterplot").scatterplot("option", "video_sync_time", video_sync_time);
 
     bookmarker.updateState({ diagram_time: diagram_time, video_sync_time: video_sync_time });
+  } else {
+    // Refresh the Time field so an out-of-range commit cannot leave a value like 999 in the box
+    $("#controls").controls("option", "video_sync_time", diagram_time);
   }
 }
 
@@ -640,9 +662,10 @@ function video_sync_changed(new_video_sync) {
 }
 
 function video_sync_time_changed(new_video_sync_time) {
+  var clamped = clamp_diagram_time(new_video_sync_time);
   // Make sure new value is different before continuing
-  if (new_video_sync_time != video_sync_time) {
-    video_sync_time = new_video_sync_time;
+  if (clamped != video_sync_time) {
+    video_sync_time = clamped;
     // Update the widgets ...
     $("#controls").controls("option", "video_sync_time", video_sync_time);
     $("#mp-movies").movies("option", "video_sync_time", video_sync_time);
@@ -650,7 +673,7 @@ function video_sync_time_changed(new_video_sync_time) {
     $("#mp-mds-scatterplot").scatterplot("option", "video_sync_time", video_sync_time);
     // If video_sync is on, set diagram_time to same as video_sync_time and let widgets know new value
     if (video_sync) {
-      diagram_time = new_video_sync_time;
+      diagram_time = video_sync_time;
       $("#controls").controls("option", "diagram_time", diagram_time);
       $("#mp-movies").movies("option", "diagram_time", diagram_time);
       $("#waveform-viewer").trajectories("option", "diagram_time", diagram_time);
@@ -662,6 +685,8 @@ function video_sync_time_changed(new_video_sync_time) {
       bookmark_video_sync_time_and_diagram_time,
       video_sync_time_changed_throttle_ms,
     );
+  } else {
+    $("#controls").controls("option", "video_sync_time", video_sync_time);
   }
 }
 

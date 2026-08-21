@@ -43,6 +43,16 @@ retains certain rights in this software.
 	stroke-width: 1px;
 }
 
+#mp-mds-scatterplot circle
+{
+	cursor: pointer;
+}
+
+#mp-mds-pane.rubber-band-drag,
+#mp-mds-pane.rubber-band-drag circle {
+  cursor: crosshair;
+}
+
 
 /* Page header */
 
@@ -956,6 +966,7 @@ a {
   padding-bottom: 20px;
   background-color: black;
   width: calc(100% - 32px);
+  cursor: pointer;
 }
 .videoContainer video {
   display: block;
@@ -973,10 +984,10 @@ a {
   font-size: 14px;
   color: #c8c8c8 !important;
   padding: 2px 4px;
+  cursor: pointer;
 }
 .frame-button:hover {
   color: white !important;
-  cursor: pointer;
 }
 .frame-button.close-button {
   float: left;
@@ -1053,4 +1064,17 @@ a {
 }
 #waveform-pane:hover #waveform-selector-progress-wrapper {
   display: block;
+}
+
+.slycat-scrubber {
+  cursor: pointer;
+}
+
+.slycat-scrubber .thumb {
+  cursor: grab;
+}
+
+.slycat-scrubber.dragging,
+.slycat-scrubber.dragging .thumb {
+  cursor: grabbing;
 }

@@ -34,7 +34,6 @@ $.widget("mp.scatterplot", {
         color_scale: null,
         color_array: null,
         scatter_plot: null,
-        pick_distance : 3,
         x : [],
         y : [],
         state: null,
@@ -48,6 +47,8 @@ $.widget("mp.scatterplot", {
         diagram_time: 0,
         frame: 0,
         video_sync_time: 0,
+        min_time: null,
+        max_time: null,
         color_var_index: [],
         current_video: null,
         null_color: null,
@@ -55,9 +56,6 @@ $.widget("mp.scatterplot", {
 
     _create: function()
     {
-        // Set frame option according to diagram_time option
-        this.options.frame = Math.round(this.options.diagram_time * 25); // 1001 frames per video, 40 seconds per video, ~25 frames per second
-
         this.container = d3.select("#mp-mds-scatterplot");
 
         this.xy_coords = this.options.xy_coords;
@@ -81,20 +79,19 @@ $.widget("mp.scatterplot", {
 
         var self = this;
 
+        self._unbind_window_drag = function()
+        {
+          window.removeEventListener("mousemove", self._on_window_mousemove, true);
+          window.removeEventListener("mouseup", self._on_window_mouseup, true);
+        };
+
+        // Drop leftover window listeners if this widget is created again.
+        self._unbind_window_drag();
+
         // Remove any existing event handlers because we are about to assign them and we don't want to keep old one and have them fire too.
         self.element.parent().off();
 
-        self.element.parent().mousedown(function(e)
-        {
-          e.preventDefault();
-          var output = e;
-          self.start_drag = [self._offsetX(e), self._offsetY(e)];
-          var s_d = self.start_drag;
-          self.end_drag = null;
-          var s_e = self.start_drag;
-        });
-
-        self.element.parent().mousemove(function(e)
+        self._on_window_mousemove = function(e)
         {
           if(self.start_drag) // Mouse is down ...
           {
@@ -117,6 +114,7 @@ $.widget("mp.scatterplot", {
               if(Math.abs(self._offsetX(e) - self.start_drag[0]) > self.options.drag_threshold || Math.abs(self._offsetY(e) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
               {
                 self.state = "rubber-band-drag";
+                self.element.parent().addClass("rubber-band-drag");
                 self.end_drag = [self._offsetX(e), self._offsetY(e)];
                 self.selection_layer.append("rect")
                   .attr("class", "rubberband")
@@ -131,10 +129,13 @@ $.widget("mp.scatterplot", {
               }
             }
           }
-        });
+        };
 
-        self.element.parent().mouseup(function(e)
+        self._on_window_mouseup = function(e)
         {
+          self._unbind_window_drag();
+          self.element.parent().removeClass("rubber-band-drag");
+
           if(self.state == "resizing" || self.state == "moving") {
                 return;
             }
@@ -146,15 +147,9 @@ $.widget("mp.scatterplot", {
             self.options.filtered_selection = [];
           }
 
-          var x = self.options.x;
-          var y = self.options.y;
-          var count = x.length;
           var x_coord, y_coord;
-
-          //This is a test, frame # should be diagram_time * 25 because there are 25 frames per second in each video
-
-          var test_count = self.options.xy_coords[self.options.frame].length;
-          var one_set_xy_data = self.options.xy_coords[self.options.frame];
+          var one_set_xy_data = self._coords_for_time(self.options.diagram_time);
+          var test_count = one_set_xy_data.length;
 
           if(self.state == "rubber-band-drag") // Rubber-band selection ...
           {
@@ -196,48 +191,43 @@ $.widget("mp.scatterplot", {
           }
           else // Pick selection ...
           {
-            var x1 = self._offsetX(e) - self.options.pick_distance;
-            var x2 = self._offsetX(e) + self.options.pick_distance;
-            var y1 = self._offsetY(e) - self.options.pick_distance;
-            var y2 = self._offsetY(e) + self.options.pick_distance;
-
-            for(var i = test_count - 1; i > -1; i--)
+            var circle = e.target.closest ? e.target.closest("circle[data-index]") : null;
+            if (circle)
             {
-              var one_point_xy_data = one_set_xy_data[i];
-              x_coord = self.x_scale(one_point_xy_data[0]);
-              y_coord = self.y_scale(one_point_xy_data[1]);
-              // x_coord = self.x_scale(x[i]);
-              // y_coord = self.y_scale(y[i]);
-              if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
+              var i = parseInt(circle.getAttribute("data-index"), 10);
+              var index = self.options.selection.indexOf(i);
+              if (index == -1)
               {
-                // Update the list of selected points ...
-                var index = self.options.selection.indexOf(i);
-                if(index == -1)
-                {
-                  // Selecting a new point.
-                  self.options.selection.push(i);
-                  self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]); // Passing copy of self.options.highlighted_simulations to ensure that others don't make changes to it
-                }
-                else
-                {
-                  // Deselecting an existing point.
-                  self.options.selection.splice(index, 1);
-                  self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]); // Passing copy of self.options.highlighted_simulations to ensure that others don't make changes to it
-                }
-                break;
+                self.options.selection.push(i);
+                self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]);
               }
-
+              else
+              {
+                self.options.selection.splice(index, 1);
+                self.element.trigger("scatterplot-selection-changed", [self.options.selection.slice()]);
+              }
             }
           }
 
           self.start_drag = null;
           self.end_drag = null;
           self.state = "";
+          self.element.parent().removeClass("rubber-band-drag");
 
           // self._filterIndices();
           // self.options.selection = self.options.filtered_selection.slice(0);
           // self._schedule_update({render_selection:true});
           self.element.trigger("scatterplot-selection-changed", [self.options.selection]);
+        };
+
+        self.element.parent().mousedown(function(e)
+        {
+          e.preventDefault();
+          self.start_drag = [self._offsetX(e), self._offsetY(e)];
+          self.end_drag = null;
+          self._unbind_window_drag();
+          window.addEventListener("mousemove", self._on_window_mousemove, true);
+          window.addEventListener("mouseup", self._on_window_mouseup, true);
         });
 
 
@@ -285,12 +275,45 @@ $.widget("mp.scatterplot", {
     },
     _offsetX: function(e)
     {
-        return e.pageX - e.currentTarget.getBoundingClientRect().left - $(document).scrollLeft();
+        var rect = this.element.parent()[0].getBoundingClientRect();
+        return e.clientX - rect.left;
     },
 
     _offsetY: function(e)
     {
-        return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
+        var rect = this.element.parent()[0].getBoundingClientRect();
+        return e.clientY - rect.top;
+    },
+
+    _frame_from_time: function(time)
+    {
+        var coords = this.xy_coords || this.options.xy_coords;
+        if (!coords || !coords.length) {
+            return 0;
+        }
+        var last = coords.length - 1;
+        var t = Number(time);
+        if (!isFinite(t)) {
+            return 0;
+        }
+        var t0 = this.options.min_time;
+        var t1 = this.options.max_time;
+        var frame = 0;
+        if (t0 != null && t1 != null && t1 !== t0) {
+            frame = Math.round((t - t0) / (t1 - t0) * last);
+        }
+        if (!isFinite(frame)) {
+            return 0;
+        }
+        return Math.max(0, Math.min(last, frame));
+    },
+
+    _coords_for_time: function(time)
+    {
+        var coords = this.xy_coords || this.options.xy_coords || [];
+        var frame = this._frame_from_time(time);
+        this.options.frame = frame;
+        return coords[frame] || [];
     },
 
     draw: function()
@@ -324,11 +347,9 @@ $.widget("mp.scatterplot", {
           });
         };
 
-        // console.log("inputting new points with frame");
-        // console.log("Frame is: " + self.options.frame);
-        //input new points
+        var frame_coords = this._coords_for_time(this.options.diagram_time);
         var scatter_points = this.scatter_plot.selectAll("circle")
-            .data(this.xy_coords[this.options.frame])
+            .data(frame_coords)
             .enter()
             .append("circle");
 
@@ -486,7 +507,6 @@ $.widget("mp.scatterplot", {
         {
             this.options[key] = value;
             this.options.diagram_time = value;
-            this.options.frame = Math.round(value * 25); // 1001 frames per video, 40 seconds per video, ~25 frames per second
 
             this.draw();
         }
