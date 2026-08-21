@@ -24,6 +24,7 @@ import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import MediaLegends from "./Components/MediaLegends";
+import PSColorByLegend from "./Components/PSColorByLegend";
 import { ENABLE_SVG_THREE_D_LEGENDS } from "./svg-three-d-legends-gate";
 import { v4 as uuidv4 } from "uuid";
 import client from "js/slycat-web-client";
@@ -42,25 +43,20 @@ import {
   selectVColumnType,
   selectXScaleType,
   selectYScaleType,
-  selectVScaleType,
   selectXScale,
   selectYScale,
-  selectVScale,
   selectXScaleAxis,
   selectYScaleAxis,
-  selectLegendScaleAxis,
   selectAxesVariables,
   selectXIsCategorical,
   selectYIsCategorical,
-  selectVIsCategorical,
-  selectVExtent,
 } from "./selectors";
 import PSHistogramWrapper from "./Components/PSHistogram";
 import PSScatterplotGrid from "./Components/PSScatterplotGrid";
 import { parseDate } from "js/slycat-dates";
-import { getUniqueCategoryValues } from "./unique-category-values";
-import { truncateString } from "js/slycat-string-truncate";
-import { measureSvgText } from "js/slycat-svg-text";
+import { getUniqueCategoryValues, isStructuralMissingValue } from "./unique-category-values";
+import { truncateSvgAxisTickLabels } from "js/slycat-svg-text";
+import { applyNumericAxisTickFormat } from "js/slycat-axis-tick-format";
 import {
   selectHideLabels,
   selectHorizontalSpacing,
@@ -96,56 +92,6 @@ const Y_AXIS_TICK_MAX_WIDTH = 140;
 // horizontal extent is slightly less since x-axis labels are rotated 15 degrees.
 const X_AXIS_TICK_MAX_WIDTH = 140;
 
-// Maximum width (in px) for a single legend axis tick label before it gets
-// truncated with an ellipsis.
-const LEGEND_AXIS_TICK_MAX_WIDTH = 140;
-
-// Hybrid numeric tick formatting: scale.tickFormat(tickCount, ",~f") for
-// human-scale magnitudes; compact d3 .2g outside this band.
-const HYBRID_AXIS_TICK_NORMAL_SPECIFIER = ",~f";
-const HYBRID_AXIS_TICK_COMPACT_ABOVE = 1e7;
-const HYBRID_AXIS_TICK_COMPACT_BELOW = 1e-4;
-const HYBRID_AXIS_TICK_COMPACT_FORMAT = d3v7.format(".2g");
-
-/**
- * Apply a hybrid tick formatter for numeric axes. Human-scale values use
- * adaptive grouped fixed notation (`,~f`); very large or very small
- * magnitudes use compact `.2g` to avoid long comma strings and IEEE 754
- * noise in tick labels. String and Date & Time axes keep D3's default.
- */
-function applyNumericAxisTickFormat(
-  axis,
-  scale,
-  tickCount,
-  columnType,
-  scaleType,
-) {
-  // Band/ordinal scales (e.g. wizard-marked categoricals) have no tickFormat.
-  // Only continuous numeric scales support the hybrid formatter.
-  if (
-    columnType !== "string" &&
-    scaleType !== "Date & Time" &&
-    typeof scale.tickFormat === "function"
-  ) {
-    const normalFormat = scale.tickFormat(
-      tickCount,
-      HYBRID_AXIS_TICK_NORMAL_SPECIFIER,
-    );
-    const compactFormat = HYBRID_AXIS_TICK_COMPACT_FORMAT;
-    axis.tickFormat((d) => {
-      const abs = Math.abs(d);
-      if (
-        abs >= HYBRID_AXIS_TICK_COMPACT_ABOVE ||
-        (abs > 0 && abs < HYBRID_AXIS_TICK_COMPACT_BELOW)
-      ) {
-        return compactFormat(d);
-      }
-      return normalFormat(d);
-    });
-  }
-  return axis;
-}
-
 // Events for vtk viewer
 var vtkselect_event = new Event("vtkselect");
 var vtkunselect_event = new Event("vtkunselect");
@@ -175,49 +121,12 @@ function unmountFrameRoots(frameEl) {
 }
 
 /**
- * Append an SVG <title> child to `node` so hovering reveals `text` via the
- * browser's native tooltip. Caller is responsible for ensuring the node
- * has no stale title (typically by setting textContent first, which wipes
- * prior children).
- */
-function appendSvgTitle(node, text) {
-  const title = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "title",
-  );
-  title.textContent = text;
-  node.appendChild(title);
-}
-
-/**
- * Truncate every `.tick text` inside an axis layer node to at most
- * `maxWidth` pixels using a middle ellipsis. Truncated nodes get an SVG
- * <title> child so hovering reveals the full text via the browser's
- * native tooltip. Should be called after the v7 axis has rendered, since
- * v7 axis sets each tick's text via .text(format), making node.textContent
- * the fresh untruncated value at that point.
- *
- * Only runs against string columns. Date & Time scales are left alone
- * (d3's formatter is preferable). Numeric columns use the hybrid
- * scale.tickFormat / `.2g` formatter via `applyNumericAxisTickFormat`.
+ * Truncate string-column axis tick labels after the v7 axis has rendered.
+ * Date & Time and numeric axes are left alone (numeric uses hybrid format).
  */
 function truncateAxisTickLabels(axisLayerNode, maxWidth, columnType, scaleType) {
   if (columnType !== "string" || scaleType === "Date & Time") return;
-  axisLayerNode.querySelectorAll(".tick text").forEach((node) => {
-    const original = node.textContent;
-    if (!original) return;
-    const truncated = truncateString(original, {
-      maxWidth,
-      measure: measureSvgText(node),
-      position: "middle",
-    });
-    if (truncated !== original) {
-      // Setting textContent wipes any prior children (including a stale
-      // <title>), so we re-append a fresh title with the original text.
-      node.textContent = truncated;
-      appendSvgTitle(node, original);
-    }
-  });
+  truncateSvgAxisTickLabels(axisLayerNode, maxWidth);
 }
 
 $.widget("parameter_image.scatterplot", {
@@ -241,7 +150,6 @@ $.widget("parameter_image.scatterplot", {
     selection: [],
     colorscale: d3v7.scaleLinear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
     open_images: [],
-    gradient: null,
     hidden_simulations: [],
     filtered_indices: [],
     filtered_selection: [],
@@ -436,8 +344,6 @@ $.widget("parameter_image.scatterplot", {
 
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
-    self.legend_layer = self.svg.append("g").attr("class", "legend");
-    self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.canvas_datum = d3
       .select(self.element.get(0))
       .append("canvas")
@@ -470,51 +376,29 @@ $.widget("parameter_image.scatterplot", {
       render_data: true,
       render_selection: true,
       open_images: true,
-      render_legend: true,
-      update_legend_colors: true,
-      update_legend_position: true,
-      update_legend_axis: true,
-      update_v_label: true,
     });
 
-    let setup_legend_drag = (legend) => {
-      legend.call(
-        d3.behavior
-          .drag()
-          .on("drag", function () {
-            // Make sure mouse is inside svg element
-            if (
-              0 <= d3.event.y &&
-              d3.event.y <= self.options.height &&
-              0 <= d3.event.x &&
-              d3.event.x <= self.options.width
-            ) {
-              var theElement = d3.select(this);
-              var transx = Number(theElement.attr("data-transx"));
-              var transy = Number(theElement.attr("data-transy"));
-              transx += d3.event.dx;
-              transy += d3.event.dy;
-              theElement.attr("data-transx", transx);
-              theElement.attr("data-transy", transy);
-              theElement.attr("transform", "translate(" + transx + ", " + transy + ")");
-            }
-          })
-          .on("dragstart", function () {
-            self.state = "moving";
-            d3.event.sourceEvent.stopPropagation(); // silence other listeners
-          })
-          .on("dragend", function () {
-            self.state = "";
-            // self._sync_open_media();
-            d3.select(this).attr("data-status", "moved");
-          }),
-      );
-    };
-
-    setup_legend_drag(self.legend_layer);
+    // Color-by legend: React ColorByLegend overlay (drag + moved handled inside).
+    const colorby_legend_host = d3
+      .select(self.element.get(0))
+      .append("div")
+      .attr("id", "ps-colorby-legend-root")
+      .node();
+    const colorby_legend_root = createRoot(colorby_legend_host);
+    colorby_legend_root.render(
+      <StrictMode>
+        <Provider store={window.store}>
+          <PSColorByLegend />
+        </Provider>
+      </StrictMode>,
+    );
 
     // self.element is div#scatterplot here
     self.element.mousedown(function (e) {
+      // Ignore color-by legend (React overlay); ColorByLegend also stops propagation.
+      if (e.target.closest && e.target.closest("#ps-colorby-legend .legend")) {
+        return;
+      }
       // console.log("self.element.mousedown");
       e.preventDefault();
       let output = e;
@@ -671,20 +555,15 @@ $.widget("parameter_image.scatterplot", {
       self.y_axis_layer
         .selectAll(".tick text")
         .style("font-size", self.options.axes_font_size + "px");
-      self.legend_layer
-        .selectAll(".tick text")
-        .style("font-size", self.options.axes_font_size + "px");
       // Rebuild the axes so tick string truncation and number formatting
       // re-measure against the new font metrics. Axis-title labels are
-      // also rescheduled since update_y / update_legend_axis don't
-      // cascade into their labels (only update_x does).
+      // also rescheduled since update_y doesn't cascade into their labels
+      // (only update_x does). Color-by legend fonts come from Redux via React.
       self._schedule_update({
         update_x: true,
         update_y: true,
-        update_legend_axis: true,
         update_x_label: true,
         update_y_label: true,
-        update_v_label: true,
       });
     };
 
@@ -697,20 +576,15 @@ $.widget("parameter_image.scatterplot", {
       self.y_axis_layer
         .selectAll(".tick text")
         .style("font-family", self.options.axes_font_family);
-      self.legend_layer
-        .selectAll(".tick text")
-        .style("font-family", self.options.axes_font_family);
       // Rebuild the axes so tick string truncation and number formatting
       // re-measure against the new font metrics. Axis-title labels are
-      // also rescheduled since update_y / update_legend_axis don't
-      // cascade into their labels (only update_x does).
+      // also rescheduled since update_y doesn't cascade into their labels
+      // (only update_x does). Color-by legend fonts come from Redux via React.
       self._schedule_update({
         update_x: true,
         update_y: true,
-        update_legend_axis: true,
         update_x_label: true,
         update_y_label: true,
-        update_v_label: true,
       });
     };
 
@@ -723,11 +597,9 @@ $.widget("parameter_image.scatterplot", {
         update_x_label: true,
         update_y: true,
         update_y_label: true,
-        update_v_label: true,
         update_leaders: true,
         render_data: true,
         render_selection: true,
-        update_legend_axis: true,
       });
     };
 
@@ -776,10 +648,7 @@ $.widget("parameter_image.scatterplot", {
         update_y: true,
         update_x_label: true,
         update_y_label: true,
-        update_v_label: true,
         update_leaders: true,
-        update_legend_position: true,
-        update_legend_axis: true,
         render_data: true,
         render_selection: true,
       });
@@ -808,7 +677,7 @@ $.widget("parameter_image.scatterplot", {
       if (v_label_changed) {
         // console.log('5 update_scatterplot_labels');
         self.options.v_label = latest_v_label;
-        self._schedule_update({ update_v_label: true });
+        // Color-by legend label updates via React (PSColorByLegend).
       }
     };
 
@@ -916,9 +785,7 @@ $.widget("parameter_image.scatterplot", {
         callback: () =>
           self._schedule_update({
             update_y: true,
-            update_legend_axis: true,
             update_y_label: true,
-            update_v_label: true,
           }),
       },
       {
@@ -927,10 +794,8 @@ $.widget("parameter_image.scatterplot", {
           self._schedule_update({
             update_x: true,
             update_y: true,
-            update_legend_axis: true,
             update_x_label: true,
             update_y_label: true,
-            update_v_label: true,
           }),
       },
     ].forEach((subscription) => {
@@ -960,7 +825,6 @@ $.widget("parameter_image.scatterplot", {
           update_leaders: true,
           render_data: true,
           render_selection: true,
-          update_legend_axis: axis == "v" ? true : false,
         });
       }
     }
@@ -1160,8 +1024,11 @@ $.widget("parameter_image.scatterplot", {
 
   _validateValue: function (value) {
     var self = this;
-    if (typeof value == "number" && !isNaN(value)) return true;
-    if (typeof value == "string" && value.trim() !== "") return true;
+    // Structural missing (null, undefined, NaN, blank string) → null_color.
+    // Literal "null"/"undefined" strings remain valid categories.
+    if (isStructuralMissingValue(value)) return false;
+    if (typeof value == "number") return true;
+    if (typeof value == "string") return true;
     // Check for valid Date objects
     if (value instanceof Date && !isNaN(value.valueOf())) return true;
     return false;
@@ -1186,7 +1053,7 @@ $.widget("parameter_image.scatterplot", {
     } else if (key == "y_label") {
       self._schedule_update({ update_y_label: true });
     } else if (key == "v_label") {
-      self._schedule_update({ update_v_label: true });
+      // Color-by legend label updates via React (PSColorByLegend).
     } else if (key == "x") {
       if (self.options["auto-scale"]) {
         self.options.filtered_x = self._filterValues(self.options.x);
@@ -1230,7 +1097,6 @@ $.widget("parameter_image.scatterplot", {
       self._schedule_update({
         render_data: true,
         render_selection: true,
-        update_legend_axis: true,
       });
     } else if (key == "images") {
     } else if (key == "selection") {
@@ -1259,9 +1125,6 @@ $.widget("parameter_image.scatterplot", {
         update_leaders: true,
         render_data: true,
         render_selection: true,
-        update_legend_position: true,
-        update_legend_axis: true,
-        update_v_label: true,
       });
     } else if (key == "border") {
       self._schedule_update({
@@ -1270,13 +1133,7 @@ $.widget("parameter_image.scatterplot", {
         update_leaders: true,
         render_data: true,
         render_selection: true,
-        update_legend_position: true,
-        update_v_label: true,
       });
-    } else if (key == "gradient") {
-      // Gradient often changes with colormap (continuous ↔ discrete); rebuild ticks too
-      // so bin-edge vs nice ticks stay in sync with the color bar.
-      self._schedule_update({ update_legend_colors: true, update_legend_axis: true });
     } else if (key == "hidden_simulations") {
       // console.group(`parameter-image-scatterplot setOption "hidden_simulations"`);
       self._filterIndices();
@@ -1298,7 +1155,6 @@ $.widget("parameter_image.scatterplot", {
         update_leaders: true,
         render_data: true,
         render_selection: true,
-        update_legend_axis: true,
       });
       self._close_hidden_simulations();
       self._open_shown_simulations();
@@ -1322,7 +1178,6 @@ $.widget("parameter_image.scatterplot", {
         update_leaders: true,
         render_data: true,
         render_selection: true,
-        update_legend_axis: true,
       });
     } else if (key == "video-sync") {
       if (self.options["video-sync"]) {
@@ -1350,7 +1205,7 @@ $.widget("parameter_image.scatterplot", {
     } else {
       self.options.scale_v = self.options.v;
     }
-    self._schedule_update({ render_data: true, render_selection: true, update_legend_axis: true });
+    self._schedule_update({ render_data: true, render_selection: true });
   },
 
   _schedule_update: function (updates) {
@@ -1370,8 +1225,6 @@ $.widget("parameter_image.scatterplot", {
 
     // console.log("parameter_image.scatterplot._update()", self.updates);
     self.update_timer = null;
-
-    var legend_width = 150;
 
     if (self.updates.update_datum_width_height) {
       // console.debug(`self.updates.update_datum_width_height`);
@@ -1533,8 +1386,7 @@ $.widget("parameter_image.scatterplot", {
         self.x_axis,
         x_scale_axis,
         xTickCount,
-        xColumnType,
-        xScaleType,
+        { columnType: xColumnType, scaleType: xScaleType },
       );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded.
@@ -1604,8 +1456,7 @@ $.widget("parameter_image.scatterplot", {
         self.y_axis,
         y_scale_axis,
         yTickCount,
-        yColumnType,
-        yScaleType,
+        { columnType: yColumnType, scaleType: yScaleType },
       );
       // Forces ticks at min and max axis values, but sometimes they collide
       // with other ticks and sometimes they get rounded and just create duplicate ticks.
@@ -2009,179 +1860,6 @@ $.widget("parameter_image.scatterplot", {
           .attr("data-targetx", self.x_scale_format(self.options.x[image_index]))
           .attr("data-targety", self.y_scale_format(self.options.y[image_index]));
       });
-    }
-
-    if (self.updates.render_legend) {
-      // console.debug(`render_legend`);
-      var gradient = self.legend_layer.append("defs").append("linearGradient");
-      gradient
-        .attr("id", "color-gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "0%")
-        .attr("y2", "100%");
-
-      var colorbar = self.legend_layer
-        .append("rect")
-        .classed("color", true)
-        .attr("width", 10)
-        .attr("height", 200)
-        .attr("x", 0)
-        .attr("y", 0)
-        .style("fill", "url(#color-gradient)");
-    }
-
-    if (self.updates.update_legend_colors) {
-      var gradient = self.legend_layer.select("#color-gradient");
-      var stop = gradient.selectAll("stop").data(self.options.gradient);
-      stop.exit().remove();
-      stop.enter().append("stop");
-      stop
-        .attr("offset", function (d) {
-          return d.offset + "%";
-        })
-        .attr("stop-color", function (d) {
-          return d.color;
-        });
-    }
-
-    if (self.updates.update_legend_position) {
-      // Only update legend position if it wasn't already moved by the user
-      if (self.legend_layer.attr("data-status") != "moved") {
-        const total_width = Number(self.options.width);
-        const total_height = Number(self.options.height);
-        const scatterplot_height =
-          total_height - self.options.margin_top - self.options.margin_bottom;
-        const legend_height = parseInt(scatterplot_height / 2);
-
-        const transx = parseInt(total_width - self.options.margin_right + 100);
-        const transy = parseInt(
-          self.options.margin_top + scatterplot_height / 2 - legend_height / 2,
-        );
-
-        self.legend_layer
-          .attr("transform", "translate(" + transx + "," + transy + ")")
-          .attr("data-transx", transx)
-          .attr("data-transy", transy);
-
-        self.legend_layer.select("rect.color").attr("height", legend_height);
-      }
-    }
-
-    if (self.updates.update_legend_axis) {
-      var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
-      self.set_custom_axes_ranges();
-
-      self.legend_scale = self._createScale(
-        selectVIsCategorical(window.store.getState()),
-        self.options.scale_v,
-        range,
-        true,
-        self.options.v_axis_type,
-        "v",
-      );
-
-      // Make a duplicate copy of the scale for use in the axis and adjust the domain if needed.
-      let legend_scale_axis = selectLegendScaleAxis(window.store.getState());
-      const colormap = window.store.getState().colormap;
-      const vIsCategorical = selectVIsCategorical(window.store.getState());
-      const vColumnType = selectVColumnType(window.store.getState());
-      const vScaleType = selectVScaleType(window.store.getState());
-
-      const legendTickCount = range[1] / 50;
-      // d3v7 axis centers ticks in scaleBand domains (categorical color legends).
-      // Must call it on a d3v7 selection — legend_axis_layer is a d3 v3 selection.
-      // Continuous + discrete: ticks on quantize bin edges (hard band boundaries).
-      self.legend_axis = d3v7.axisRight(legend_scale_axis);
-      if (!vIsCategorical && slycat_color_maps.is_discrete(colormap)) {
-        const extent = selectVExtent(window.store.getState());
-        const numericExtent = extent.map((value) =>
-          value instanceof Date ? value.valueOf() : Number(value),
-        );
-        if (numericExtent.length >= 2 && numericExtent.every((value) => Number.isFinite(value))) {
-          const lo = Math.min(...numericExtent);
-          const hi = Math.max(...numericExtent);
-          // Equal-height discrete bands are linear in data space; use linear legend
-          // when the color variable is Log so edge ticks sit on band boundaries.
-          if (vScaleType === "Log") {
-            legend_scale_axis = d3v7
-              .scaleLinear()
-              .domain([hi, lo])
-              .range(legend_scale_axis.range());
-            self.legend_axis = d3v7.axisRight(legend_scale_axis);
-          }
-          self.legend_axis.tickValues(
-            slycat_color_maps.get_discrete_bin_edges(colormap, lo, hi),
-          );
-        } else {
-          self.legend_axis.ticks(legendTickCount);
-        }
-        applyNumericAxisTickFormat(
-          self.legend_axis,
-          legend_scale_axis,
-          legendTickCount,
-          vColumnType,
-          vScaleType,
-        );
-      } else if (!vIsCategorical) {
-        self.legend_axis.ticks(legendTickCount);
-        applyNumericAxisTickFormat(
-          self.legend_axis,
-          legend_scale_axis,
-          legendTickCount,
-          vColumnType,
-          vScaleType,
-        );
-      }
-      d3v7
-        .select(self.legend_axis_layer.node())
-        .attr(
-          "transform",
-          "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)",
-        )
-        .call(self.legend_axis)
-        .style("font-size", self.options.axes_font_size + "px")
-        .style("font-family", self.options.axes_font_family);
-
-      // Truncate long string legend axis tick labels with a middle ellipsis.
-      truncateAxisTickLabels(
-        self.legend_axis_layer.node(),
-        LEGEND_AXIS_TICK_MAX_WIDTH,
-        vColumnType,
-        vScaleType,
-      );
-
-      // When hide-labels would crowd a categorical color legend, hide the whole
-      // legend rather than thinning ticks (which misaligns them with color bands).
-      const hideLabels = selectHideLabels(window.store.getState());
-      const verticalSpacing = selectVerticalSpacing(window.store.getState());
-      const legendScale = selectVScale(window.store.getState());
-      const legendScaleStep = legendScale.step ? legendScale.step() : undefined;
-      const hideCrowdedCategoricalLegend =
-        vIsCategorical &&
-        hideLabels &&
-        legendScaleStep !== undefined &&
-        legendScaleStep < verticalSpacing;
-      self.legend_layer.style("display", hideCrowdedCategoricalLegend ? "none" : null);
-    }
-
-    if (self.updates.update_v_label) {
-      // console.log("updating v label.");
-      self.legend_layer.selectAll(".label").remove();
-
-      var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
-      var x = -15;
-      var y = rectHeight / 2;
-
-      self.legend_layer
-        .append("text")
-        .attr("class", "label")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("transform", "rotate(-90," + x + "," + y + ")")
-        .style("font-size", self.options.axes_font_size + "px")
-        .style("font-family", self.options.axes_font_family)
-        .text(self.options.v_label);
     }
 
     if (self.updates.update_video_sync_time) {

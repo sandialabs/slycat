@@ -7,6 +7,41 @@ import * as d3v7 from "d3v7";
 
 const DEFAULT_COLORMAP = "night";
 
+/** Color-by variable kind for shared legend model (Phase 0 / #1483). */
+export type ColorByLegendVariableKind = "numeric" | "categorical" | "string";
+
+/** Axis scale the legend should use. Discrete+Log uses log. Date & Time uses time. */
+export type ColorByLegendScaleKind = "linear" | "band" | "log" | "time";
+
+/** Host color-by axis type (PS). Log/Date & Time select matching legend scales. */
+export type ColorByLegendScaleType = "Linear" | "Log" | "Date & Time";
+
+/** Discrete numeric bin spacing: equal absolute width vs equal ratio (log). */
+export type DiscreteBinSpacing = "linear" | "log";
+
+export type ColorByLegendGradientStop = {
+  offset: number;
+  color: d3.RGBColor | string;
+};
+
+export type ColorByLegendModelInput = {
+  colormap?: string | null;
+  variableKind: ColorByLegendVariableKind;
+  min?: number | Date;
+  max?: number | Date;
+  uniqueValues?: (number | string)[];
+  scaleType?: ColorByLegendScaleType;
+};
+
+export type ColorByLegendModel = {
+  gradientStops: ColorByLegendGradientStop[];
+  /** Discrete numeric: bin edges. Categorical/string: top→bottom domain (reversed). Else undefined (nice ticks). */
+  tickValues: (number | string | Date)[] | undefined;
+  scaleKind: ColorByLegendScaleKind;
+  resolvedColormap: string;
+  isDiscrete: boolean;
+};
+
 export default {
   // Resolve a colormap name to a known key. Undefined/empty falls back to the
   // current store selection when available; unknown bookmark or renamed maps
@@ -141,9 +176,16 @@ export default {
     return this.get_color_scale(name, min, max);
   },
 
-  // Equal-width bin edges for a discrete colormap over [min, max] (n colors → n+1 edges).
-  // Matches get_color_scale_quantize and equal-height discrete legend gradient bands.
-  get_discrete_bin_edges: function (name: string, min: number, max: number): number[] {
+  // Bin edges for a discrete colormap over [min, max] (n colors → n+1 edges).
+  // linear: equal absolute width (matches get_color_scale_quantize).
+  // log: equal ratio width (matches get_color_scale_quantize_log); falls back to linear
+  // when the extent is non-positive or otherwise invalid for log.
+  get_discrete_bin_edges: function (
+    name: string,
+    min: number,
+    max: number,
+    spacing: DiscreteBinSpacing = "linear",
+  ): number[] {
     name = this.resolve_colormap_name(name);
     if (min === undefined) min = 0.0;
     if (max === undefined) max = 1.0;
@@ -152,8 +194,17 @@ export default {
     }
     const n = this.color_maps[name].colors.length;
     const edges: number[] = [];
+    const useLog = spacing === "log" && min > 0 && max > 0;
     for (var i = 0; i <= n; i++) {
-      edges.push(min + ((max - min) * i) / n);
+      if (useLog) {
+        edges.push(min * Math.pow(max / min, i / n));
+      } else {
+        edges.push(min + ((max - min) * i) / n);
+      }
+    }
+    if (useLog) {
+      edges[0] = min;
+      edges[n] = max;
     }
     return edges;
   },
@@ -185,16 +236,46 @@ export default {
     return d3v7.scaleQuantize<d3.RGBColor>().domain([min, max]).range(colors);
   },
 
+  // Equal-ratio (log-spaced) discrete bins over [min, max]. Falls back to linear quantize
+  // when min === max or the extent is non-positive. Wraps threshold so .domain() is
+  // [min, max] for isValueInColorscaleRange (raw threshold domain is only cut points).
+  get_color_scale_quantize_log: function (name: string, min: number, max: number) {
+    name = this.resolve_colormap_name(name);
+    if (min === undefined) min = 0.0;
+    if (max === undefined) max = 1.0;
+    const colors = this.color_maps[name].colors;
+    if (min === max || !(min > 0 && max > 0)) {
+      return this.get_color_scale_quantize(name, min, max);
+    }
+    const edges = this.get_discrete_bin_edges(name, min, max, "log");
+    const interior = edges.slice(1, -1);
+    const threshold = d3.scale.threshold().domain(interior).range(colors);
+    // Thin wrapper: threshold.domain() is only cut points; callers expect [min, max].
+    const scale: any = function (x: number) {
+      return threshold(x);
+    };
+    scale.domain = function () {
+      return [min, max];
+    };
+    scale.range = function () {
+      return threshold.range();
+    };
+    scale.invertExtent = function (y: any) {
+      return threshold.invertExtent(y);
+    };
+    return scale;
+  },
+
   // Return a d3 log color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing a min and max to suit their own needs.
-  // Discrete maps use equal-width quantize bins on [min, max] (log does not change binning).
+  // Discrete maps use equal-ratio (log-spaced) bins on [min, max].
   get_color_scale_log: function (colormap: string, min: number, max: number) {
     colormap = this.resolve_colormap_name(colormap);
     const rangeMin = min === undefined ? 0.0 : min;
     const rangeMax = max === undefined ? 1.0 : max;
 
     if (this.is_discrete(colormap)) {
-      return this.get_color_scale_quantize(colormap, rangeMin, rangeMax);
+      return this.get_color_scale_quantize_log(colormap, rangeMin, rangeMax);
     }
 
     let domain = [];
@@ -308,6 +389,99 @@ export default {
       data.push({ offset: end, color: color });
     }
     return data;
+  },
+
+  // Shared color-by legend inputs for ColorByLegend (#1483). Hosts still own layout/fonts/drag;
+  // this only centralizes gradient stops, tick values, and scale kind from existing helpers.
+  buildColorByLegendModel: function (input: ColorByLegendModelInput): ColorByLegendModel {
+    const resolvedColormap = this.resolve_colormap_name(input.colormap);
+    const isDiscrete = this.is_discrete(resolvedColormap);
+    const isTime = input.scaleType === "Date & Time";
+    // Date & Time wins over string/categorical (same precedence as scatterplot getScale).
+    const isCategorical =
+      !isTime &&
+      (input.variableKind === "categorical" || input.variableKind === "string");
+
+    const gradientStops: ColorByLegendGradientStop[] = isCategorical
+      ? this.get_ordinal_legend_gradient(resolvedColormap, input.uniqueValues ?? [])
+      : this.get_gradient_data(resolvedColormap);
+
+    let scaleKind: ColorByLegendScaleKind;
+    let tickValues: (number | string | Date)[] | undefined;
+
+    if (isTime) {
+      // Match scatterplot axes: d3 time scale. Discrete bins are equal duration.
+      scaleKind = "time";
+      const minMs =
+        input.min instanceof Date ? input.min.valueOf() : input.min;
+      const maxMs =
+        input.max instanceof Date ? input.max.valueOf() : input.max;
+      if (
+        isDiscrete &&
+        minMs !== undefined &&
+        maxMs !== undefined &&
+        Number.isFinite(minMs) &&
+        Number.isFinite(maxMs)
+      ) {
+        tickValues = this.get_discrete_bin_edges(
+          resolvedColormap,
+          minMs,
+          maxMs,
+          "linear",
+        ).map((ms: number) => new Date(ms));
+      } else {
+        tickValues = undefined;
+      }
+    } else if (isCategorical) {
+      scaleKind = "band";
+      // Top→bottom order matches get_ordinal_legend_gradient and timeseries/PS band domains.
+      tickValues =
+        input.uniqueValues && input.uniqueValues.length > 0
+          ? [...input.uniqueValues].reverse()
+          : undefined;
+    } else if (isDiscrete) {
+      // Equal-height bands: linear bins with linear axis, or log-spaced bins with log axis.
+      const min = input.min;
+      const max = input.max;
+      const minNum = typeof min === "number" ? min : undefined;
+      const maxNum = typeof max === "number" ? max : undefined;
+      const useLog =
+        input.scaleType === "Log" &&
+        minNum !== undefined &&
+        maxNum !== undefined &&
+        minNum > 0 &&
+        maxNum > 0;
+      scaleKind = useLog ? "log" : "linear";
+      if (
+        minNum !== undefined &&
+        maxNum !== undefined &&
+        Number.isFinite(minNum) &&
+        Number.isFinite(maxNum)
+      ) {
+        tickValues = this.get_discrete_bin_edges(
+          resolvedColormap,
+          minNum,
+          maxNum,
+          useLog ? "log" : "linear",
+        );
+      } else {
+        tickValues = undefined;
+      }
+    } else if (input.scaleType === "Log") {
+      scaleKind = "log";
+      tickValues = undefined;
+    } else {
+      scaleKind = "linear";
+      tickValues = undefined;
+    }
+
+    return {
+      gradientStops,
+      tickValues,
+      scaleKind,
+      resolvedColormap,
+      isDiscrete,
+    };
   },
 
   setUpColorMapsForAllColumns: function (

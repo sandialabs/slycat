@@ -41,7 +41,7 @@ import {
   selectSelectedSimulations,
   selectSelectedSimulationsWithoutHidden,
 } from "../dataSlice";
-import { getUniqueCategoryValues } from "../unique-category-values";
+import { getUniqueCategoryValues, isStructuralMissingValue } from "../unique-category-values";
 import * as d3 from "d3v7";
 import _ from "lodash";
 
@@ -215,18 +215,15 @@ const PSHistogram: React.FC<PSHistogramProps> = (props) => {
     // If the x variable is a string or wizard-marked categorical, we can't use
     // d3.bin() (numeric thresholds). Build one bin per unique category instead.
     else if (x_is_categorical && x_scale_type !== "Date & Time") {
-      // Same unique-domain rules as Redux band scales / colorscales (drops nullish).
+      // Same unique-domain rules as Redux band scales / colorscales (drops structural missing).
       const numeric = x_column_type !== "string";
       const uniqueKeys = getUniqueCategoryValues(
         values_and_indexes.map((d) => d.value),
         { numeric },
       );
-      // Drop nullish before grouping so String(null) does not collide with a "null" category.
+      // Drop structural missing before grouping so blanks are not binned under "".
       const countable = values_and_indexes.filter(
-        (d) =>
-          d.value !== null &&
-          d.value !== undefined &&
-          !(typeof d.value === "number" && Number.isNaN(d.value)),
+        (d) => !isStructuralMissingValue(d.value),
       );
       // Group key must match uniqueKeys: numbers for wizard categoricals, String for strings.
       const grouped = d3.group(countable, (d) => (numeric ? d.value : String(d.value)));

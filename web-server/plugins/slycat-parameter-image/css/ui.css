@@ -468,8 +468,17 @@
 #scatterplot .media-layer .open-image:hover .close-button {
   visibility: visible;
 } */
-#scatterplot g.legend:hover {
-  cursor: move;
+/* Color-by legend React overlay. Root is none so plot selection works;
+   ColorByLegend sets pointer-events/cursor on g.legend when draggable. */
+#ps-colorby-legend-root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
 }
 .threeD-media-legend {
   cursor: default;

@@ -6,6 +6,7 @@ import {
   initialState as dataInitialState,
 } from "./services/dataSlice";
 import controlsReducer, { initialState as controlsInitialState } from "./services/controlsSlice";
+import legendReducer from "./services/legendSlice";
 import modelSlice from "./services/modelSlice";
 // @ts-ignore
 import client from "js/slycat-web-client";
@@ -106,10 +107,11 @@ const store = client
         );
       }
 
-      const store = configureStore({
+        const store = configureStore({
         reducer: {
           [apiSlice.reducerPath]: apiSlice.reducer,
           controls: controlsReducer,
+          legend: legendReducer,
           model: modelSlice,
           [DATA_SLICE_NAME]: dataSlice.reducer,
         },
@@ -129,8 +131,9 @@ const store = client
             // in the bookmark, just UI state.
             // Passing 'undefined' removes it from bookmark. Passing 'null' actually
             // sets it to null, so I think it's better to remove it entirely.
+            // Legend display state (uniqueValues, sizes) is ephemeral — rebuild on load.
             // eslint-disable-next-line no-undefined
-            { ...store.getState(), api: undefined },
+            { ...store.getState(), api: undefined, legend: undefined },
         });
       };
       store.subscribe(bookmarkReduxStateTree);
