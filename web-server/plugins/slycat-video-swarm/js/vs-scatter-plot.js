@@ -18,6 +18,7 @@ import client from "js/slycat-web-client";
 import d3 from "d3";
 import URI from "urijs";
 import "jquery-ui";
+import { MDS_LEGEND_GUTTER } from "./mds-legend-layout";
 
 $.widget("mp.scatterplot", {
 
@@ -222,6 +223,9 @@ $.widget("mp.scatterplot", {
 
         self.element.parent().mousedown(function(e)
         {
+          if (e.target.closest && e.target.closest("#vs-colorby-legend .legend")) {
+            return;
+          }
           e.preventDefault();
           self.start_drag = [self._offsetX(e), self._offsetY(e)];
           self.end_drag = null;
@@ -321,8 +325,8 @@ $.widget("mp.scatterplot", {
         var width = $("#mp-mds-pane").width();
         var height = $("#mp-mds-pane").height();
 
-        // set correct viewing window
-        this.x_scale.range([0,width]);
+        // set correct viewing window (right gutter reserved for color-by legend)
+        this.x_scale.range([0, Math.max(0, width - MDS_LEGEND_GUTTER)]);
         this.y_scale.range([height,0]);
 
         // re-size scatter plot
@@ -519,8 +523,6 @@ $.widget("mp.scatterplot", {
         {
             this.options[key] = value;
             this.options.color_var_index = value;
-
-            this.draw();
         }
         else if (key == "current_video")
         {
