@@ -42,6 +42,14 @@ export type ColorByLegendModel = {
   isDiscrete: boolean;
 };
 
+export function legendExtentNumber(value?: number | Date): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const n = value instanceof Date ? value.valueOf() : Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export default {
   // Resolve a colormap name to a known key. Undefined/empty falls back to the
   // current store selection when available; unknown bookmark or renamed maps
@@ -413,6 +421,44 @@ export default {
     const isCategorical =
       !isTime &&
       (input.variableKind === "categorical" || input.variableKind === "string");
+
+    const minNum = legendExtentNumber(input.min);
+    const maxNum = legendExtentNumber(input.max);
+    // Collapsed numeric/time domain: plots use one color (continuous last stop /
+    // discrete colors[0]), but a full-gradient legend puts the tick at mid-bar.
+    if (
+      !isCategorical &&
+      minNum !== undefined &&
+      maxNum !== undefined &&
+      minNum === maxNum
+    ) {
+      const sampleScale = isTime
+        ? this.get_color_scale_time(resolvedColormap, minNum, maxNum)
+        : input.scaleType === "Log"
+          ? this.get_color_scale_log(resolvedColormap, minNum, maxNum)
+          : this.get_color_scale(resolvedColormap, minNum, maxNum);
+      const color = sampleScale(minNum);
+      return {
+        gradientStops: [
+          { offset: 0, color },
+          { offset: 100, color },
+        ],
+        tickValues: [
+          isTime
+            ? input.min instanceof Date
+              ? input.min
+              : new Date(minNum)
+            : minNum,
+        ],
+        scaleKind: isTime
+          ? "time"
+          : input.scaleType === "Log"
+            ? "log"
+            : "linear",
+        resolvedColormap,
+        isDiscrete,
+      };
+    }
 
     const gradientStops: ColorByLegendGradientStop[] = isCategorical
       ? this.get_ordinal_legend_gradient(resolvedColormap, input.uniqueValues ?? [])
