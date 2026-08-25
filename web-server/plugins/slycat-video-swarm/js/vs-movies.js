@@ -438,7 +438,6 @@ $.widget("mp.movies", {
     } else if (key == "color-var-options") {
       this.options[key] = value;
       this.options.color_var_index = value;
-      this._handle_color_change();
     }
   },
 

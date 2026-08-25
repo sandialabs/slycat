@@ -19,6 +19,7 @@ import { Provider } from "react-redux";
 // import TestReact from "../plugin-components/TestReact"
 import VSLoadingPage from "../plugin-components/VSLoadingPage";
 import VSColorSwitcher from "../plugin-components/VSColorSwitcher";
+import VSColorByLegend from "../plugin-components/VSColorByLegend";
 import * as dialog from "js/slycat-dialog";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import ko from "knockout";
@@ -35,6 +36,7 @@ import { COLUMN_LABELS } from "utils/ui-labels";
 import slycat_color_maps from "js/slycat-color-maps";
 import watch from "redux-watch";
 import { createVSStore } from "./store";
+import { setLegend } from "./services/legendSlice";
 // global parameters to set up movie-plex UI
 // -----------------------------------------
 
@@ -76,6 +78,7 @@ var sort_order = null;
 
 var min_value = null;
 var max_value = null;
+var color_by_column_names = null;
 
 var bookmarker = null;
 var bookmark = null;
@@ -267,6 +270,11 @@ function model_loaded() {
           <VSColorSwitcher />
         </Provider>,
       );
+      createRoot(document.getElementById("vs-colorby-legend-root")).render(
+        <Provider store={store}>
+          <VSColorByLegend />
+        </Provider>,
+      );
       store.subscribe(
         watch(store.getState, "controls.colormap")(function (newColormap) {
           selected_colormap_changed(newColormap);
@@ -275,11 +283,11 @@ function model_loaded() {
 
       apply_colormap_chrome();
 
-      //Gets the min and max from the default data set (velocity for now) to calculate the color scale
-      var default_data = table_data[0].data[color_variable];
-
-      max_value = Math.max.apply(null, default_data);
-      min_value = Math.min.apply(null, default_data);
+      color_by_column_names = table_metadata[0]["column-names"];
+      var default_extent = numeric_extent(table_data[0].data[color_variable]);
+      min_value = default_extent.min;
+      max_value = default_extent.max;
+      sync_color_by_legend();
 
       // first row of trajectories data contains time points
       var time_data = time_trajectories[0][0];
@@ -304,7 +312,13 @@ function model_loaded() {
       // set up the trajetories pane
       // traj_plot.setup(time_data, traj_data);
 
-      color_scale = slycat_color_maps.get_color_scale(colormap, min_value, max_value);
+      var initial_scale_min = min_value == null ? 0.0 : min_value;
+      var initial_scale_max = max_value == null ? 1.0 : max_value;
+      color_scale = slycat_color_maps.get_color_scale(
+        colormap,
+        initial_scale_min,
+        initial_scale_max,
+      );
       color_array = slycat_color_maps.get_gradient_data(colormap);
 
       //background defaults to "night"
@@ -473,8 +487,8 @@ function model_loaded() {
       $("#controls").controls(controls_options);
 
       $("#controls").bind("color-selection-changed", function (event, newVar) {
-        update_current_colorscale(table_data, newVar);
         update_coloring_var(newVar);
+        update_current_colorscale(table_data, newVar);
       });
 
       $("#controls").bind("pinned_simulations_changed", function (event, pinned_simulations) {
@@ -553,8 +567,8 @@ function model_loaded() {
         },
       );
       $("#mp-datapoints-table").bind("color-selection-changed", function (event, newVar) {
-        update_current_colorscale(table_data, newVar);
         update_coloring_var(newVar);
+        update_current_colorscale(table_data, newVar);
       });
       $("#mp-datapoints-table").bind("variable-sort-changed", function (event, variable, order) {
         variable_sort_changed(variable, order);
@@ -772,8 +786,6 @@ function update_coloring_var(newVar) {
   $("#mp-datapoints-table").table("option", "color_variable", color_variable);
 
   bookmarker.updateState({ "variable-selection": color_variable });
-
-  //Will probably need to pass new min and max to color-switcher, so you can set the new color scale
 }
 
 function update_scatterplot_color() {
@@ -842,20 +854,58 @@ function update_colormap(new_colormap) {
   });
 }
 
+function numeric_extent(values) {
+  var min = Infinity;
+  var max = -Infinity;
+  if (values == null) {
+    return { min: null, max: null };
+  }
+  for (var i = 0; i < values.length; i++) {
+    var n = Number(values[i]);
+    if (!Number.isFinite(n)) {
+      continue;
+    }
+    if (n < min) min = n;
+    if (n > max) max = n;
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return { min: null, max: null };
+  }
+  return { min: min, max: max };
+}
+
+function sync_color_by_legend() {
+  if (!store || !color_by_column_names) {
+    return;
+  }
+  var has_extent = min_value != null && max_value != null;
+  store.dispatch(
+    setLegend({
+      ready: has_extent,
+      label: color_by_column_names[color_variable] || "",
+      min: min_value,
+      max: max_value,
+    }),
+  );
+}
+
 function update_current_colorscale(table_data, new_color_variable) {
   //If you're changing the variable to color by
   if (table_data != null || new_color_variable != null) {
     var new_data = table_data[0].data[new_color_variable];
-
-    max_value = Math.max.apply(null, new_data);
-    min_value = Math.min.apply(null, new_data);
+    var extent = numeric_extent(new_data);
+    min_value = extent.min;
+    max_value = extent.max;
   }
 
-  color_scale = slycat_color_maps.get_color_scale(colormap, min_value, max_value);
+  var scale_min = min_value == null ? 0.0 : min_value;
+  var scale_max = max_value == null ? 1.0 : max_value;
+  color_scale = slycat_color_maps.get_color_scale(colormap, scale_min, scale_max);
   color_array = slycat_color_maps.get_gradient_data(colormap);
 
   update_movies_color();
   update_waveform_color();
   update_scatterplot_color();
   update_table_color();
+  sync_color_by_legend();
 }
