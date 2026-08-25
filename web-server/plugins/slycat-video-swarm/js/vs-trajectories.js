@@ -18,6 +18,7 @@ import mapping from "knockout-mapping";
 import knob from "jquery-knob";
 import _ from "lodash";
 import "jquery-ui";
+import parseCSSColor from "parse-css-color";
 
 $.widget("mp.trajectories",
 {
@@ -31,6 +32,9 @@ $.widget("mp.trajectories",
     color_scale : null,
     foreground_color : ko.observable(null),
     hover_background_color : ko.observable(null),
+    background : null,
+    opacity : null,
+    null_color : null,
     nullWaveformColor: "gray",
     nullWaveformDasharray: "5,5",
     hover : [],
@@ -370,12 +374,11 @@ $.widget("mp.trajectories",
     this.canvas_picker.width = this.diagram_width();
     this.canvas_picker.height = this.diagram_height();
 
-    var fillStyle = $("#color-switcher").colorswitcher("get_background");
-    var opacity = $("#color-switcher").colorswitcher("get_opacity");
+    var fillStyle = self._backgroundRgba();
 
-    this.canvas_hover_ctx.fillStyle      = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
-    this.canvas_selection_ctx.fillStyle  = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
-    this.canvas_animation_ctx.fillStyle  = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
+    this.canvas_hover_ctx.fillStyle      = fillStyle;
+    this.canvas_selection_ctx.fillStyle  = fillStyle;
+    this.canvas_animation_ctx.fillStyle  = fillStyle;
 
     var waveform_subset = [];
     if(visible !== undefined) {
@@ -522,6 +525,8 @@ $.widget("mp.trajectories",
         waveform_subset.push(self.waveforms[node_index]);
     }
 
+    self.canvas_hover.style.cursor = waveform_subset.length > 0 ? "pointer" : "";
+
     // Clear the canvas
     self.canvas_hover_ctx.clearRect(0, 0, self.canvas_hover.width, self.canvas_hover.height);
     // Apply semi transparent background if we are displaying any waveforms
@@ -665,6 +670,14 @@ $.widget("mp.trajectories",
     this._selection();
   },
 
+  _backgroundRgba: function(opacity)
+  {
+    var parsed = parseCSSColor(this.options.background);
+    var values = parsed && parsed.values ? parsed.values : [0, 0, 0];
+    var alpha = opacity !== undefined ? opacity : this.options.opacity;
+    return "rgba(" + values[0] + ", " + values[1] + ", " + values[2] + ", " + alpha + ")";
+  },
+
   _strokeLine: function(waveform_index, canvas_context, lineWidth)
   {
     var self = this;
@@ -677,7 +690,7 @@ $.widget("mp.trajectories",
     }
     else
     {
-      strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+      strokeStyle = self.options.null_color;
       canvas_context.setLineDash([8, 4]);
     }
 
@@ -720,14 +733,12 @@ $.widget("mp.trajectories",
     var fadeOut = 200;
     var fadeIn = 400;
 
-    var fillStyle = $("#color-switcher").colorswitcher("get_background");
-    // var opacity = $("#color-switcher").colorswitcher("get_opacity");
-    var opacity = 1;
+    var fillStyle = self._backgroundRgba(1);
     var lineWidth = 1;
 
     var targetContext = self.canvas_animation_ctx;
 
-    targetContext.fillStyle = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
+    targetContext.fillStyle = fillStyle;
 
     // Move line to top of canvases
     self._bring_to_top(value);
@@ -811,6 +822,9 @@ $.widget("mp.trajectories",
       this.options.color_scale = value.color_scale;
       this.options.foreground_color(value.foreground_color);
       this.options.hover_background_color(value.hover_background_color);
+      this.options.null_color = value.null_color;
+      this.options.background = value.background;
+      this.options.opacity = value.opacity;
 
       this._set_visible();
       this._selection();
