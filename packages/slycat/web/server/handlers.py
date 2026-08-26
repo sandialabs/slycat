@@ -723,10 +723,7 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
                 columns[index] = numpy.array(columns[index], dtype="float64")
                 column_types[index] = "float64"
             else:
-                stringType = "S" + str(
-                    len(columns[index][0])
-                )  # using length of first string for whole column
-                columns[index] = numpy.array(columns[index], dtype=stringType)
+                columns[index] = numpy.array(columns[index], dtype=numpy.dtypes.StringDType())
                 column_types[index] = "string"
         except:
             pass
@@ -897,10 +894,7 @@ def create_project_data(mid, aid, file):
                     columns[index] = numpy.array(columns[index], dtype="float64")
                     column_types[index] = "float64"
                 else:
-                    stringType = "S" + str(
-                        len(columns[index][0])
-                    )  # using length of first string for whole column
-                    columns[index] = numpy.array(columns[index], dtype=stringType)
+                    columns[index] = numpy.array(columns[index], dtype=numpy.dtypes.StringDType())
                     column_types[index] = "string"
             except:
                 pass
@@ -3379,7 +3373,7 @@ def post_combine_hdf5_tables(mid):
     project_data = database.get("project_data", did)
     file_name = project_data["hdf5_name"]
     hdf5_path = (
-        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/" + file_name
     )
     h5 = h5py.File(hdf5_path, "r")
 
@@ -3599,7 +3593,7 @@ def post_browse_hdf5(path, pid, mid):
     project_data = database.get("project_data", did)
     file_name = project_data["hdf5_name"]
     hdf5_path = (
-        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/" + file_name
     )
     h5 = h5py.File(hdf5_path, "r")
     tree_structure = {}
