@@ -903,58 +903,80 @@ export const useFinishModel = () => {
   }, [mid, name, description, marking]);
 };
 
+type RemoteCredentials = {
+  hostname?: string;
+  username?: string;
+  password?: string;
+};
+
 /**
  * Creates a function that uses authentication state to authenticate to a remote server.
+ * Pass credentials from onEnter so POST is not racing a Redux write.
  * @returns callback function
  */
 export const useHandleAuthentication = () => {
   const authInfo = useAppSelector(selectAuthInfo);
   const dispatch = useAppDispatch();
 
-  return React.useCallback(async () => {
-    dispatch(setLoading(true));
+  return React.useCallback(
+    async (credentials?: RemoteCredentials) => {
+      const hostname = credentials?.hostname ?? authInfo.hostname;
+      const username = credentials?.username ?? authInfo.username;
+      const password = credentials?.password ?? authInfo.password;
 
-    if (!authInfo.password) {
-      dispatch(setLoading(false));
-      alert("password is empty");
-      return;
-    }
+      dispatch(setLoading(true));
 
-    client
-      .post_remotes_fetch({
-        parameters: {
-          hostname: authInfo.hostname,
-          username: authInfo.username,
-          password: atob(authInfo.password),
-        },
-      })
-      .then(async () => {
-        return client.get_remotes_fetch(authInfo.hostname).then((json: any) => {
-          if (json.status === false) {
-            alert("connection could not be established");
-          } else {
-            dispatch(setAuthInfo({ ...authInfo, sessionExists: true }));
-          }
-
-          dispatch(setLoading(false));
-          dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
-        });
-      })
-      .catch((errorResponse: any) => {
+      if (!password) {
         dispatch(setLoading(false));
+        alert("password is empty");
+        return;
+      }
 
-        if (errorResponse.status == 403) {
-          alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
+      client
+        .post_remotes_fetch({
+          parameters: {
+            hostname,
+            username,
+            password,
+          },
+        })
+        .then(async () => {
+          return client.get_remotes_fetch(hostname).then((json: any) => {
+            if (json.status === false) {
+              alert("connection could not be established");
+            } else {
+              dispatch(
+                setAuthInfo({
+                  ...authInfo,
+                  hostname,
+                  username,
+                  password,
+                  sessionExists: true,
+                }),
+              );
+            }
+
+            dispatch(setLoading(false));
+            dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
+          });
+        })
+        .catch((errorResponse: any) => {
+          dispatch(setLoading(false));
+
+          if (errorResponse.status == 403) {
+            alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
         \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
-        } else if (errorResponse.status == 401) {
-          alert(
-            `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
-          );
-        } else {
-          alert(`${errorResponse.statusText}`);
-        }
-      });
-  }, [authInfo, dispatch]);
+          } else if (errorResponse.status == 401) {
+            alert(
+              `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
+            );
+          } else {
+            alert(`${errorResponse.statusText}`);
+          }
+        });
+    },
+    [authInfo, dispatch],
+  );
 };
 
 /**

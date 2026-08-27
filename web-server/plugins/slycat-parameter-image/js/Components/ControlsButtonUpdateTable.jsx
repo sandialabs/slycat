@@ -7,7 +7,7 @@ import "../../css/controls-button-var-options.css";
 import { FileSelector } from "./FileSelector";
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
-import SlycatRemoteControls from "components/SlycatRemoteControls.jsx";
+import SshAuthentication from "components/SshAuthentication";
 import SlycatSelector from "components/SlycatSelector.tsx";
 import ConnectButton from "components/ConnectButton.tsx";
 import SlycatFormRadioCheckbox from "components/SlycatFormRadioCheckbox.tsx";
@@ -37,6 +37,7 @@ const warningMessage = (
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
     super(props);
+    this.connectButtonRef = React.createRef();
     this.state = {
       modalId: "varUpdateTableModal",
       title: "Update Data Table",
@@ -98,13 +99,35 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({ files: selectorFiles, disabled: false });
   };
 
-  controlsCallBack = (newHostname, newUsername, newPassword, sessionExists) => {
+  applySshValues = (values) => {
     this.setState({
-      hostname: newHostname,
-      sessionExists: sessionExists,
-      username: newUsername,
-      password: newPassword,
+      hostname: values.hostname,
+      sessionExists: values.sessionExists,
+      username: values.username,
+      password: values.password,
     });
+  };
+
+  handleSshEnter = (values) => {
+    this.setState(
+      {
+        hostname: values.hostname,
+        sessionExists: values.sessionExists,
+        username: values.username,
+        password: values.password,
+      },
+      () => {
+        if (values.sessionExists) {
+          this.continue();
+        } else {
+          this.connectButtonRef.current?.connectWith(
+            values.hostname,
+            values.username,
+            values.password,
+          );
+        }
+      },
+    );
   };
 
   sourceSelect = (value) => {
@@ -324,6 +347,7 @@ export default class ControlsButtonUpdateTable extends Component {
     if (this.state.sessionExists != true && this.state.visible_tab === "2") {
       footerJSX.push(
         <ConnectButton
+          ref={this.connectButtonRef}
           key={3}
           text="Continue"
           loadingData={this.state.loadingData}
@@ -400,9 +424,11 @@ export default class ControlsButtonUpdateTable extends Component {
         ) : null}
 
         {this.state.visible_tab === "2" ? (
-          <SlycatRemoteControls
+          <SshAuthentication
+            hostnameMode="editable"
             loadingData={this.state.loadingData}
-            callBack={this.controlsCallBack}
+            onChange={this.applySshValues}
+            onEnter={this.handleSshEnter}
           />
         ) : null}
 

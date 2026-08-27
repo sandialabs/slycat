@@ -1,0 +1,164 @@
+import client from "js/slycat-web-client";
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+
+export type HostnameMode = "editable" | "locked" | "hidden";
+
+export type SshAuthValues = {
+  protocol: "ssh";
+  hostname: string;
+  username: string;
+  password: string;
+  sessionExists: boolean;
+};
+
+export type SmbAuthValues = {
+  protocol: "smb";
+  hostname: string;
+  username: string;
+  password: string;
+  share: string;
+  domain: string;
+  sessionExists: boolean;
+};
+
+export const SSH_STORAGE_KEYS = {
+  hostname: "slycat-remote-controls-hostname",
+  username: "slycat-remote-controls-username",
+} as const;
+
+export const SMB_STORAGE_KEYS = {
+  hostname: "slycat-smb-remote-controls-hostname",
+  username: "slycat-smb-remote-controls-username",
+  share: "slycat-smb-remote-controls-share",
+  domain: "slycat-smb-remote-controls-domain",
+} as const;
+
+export type RemoteSessionCheck = {
+  sessionExists: boolean;
+  stale: boolean;
+};
+
+type RemoteSessionSnapshot = {
+  hostname: string;
+  share?: string;
+};
+
+export type CheckRemoteSessionOptions = {
+  share?: string;
+  /** After the GET, discard the result if hostname/share no longer match. */
+  getCurrent?: () => RemoteSessionSnapshot;
+};
+
+export type PostSmbSessionParams = {
+  username: string;
+  password: string;
+  domain?: string;
+  server: string;
+  share: string;
+};
+
+type RemoteSessionJson = {
+  status?: boolean;
+  share?: string;
+};
+
+const isCheckableHostname = (hostname: string | null | undefined): hostname is string => {
+  if (hostname == null || hostname === "") {
+    return false;
+  }
+  return !hostname.includes("\\") && !hostname.includes("/") && !hostname.includes(" ");
+};
+
+const isStaleResponse = (
+  requested: RemoteSessionSnapshot,
+  options: CheckRemoteSessionOptions,
+): boolean => {
+  if (!options.getCurrent) {
+    return false;
+  }
+  const current = options.getCurrent();
+  if (current.hostname !== requested.hostname) {
+    return true;
+  }
+  if (options.share !== undefined && current.share !== requested.share) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Encode a string as base64, including Unicode (same algorithm as SmbAuthentication).
+ */
+export const b64EncodeUnicode = (value: string): string => {
+  return btoa(
+    encodeURIComponent(value).replace(/%([0-9A-F]{2})/g, (_match, p1: string) => {
+      return String.fromCharCode(Number.parseInt(p1, 16));
+    }),
+  );
+};
+
+/**
+ * GET /api/remotes/:hostname and decide whether a session exists.
+ * SSH: json.status. SMB: json.status and json.share === share.
+ * Skips the GET for empty hostnames or hostnames containing \, /, or space.
+ */
+export const checkRemoteSession = async (
+  hostname: string | null | undefined,
+  options: CheckRemoteSessionOptions = {},
+): Promise<RemoteSessionCheck> => {
+  if (!isCheckableHostname(hostname)) {
+    return { sessionExists: false, stale: false };
+  }
+
+  const requested: RemoteSessionSnapshot = {
+    hostname,
+    share: options.share,
+  };
+
+  try {
+    const json = (await client.get_remotes_fetch(hostname)) as RemoteSessionJson;
+    if (isStaleResponse(requested, options)) {
+      return { sessionExists: false, stale: true };
+    }
+    const sessionExists =
+      options.share !== undefined
+        ? Boolean(json.status) && json.share === options.share
+        : Boolean(json.status);
+    return { sessionExists, stale: false };
+  } catch {
+    if (isStaleResponse(requested, options)) {
+      return { sessionExists: false, stale: true };
+    }
+    return { sessionExists: false, stale: false };
+  }
+};
+
+/**
+ * POST an SMB session. Encodes username (user@domain when domain is set) and password,
+ * then calls the JSON POST helper.
+ */
+export const postSmbSession = (params: PostSmbSessionParams): Promise<Response> => {
+  const username = params.username.trim();
+  const domain = params.domain?.trim() ?? "";
+  const userName = domain ? `${username}@${domain}` : username;
+
+  return client.post_remotes_smb_fetch({
+    user_name: b64EncodeUnicode(userName),
+    password: b64EncodeUnicode(params.password),
+    server: params.server.trim(),
+    share: params.share.trim(),
+  });
+};
+
+/**
+ * Knockout-compatible helper: set the wizard status alert after a dropped session.
+ */
+export const remoteControlsReauth = (
+  status: (message: string) => void,
+  statusType: (type: string) => void,
+): void => {
+  status(
+    `Oops, your session has disconnected. Please ${REMOTE_AUTH_LABELS.signIn.toLowerCase()} again.`,
+  );
+  statusType("danger");
+};

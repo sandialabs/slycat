@@ -6,6 +6,7 @@ import HPCParametersTab from "plugins/slycat-timeseries-model/plugin-components/
 import ModelNamingTab from "plugins/slycat-timeseries-model/plugin-components/ModelNamingTab";
 import TimeseriesParametersTab from "plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab";
 import ConnectButton from "components/ConnectButton";
+import type { SshAuthValues } from "utils/remote-auth";
 import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import server_root from "js/slycat-server-root";
 import { cloneDeep } from "lodash";
@@ -121,6 +122,39 @@ export default class TimeseriesWizard extends React.Component<
     this.getMarkings();
   }
 
+  connectButtonRef = React.createRef<ConnectButton>();
+
+  applySshValues = (values: SshAuthValues) => {
+    this.setState({
+      hostname: values.hostname,
+      sessionExists: values.sessionExists,
+      username: values.username,
+      password: values.password,
+    });
+  };
+
+  handleSshEnter = (values: SshAuthValues) => {
+    this.setState(
+      {
+        hostname: values.hostname,
+        sessionExists: values.sessionExists,
+        username: values.username,
+        password: values.password,
+      },
+      () => {
+        if (values.sessionExists) {
+          this.continue();
+        } else {
+          this.connectButtonRef.current?.connectWith(
+            values.hostname,
+            values.username,
+            values.password,
+          );
+        }
+      },
+    );
+  };
+
   getBodyJsx(): JSX.Element {
     return (
       <div>
@@ -159,22 +193,10 @@ export default class TimeseriesWizard extends React.Component<
               onChange={(value: string) => {
                 this.setState({ selectedOption: value });
               }}
-              sessionExists={this.state.sessionExists}
               checked={this.state.selectedOption}
               loadingData={this.state.loadingData}
-              callBack={(
-                newHostname: string,
-                newUsername: string,
-                newPassword: string,
-                sessionExists: boolean,
-              ) => {
-                this.setState({
-                  hostname: newHostname,
-                  sessionExists: sessionExists,
-                  username: newUsername,
-                  password: newPassword,
-                });
-              }}
+              onAuthChange={this.applySshValues}
+              onAuthEnter={this.handleSshEnter}
             />
             <div className="col-sm-12">
               {this.state.loadingData && (
@@ -187,14 +209,15 @@ export default class TimeseriesWizard extends React.Component<
         ) : null}
         {this.state.visibleTab === "1" ? (
           <div>
-
             {this.state.selectedOption === "csv" ? (
               <div className="alert alert-primary" role="alert">
                 Select the composite Slycat format CSV table.
-              </div>) : 
+              </div>
+            ) : (
               <div className="alert alert-primary" role="alert">
                 Select the Dakota tabular file (*.dat).
-              </div> }
+              </div>
+            )}
 
             <RemoteFileBrowser
               selectedOption={this.state.selectedOption}
@@ -213,7 +236,7 @@ export default class TimeseriesWizard extends React.Component<
               columnNames={this.state.columnNames}
               allColumnNames={this.state.allColumnNames}
               indexColumnCallback={(col: string) => {
-                this.setState({indexColumn: col});
+                this.setState({ indexColumn: col });
               }}
               delimiterCallback={(delim: string) => {
                 this.setState({ delimiter: delim });
@@ -295,7 +318,7 @@ export default class TimeseriesWizard extends React.Component<
                 this.setState({ workDir: dir });
               }}
               licenseCallback={(license: string) => {
-                this.setState({ license: license});
+                this.setState({ license: license });
               }}
             />
           </div>
@@ -344,6 +367,7 @@ export default class TimeseriesWizard extends React.Component<
     ) {
       footerJSX.push(
         <ConnectButton
+          ref={this.connectButtonRef}
           key={3}
           text="Continue"
           loadingData={this.state.loadingData}
@@ -561,16 +585,20 @@ export default class TimeseriesWizard extends React.Component<
       this.setState({ selectedTablePath: selectedPath });
       this.setState({ inputDirectory: inputDirectory });
     }
-    if (selectedPathType === "f" && this.state.selectedOption === "csv" && selectedPath.includes('.csv')) {
+    if (
+      selectedPathType === "f" &&
+      this.state.selectedOption === "csv" &&
+      selectedPath.includes(".csv")
+    ) {
       client
-      .get_all_column_names_fetch({
-        hostname: this.state.hostname,
-        path: selectedPath,
-      })
-      .then((result) => {
-        console.log(result);
-        this.handleAllColumnNames(result);
-      });
+        .get_all_column_names_fetch({
+          hostname: this.state.hostname,
+          path: selectedPath,
+        })
+        .then((result) => {
+          console.log(result);
+          this.handleAllColumnNames(result);
+        });
 
       client
         .get_time_series_names_fetch({
@@ -582,7 +610,7 @@ export default class TimeseriesWizard extends React.Component<
         });
     }
     if (selectedPathType === "f" && this.state.selectedOption === "xyce") {
-      this.setState({indexColumn: "%eval_id"});
+      this.setState({ indexColumn: "%eval_id" });
     }
   };
 
@@ -610,7 +638,7 @@ export default class TimeseriesWizard extends React.Component<
       allColumnNames.push({ text: names[i], value: names[i] });
     }
     this.setState({ allColumnNames: allColumnNames });
-    this.setState({indexColumn: allColumnNames[0].text});
+    this.setState({ indexColumn: allColumnNames[0].text });
   };
 
   handleColumnNames = (names: []) => {
@@ -694,7 +722,7 @@ export default class TimeseriesWizard extends React.Component<
           time_hours: this.state.jobHours,
           time_minutes: this.state.jobMin,
           time_seconds: 0,
-          license: this.state.license ?? '',
+          license: this.state.license ?? "",
           working_dir: fn_params.workdir + "/slycat/",
         },
       },

@@ -92,18 +92,26 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
    * @memberof ConnectButton
    */
   private connect = async () => {
+    this.connectWith(this.props.hostname, this.props.username, this.props.password);
+  };
+
+  /**
+   * Same as clicking the button, with credentials that may be newer than props
+   * (form onEnter).
+   */
+  public connectWith = async (hostname: string, username: string, password: string) => {
     this.setState({ loadingData: true });
     this.props.callBack(this.state.sessionExists, true);
     client
       .post_remotes_fetch({
         parameters: {
-          hostname: this.props.hostname,
-          username: this.props.username,
-          password: this.props.password,
+          hostname,
+          username,
+          password,
         },
       })
       .then(() => {
-        this.checkRemoteStatus(this.props.hostname);
+        this.checkRemoteStatus(hostname);
       })
       .catch((errorResponse: any) => {
         if (errorResponse.status == 403) {
