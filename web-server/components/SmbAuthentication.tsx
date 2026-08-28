@@ -1,457 +1,306 @@
-import React from "react";
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC.
+Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+retains certain rights in this software. */
+
+import * as React from "react";
 import client from "js/slycat-web-client";
-import { REMOTE_AUTH_LABELS } from "../utils/ui-labels";
+import { checkRemoteSession, SMB_STORAGE_KEYS, type SmbAuthValues } from "utils/remote-auth";
+import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
-/**
- * this class sets up and tests a remote session to an agent
- */
-export default class SmbAuthentication extends React.Component<any, any> {
-  /**
-   *Creates an instance of SmbAuthentication.
-   * @param {callBack, ConnectButton} props,
-   * callback: function
-   * where hostname, username, password, and session exist are return to the callee
-   * every time the hostname is changed. session exist should always be checked before
-   * moving on in in your logic structure.
-   * connectButton: bool tells UI to include connect
-   * @memberof SmbAuthentication
-   */
-  constructor(props) {
-    super(props);
-    const display = this.populateDisplay();
-    this.state = {
-      remote_hosts: [],
-      hostname: display.hostname ? display.hostname : null,
-      username: display.username ? display.username : null,
-      session_exists: null,
-      password: "",
-      share: display.share ? display.share : null,
-      domain: display.domain ? display.domain : null,
-      domains: [],
-      hostnames: [],
-      loadingData: this.props.loadingData,
-      initialLoad: false,
-      smb_info: this.props.smb_info,
+export type SmbInfo = {
+  hostname: string;
+  collab?: string;
+};
+
+export type SmbAuthenticationProps = {
+  onChange: (values: SmbAuthValues) => void;
+  onEnter?: (values: SmbAuthValues) => void;
+  loadingData?: boolean;
+  /** Pin-media: seed hostname/share from the URI and do not persist those keys. */
+  smbInfo?: SmbInfo;
+};
+
+const readStored = (key: string): string => {
+  const value = localStorage.getItem(key);
+  return value && value !== "null" ? value : "";
+};
+
+const persist = (key: string, value: string): void => {
+  localStorage.setItem(key, value);
+};
+
+const SmbAuthentication = (props: SmbAuthenticationProps) => {
+  const loadingData = Boolean(props.loadingData);
+  const smbInfo = props.smbInfo;
+  const persistHostAndShare = smbInfo === undefined;
+
+  const ids = React.useId();
+  const hostnameId = `${ids}-hostname`;
+  const shareId = `${ids}-share`;
+  const usernameId = `${ids}-username`;
+  const domainId = `${ids}-domain`;
+  const passwordId = `${ids}-password`;
+  const hostnameDropdownId = `${ids}-hosts`;
+  const domainDropdownId = `${ids}-domains`;
+
+  const [hostnames, setHostnames] = React.useState<string[]>([]);
+  const [domains, setDomains] = React.useState<string[]>([]);
+  const [hostname, setHostname] = React.useState(() =>
+    smbInfo ? (smbInfo.hostname ?? "") : readStored(SMB_STORAGE_KEYS.hostname),
+  );
+  const [share, setShare] = React.useState(() =>
+    smbInfo ? (smbInfo.collab ?? "") : readStored(SMB_STORAGE_KEYS.share),
+  );
+  const [username, setUsername] = React.useState(() => readStored(SMB_STORAGE_KEYS.username));
+  const [domain, setDomain] = React.useState(() => readStored(SMB_STORAGE_KEYS.domain));
+  const [password, setPassword] = React.useState("");
+  const [sessionExists, setSessionExists] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
+
+  const hostnameRef = React.useRef(hostname);
+  hostnameRef.current = hostname;
+  const shareRef = React.useRef(share);
+  shareRef.current = share;
+  const onChangeRef = React.useRef(props.onChange);
+  onChangeRef.current = props.onChange;
+  const onEnterRef = React.useRef(props.onEnter);
+  onEnterRef.current = props.onEnter;
+
+  const currentValues = (): SmbAuthValues => ({
+    protocol: "smb",
+    hostname,
+    username,
+    password,
+    share,
+    domain,
+    sessionExists,
+  });
+
+  const pinMedia = smbInfo !== undefined;
+  const smbHostname = smbInfo?.hostname;
+  const smbShare = smbInfo?.collab;
+
+  React.useEffect(() => {
+    if (!pinMedia) {
+      return;
+    }
+    setHostname(smbHostname ?? "");
+    setShare(smbShare ?? "");
+  }, [pinMedia, smbHostname, smbShare]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const loadLists = async () => {
+      const [hostsResult, domainsResult] = await Promise.allSettled([
+        client.get_configuration_smb_remote_hosts_fetch() as Promise<{ hostnames?: string[] }>,
+        client.get_configuration_smb_domains_fetch() as Promise<{ domains?: string[] }>,
+      ]);
+      if (cancelled) {
+        return;
+      }
+      if (hostsResult.status === "fulfilled") {
+        setHostnames(hostsResult.value.hostnames ?? []);
+      }
+      if (domainsResult.status === "fulfilled") {
+        setDomains(domainsResult.value.domains ?? []);
+      }
+      setReady(true);
     };
-  }
-  private poll;
-  /**
-   * function used to test if we have an ssh connection to the hostname
-   * @param {hostname}
-   * @memberof SmbAuthentication
-   */
-  checkRemoteStatus = async (hostname) => {
-    return client
-      .get_remotes_fetch(hostname)
-      .then((json) => {
-        this.setState(
-          {
-            session_exists: json.status && json.share === this.state.share,
-            initialLoad: true,
-            loadingData: false,
-          },
-          () => {
-            this.props.callBack(
-              this.state.hostname,
-              this.b64EncodeUnicode(this.state.username + "@" + this.state.domain),
-              this.b64EncodeUnicode(this.state.password),
-              this.state.share,
-              this.state.domain,
-              this.state.session_exists,
-            );
-          },
-        );
-      })
-      .catch((response) => {
-        this.setState(
-          {
-            session_exists: false,
-            initialLoad: true,
-            loadingData: false,
-          },
-          () => {
-            this.props.callBack(
-              this.state.hostname,
-              this.b64EncodeUnicode(this.state.username),
-              this.b64EncodeUnicode(this.state.password),
-              this.state.share,
-              this.state.domain,
-              this.state.session_exists,
-            );
-          },
-        );
-      });
-  };
-  /**
-   * takes a string value and encodes it to b64
-   * @param str string to be encode
-   * @returns encoded result
-   */
-  b64EncodeUnicode = (str) => {
-    return btoa(
-      encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-        return String.fromCharCode("0x" + p1);
-      }),
-    );
-  };
-  /**
-   * gets a list of all the known remote hosts that we can connect to
-   * via ssh
-   *
-   * @memberof SmbAuthentication
-   */
-  getRemoteHosts = async () => {
-    return client.get_configuration_smb_remote_hosts_fetch().then((json) => {
-      this.setState({ hostnames: json.hostnames });
-    });
-  };
 
-  /**
-   * gets a list of all the known domain names that we can connect to
-   * via ssh
-   *
-   * @memberof SmbAuthentication
-   */
-  getDomains = async () => {
-    return client.get_configuration_smb_domains_fetch().then((json) => {
-      this.setState({ domains: json.domains });
-    });
-  };
-
-  async componentDidMount() {
-    await this.checkRemoteStatus(this.state.hostname);
-    await this.getRemoteHosts();
-    await this.getDomains();
-    if (this.poll) {
-      clearInterval(this.poll);
-    }
-    this.poll = setInterval(async () => await this.checkRemoteStatus(this.state.hostname), 5000);
-  }
-
-  /**
-   * checks local browser storage for the last used hostname and username
-   *
-   * @memberof SmbAuthentication
-   */
-  populateDisplay = (): any => {
-    const display: any = {};
-    if (!this.props.hover) {
-      if (localStorage.getItem("slycat-smb-remote-controls-hostname")) {
-        display.hostname = localStorage.getItem("slycat-smb-remote-controls-hostname")
-          ? localStorage.getItem("slycat-smb-remote-controls-hostname")
-          : null;
-      }
-      if (localStorage.getItem("slycat-smb-remote-controls-username")) {
-        display.username = localStorage.getItem("slycat-smb-remote-controls-username")
-          ? localStorage.getItem("slycat-smb-remote-controls-username")
-          : null;
-      }
-      if (localStorage.getItem("slycat-smb-remote-controls-share")) {
-        display.share = localStorage.getItem("slycat-smb-remote-controls-share")
-          ? localStorage.getItem("slycat-smb-remote-controls-share")
-          : null;
-      }
-      if (localStorage.getItem("slycat-smb-remote-controls-domain")) {
-        display.domain = localStorage.getItem("slycat-smb-remote-controls-domain")
-          ? localStorage.getItem("slycat-smb-remote-controls-domain")
-          : null;
-      }
-    } else {
-      display.hostname = this.props.smb_info["hostname"];
-      display.share = this.props.smb_info["collab"];
-    }
-    return display;
-  };
-
-  /**
-   * updates local storage and react state depending on which input
-   * is being typed in
-   *
-   * @memberof SmbAuthentication
-   */
-  onValueChange = (value, type) => {
-    switch (type) {
-      case "share":
-        localStorage.setItem("slycat-smb-remote-controls-share", value);
-        this.setState({ share: value }, () => {
-          this.checkRemoteStatus(this.state.hostname);
-          this.props.callBack(
-            this.state.hostname,
-            this.b64EncodeUnicode(this.state.username + "@" + this.state.domain),
-            this.b64EncodeUnicode(this.state.password),
-            this.state.share,
-            this.state.domain,
-            this.state.session_exists,
-          );
-        });
-        break;
-      case "domain":
-        localStorage.setItem("slycat-smb-remote-controls-domain", value);
-        this.setState({ domain: value }, () => {
-          this.props.callBack(
-            this.state.hostname,
-            this.b64EncodeUnicode(this.state.username + "@" + this.state.domain),
-            this.b64EncodeUnicode(this.state.password),
-            this.state.share,
-            this.state.domain,
-            this.state.session_exists,
-          );
-        });
-        break;
-      case "username":
-        localStorage.setItem("slycat-smb-remote-controls-username", value);
-        this.setState({ username: value }, () => {
-          this.props.callBack(
-            this.state.hostname,
-            this.b64EncodeUnicode(this.state.username + "@" + this.state.domain),
-            this.b64EncodeUnicode(this.state.password),
-            this.state.share,
-            this.state.domain,
-            this.state.session_exists,
-          );
-        });
-        break;
-      case "hostname":
-        localStorage.setItem("slycat-smb-remote-controls-hostname", value);
-        this.checkRemoteStatus(value);
-        this.setState({ hostname: value }, () => {
-          this.props.callBack(
-            this.state.hostname,
-            this.b64EncodeUnicode(this.state.username + "@" + this.state.domain),
-            this.b64EncodeUnicode(this.state.password),
-            this.state.share,
-            this.state.domain,
-            this.state.session_exists,
-          );
-        });
-        break;
-      case "password":
-        this.setState({ password: value }, () => {
-          this.props.callBack(
-            this.state.hostname,
-            this.b64EncodeUnicode(this.state.username + "@" + this.state.domain),
-            this.b64EncodeUnicode(this.state.password),
-            this.state.share,
-            this.state.domain,
-            this.state.session_exists,
-          );
-        });
-        break;
-      default:
-        throw new Error("bad Case");
-    }
-  };
-
-  /**
-   * cleanup state on unmounting
-   */
-  cleanup() {
-    clearInterval(this.poll);
-    const display = this.populateDisplay();
-    const state = {
-      remote_hosts: [],
-      enable: true,
-      hostname: display.hostname ? display.hostname : null,
-      username: display.username ? display.username : null,
-      session_exists: false,
-      password: null,
-      initialLoad: false,
+    void loadLists();
+    return () => {
+      cancelled = true;
     };
-    this.setState(state);
-  }
-  /**
-   * cleanup for when the component is unmounted
-   *
-   * @memberof SmbAuthentication
-   */
-  componentWillUnmount() {
-    this.cleanup();
-    window.removeEventListener("beforeunload", this.cleanup);
-  }
+  }, []);
 
-  /**
-   * if the 'enter key' is pressed try and connect to
-   * the input hostname
-   *
-   * @memberof SmbAuthentication
-   */
-  handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      let last_key = e.key;
-      this.props.callBack(
-        this.state.hostname,
-        this.b64EncodeUnicode(this.state.username),
-        this.b64EncodeUnicode(this.state.password),
-        this.state.share,
-        this.state.domain,
-        this.state.session_exists,
-        last_key,
-      );
+  React.useEffect(() => {
+    if (!ready) {
+      return;
     }
+
+    let cancelled = false;
+    void checkRemoteSession(hostname, {
+      share,
+      getCurrent: () => ({ hostname: hostnameRef.current, share: shareRef.current }),
+    }).then((result) => {
+      if (cancelled || result.stale) {
+        return;
+      }
+      setSessionExists(result.sessionExists);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hostname, share, ready]);
+
+  React.useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    onChangeRef.current({
+      protocol: "smb",
+      hostname,
+      username,
+      password,
+      share,
+      domain,
+      sessionExists,
+    });
+  }, [hostname, username, password, share, domain, sessionExists, ready]);
+
+  const setHostnameAndMaybePersist = (value: string) => {
+    if (persistHostAndShare) {
+      persist(SMB_STORAGE_KEYS.hostname, value);
+    }
+    setHostname(value);
   };
 
-  /**
-   * creates JSX form input if a session does not already exist for the given hostname
-   *
-   * @memberof SmbAuthentication
-   */
-  getFormInputsJSX = () => {
-    return (
-      <div>
-        <div className="form-floating mb-3">
-          <input
-            id="share"
-            placeholder="Share Name"
-            disabled={this.props.loadingData}
-            className="form-control"
-            type="text"
-            value={this.state.share ? this.state.share : ""}
-            onChange={(e) => this.onValueChange(e.target.value, "share")}
-          />
-          <label htmlFor="share">Share Name</label>
-        </div>
+  const setShareAndMaybePersist = (value: string) => {
+    if (persistHostAndShare) {
+      persist(SMB_STORAGE_KEYS.share, value);
+    }
+    setShare(value);
+  };
 
-        <div className="input-group mb-3">
-          <div className="form-floating">
-            <input
-              id="username"
-              placeholder="Username"
-              disabled={this.props.loadingData}
-              className="form-control"
-              type="text"
-              value={this.state.username ? this.state.username : ""}
-              onChange={(e) => this.onValueChange(e.target.value, "username")}
-            />
-            <label htmlFor="username">{REMOTE_AUTH_LABELS.username}</label>
-          </div>
+  const setUsernameAndPersist = (value: string) => {
+    persist(SMB_STORAGE_KEYS.username, value);
+    setUsername(value);
+  };
 
-          <span className="input-group-text">@</span>
+  const setDomainAndPersist = (value: string) => {
+    persist(SMB_STORAGE_KEYS.domain, value);
+    setDomain(value);
+  };
 
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    onEnterRef.current?.(currentValues());
+  };
+
+  if (!ready) {
+    return <div />;
+  }
+
+  return (
+    <form className="SmbAuthentication" onSubmit={handleSubmit}>
+      <div className="mb-3">
+        <div className="input-group">
           <button
             className="btn btn-secondary dropdown-toggle"
             type="button"
-            id="dropdownMenuButton"
+            id={hostnameDropdownId}
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
+            disabled={loadingData}
           />
-          <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {this.getDomainsJSX()}
+          <ul className="dropdown-menu" aria-labelledby={hostnameDropdownId}>
+            {hostnames.map((host) => (
+              <li key={host}>
+                <button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => setHostnameAndMaybePersist(host)}
+                >
+                  {host}
+                </button>
+              </li>
+            ))}
           </ul>
           <div className="form-floating">
             <input
-              id="domain"
-              placeholder="Domain"
+              id={hostnameId}
+              placeholder="Hostname"
               className="form-control"
-              value={this.state.domain ? this.state.domain : ""}
+              disabled={loadingData}
+              value={hostname}
               type="text"
-              onChange={(e) => this.onValueChange(e.target.value, "domain")}
+              onChange={(event) => setHostnameAndMaybePersist(event.target.value)}
             />
-            <label htmlFor="domain">Domain</label>
+            <label htmlFor={hostnameId}>Hostname</label>
           </div>
         </div>
-
-        {!this.state.session_exists && (
-          <div className="form-floating mb-3">
-            <input
-              id="password"
-              placeholder={REMOTE_AUTH_LABELS.password}
-              disabled={this.props.loadingData}
-              className="form-control"
-              type="password"
-              onKeyDown={this.handleKeyDown}
-              onChange={(e) => this.onValueChange(e.target.value, "password")}
-            />
-            <label htmlFor="password">{REMOTE_AUTH_LABELS.password}</label>
-          </div>
-        )}
       </div>
-    );
-  };
-
-  /**
-   * maps the hostnames as dropdown items JSX
-   *
-   * @memberof SmbAuthentication
-   */
-  getHostnamesJSX = () => {
-    const hostnamesJSX = this.state.hostnames.map((hostname, i) => {
-      return (
-        <li key={i}>
-          <a
-            className="dropdown-item"
-            onClick={(e: any) => this.onValueChange(e.target.text, "hostname")}
-          >
-            {hostname}
-          </a>
-        </li>
-      );
-    });
-    return hostnamesJSX;
-  };
-
-  /**
-   * maps the domains as dropdown items JSX
-   *
-   * @memberof SmbAuthentication
-   */
-  getDomainsJSX = () => {
-    const domainsJSX = this.state.domains.map((domain, i) => {
-      return (
-        <li key={i}>
-          <a
-            className="dropdown-item"
-            onClick={(e: any) => this.onValueChange(e.target.text, "domain")}
-          >
-            {domain}
-          </a>
-        </li>
-      );
-    });
-    return domainsJSX;
-  };
-
-  /**
-   * JSX for SmbAuthentication
-   *
-   * @returns JSX for rendering the component
-   * @memberof SmbAuthentication
-   */
-  render() {
-    //make sure our data is loaded before we render
-    if (!this.state.initialLoad) {
-      return <div />;
-    }
-    return (
-      <form>
-        <div className="mb-3">
-          <div className="input-group">
-            <button
-              className="btn btn-secondary dropdown-toggle"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            />
-            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              {this.getHostnamesJSX()}
-            </ul>
-            <div className="form-floating">
-              <input
-                id="hostname"
-                placeholder="Hostname"
-                className="form-control"
-                value={this.state.hostname ? this.state.hostname : ""}
-                type="text"
-                onChange={(e) => this.onValueChange(e.target.value, "hostname")}
-              />
-              <label htmlFor="hostname">Hostname</label>
-            </div>
-          </div>
+      <div className="form-floating mb-3">
+        <input
+          id={shareId}
+          placeholder="Share Name"
+          disabled={loadingData}
+          className="form-control"
+          type="text"
+          value={share}
+          onChange={(event) => setShareAndMaybePersist(event.target.value)}
+        />
+        <label htmlFor={shareId}>Share Name</label>
+      </div>
+      <div className="input-group mb-3">
+        <div className="form-floating">
+          <input
+            id={usernameId}
+            placeholder="Username"
+            disabled={loadingData}
+            className="form-control"
+            type="text"
+            value={username}
+            onChange={(event) => setUsernameAndPersist(event.target.value)}
+          />
+          <label htmlFor={usernameId}>{REMOTE_AUTH_LABELS.username}</label>
         </div>
-        {this.getFormInputsJSX()}
-      </form>
-    );
-  }
-}
+        <span className="input-group-text">@</span>
+        <button
+          className="btn btn-secondary dropdown-toggle"
+          type="button"
+          id={domainDropdownId}
+          data-bs-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+          disabled={loadingData}
+        />
+        <ul className="dropdown-menu" aria-labelledby={domainDropdownId}>
+          {domains.map((item) => (
+            <li key={item}>
+              <button
+                className="dropdown-item"
+                type="button"
+                onClick={() => setDomainAndPersist(item)}
+              >
+                {item}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="form-floating">
+          <input
+            id={domainId}
+            placeholder="Domain"
+            className="form-control"
+            disabled={loadingData}
+            value={domain}
+            type="text"
+            onChange={(event) => setDomainAndPersist(event.target.value)}
+          />
+          <label htmlFor={domainId}>Domain</label>
+        </div>
+      </div>
+      {!sessionExists && (
+        <div className="form-floating mb-3">
+          <input
+            id={passwordId}
+            placeholder={REMOTE_AUTH_LABELS.password}
+            disabled={loadingData}
+            className="form-control"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <label htmlFor={passwordId}>{REMOTE_AUTH_LABELS.password}</label>
+        </div>
+      )}
+      <button type="submit" hidden aria-hidden="true" disabled={loadingData} />
+    </form>
+  );
+};
+
+export default SmbAuthentication;

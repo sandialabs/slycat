@@ -11,6 +11,7 @@ import "bootstrap";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
+import { postSmbSession } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 export function login(params) {
@@ -46,13 +47,13 @@ export function login(params) {
         },
       });
     } else {
-      client
-        .post_remotes_smb_fetch({
-          user_name: component.remote.username(),
-          password: component.remote.password(),
-          server: params.hostname,
-          share: component.remote.share(),
-        })
+      postSmbSession({
+        username: component.remote.username() || "",
+        password: component.remote.password() || "",
+        domain: component.remote.domain() || "",
+        server: component.remote.hostname() || params.hostname,
+        share: component.remote.share() || "",
+      })
         .then((response) => {
           if (response.ok) {
             component.container.children().modal("hide");
@@ -63,10 +64,9 @@ export function login(params) {
             component.remote.focus("password");
           }
         })
-        .catch((error) => {
+        .catch(() => {
           component.remote.enable(true);
           component.remote.status_type("danger");
-          //component.remote.status(reason_phrase);
           component.remote.focus("password");
         });
     }
@@ -74,46 +74,56 @@ export function login(params) {
   component.title = ko.observable(params.title || "Login");
   component.message = ko.observable(params.message || "");
   component.remote = mapping.fromJS({
+    hostname: params.hostname,
     username: null,
     password: null,
     status: null,
     enable: true,
     focus: false,
     status_type: null,
-    share: null,
+    share: params.collab_name,
+    domain: null,
     session_exists: null,
   });
   component.remote.focus.extend({ notify: "always" });
   component.container = $($.parseHTML(template)).appendTo($("body"));
   component.ispasswordrequired = ispasswordrequired;
   component.smb = params.smb;
+  let smb_login_root = null;
   component.container.children().on("shown.bs.modal", function () {
     component.remote.focus(true);
   });
   component.container.children().on("hidden.bs.modal", function () {
+    if (smb_login_root) {
+      smb_login_root.unmount();
+      smb_login_root = null;
+    }
     component.container.remove();
   });
   ko.applyBindings(component, component.container.get(0));
 
   // If protocol is SMB, use the React login
   if (params.smb) {
-    const setSmbAuthValues = function (hostname, username, password, share, session_exists) {
-      //component.remote.hostname(hostname)
-      component.remote.username(username);
-      component.remote.password(password);
-      component.remote.share(share);
-      component.remote.session_exists(session_exists);
+    const setSmbAuthValues = function (values) {
+      component.remote.hostname(values.hostname);
+      component.remote.username(values.username);
+      component.remote.password(values.password);
+      component.remote.share(values.share);
+      component.remote.domain(values.domain);
+      component.remote.session_exists(values.sessionExists);
     };
-    const smb_login_root = createRoot(document.querySelector(".smb-login"));
+    const onSmbAuthEnter = function (values) {
+      setSmbAuthValues(values);
+      component.login();
+    };
+    smb_login_root = createRoot(component.container.find(".smb-login").get(0));
     smb_login_root.render(
-      <div>
-        <SmbAuthentication
-          loadingData={false}
-          callBack={setSmbAuthValues}
-          hover={true}
-          smb_info={smb_info}
-        />
-      </div>
+      <SmbAuthentication
+        loadingData={false}
+        smbInfo={smb_info}
+        onChange={setSmbAuthValues}
+        onEnter={onSmbAuthEnter}
+      />,
     );
   }
   component.container.children().modal("show");

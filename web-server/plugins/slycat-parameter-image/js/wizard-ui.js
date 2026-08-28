@@ -20,6 +20,7 @@ import { createRoot } from "react-dom/client";
 import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
+import { postSmbSession } from "utils/remote-auth";
 
 function constructor(params) {
   var component = {};
@@ -78,7 +79,7 @@ function constructor(params) {
     // }
   });
   component.ps_type("remote"); // remote is selected by default...
-  component.smb_wizard_login_root = createRoot(document.querySelector(".smb-wizard-login"));
+  component.smb_wizard_login_root = null;
   component.smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
 
   // Navigate to login controls and set alert message to
@@ -214,7 +215,10 @@ function constructor(params) {
   component.get_server_file_names();
 
   component.cancel = function () {
-    component.smb_wizard_login_root.unmount();
+    if (component.smb_wizard_login_root) {
+      component.smb_wizard_login_root.unmount();
+      component.smb_wizard_login_root = null;
+    }
     if (component.model._id()) {
       client
         .get_project_data_in_model_fetch({
@@ -251,25 +255,41 @@ function constructor(params) {
     console.log("onReauth");
   };
 
-  const setSmbAuthValues = function (
-    hostname,
-    username,
-    password,
-    share,
-    domain,
-    session_exists,
-    last_key,
-  ) {
-    component.remote.hostname(hostname);
-    component.remote.username(username);
-    component.remote.password(password);
-    component.remote.share(share);
-    component.remote.domain(domain);
-    component.remote.session_exists(session_exists);
-    //If the user hits enter key, try to connect
-    if (last_key === "Enter") {
-      component.connectSMB();
+  const setSmbAuthValues = function (values) {
+    component.remote.hostname(values.hostname);
+    component.remote.username(values.username);
+    component.remote.password(values.password);
+    component.remote.share(values.share);
+    component.remote.domain(values.domain);
+    component.remote.session_exists(values.sessionExists);
+  };
+
+  const onSmbAuthEnter = function (values) {
+    setSmbAuthValues(values);
+    component.connectSMB();
+  };
+
+  const mountSmbLogin = function () {
+    const node = document.querySelector("#slycat-wizard .smb-wizard-login");
+    if (!node) {
+      return;
     }
+    if (!component.smb_wizard_login_root) {
+      component.smb_wizard_login_root = createRoot(node);
+      ko.utils.domNodeDisposal.addDisposeCallback(node, function () {
+        if (component.smb_wizard_login_root) {
+          component.smb_wizard_login_root.unmount();
+          component.smb_wizard_login_root = null;
+        }
+      });
+    }
+    component.smb_wizard_login_root.render(
+      <SmbAuthentication
+        loadingData={false}
+        onChange={setSmbAuthValues}
+        onEnter={onSmbAuthEnter}
+      />,
+    );
   };
 
   component.select_type = function () {
@@ -327,11 +347,7 @@ function constructor(params) {
       component.tab(2);
     } else if (type === "smb") {
       component.tab(2);
-      component.smb_wizard_login_root.render(
-        <div>
-          <SmbAuthentication loadingData={false} callBack={setSmbAuthValues} />
-        </div>,
-      );
+      mountSmbLogin();
     }
   };
 
@@ -503,13 +519,13 @@ function constructor(params) {
       component.remote.status_type(null);
       component.remote.status(null);
     } else {
-      client
-        .post_remotes_smb_fetch({
-          user_name: component.remote.username().trim(),
-          password: component.remote.password(),
-          server: component.remote.hostname().trim(),
-          share: component.remote.share().trim(),
-        })
+      postSmbSession({
+        username: component.remote.username() || "",
+        password: component.remote.password() || "",
+        domain: component.remote.domain() || "",
+        server: component.remote.hostname() || "",
+        share: component.remote.share() || "",
+      })
         .then(async (response) => {
           console.log("authenticated.", response);
           const data = await response.json()

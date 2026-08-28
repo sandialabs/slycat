@@ -87,7 +87,8 @@ const isStaleResponse = (
 };
 
 /**
- * Encode a string as base64, including Unicode (same algorithm as SmbAuthentication).
+ * Encode a string as base64, including Unicode.
+ * Used by postSmbSession (and POST /login); not a security boundary.
  */
 export const b64EncodeUnicode = (value: string): string => {
   return btoa(

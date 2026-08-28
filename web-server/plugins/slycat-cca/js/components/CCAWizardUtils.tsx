@@ -52,6 +52,7 @@ import {
   TabNames,
 } from "./wizard-store/reducers/CCAWizardSlice";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+import { postSmbSession } from "utils/remote-auth";
 
 /**
  * Shared error text for failed parser/upload operations.
@@ -1040,8 +1041,17 @@ export const useUploadSelection = () => {
   }, [mid, attributes, scaleInputs, dispatch]);
 };
 
+type SmbCredentials = {
+  hostname?: string;
+  username?: string;
+  password?: string;
+  share?: string;
+  domain?: string;
+};
+
 /**
  * Builds and returns a stable function that will connect and authenticate to an SMB server.
+ * Pass credentials from onEnter so POST is not racing a Redux write.
  * @returns callback for connecting to smb server
  */
 export const useConnectSMB = () => {
@@ -1049,22 +1059,39 @@ export const useConnectSMB = () => {
   const dispatch = useAppDispatch();
 
   return React.useCallback(
-    (callBackSuccess?: () => void) => {
+    (callBackSuccess?: () => void, credentials?: SmbCredentials) => {
+      const hostname = credentials?.hostname ?? authValues.hostname ?? "";
+      const username = credentials?.username ?? authValues.username ?? "";
+      const password = credentials?.password ?? authValues.password ?? "";
+      const share = credentials?.share ?? authValues.share ?? "";
+      const domain = credentials?.domain ?? authValues.domain ?? "";
+
       dispatch(setLoading(true));
 
-      client
-        .post_remotes_smb_fetch({
-          user_name: authValues.username?.trim(),
-          password: authValues.password,
-          server: authValues.hostname?.trim(),
-          share: authValues.share?.trim(),
-        })
+      postSmbSession({
+        username,
+        password,
+        domain,
+        server: hostname,
+        share,
+      })
         .then(async (response: Response) => {
           dispatch(setLoading(false));
 
           const data = await response.json();
 
           if (response.ok && data.status) {
+            dispatch(
+              setAuthInfo({
+                ...authValues,
+                hostname,
+                username,
+                password,
+                share,
+                domain,
+                sessionExists: true,
+              }),
+            );
             if (callBackSuccess) {
               callBackSuccess();
             }
@@ -1087,6 +1114,6 @@ export const useConnectSMB = () => {
           }
         });
     },
-    [authValues.hostname, authValues.password, authValues.share, authValues.username, dispatch],
+    [authValues, dispatch],
   );
 };
