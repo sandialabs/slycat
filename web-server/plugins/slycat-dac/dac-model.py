@@ -16,7 +16,7 @@ def register_slycat_plugin(context):
     import slycat.web.server.authentication
 
     # to import other dac modules
-    import imp
+    import importlib.util
 
     # for computations/array manipulations
     import numpy
@@ -28,11 +28,36 @@ def register_slycat_plugin(context):
     import traceback
 
     # for profiling
-    import time
     from datetime import timedelta
+    import sys
 
-    import cherrypy
+    # import dac modules from source by hand
+    # import dac modules from source by hand
 
+    def load_module_from_path(module_name, module_path):
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot load module from {module_path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+        return module
+
+    dac = load_module_from_path(
+        "dac_compute_coords",
+        os.path.join(os.path.dirname(__file__), "py", "dac_compute_coords.py"),
+    )
+
+    push = load_module_from_path(
+        "dac_upload_model",
+        os.path.join(os.path.dirname(__file__), "py", "dac_upload_model.py"),
+    )
+
+    dac_error = load_module_from_path(
+        "dac_error_handling",
+        os.path.join(os.path.dirname(__file__), "py", "dac_error_handling.py"),
+    )
+    
     def finish(database, model):
         slycat.web.server.update_model(
             database,
@@ -314,7 +339,8 @@ def register_slycat_plugin(context):
 
     # computes new MDS coordinate representation using alpha values
     def update_mds_coords(database, model, verb, type, command, **kwargs):
-
+        import cherrypy
+        cherrypy.log.error("update_mds_coords called")
         # get alpha values and subset mask
         alpha_values = numpy.array(kwargs["alpha"])
         subset_mask = numpy.array(kwargs["subset"])
@@ -2188,28 +2214,9 @@ def register_slycat_plugin(context):
             # done -- destroy the thread
             stop_event.set()
 
-    # import dac modules from source by hand
-    dac = imp.load_source(
-        "dac_compute_coords",
-        os.path.join(os.path.dirname(__file__), "py/dac_compute_coords.py"),
-    )
-
-    push = imp.load_source(
-        "dac_upload_model",
-        os.path.join(os.path.dirname(__file__), "py/dac_upload_model.py"),
-    )
-
-    dac_error = imp.load_source(
-        "dac_error_handling",
-        os.path.join(os.path.dirname(__file__), "py/dac_error_handling.py"),
-    )
-
     # register plugin with slycat
     context.register_model("DAC", finish)
     context.register_page("DAC", page_html)
-    context.register_model_command(
-        "POST", "DAC", "update_mds_coords", update_mds_coords
-    )
     context.register_model_command(
         "POST", "DAC", "update_alpha_clusters", update_alpha_clusters
     )
@@ -2217,6 +2224,9 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command(
         "POST", "DAC", "subsample_time_var", subsample_time_var
+    )
+    context.register_model_command(
+        "POST", "DAC", "update_mds_coords", update_mds_coords
     )
     context.register_model_command(
         "POST", "DAC", "manage_editable_cols", manage_editable_cols

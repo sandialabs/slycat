@@ -47,7 +47,7 @@ def start(root_path, config_file):
 
     # below, simply tell engine to watch config file for potential reload, reloading may be ON or OFF
     cherrypy.engine.autoreload.files.add(config_file)
-    parser = configparser.SafeConfigParser()
+    parser = configparser.ConfigParser()
     parser.read(config_file)
     configuration = {
         section: {key: eval(value) for key, value in parser.items(section)}
@@ -184,6 +184,12 @@ def start(root_path, config_file):
         "get-time-series-names",
         "/remotes/:hostname/time_series_names/file{path:.*}",
         slycat.web.server.handlers.get_time_series_names,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
+        "get-all-column-names",
+        "/remotes/:hostname/column_names/file{path:.*}",
+        slycat.web.server.handlers.get_all_column_names,
         conditions={"method": ["GET"]},
     )
     dispatcher.connect(

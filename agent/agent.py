@@ -375,7 +375,7 @@ class Agent(object, metaclass=abc.ABCMeta):
         if "data" not in command:
             raise Exception("Missing data.")
         path = command["path"]
-        data = base64.decodestring(command["data"])
+        data = base64.decodebytes(command["data"])
         if not os.path.isabs(path):
             raise Exception("Path must be absolute.")
         if os.path.exists(path):

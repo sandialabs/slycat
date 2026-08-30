@@ -18,10 +18,7 @@ import threading
 import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
-import imp
-
-# for error logging
-import cherrypy
+import importlib.util
 
 # note this version assumes the first row is a header row, and keeps only the header
 # and data (called by the generic zip parser)
@@ -262,8 +259,15 @@ def parse(database, model, input, files, aids, **kwargs):
 def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
     # import error handling from source
-    dac_error = imp.load_source('dac_error_handling',
-                           os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+    module_name = "dac_error_handling"
+    module_path = os.path.join(os.path.dirname(__file__), "py", "dac_error_handling.py")
+
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {module_path}")
+
+    dac_error = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dac_error)
 
     dac_error.log_dac_msg("Gen Zip parser started.")
 
@@ -490,8 +494,15 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
     try:
 
         # import dac_upload_model from source
-        push = imp.load_source('dac_upload_model',
-                               os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+        module_name = "dac_upload_model"
+        module_path = os.path.join(os.path.dirname(__file__), "py", "dac_upload_model.py")
+
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot load module from {module_path}")
+
+        push = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(push)
 
         num_vars = len(meta_vars)
 

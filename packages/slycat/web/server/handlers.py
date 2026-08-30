@@ -2173,9 +2173,9 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
                 return json.dumps(data.tolist(), cls=MyEncoder).encode()
             else:
                 if sys.byteorder != byteorder:
-                    return data.byteswap().tostring(order="C")
+                    return data.byteswap().tobytes(order="C")
                 else:
-                    return data.tostring(order="C")
+                    return data.tobytes(order="C")
 
 
 @cherrypy.tools.json_out(on=True)
@@ -2387,9 +2387,9 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
                 database, model, aid, hyperchunks
             ):
                 if sys.byteorder != byteorder:
-                    yield hyperslice.byteswap().tostring(order="C")
+                    yield hyperslice.byteswap().tobytes(order="C")
                 else:
-                    yield hyperslice.tostring(order="C")
+                    yield hyperslice.tobytes(order="C")
 
     return content()
 
@@ -2495,9 +2495,9 @@ def post_model_arrayset_data(mid, aid):
                 database, model, aid, hyperchunks
             ):
                 if sys.byteorder != byteorder:
-                    yield hyperslice.byteswap().tostring(order="C")
+                    yield hyperslice.byteswap().tobytes(order="C")
                 else:
-                    yield hyperslice.tostring(order="C")
+                    yield hyperslice.tobytes(order="C")
 
     cherrypy.log.error(
         "GET Model Arrayset Data: arrayset %s starting to get content" % (aid)
@@ -2861,9 +2861,9 @@ def get_model_table_sorted_indices(
             return json.dumps(slice_val.tolist())
         else:
             if sys.byteorder != byteorder:
-                return slice_val.byteswap().tostring(order="C")
+                return slice_val.byteswap().tobytes(order="C")
             else:
-                return slice_val.tostring(order="C")
+                return slice_val.tobytes(order="C")
 
 
 def get_model_table_unsorted_indices(
@@ -2916,9 +2916,9 @@ def get_model_table_unsorted_indices(
             return json.dumps(slice_val.tolist())
         else:
             if sys.byteorder != byteorder:
-                return slice_val.byteswap().tostring(order="C")
+                return slice_val.byteswap().tobytes(order="C")
             else:
-                return slice_val.tostring(order="C")
+                return slice_val.tobytes(order="C")
 
 
 def get_model_file(mid, aid):
