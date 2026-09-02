@@ -5,136 +5,291 @@
   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-  <form data-bind="submit: save_project" id="edit-project-form" novalidate>
-    <div class="mb-3 row required">
-      <label for="slycat-edit-project-name" class="col-sm-2 col-form-label">Name</label>
-      <div class="col-sm-10">
-        <input
-          id="slycat-edit-project-name"
-          class="form-control"
-          type="text"
-          data-bind="value: modified.name"
-          required
-        />
-        <div class="invalid-feedback">Please enter a project name.</div>
-      </div>
-    </div>
-    <div class="mb-3 row">
-      <label for="slycat-edit-project-description" class="col-sm-2 col-form-label"
-        >Description</label
+  <ul class="nav nav-tabs edit-project-nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <a
+        class="nav-link"
+        href="#"
+        role="tab"
+        id="edit-project-general-tab"
+        data-bind="
+          css: { active: tab() == 0 },
+          attr: { 'aria-selected': tab() == 0 },
+          click: function() { tab(0); return false; }
+        "
       >
-      <div class="col-sm-10">
-        <textarea
-          id="slycat-edit-project-description"
-          class="form-control"
-          rows="5"
-          data-bind="value: modified.description"
-        ></textarea>
-      </div>
-    </div>
-  </form>
+        <h5 class="mb-0">General</h5>
+      </a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a
+        class="nav-link"
+        href="#"
+        role="tab"
+        id="edit-project-permissions-tab"
+        data-bind="
+          css: { active: tab() == 1 },
+          attr: { 'aria-selected': tab() == 1 },
+          click: function() { tab(1); return false; }
+        "
+      >
+        <h5 class="mb-0">User Access</h5>
+      </a>
+    </li>
+  </ul>
 
-  <div class="mb-3 row">
-    <label class="col-sm-2 col-form-label">Members</label>
-    <div class="col-sm-10">
-      <form data-bind="submit: add_project_member" id="edit-project-members-form" novalidate>
-        <div class="row">
-          <div class="col-sm-4">
-            <select class="form-select" data-bind="value:permission">
-              <option value="reader">Reader</option>
-              <option value="writer">Writer</option>
-              <option value="administrator">Administrator</option>
-            </select>
-          </div>
-          <div class="col-sm-6">
+  <div class="tab-content edit-project-tab-content mt-4 mb-2 mx-3">
+    <!-- General tab -->
+    <div
+      role="tabpanel"
+      aria-labelledby="edit-project-general-tab"
+      data-bind="visible: tab() == 0"
+    >
+      <form data-bind="submit: save_project" id="edit-project-form" novalidate>
+        <div class="mb-3 row required">
+          <label for="slycat-edit-project-name" class="col-sm-2 col-form-label">Name</label>
+          <div class="col-sm-10">
             <input
+              id="slycat-edit-project-name"
+              class="form-control form-control-sm"
               type="text"
-              class="form-control"
-              data-bind="textInput: new_user, attr: { placeholder: slycatAuthLabelUsername }"
+              data-bind="value: modified.name"
               required
             />
-            <div class="invalid-feedback">
-              Please enter a <span data-bind="text: slycatAuthLabelUsername.toLowerCase()"></span>.
-            </div>
+            <div class="invalid-feedback">Please enter a project name.</div>
           </div>
-          <div class="col-sm-2">
-            <button
-              class="btn btn-secondary"
-              type="button"
-              data-bind="
+        </div>
+        <div class="mb-3 row">
+          <label for="slycat-edit-project-description" class="col-sm-2 col-form-label"
+            >Description</label
+          >
+          <div class="col-sm-10">
+            <textarea
+              id="slycat-edit-project-description"
+              class="form-control form-control-sm"
+              rows="5"
+              data-bind="value: modified.description"
+            ></textarea>
+          </div>
+        </div>
+      </form>
+      <div class="mb-3 text-end">
+        <button
+          class="btn btn-danger"
+          type="button"
+          data-bind="click:delete_project_cache"
+          data-bs-dismiss="modal"
+        >
+          Delete Project Media Cache
+        </button>
+      </div>
+    </div>
+
+    <!-- User Access tab -->
+    <div
+      role="tabpanel"
+      aria-labelledby="edit-project-permissions-tab"
+      data-bind="visible: tab() == 1"
+    >
+      <!-- Individual Users section -->
+      <div class="mb-4">
+        <h5 class="edit-project-section-heading">Individual Users</h5>
+        <form data-bind="submit: add_project_member" id="edit-project-members-form" novalidate>
+          <div class="row g-2 align-items-start">
+            <div class="col">
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                data-bind="textInput: new_user, attr: { placeholder: slycatAuthLabelUsername }"
+                required
+              />
+              <div class="invalid-feedback">
+                Please enter a
+                <span data-bind="text: slycatAuthLabelUsername.toLowerCase()"></span>.
+              </div>
+            </div>
+            <div class="col-4">
+              <select class="form-select form-select-sm" data-bind="value:permission">
+                <option value="reader">Reader</option>
+                <option value="writer">Writer</option>
+                <option value="administrator">Administrator</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              <button
+                class="btn btn-sm btn-secondary"
+                type="button"
+                data-bind="
                 click: function(data, event) { add_project_member(document.getElementById('edit-project-members-form'), data, event) }
               "
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-12">
+            <p
+              class="form-text"
+              data-bind="text:permission_description"
+              style="text-align: center; padding-top: 10px; padding-bottom: 20px"
+            ></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <!-- ko foreach: modified.acl.administrators -->
+            <div class="btn-group" role="group">
+              <button
+                class="btn btn-sm btn-danger"
+                data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as an administrator'}"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+              <div class="btn btn-sm btn-danger" style="pointer-events: none">
+                <span data-bind="text:user"></span>
+              </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko foreach: modified.acl.writers -->
+            <div style="margin: 5px" class="btn-group" role="group">
+              <button
+                class="btn btn-sm btn-warning"
+                title="Remove this user"
+                data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a writer'}"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+              <div class="btn btn-sm btn-warning" style="pointer-events: none">
+                <span data-bind="text:user"></span>
+              </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko foreach: modified.acl.readers -->
+            <div style="margin: 5px" class="btn-group" role="group">
+              <button
+                class="btn btn-sm btn-primary"
+                data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a reader'}"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+              <div class="btn btn-sm btn-primary" style="pointer-events: none">
+                <span data-bind="text:user"></span>
+              </div>
+            </div>
+            <!-- /ko -->
+          </div>
+        </div>
+      </div>
+
+      <hr class="mt-5 mb-4" />
+
+      <!-- Metagroups section (UI-only prototype) -->
+      <div class="mb-3">
+        <h5 class="edit-project-section-heading">Metagroups</h5>
+        <div class="mb-2">
+          <input
+            type="search"
+            class="form-control form-control-sm"
+            placeholder="Search metagroups..."
+            autocomplete="off"
+            data-bind="textInput: metagroup_search, event: { keydown: metagroup_search_keydown }"
+          />
+        </div>
+
+        <div class="edit-project-metagroups-table-wrap mb-4">
+          <table class="edit-project-metagroups-table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
+                <th scope="col" class="text-end">Members</th>
+              </tr>
+            </thead>
+            <tbody data-bind="foreach: metagroup_search_results">
+              <tr
+                data-bind="
+                  click: $parent.select_metagroup,
+                  event: { dblclick: $parent.metagroup_row_dblclick },
+                  css: { selected: $parent.is_metagroup_selected($data) }
+                "
+              >
+                <td data-bind="text: name"></td>
+                <td data-bind="text: description"></td>
+                <td class="text-end" data-bind="text: memberCount"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p
+          class="form-text"
+          data-bind="text: metagroup_search_helper, visible: metagroup_search_helper()"
+        ></p>
+
+        <div class="row g-2 align-items-center justify-content-end mb-2 mt-4">
+          <div class="col-4">
+            <select class="form-select form-select-sm" data-bind="value: metagroup_permission">
+              <option value="reader">Reader</option>
+              <option value="writer">Writer</option>
+            </select>
+          </div>
+          <div class="col-auto">
+            <button
+              class="btn btn-sm btn-secondary"
+              type="button"
+              data-bind="click: add_project_metagroup, enable: selected_metagroup"
             >
               Add
             </button>
           </div>
         </div>
-      </form>
-      <div class="row">
-        <div class="col-sm-12">
-          <p
-            class="form-text"
-            data-bind="text:permission_description"
-            style="text-align: center; padding-top: 10px; padding-bottom: 20px"
-          ></p>
+        <div class="row">
+          <div class="col-sm-12">
+            <p
+              class="form-text"
+              data-bind="text:metagroup_permission_description"
+              style="text-align: center; padding-top: 10px; padding-bottom: 20px"
+            ></p>
+          </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="col-sm-12">
-          <!-- ko foreach: modified.acl.administrators -->
-          <div class="btn-group" role="group">
-            <button
-              class="btn btn-sm btn-danger"
-              data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as an administrator'}"
-            >
-              <i class="fa-regular fa-trash-can"></i>
-            </button>
-            <div class="btn btn-sm btn-danger" style="pointer-events: none">
-              <span data-bind="text:user"></span>
+        <div class="row">
+          <div class="col-sm-12">
+            <!-- ko foreach: metagroup_writers -->
+            <div style="margin: 5px" class="btn-group" role="group">
+              <button
+                class="btn btn-sm btn-warning"
+                data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + name() + ' as a writer'}"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+              <div class="btn btn-sm btn-warning" style="pointer-events: none">
+                <span data-bind="text:name"></span>
+              </div>
             </div>
-          </div>
-          <!-- /ko -->
-          <!-- ko foreach: modified.acl.writers -->
-          <div style="margin: 5px" class="btn-group" role="group">
-            <button
-              class="btn btn-sm btn-warning"
-              title="Remove this user"
-              data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a writer'}"
-            >
-              <i class="fa-regular fa-trash-can"></i>
-            </button>
-            <div class="btn btn-sm btn-warning" style="pointer-events: none">
-              <span data-bind="text:user"></span>
+            <!-- /ko -->
+            <!-- ko foreach: metagroup_readers -->
+            <div style="margin: 5px" class="btn-group" role="group">
+              <button
+                class="btn btn-sm btn-primary"
+                data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + name() + ' as a reader'}"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+              <div class="btn btn-sm btn-primary" style="pointer-events: none">
+                <span data-bind="text:name"></span>
+              </div>
             </div>
+            <!-- /ko -->
           </div>
-          <!-- /ko -->
-          <!-- ko foreach: modified.acl.readers -->
-          <div style="margin: 5px" class="btn-group" role="group">
-            <button
-              class="btn btn-sm btn-primary"
-              data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user() + ' as a reader'}"
-            >
-              <i class="fa-regular fa-trash-can"></i>
-            </button>
-            <div class="btn btn-sm btn-primary" style="pointer-events: none">
-              <span data-bind="text:user"></span>
-            </div>
-          </div>
-          <!-- /ko -->
         </div>
       </div>
     </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button
-    class="btn btn-danger me-auto"
-    data-bind="click:delete_project_cache"
-    data-bs-dismiss="modal"
-  >
-    Delete Project Media Cache
-  </button>
   <button
     class="btn btn-primary"
     data-bind="click: function(data, event) { save_project(document.getElementById('edit-project-form'), data, event) }"

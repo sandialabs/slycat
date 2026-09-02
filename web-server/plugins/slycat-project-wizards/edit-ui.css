@@ -1,0 +1,93 @@
+/* Edit Project modal — Display Settings / TableIngestion-inspired styling */
+
+/* Tab label typography matches Display Settings (Bootstrap h5 in nav-links). */
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link h5 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
+/* Match Display Settings unselected tab color (Bootstrap link color).
+   Overrides #slycat-wizard wizard nav rule that forces #333. */
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active),
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active) h5 {
+  color: var(--bs-link-color, rgb(0, 100, 144));
+}
+
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active):hover,
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active):hover h5 {
+  color: var(--bs-link-hover-color, rgb(0, 80, 115));
+}
+
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link.active,
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link.active h5 {
+  color: var(--bs-nav-tabs-link-active-color, var(--bs-emphasis-color, #212529));
+}
+
+/* Form labels match Display Settings bold field-label treatment. */
+.edit-project-tab-content .col-form-label {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.edit-project-tab-content .edit-project-section-heading {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.edit-project-metagroups-table-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+.edit-project-metagroups-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.edit-project-metagroups-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.edit-project-metagroups-table thead th.text-end {
+  text-align: right;
+}
+
+.edit-project-metagroups-table tbody td {
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.edit-project-metagroups-table tbody td.text-end {
+  text-align: right;
+}
+
+.edit-project-metagroups-table tbody tr {
+  cursor: pointer;
+}
+
+.edit-project-metagroups-table tbody tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+.edit-project-metagroups-table tbody tr.selected {
+  background-color: #337ab7;
+}
+
+.edit-project-metagroups-table tbody tr.selected td {
+  color: white;
+}
