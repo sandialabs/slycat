@@ -37,6 +37,25 @@ import watch from "redux-watch";
 
 var vtkstartinteraction_event = new Event("vtkstartinteraction");
 
+/**
+ * Read a VTP field-data TimeValue, if present.
+ * @returns {number | undefined}
+ */
+function getVtpTimeValue(source) {
+  if (!source) {
+    return undefined;
+  }
+  const timeValueArray = source.getFieldData().getArrayByName("TimeValue");
+  if (!timeValueArray) {
+    return undefined;
+  }
+  const timeValue = timeValueArray.getData()[0];
+  if (typeof timeValue !== "number" || !Number.isFinite(timeValue)) {
+    return undefined;
+  }
+  return timeValue;
+}
+
 export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
@@ -361,20 +380,7 @@ export function load(container, buffer, uri, uid, type) {
   interactor.initialize();
   interactor.bindEvents(container);
 
-  // ----------------------------------------------------------------------------
-  // Display time step if the data exists
-  // ----------------------------------------------------------------------------
-  const TimeValue = source ? source.getFieldData().getArrayByName("TimeValue") : undefined;
-  // console.debug(`TimeValue is %o`, TimeValue);
-  if (TimeValue) {
-    const timeStep = TimeValue.getData()[0];
-    // console.log(`Time: ${timeStep}`);
-    const timeLabel = document.createElement("div");
-    timeLabel.classList.add("timeLabel");
-    const text = document.createTextNode(`Time: ${timeStep}`);
-    timeLabel.appendChild(text);
-    container.appendChild(timeLabel);
-  }
+  const timeValue = getVtpTimeValue(source);
 
   // ----------------------------------------------------------------------------
   // Setup interactor style to use
@@ -554,4 +560,6 @@ export function load(container, buffer, uri, uid, type) {
       scalarBar.dispose();
     });
   }
+
+  return timeValue;
 }

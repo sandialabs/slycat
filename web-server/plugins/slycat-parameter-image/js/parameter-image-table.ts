@@ -29,6 +29,7 @@ import { setXIndex, setYIndex, setVIndex, setMediaIndex } from "./actions";
 import { setShowHistogram } from "./scatterplotSlice";
 import { selectAxesVariables, selectVIndex } from "./selectors";
 import { parseDate } from "js/slycat-dates";
+import { isStructuralMissingValue } from "./unique-category-values";
 
 const SET_X_VARIABLE_TEXT = "Set as X Axis Variable"; 
 const SET_Y_VARIABLE_TEXT = "Set as Y Axis Variable"; 
@@ -87,26 +88,25 @@ $.widget("parameter_image.table", {
     }
 
     function value_formatter(value) {
-      return value === null
+      return isStructuralMissingValue(value)
         ? "&nbsp;"
         : (value + "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function cell_formatter(row, cell, value, columnDef, dataContext) {
-      // We have a colorscale for this column, meaning we are color coding by its variable.
+      // Structural missing (null, blank string, NaN): diagonal null stripes —
+      // never solid out-of-domain black from the color-by path.
+      if (isStructuralMissingValue(value)) {
+        return `<div class='highlightWrapper null'>${value_formatter(value)}</div>`;
+      }
+      // Color coding by this column's variable.
       if (columnDef.colorscale) {
-        let classNames = `highlightWrapper ${value === null ? "null" : ""} ${
+        let classNames = `highlightWrapper ${
           d3v7.hcl(get_color(columnDef.colorscale, value)).l > 50 ? "light" : "dark"
         }`;
         let styles = `background: ${get_color(columnDef.colorscale, value)}`;
         return `<div class="${classNames}" style="${styles}">${value_formatter(value)}</div>`;
       }
-      // We don't have a color scale, meaning we are not color coding by this variable,
-      // and the value is null.
-      else if (value === null) {
-        return `<div class='highlightWrapper null'>${value_formatter(value)}</div>`;
-      }
-      // Finally, not color coding and not null value
       return value_formatter(value);
     }
 

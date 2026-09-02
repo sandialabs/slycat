@@ -59,6 +59,7 @@ import data_reducer, {
   setSelectedSimulations,
   setHiddenSimulations,
 } from "./dataSlice";
+import layout_reducer, { SLICE_NAME as LAYOUT_SLICE_NAME, setWestPaneSize } from "./layoutSlice";
 import {
   setXValues,
   setYValues,
@@ -88,6 +89,7 @@ import {
 import d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import slycat_color_maps from "js/slycat-color-maps";
+import { getUniqueCategoryValues } from "./unique-category-values";
 import watch from "redux-watch";
 import combinedReduction from "combined-reduction";
 import { configureStore } from "@reduxjs/toolkit";
@@ -101,6 +103,7 @@ import {
   selectScatterplotMarginBottom,
   selectAxesVariables,
   selectVExtent,
+  selectVIsCategorical,
 } from "./selectors";
 
 import React from "react";
@@ -196,6 +199,9 @@ $(document).ready(function () {
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
 
+  // jquery.layout applies the new size after ondrag_end, then fires onresize_end with the final size.
+  let westUserDragging = false;
+
   layout = $("#parameter-image-plus-layout").layout({
     north: {
       size: 39,
@@ -203,11 +209,25 @@ $(document).ready(function () {
     },
     center: {},
     west: {
-      // Sliders
+      // Sliders. One-filter width: 20px #sliders margin + 115px filter + 5px padding + 20px filter margin.
       initClosed: true,
-      size: $("#parameter-image-plus-layout").width() / 4,
+      size: 160,
+      ondrag_end: function () {
+        westUserDragging = true;
+      },
       onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
-        filter_manager.slidersPaneHeight(pane_state.innerHeight);
+        if (filter_manager) {
+          filter_manager.slidersPaneHeight(pane_state.innerHeight);
+        }
+        if (westUserDragging && window.store) {
+          westUserDragging = false;
+          window.store.dispatch(setWestPaneSize(pane_state.size));
+        }
+      },
+      onopen_end: function () {
+        if (filter_manager && typeof filter_manager.applyWestPaneSize === "function") {
+          filter_manager.applyWestPaneSize();
+        }
       },
     },
     south: {
@@ -445,6 +465,7 @@ $(document).ready(function () {
               variableAliases: variable_aliases,
               media_columns: image_columns,
               rating_variables: rating_columns,
+              category_columns: category_columns ?? [],
               xy_pairs: xy_pairs,
               // Set "embed" to true if the "embed" query parameter is present
               embed: URI(window.location).query(true).embed !== undefined,
@@ -463,12 +484,16 @@ $(document).ready(function () {
             derivedState,
           );
 
+          // Unknown / renamed bookmarked colormaps fall back to Night.
+          preloadedState.colormap = slycat_color_maps.resolve_colormap_name(preloadedState.colormap);
+
           // Create reducer that combines root-level ps_reducer and adds scatterplot_reducer at scatterplot.
           // This allows mixing our legacy Redux root-level ps_reducer with Redux Toolkit
           // createSlice scatterplot_reducer and other new reducers.
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
             [DATA_SLICE_NAME]: data_reducer,
+            [LAYOUT_SLICE_NAME]: layout_reducer,
           });
 
           window.store = configureStore({
@@ -1012,9 +1037,6 @@ $(document).ready(function () {
         x: x,
         y: y,
         v: v,
-        x_string: table_metadata["column-types"][x_index] == "string",
-        y_string: table_metadata["column-types"][y_index] == "string",
-        v_string: table_metadata["column-types"][v_index] == "string",
         x_index: x_index,
         y_index: y_index,
         v_index: v_index,
@@ -1024,7 +1046,6 @@ $(document).ready(function () {
         colorscale: colorscale,
         selection: selected_simulations,
         open_images: open_images,
-        gradient: slycat_color_maps.get_gradient_data(store.getState().colormap),
         hidden_simulations: hidden_simulations,
         "auto-scale": auto_scale,
         "video-sync": video_sync,
@@ -1178,6 +1199,11 @@ $(document).ready(function () {
     });
   }
 
+  function get_unique_category_values(values, isStringColumn) {
+    // Shared with legend tick domain in selectors.ts so bands and labels stay aligned.
+    return getUniqueCategoryValues(values, { numeric: !isStringColumn });
+  }
+
   function selected_colormap_changed(colormap, oldColormap, objectPath) {
     update_current_colorscale();
 
@@ -1188,7 +1214,6 @@ $(document).ready(function () {
     $("#scatterplot-pane").css("background", slycat_color_maps.get_background(colormap).toString());
     $("#scatterplot").scatterplot("option", {
       colorscale: colorscale,
-      gradient: slycat_color_maps.get_gradient_data(colormap),
     });
 
     $.ajax({
@@ -1296,10 +1321,11 @@ $(document).ready(function () {
     $("#scatterplot").scatterplot("option", "v_index", v_index);
     $("#scatterplot").scatterplot("update_color_scale_and_v", {
       v: v,
-      v_string: table_metadata["column-types"][v_index] == "string",
       colorscale: colorscale,
     });
-    $("#scatterplot").scatterplot("option", "v_label", selectVColumnName(window.store.getState()));
+    $("#scatterplot").scatterplot("option", {
+      v_label: selectVColumnName(window.store.getState()),
+    });
   }
 
   function update_widgets_when_hidden_simulations_change() {
@@ -1341,6 +1367,12 @@ $(document).ready(function () {
   }
 
   function update_current_colorscale() {
+    // Color column data loads asynchronously; filters / hidden-sim updates can
+    // fire before v is ready. Skip until the array is available.
+    if (v == null) {
+      return;
+    }
+
     set_custom_color_variable_range();
     // Bail out if the color variable data hasn't finished loading yet.
     // Callers (e.g. update_widgets_when_hidden_simulations_change) can fire
@@ -1358,25 +1390,26 @@ $(document).ready(function () {
     const axes_variable_scale = store.getState().axesVariables[v_index];
     const v_variable_scale_type = axes_variable_scale ?? "Linear";
     const colormap = store.getState().colormap;
+    const color_is_categorical = selectVIsCategorical(store.getState());
 
     if (v_variable_scale_type == "Date & Time") {
+      // Date & Time wins over string/categorical (same as scatterplot axes).
       const v_extent = _.cloneDeep(selectVExtent(store.getState()));
       const min = v_extent[0];
       const max = v_extent[1];
       colorscale = slycat_color_maps.get_color_scale_time(colormap, min, max);
-    } else if (v_type != "string") {
+    } else if (color_is_categorical) {
+      // Strings and wizard-marked category columns (e.g. cylinders, origin) get
+      // one color per unique value instead of continuous/quantize binning.
+      var uniqueValues = get_unique_category_values(filtered_v, v_type === "string");
+      colorscale = slycat_color_maps.get_color_scale_ordinal(colormap, uniqueValues);
+    } else {
       const min = custom_color_variable_range.min ?? d3.min(filtered_v);
       const max = custom_color_variable_range.max ?? d3.max(filtered_v);
       colorscale =
         v_variable_scale_type == "Log"
           ? slycat_color_maps.get_color_scale_log(colormap, min, max)
           : slycat_color_maps.get_color_scale(colormap, min, max);
-    } else {
-      var uniqueValues = d3.set(filtered_v).values().sort();
-      colorscale = slycat_color_maps.get_color_scale_ordinal(
-        colormap,
-        uniqueValues,
-      );
     }
   }
 
@@ -1600,7 +1633,6 @@ $(document).ready(function () {
         window.store.dispatch(setXValues(x));
         $("#scatterplot").scatterplot("option", {
           x_index: variable,
-          x_string: table_metadata["column-types"][variable] == "string",
           x: x,
           x_label: selectXColumnName(window.store.getState()),
         });
@@ -1622,7 +1654,6 @@ $(document).ready(function () {
         window.store.dispatch(setYValues(y));
         $("#scatterplot").scatterplot("option", {
           y_index: variable,
-          y_string: table_metadata["column-types"][variable] == "string",
           y: y,
           y_label: selectYColumnName(window.store.getState()),
         });
