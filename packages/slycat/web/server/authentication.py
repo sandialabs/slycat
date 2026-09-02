@@ -3,30 +3,46 @@
 # retains certain rights in this software.
 
 from typing import Any
-from typing import Any
 import cherrypy
 
 def project_acl(project):
-  """Extract ACL information from a project."""
-  if "acl" not in project:
-    cherrypy.log.error("Project missing ACL: %s" % project)
-    return {"administrators":{}, "writers":{}, "readers":{}}
-  return project["acl"]
+    """Extract ACL information from a project."""
+
+    if "acl" not in project:
+        return {
+            "administrators": {},
+            "writers": {},
+            "readers": {},
+            "groups": {"readers": [], "writers": []},
+        }
+    return project["acl"]
 
 def is_server_administrator():
-  """Return True if the current request is from a server administrator."""
-  return cherrypy.request.login in cherrypy.request.app.config["slycat"]["server-admins"]
+    """Return True if the current request is from a server administrator."""
+
+    return (
+        cherrypy.request.login in cherrypy.request.app.config["slycat"]["server-admins"]
+    )
 
 def is_project_administrator(project):
-  """Return True if the current request is from a project administrator."""
-  try:
-    return cherrypy.request.login in [administrator["user"] for administrator in project_acl(project)["administrators"]]
-  except TypeError:
-    cherrypy.log.error("error in acl for project %s" % project["_id"])
-    return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
+    """Return True if the current request is from a project administrator."""
+
+    try:
+        return cherrypy.request.login in [
+            administrator["user"]
+            for administrator in project_acl(project)["administrators"]
+        ]
+    except TypeError:
+        cherrypy.log.error("error in acl for project %s" % project["_id"])
+        return cherrypy.request.login in {
+            "administrators": {},
+            "writers": {},
+            "readers": {},
+            "groups": {"readers": [], "writers": []},
+        }
+
 
 def is_project_writer(project):
-    # TODO: based on users groups check if any are in the projects groups
     """Return True if the current request is from a project writer."""
 
     try:
@@ -43,7 +59,6 @@ def is_project_writer(project):
             ](username)["group_names"]
             or []
         )
-        cherrypy.log.error(f"ACL for project acl_groups::: {user_groups}")
 
         acl_writer_users = {
             writer.get("user") for writer in acl_writers if isinstance(writer, dict)
@@ -51,7 +66,6 @@ def is_project_writer(project):
 
         if username in acl_writer_users:
             return True
-
         return any(group in acl_groups for group in user_groups)
 
     except (TypeError, KeyError, AttributeError) as error:
@@ -60,10 +74,14 @@ def is_project_writer(project):
             if isinstance(project, dict)
             else "<unknown>"
         )
+        import traceback
+
+        cherrypy.log.error(traceback.format_exc())
         cherrypy.log.error(
             f"Error checking reader ACL for project {project_id}: {error}\n"
         )
         return False
+
 
 def is_project_reader(project: Any) -> bool:
     """
@@ -111,7 +129,6 @@ def is_project_reader(project: Any) -> bool:
             ](username)["group_names"]
             or []
         )
-        cherrypy.log.error(f"ACL for project acl_groups::: {user_groups}")
 
         acl_reader_users = {
             reader.get("user") for reader in acl_readers if isinstance(reader, dict)
@@ -128,6 +145,9 @@ def is_project_reader(project: Any) -> bool:
             if isinstance(project, dict)
             else "<unknown>"
         )
+        import traceback
+
+        cherrypy.log.error(traceback.format_exc())
         cherrypy.log.error(
             f"Error checking reader ACL for project {project_id}: {error}\n"
         )
@@ -135,57 +155,65 @@ def is_project_reader(project: Any) -> bool:
 
 
 def test_server_administrator():
-  """Return True if the current request has server administrator privileges."""
-  if is_server_administrator():
-    return True
-  return  False
+    """Return True if the current request has server administrator privileges."""
+
+    if is_server_administrator():
+        return True
+    return False
 
 def test_project_administrator(project):
-  """Return True if the current request has project administrator privileges."""
-  if is_server_administrator():
-    return True
-  if is_project_administrator(project):
-    return True
-  return False
+    """Return True if the current request has project administrator privileges."""
+
+    if is_server_administrator():
+        return True
+    if is_project_administrator(project):
+        return True
+    return False
 
 def test_project_writer(project):
-  """Return True if the current request has project write privileges."""
-  if is_server_administrator():
-    return True
-  if is_project_administrator(project):
-    return True
-  if is_project_writer(project):
-    return True
-  return False
+    """Return True if the current request has project write privileges."""
+
+    if is_server_administrator():
+        return True
+    if is_project_administrator(project):
+        return True
+    if is_project_writer(project):
+        return True
+    return False
 
 def test_project_reader(project):
-  """Return True if the current request has project read privileges."""
-  if is_server_administrator():
-    return True
-  if is_project_administrator(project):
-    return True
-  if is_project_writer(project):
-    return True
-  if is_project_reader(project):
-    return True
-  return False
+    """Return True if the current request has project read privileges."""
+
+    if is_server_administrator():
+        return True
+    if is_project_administrator(project):
+        return True
+    if is_project_writer(project):
+        return True
+    if is_project_reader(project):
+        return True
+    return False
 
 def require_server_administrator():
-  """Raise an exception if the current request doesn't have server administrator privileges."""
-  if not test_server_administrator():
-    raise cherrypy.HTTPError(403)
+    """Raise an exception if the current request doesn't have server administrator privileges."""
+
+    if not test_server_administrator():
+        raise cherrypy.HTTPError(403)
 
 def require_project_administrator(project):
-  """Raise an exception if the current request doesn't have project administrator privileges."""
-  if not test_project_administrator(project):
-    raise cherrypy.HTTPError(403)
+    """Raise an exception if the current request doesn't have project administrator privileges."""
+
+    if not test_project_administrator(project):
+        raise cherrypy.HTTPError(403)
 
 def require_project_writer(project):
-  """Raise an exception if the current request doesn't have project write privileges."""
-  if not test_project_writer(project):
-    raise cherrypy.HTTPError(403)
+    """Raise an exception if the current request doesn't have project write privileges."""
+
+    if not test_project_writer(project):
+        raise cherrypy.HTTPError(403)
 
 def require_project_reader(project):
-  """Raise an exception if the current request doesn't have project read privileges."""
-  if not test_project_reader(project):
-    raise cherrypy.HTTPError(403)
+    """Raise an exception if the current request doesn't have project read privileges."""
+
+    if not test_project_reader(project):
+        raise cherrypy.HTTPError(403)
