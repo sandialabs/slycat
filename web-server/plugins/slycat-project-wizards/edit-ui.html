@@ -204,11 +204,21 @@
             <thead>
               <tr>
                 <th scope="col">Name</th>
-                <th scope="col">Description</th>
+                <th scope="col">Owner</th>
                 <th scope="col" class="text-end">Members</th>
               </tr>
             </thead>
-            <tbody data-bind="foreach: metagroup_search_results">
+
+            <tbody data-bind="visible: metagroup_search_loading">
+              <tr>
+                <td colspan="3" class="text-muted">
+                  Searching...
+                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody data-bind="visible: !metagroup_search_loading(), foreach: metagroup_search_results">
               <tr
                 data-bind="
                   click: $parent.select_metagroup,
@@ -217,7 +227,7 @@
                 "
               >
                 <td data-bind="text: name"></td>
-                <td data-bind="text: description"></td>
+                <td data-bind="text: owner"></td>
                 <td class="text-end" data-bind="text: memberCount"></td>
               </tr>
             </tbody>

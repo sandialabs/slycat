@@ -10,59 +10,10 @@ import editUI from "./edit-ui.html";
 import "./edit-ui.css";
 import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 import "@fortawesome/fontawesome-free/css/all.css";
+import api_root from "js/slycat-api-root";
 
 var METAGROUP_RESULT_LIMIT = 25;
 var METAGROUP_SEARCH_DEBOUNCE_MS = 250;
-
-// Mock LDAP metagroup catalog for the UI prototype. Replace with API results later.
-var MOCK_METAGROUP_SEED = [
-  {
-    name: "Engineering",
-    description: "Mechanical and electrical engineering staff",
-    memberCount: 142,
-  },
-  {
-    name: "Analysts",
-    description: "Data analysis and modeling practitioners",
-    memberCount: 87,
-  },
-  { name: "QA-Team", description: "Quality assurance and test engineers", memberCount: 34 },
-  {
-    name: "Operations",
-    description: "Production operations and site support",
-    memberCount: 219,
-  },
-  {
-    name: "Research",
-    description: "Research scientists and principal investigators",
-    memberCount: 56,
-  },
-  {
-    name: "Simulation-Users",
-    description: "Users of high-performance simulation codes",
-    memberCount: 310,
-  },
-  {
-    name: "Visualization",
-    description: "Visualization specialists and designers",
-    memberCount: 28,
-  },
-  {
-    name: "Materials-Science",
-    description: "Materials science research group",
-    memberCount: 63,
-  },
-  {
-    name: "Computational-Physics",
-    description: "Computational physics modeling team",
-    memberCount: 91,
-  },
-  {
-    name: "Security-Reviewers",
-    description: "Security and export-control reviewers",
-    memberCount: 15,
-  },
-];
 
 var MOCK_ORG_UNITS = [
   "North",
@@ -98,50 +49,6 @@ var MOCK_DOMAINS = [
   "Thermodynamics",
   "Uncertainty",
 ];
-
-function buildMockMetagroups() {
-  var catalog = MOCK_METAGROUP_SEED.slice();
-  var i;
-  var j;
-  var domain;
-  var unit;
-  var name;
-  for (i = 0; i < MOCK_DOMAINS.length; i++) {
-    domain = MOCK_DOMAINS[i];
-    for (j = 0; j < MOCK_ORG_UNITS.length; j++) {
-      unit = MOCK_ORG_UNITS[j];
-      name = domain + "-" + unit;
-      catalog.push({
-        name: name,
-        description: domain + " collaboration group for the " + unit + " organization",
-        memberCount: 5 + ((i * 17 + j * 13) % 480),
-      });
-    }
-  }
-  return catalog;
-}
-
-var MOCK_METAGROUPS = buildMockMetagroups();
-
-function fuzzyMatch(query, text) {
-  if (!query) {
-    return false;
-  }
-  var haystack = (text || "").toLowerCase();
-  var needle = query.toLowerCase();
-  if (haystack.indexOf(needle) !== -1) {
-    return true;
-  }
-  // Character-sequence match: all query chars appear in order
-  var qi = 0;
-  var hi;
-  for (hi = 0; hi < haystack.length && qi < needle.length; hi++) {
-    if (haystack.charAt(hi) === needle.charAt(qi)) {
-      qi++;
-    }
-  }
-  return qi === needle.length;
-}
 
 function debounce(fn, wait) {
   var timer = null;
@@ -195,29 +102,66 @@ function constructor(params) {
     });
     return assigned;
   });
+  component.metagroup_search_results = ko.observableArray([]);
+  component.metagroup_search_loading = ko.observable(false);
+  component.metagroup_search_error = ko.observable(null);
+  var latestSearchId = 0;
+  // wait until the user stops typing before searching
+  component.metagroup_search_query = ko
+    .observable("")
+    .extend({ rateLimit: { timeout: 800, method: "notifyWhenChangesStop" } });
+  // perform the actual search for groups
+  component.metagroup_search_query.subscribe(function (newQuery) {
+    var query = (newQuery || "").trim();
+    var searchId = ++latestSearchId;
 
-  component.metagroup_search_results = ko.pureComputed(function () {
-    var query = (component.metagroup_search_query() || "").trim();
+    component.metagroup_search_error(null);
+
     if (!query) {
-      return [];
+      component.metagroup_search_results([]);
+      component.metagroup_search_loading(false);
+      return;
     }
-    var assigned = component.assigned_metagroup_names();
-    var matches = [];
-    var i;
-    var group;
-    for (i = 0; i < MOCK_METAGROUPS.length; i++) {
-      group = MOCK_METAGROUPS[i];
-      if (assigned[group.name]) {
-        continue;
-      }
-      if (fuzzyMatch(query, group.name) || fuzzyMatch(query, group.description)) {
-        matches.push(group);
-        if (matches.length >= METAGROUP_RESULT_LIMIT) {
-          break;
+
+    component.metagroup_search_loading(true);
+
+    fetch(api_root + "groups/" + encodeURIComponent(query))
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Group search failed with status " + response.status);
         }
-      }
-    }
-    return matches;
+
+        return response.json();
+      })
+      .then(function (groups) {
+        // Ignore stale responses if the user typed another query before this returned.
+        if (searchId !== latestSearchId) {
+          return;
+        }
+
+        var matches = groups.map(function (group) {
+          return {
+            name: group.name,
+            owner: group.owner,
+            memberCount: group.member_count,
+          };
+        });
+
+        component.metagroup_search_results(matches);
+      })
+      .catch(function (error) {
+        if (searchId !== latestSearchId) {
+          return;
+        }
+
+        component.metagroup_search_error(error);
+        component.metagroup_search_results([]);
+      })
+      .then(function () {
+        if (searchId === latestSearchId) {
+          component.metagroup_search_loading(false);
+        }
+      });
   });
 
   component.metagroup_search_helper = ko.pureComputed(function () {
