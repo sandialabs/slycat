@@ -11,7 +11,6 @@ import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import "js/slycat-local-browser";
 import "js/slycat-parser-controls";
-import { remoteControlsReauth } from "js/slycat-remote-controls";
 import "js/slycat-remote-browser";
 import "js/slycat-table-ingestion";
 import parameterImageWizardUI from "../wizard-ui.html";
@@ -19,8 +18,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
+import SshAuthentication from "components/SshAuthentication.tsx";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
-import { postSmbSession } from "utils/remote-auth";
+import { postSmbSession, remoteControlsReauth } from "utils/remote-auth";
 
 function constructor(params) {
   var component = {};
@@ -80,13 +80,17 @@ function constructor(params) {
   });
   component.ps_type("remote"); // remote is selected by default...
   component.smb_wizard_login_root = null;
+  component.ssh_wizard_login_root = null;
+  component.ssh_wizard_login_dispose_bound = false;
   component.smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
 
   // Navigate to login controls and set alert message to
   // inform user their session has been disconnected.
   component.reauth = function () {
+    component.remote.session_exists(false);
     remoteControlsReauth(component.remote.status, component.remote.status_type);
     component.tab(2);
+    mountSshLogin();
   };
 
   component.get_server_files = function () {
@@ -215,6 +219,7 @@ function constructor(params) {
   component.get_server_file_names();
 
   component.cancel = function () {
+    unmountSshLogin();
     if (component.smb_wizard_login_root) {
       component.smb_wizard_login_root.unmount();
       component.smb_wizard_login_root = null;
@@ -253,6 +258,46 @@ function constructor(params) {
   };
   const onReauth = function () {
     console.log("onReauth");
+  };
+
+  const setSshAuthValues = function (values) {
+    component.remote.hostname(values.hostname);
+    component.remote.username(values.username);
+    component.remote.password(values.password);
+    component.remote.session_exists(values.sessionExists);
+  };
+
+  const onSshAuthEnter = function (values) {
+    setSshAuthValues(values);
+    component.connect();
+  };
+
+  const unmountSshLogin = function () {
+    if (component.ssh_wizard_login_root) {
+      component.ssh_wizard_login_root.unmount();
+      component.ssh_wizard_login_root = null;
+    }
+  };
+
+  const mountSshLogin = function () {
+    const node = document.querySelector("#slycat-wizard .ssh-wizard-login");
+    if (!node) {
+      return;
+    }
+    unmountSshLogin();
+    component.ssh_wizard_login_root = createRoot(node);
+    if (!component.ssh_wizard_login_dispose_bound) {
+      component.ssh_wizard_login_dispose_bound = true;
+      ko.utils.domNodeDisposal.addDisposeCallback(node, unmountSshLogin);
+    }
+    component.ssh_wizard_login_root.render(
+      <SshAuthentication
+        hostnameMode="editable"
+        loadingData={false}
+        onChange={setSshAuthValues}
+        onEnter={onSshAuthEnter}
+      />,
+    );
   };
 
   const setSmbAuthValues = function (values) {
@@ -339,12 +384,15 @@ function constructor(params) {
 
     var type = component.ps_type();
     component.remote.password(null);
+    component.remote.status(null);
+    component.remote.status_type(null);
     if (type === "local") {
       component.tab(1);
     } else if (type === "server") {
       component.existing_table();
     } else if (type === "remote") {
       component.tab(2);
+      mountSshLogin();
     } else if (type === "smb") {
       component.tab(2);
       mountSmbLogin();

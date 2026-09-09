@@ -110,31 +110,23 @@
     </div>
 
     <div data-bind="visible:tab() == 2">
-      <form role="form">
-        <!-- ko if: ps_type() == 'remote' -->
-        <slycat-remote-controls
-          params="
-          hostname:remote.hostname,
-          username:remote.username,
-          password:remote.password,
-          status:remote.status,
-          status_type:remote.status_type,
-          enable:remote.enable,
-          focus:remote.focus,
-          activate:connect,
-          session_exists:remote.session_exists
-        "
-        ></slycat-remote-controls>
-        <!-- /ko -->
-        <div
-          class="smb-wizard-login"
-          style="padding-left: 16px"
-          data-bind="visible: ps_type() == 'smb'"
-        ></div>
-        <label class="col-sm-9 alert alert-danger slycat-big-scrolling-alert" role="alert"
-          data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb'"
-          style="position: relative; left: 145px">Remote authentication failed.</label>
-      </form>
+      <div
+        class="ssh-wizard-login"
+        data-bind="visible: ps_type() == 'remote'"
+      ></div>
+      <div
+        class="alert slycat-big-scrolling-alert"
+        role="alert"
+        data-bind="visible: ps_type() == 'remote' && remote.status(), css: 'alert-' + remote.status_type(), text: remote.status"
+      ></div>
+      <div
+        class="smb-wizard-login"
+        style="padding-left: 16px"
+        data-bind="visible: ps_type() == 'smb'"
+      ></div>
+      <label class="col-sm-9 alert alert-danger slycat-big-scrolling-alert" role="alert"
+        data-bind="visible:remote.status_type() == 'danger' && ps_type() == 'smb'"
+        style="position: relative; left: 145px">Remote authentication failed.</label>
     </div>
 
     <div data-bind="visible:tab() == 3" style="height: 600px">
