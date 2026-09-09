@@ -15,15 +15,17 @@ import * as remotes from "js/slycat-remotes";
 import client from "js/slycat-web-client";
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 // import TestReact from "../plugin-components/TestReact"
 import VSLoadingPage from "../plugin-components/VSLoadingPage";
+import VSColorSwitcher from "../plugin-components/VSColorSwitcher";
+import VSColorByLegend from "../plugin-components/VSColorByLegend";
 import * as dialog from "js/slycat-dialog";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import ko from "knockout";
 import URI from "urijs";
 import request from "./vs-request-data.js";
 import layout from "./vs-layout.js";
-import colorswitcher from "./color-switcher.js";
 import traj_plot from "./vs-trajectories.js";
 import scatter_plot from "./vs-scatter-plot.js";
 import table_pane from "./vs-table.js";
@@ -31,6 +33,10 @@ import movie_pane from "./vs-movies.js";
 import d3 from "d3";
 import control from "./vs-controls";
 import { COLUMN_LABELS } from "utils/ui-labels";
+import slycat_color_maps from "js/slycat-color-maps";
+import watch from "redux-watch";
+import { createVSStore } from "./store";
+import { setLegend } from "./services/legendSlice";
 // global parameters to set up movie-plex UI
 // -----------------------------------------
 
@@ -72,9 +78,11 @@ var sort_order = null;
 
 var min_value = null;
 var max_value = null;
+var color_by_column_names = null;
 
 var bookmarker = null;
 var bookmark = null;
+var store = null;
 
 var video_sync_time_changed_throttle_timeout = null;
 var video_sync_time_changed_throttle_ms = 500;
@@ -172,7 +180,7 @@ function launch_model() {
       // Retrieve bookmarked state information ...
       bookmarker.getState(function (state) {
         bookmark = state;
-        colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+        colormap = slycat_color_maps.resolve_colormap_name(bookmark["colormap"]);
         color_variable =
           bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : 1;
         highlighted_simulations =
@@ -256,21 +264,30 @@ function model_loaded() {
         color_variable = color_variables[0];
       }
 
-      $("#color-switcher").colorswitcher({ colormap: colormap });
-      $("#color-switcher").bind("colormap-changed", function (event, colormap) {
-        update_colormap(colormap);
-        update_current_colorscale(null, null);
-      });
+      store = createVSStore({ controls: { colormap: colormap } });
+      createRoot(document.getElementById("color-switcher")).render(
+        <Provider store={store}>
+          <VSColorSwitcher />
+        </Provider>,
+      );
+      createRoot(document.getElementById("vs-colorby-legend-root")).render(
+        <Provider store={store}>
+          <VSColorByLegend />
+        </Provider>,
+      );
+      store.subscribe(
+        watch(store.getState, "controls.colormap")(function (newColormap) {
+          selected_colormap_changed(newColormap);
+        }),
+      );
 
-      foreground_color = $("#color-switcher").colorswitcher("get_foreground");
-      hover_background_color = $("#color-switcher").colorswitcher("get_background_2");
-      null_color = $("#color-switcher").colorswitcher("get_null_color");
+      apply_colormap_chrome();
 
-      //Gets the min and max from the default data set (velocity for now) to calculate the color scale
-      var default_data = table_data[0].data[color_variable];
-
-      max_value = Math.max.apply(null, default_data);
-      min_value = Math.min.apply(null, default_data);
+      color_by_column_names = table_metadata[0]["column-names"];
+      var default_extent = numeric_extent(table_data[0].data[color_variable]);
+      min_value = default_extent.min;
+      max_value = default_extent.max;
+      sync_color_by_legend();
 
       // first row of trajectories data contains time points
       var time_data = time_trajectories[0][0];
@@ -295,34 +312,29 @@ function model_loaded() {
       // set up the trajetories pane
       // traj_plot.setup(time_data, traj_data);
 
-      color_scale = $("#color-switcher").colorswitcher(
-        "get_color_scale",
-        undefined,
-        min_value,
-        max_value,
+      var initial_scale_min = min_value == null ? 0.0 : min_value;
+      var initial_scale_max = max_value == null ? 1.0 : max_value;
+      color_scale = slycat_color_maps.get_color_scale(
+        colormap,
+        initial_scale_min,
+        initial_scale_max,
       );
-      color_array = $("#color-switcher").colorswitcher("get_gradient_data", undefined);
+      color_array = slycat_color_maps.get_gradient_data(colormap);
 
       //background defaults to "night"
       $("#mp-trajectories").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
-          .toString(),
+        "background-color": colormap_background(),
       });
       $("#waveform-viewer rect.selectionMask").css({
-        fill: $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", colormap),
+        fill: colormap_background(),
+        "fill-opacity": colormap_opacity(),
       });
       $("#mp-movies").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
-          .toString(),
+        "background-color": colormap_background(),
       });
 
       $("#mp-mds-pane").css({
-        "background-color": $("#color-switcher")
-          .colorswitcher("get_background", colormap)
-          .toString(),
+        "background-color": colormap_background(),
       });
 
       var trajectories_options = {
@@ -335,7 +347,9 @@ function model_loaded() {
         selection: selection,
         foreground_color: ko.observable(foreground_color),
         hover_background_color: ko.observable(hover_background_color),
-        null_color: ko.observable(null_color),
+        null_color: null_color,
+        background: colormap_background(),
+        opacity: colormap_opacity(),
         min_time: min_time,
         max_time: max_time,
         diagram_time: diagram_time,
@@ -439,6 +453,8 @@ function model_loaded() {
         highlighted_simulations: highlighted_simulations.slice(),
         selection: highlighted_simulations.slice(), // scatterplot calls it 'selection', so going with that for now but leaving 'highlighted_simulations' too for when we standardize on a common vocab for state variables
         diagram_time: diagram_time,
+        min_time: min_time,
+        max_time: max_time,
         null_color: null_color,
         current_video: current_video,
       };
@@ -463,14 +479,16 @@ function model_loaded() {
         highlighted_simulations: highlighted_simulations.slice(),
         video_sync: video_sync,
         video_sync_time: video_sync_time,
+        min_time: min_time,
+        max_time: max_time,
         pinned_simulations: pinned_simulations.slice(),
       };
 
       $("#controls").controls(controls_options);
 
       $("#controls").bind("color-selection-changed", function (event, newVar) {
-        update_current_colorscale(table_data, newVar);
         update_coloring_var(newVar);
+        update_current_colorscale(table_data, newVar);
       });
 
       $("#controls").bind("pinned_simulations_changed", function (event, pinned_simulations) {
@@ -486,6 +504,10 @@ function model_loaded() {
       $("#controls").bind("video_sync_time", function (event, new_video_sync_time) {
         // Handle the change to video_sync_time
         video_sync_time_changed(new_video_sync_time);
+      });
+
+      $("#controls").bind("diagram_time_changed", function (event, new_diagram_time) {
+        diagram_time_changed(new_diagram_time);
       });
 
       // Clicking jump-to-start updates the scatterplot and logs it ...
@@ -545,8 +567,8 @@ function model_loaded() {
         },
       );
       $("#mp-datapoints-table").bind("color-selection-changed", function (event, newVar) {
-        update_current_colorscale(table_data, newVar);
         update_coloring_var(newVar);
+        update_current_colorscale(table_data, newVar);
       });
       $("#mp-datapoints-table").bind("variable-sort-changed", function (event, variable, order) {
         variable_sort_changed(variable, order);
@@ -595,10 +617,21 @@ function pinned_simulations_changed(waveform_indexes) {
   }
 }
 
+function clamp_diagram_time(time) {
+  if (min_time != null && time < min_time) {
+    return min_time;
+  }
+  if (max_time != null && time > max_time) {
+    return max_time;
+  }
+  return time;
+}
+
 function diagram_time_changed(new_diagram_time) {
+  var clamped = clamp_diagram_time(new_diagram_time);
   // Make sure new value is different before continuing
-  if (new_diagram_time != diagram_time) {
-    diagram_time = new_diagram_time;
+  if (clamped != diagram_time) {
+    diagram_time = clamped;
     // Update the widgets ...
     $("#controls").controls("option", "diagram_time", diagram_time);
     $("#mp-movies").movies("option", "diagram_time", diagram_time);
@@ -612,6 +645,9 @@ function diagram_time_changed(new_diagram_time) {
     $("#mp-mds-scatterplot").scatterplot("option", "video_sync_time", video_sync_time);
 
     bookmarker.updateState({ diagram_time: diagram_time, video_sync_time: video_sync_time });
+  } else {
+    // Refresh the Time field so an out-of-range commit cannot leave a value like 999 in the box
+    $("#controls").controls("option", "video_sync_time", diagram_time);
   }
 }
 
@@ -640,9 +676,10 @@ function video_sync_changed(new_video_sync) {
 }
 
 function video_sync_time_changed(new_video_sync_time) {
+  var clamped = clamp_diagram_time(new_video_sync_time);
   // Make sure new value is different before continuing
-  if (new_video_sync_time != video_sync_time) {
-    video_sync_time = new_video_sync_time;
+  if (clamped != video_sync_time) {
+    video_sync_time = clamped;
     // Update the widgets ...
     $("#controls").controls("option", "video_sync_time", video_sync_time);
     $("#mp-movies").movies("option", "video_sync_time", video_sync_time);
@@ -650,7 +687,7 @@ function video_sync_time_changed(new_video_sync_time) {
     $("#mp-mds-scatterplot").scatterplot("option", "video_sync_time", video_sync_time);
     // If video_sync is on, set diagram_time to same as video_sync_time and let widgets know new value
     if (video_sync) {
-      diagram_time = new_video_sync_time;
+      diagram_time = video_sync_time;
       $("#controls").controls("option", "diagram_time", diagram_time);
       $("#mp-movies").movies("option", "diagram_time", diagram_time);
       $("#waveform-viewer").trajectories("option", "diagram_time", diagram_time);
@@ -662,6 +699,8 @@ function video_sync_time_changed(new_video_sync_time) {
       bookmark_video_sync_time_and_diagram_time,
       video_sync_time_changed_throttle_ms,
     );
+  } else {
+    $("#controls").controls("option", "video_sync_time", video_sync_time);
   }
 }
 
@@ -726,7 +765,7 @@ function update_table_color() {
 
 function update_movies_color() {
   $("#mp-movies").css({
-    "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "background-color": colormap_background(),
   });
 
   var color_options = {
@@ -747,13 +786,11 @@ function update_coloring_var(newVar) {
   $("#mp-datapoints-table").table("option", "color_variable", color_variable);
 
   bookmarker.updateState({ "variable-selection": color_variable });
-
-  //Will probably need to pass new min and max to color-switcher, so you can set the new color scale
 }
 
 function update_scatterplot_color() {
   $("#mp-mds-pane").css({
-    "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "background-color": colormap_background(),
   });
 
   var color_options = {
@@ -767,16 +804,14 @@ function update_scatterplot_color() {
 
 function update_waveform_color() {
   $("#mp-trajectories").css({
-    "background-color": $("#color-switcher").colorswitcher("get_background", undefined).toString(),
+    "background-color": colormap_background(),
   });
   $("#waveform-viewer rect.selectionMask").css({
-    fill: $("#color-switcher").colorswitcher("get_background", undefined).toString(),
-    "fill-opacity": $("#color-switcher").colorswitcher("get_opacity", undefined),
+    fill: colormap_background(),
+    "fill-opacity": colormap_opacity(),
   });
 
-  foreground_color = $("#color-switcher").colorswitcher("get_foreground");
-  hover_background_color = $("#color-switcher").colorswitcher("get_background_2");
-  null_color = $("#color-switcher").colorswitcher("get_null_color");
+  apply_colormap_chrome();
 
   var color_options = {
     color_array: color_array,
@@ -784,9 +819,30 @@ function update_waveform_color() {
     foreground_color: foreground_color,
     hover_background_color: hover_background_color,
     null_color: null_color,
+    background: colormap_background(),
+    opacity: colormap_opacity(),
   };
 
   $("#waveform-viewer").trajectories("option", "color-options", color_options);
+}
+
+function colormap_background() {
+  return slycat_color_maps.get_background(colormap).toString();
+}
+
+function colormap_opacity() {
+  return slycat_color_maps.get_opacity(colormap);
+}
+
+function apply_colormap_chrome() {
+  foreground_color = slycat_color_maps.get_foreground(colormap);
+  hover_background_color = slycat_color_maps.get_background_2(colormap);
+  null_color = slycat_color_maps.get_null_color(colormap);
+}
+
+function selected_colormap_changed(newColormap) {
+  update_colormap(newColormap);
+  update_current_colorscale(null, null);
 }
 
 function update_colormap(new_colormap) {
@@ -798,25 +854,58 @@ function update_colormap(new_colormap) {
   });
 }
 
+function numeric_extent(values) {
+  var min = Infinity;
+  var max = -Infinity;
+  if (values == null) {
+    return { min: null, max: null };
+  }
+  for (var i = 0; i < values.length; i++) {
+    var n = Number(values[i]);
+    if (!Number.isFinite(n)) {
+      continue;
+    }
+    if (n < min) min = n;
+    if (n > max) max = n;
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return { min: null, max: null };
+  }
+  return { min: min, max: max };
+}
+
+function sync_color_by_legend() {
+  if (!store || !color_by_column_names) {
+    return;
+  }
+  var has_extent = min_value != null && max_value != null;
+  store.dispatch(
+    setLegend({
+      ready: has_extent,
+      label: color_by_column_names[color_variable] || "",
+      min: min_value,
+      max: max_value,
+    }),
+  );
+}
+
 function update_current_colorscale(table_data, new_color_variable) {
   //If you're changing the variable to color by
   if (table_data != null || new_color_variable != null) {
     var new_data = table_data[0].data[new_color_variable];
-
-    max_value = Math.max.apply(null, new_data);
-    min_value = Math.min.apply(null, new_data);
+    var extent = numeric_extent(new_data);
+    min_value = extent.min;
+    max_value = extent.max;
   }
 
-  color_scale = $("#color-switcher").colorswitcher(
-    "get_color_scale",
-    undefined,
-    min_value,
-    max_value,
-  );
-  color_array = $("#color-switcher").colorswitcher("get_gradient_data", undefined);
+  var scale_min = min_value == null ? 0.0 : min_value;
+  var scale_max = max_value == null ? 1.0 : max_value;
+  color_scale = slycat_color_maps.get_color_scale(colormap, scale_min, scale_max);
+  color_array = slycat_color_maps.get_gradient_data(colormap);
 
   update_movies_color();
   update_waveform_color();
   update_scatterplot_color();
   update_table_color();
+  sync_color_by_legend();
 }
