@@ -9,7 +9,7 @@ retains certain rights in this software.
 // S. Martin
 // 4/27/2015
 
-import metadata_table from "./vs-table.js";
+import "./vs-table.js";
 
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
@@ -17,7 +17,7 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout-jquery3";
 
-import scatter_plot from "./vs-scatter-plot.js";
+import "./vs-scatter-plot.js";
 
 export default {
    
