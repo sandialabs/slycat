@@ -61,7 +61,6 @@ import {
 } from "components/ScatterplotOptions/ScatterplotOptions";
 
 import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
-import { AnimationActionLoopStyles } from "three";
 import _ from "lodash";
 
 const initialState = {
