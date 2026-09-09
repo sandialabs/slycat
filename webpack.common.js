@@ -288,7 +288,6 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js', '.jsx' ],
     fallback: {
       "stream": require.resolve("stream-browserify"),
-      "buffer": require.resolve("buffer/"),
     }
   },
   ignoreWarnings: [
