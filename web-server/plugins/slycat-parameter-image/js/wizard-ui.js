@@ -279,6 +279,20 @@ function constructor(params) {
     }
   };
 
+  const renderSshLogin = function (loadingData) {
+    if (!component.ssh_wizard_login_root) {
+      return;
+    }
+    component.ssh_wizard_login_root.render(
+      <SshAuthentication
+        hostnameMode="editable"
+        loadingData={loadingData}
+        onChange={setSshAuthValues}
+        onEnter={onSshAuthEnter}
+      />,
+    );
+  };
+
   const mountSshLogin = function () {
     const node = document.querySelector("#slycat-wizard .ssh-wizard-login");
     if (!node) {
@@ -290,14 +304,7 @@ function constructor(params) {
       component.ssh_wizard_login_dispose_bound = true;
       ko.utils.domNodeDisposal.addDisposeCallback(node, unmountSshLogin);
     }
-    component.ssh_wizard_login_root.render(
-      <SshAuthentication
-        hostnameMode="editable"
-        loadingData={false}
-        onChange={setSshAuthValues}
-        onEnter={onSshAuthEnter}
-      />,
-    );
+    renderSshLogin(false);
   };
 
   const setSmbAuthValues = function (values) {
@@ -314,6 +321,19 @@ function constructor(params) {
     component.connectSMB();
   };
 
+  const renderSmbLogin = function (loadingData) {
+    if (!component.smb_wizard_login_root) {
+      return;
+    }
+    component.smb_wizard_login_root.render(
+      <SmbAuthentication
+        loadingData={loadingData}
+        onChange={setSmbAuthValues}
+        onEnter={onSmbAuthEnter}
+      />,
+    );
+  };
+
   const mountSmbLogin = function () {
     const node = document.querySelector("#slycat-wizard .smb-wizard-login");
     if (!node) {
@@ -328,13 +348,7 @@ function constructor(params) {
         }
       });
     }
-    component.smb_wizard_login_root.render(
-      <SmbAuthentication
-        loadingData={false}
-        onChange={setSmbAuthValues}
-        onEnter={onSmbAuthEnter}
-      />,
-    );
+    renderSmbLogin(false);
   };
 
   component.select_type = function () {
@@ -545,9 +559,9 @@ function constructor(params) {
   };
 
   component.connectSMB = function () {
-    component.remote.enable(false);
-    component.remote.status_type("info");
-    component.remote.status("Connecting ...");
+    if (!component.remote.enable()) {
+      return;
+    }
 
     if (component.remote.session_exists()) {
       component.smb_wizard_browse_root.render(
@@ -563,84 +577,95 @@ function constructor(params) {
         </div>,
       );
       component.tab(3);
-      component.remote.enable(true);
-      component.remote.status_type(null);
-      component.remote.status(null);
-    } else {
-      postSmbSession({
-        username: component.remote.username() || "",
-        password: component.remote.password() || "",
-        domain: component.remote.domain() || "",
-        server: component.remote.hostname() || "",
-        share: component.remote.share() || "",
-      })
-        .then(async (response) => {
-          console.log("authenticated.", response);
-          const data = await response.json()
-          if (response.ok && data.status) {
-            component.remote.session_exists(true);
-            component.remote.enable(true);
-            component.remote.status_type(null);
-            component.remote.status(null);
-            component.tab(3);
-            const smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
-            smb_wizard_browse_root.render(
-              <div>
-                <RemoteFileBrowser
-                  onSelectFileCallBack={onSelectTableFile}
-                  onReauthCallBack={onReauth}
-                  hostname={component.remote.hostname()}
-                  useSMB={true}
-                  showSelector={false}
-                />
-              </div>,
-            );
-          } else {
-            alert(`could not connect ${response.statusText} , ${data.msg}`);
-            component.remote.enable(true);
-            component.remote.status_type("danger");
-            component.remote.focus("password");
-          }
-        })
-        .catch((error) => {
-          console.log("could not connect", error);
-          component.remote.enable(true);
-          component.remote.status_type("danger");
-          component.remote.focus("password");
-        });
+      return;
     }
-  };
-  component.connect = function () {
+
     component.remote.enable(false);
     component.remote.status_type("info");
     component.remote.status("Connecting ...");
+    renderSmbLogin(true);
 
-    if (component.remote.session_exists()) {
-      component.tab(3);
-      component.remote.enable(true);
-      component.remote.status_type(null);
-      component.remote.status(null);
-    } else {
-      client.post_remotes({
-        hostname: component.remote.hostname(),
-        username: component.remote.username(),
-        password: component.remote.password(),
-        success: function (sid) {
+    postSmbSession({
+      username: component.remote.username() || "",
+      password: component.remote.password() || "",
+      domain: component.remote.domain() || "",
+      server: component.remote.hostname() || "",
+      share: component.remote.share() || "",
+    })
+      .then(async (response) => {
+        console.log("authenticated.", response);
+        const data = await response.json();
+        if (response.ok && data.status) {
           component.remote.session_exists(true);
-          component.remote.sid(sid);
-          component.tab(3);
           component.remote.enable(true);
           component.remote.status_type(null);
           component.remote.status(null);
-        },
-        error: function (request, status, reason_phrase) {
+          renderSmbLogin(false);
+          component.tab(3);
+          const smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
+          smb_wizard_browse_root.render(
+            <div>
+              <RemoteFileBrowser
+                onSelectFileCallBack={onSelectTableFile}
+                onReauthCallBack={onReauth}
+                hostname={component.remote.hostname()}
+                useSMB={true}
+                showSelector={false}
+              />
+            </div>,
+          );
+        } else {
+          alert(`could not connect ${response.statusText} , ${data.msg}`);
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
           component.remote.focus("password");
-        },
+          renderSmbLogin(false);
+        }
+      })
+      .catch((error) => {
+        console.log("could not connect", error);
+        component.remote.enable(true);
+        component.remote.status_type("danger");
+        component.remote.focus("password");
+        renderSmbLogin(false);
       });
+  };
+  component.connect = function () {
+    if (!component.remote.enable()) {
+      return;
     }
+
+    if (component.remote.session_exists()) {
+      component.tab(3);
+      return;
+    }
+
+    component.remote.enable(false);
+    component.remote.status_type("info");
+    component.remote.status("Connecting ...");
+    renderSshLogin(true);
+
+    client.post_remotes({
+      hostname: component.remote.hostname(),
+      username: component.remote.username(),
+      password: component.remote.password(),
+      success: function (sid) {
+        component.remote.session_exists(true);
+        component.remote.sid(sid);
+        component.tab(3);
+        component.remote.enable(true);
+        component.remote.status_type(null);
+        component.remote.status(null);
+        renderSshLogin(false);
+      },
+      error: function (request, status, reason_phrase) {
+        component.remote.enable(true);
+        component.remote.status_type("danger");
+        component.remote.status(reason_phrase);
+        component.remote.focus("password");
+        renderSshLogin(false);
+      },
+    });
   };
 
   component.load_hdf5_input = function () {

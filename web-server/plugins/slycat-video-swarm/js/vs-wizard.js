@@ -185,6 +185,21 @@ component.reauth = function() {
     }
   };
 
+  const renderSshLogin = function (loadingData) {
+    if (!component.ssh_wizard_login_root) {
+      return;
+    }
+    component.ssh_wizard_login_root.render(
+      <SshAuthentication
+        hostnameMode="locked"
+        agent={true}
+        loadingData={loadingData}
+        onChange={setSshAuthValues}
+        onEnter={onSshAuthEnter}
+      />,
+    );
+  };
+
   const mountSshLogin = function () {
     const node = document.querySelector("#slycat-wizard .ssh-wizard-login");
     if (!node) {
@@ -196,15 +211,7 @@ component.reauth = function() {
       component.ssh_wizard_login_dispose_bound = true;
       ko.utils.domNodeDisposal.addDisposeCallback(node, unmountSshLogin);
     }
-    component.ssh_wizard_login_root.render(
-      <SshAuthentication
-        hostnameMode="locked"
-        agent={true}
-        loadingData={false}
-        onChange={setSshAuthValues}
-        onEnter={onSshAuthEnter}
-      />,
-    );
+    renderSshLogin(false);
   };
 
   // first tab is used to select upload type
@@ -446,41 +453,44 @@ component.reauth = function() {
 
   // code to connect to remove server
   component.connect = function () {
+    if (!component.remote.enable()) {
+      return;
+    }
+
+    if (component.remote.session_exists()) {
+      component.tab(4);
+      return;
+    }
+
     component.remote.enable(false);
     component.remote.status_type("info");
     component.remote.status("Connecting ...");
-
     $(".remote-browser-continue").toggleClass("disabled", true);
+    renderSshLogin(true);
 
-    if (component.remote.session_exists()) {
-      $(".remote-browser-continue").toggleClass("disabled", false);
-      component.tab(4);
-      component.remote.enable(true);
-      component.remote.status_type(null);
-      component.remote.status(null);
-    } else {
-      client.post_remotes({
-        hostname: component.remote.hostname(),
-        username: component.remote.username(),
-        password: component.remote.password(),
-        success: function (sid) {
-          $(".remote-browser-continue").toggleClass("disabled", false);
-          component.remote.session_exists(true);
-          component.remote.sid(sid);
-          component.tab(4);
-          component.remote.enable(true);
-          component.remote.status_type(null);
-          component.remote.status(null);
-        },
-        error: function (request, status, reason_phrase) {
-          $(".remote-browser-continue").toggleClass("disabled", false);
-          component.remote.enable(true);
-          component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
-          component.remote.focus("password");
-        },
-      });
-    }
+    client.post_remotes({
+      hostname: component.remote.hostname(),
+      username: component.remote.username(),
+      password: component.remote.password(),
+      success: function (sid) {
+        $(".remote-browser-continue").toggleClass("disabled", false);
+        component.remote.session_exists(true);
+        component.remote.sid(sid);
+        component.tab(4);
+        component.remote.enable(true);
+        component.remote.status_type(null);
+        component.remote.status(null);
+        renderSshLogin(false);
+      },
+      error: function (request, status, reason_phrase) {
+        $(".remote-browser-continue").toggleClass("disabled", false);
+        component.remote.enable(true);
+        component.remote.status_type("danger");
+        component.remote.status(reason_phrase);
+        component.remote.focus("password");
+        renderSshLogin(false);
+      },
+    });
   };
 
   // upload remote table

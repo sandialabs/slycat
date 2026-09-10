@@ -28,9 +28,13 @@ export function login(params) {
     if (params.cancel) params.cancel();
   };
   component.login = function () {
+    if (!component.remote.enable()) {
+      return;
+    }
     component.remote.enable(false);
     component.remote.status_type("info");
     component.remote.status("Connecting ...");
+    renderLogin(true);
     if (!params.smb) {
       client.post_remotes({
         hostname: params.hostname,
@@ -45,6 +49,7 @@ export function login(params) {
           component.remote.status_type("danger");
           component.remote.status(reason_phrase);
           component.remote.focus("password");
+          renderLogin(false);
         },
       });
     } else {
@@ -63,12 +68,14 @@ export function login(params) {
             component.remote.enable(true);
             component.remote.status_type("danger");
             component.remote.focus("password");
+            renderLogin(false);
           }
         })
         .catch(() => {
           component.remote.enable(true);
           component.remote.status_type("danger");
           component.remote.focus("password");
+          renderLogin(false);
         });
     }
   };
@@ -125,16 +132,14 @@ export function login(params) {
     }
   };
 
-  const mountLogin = function () {
-    const node = component.container.find(".remote-login").get(0);
-    if (!node || login_root) {
+  const renderLogin = function (loadingData) {
+    if (!login_root) {
       return;
     }
-    login_root = createRoot(node);
     if (params.smb) {
       login_root.render(
         <SmbAuthentication
-          loadingData={false}
+          loadingData={loadingData}
           smbInfo={smb_info}
           onChange={setSmbAuthValues}
           onEnter={onSmbAuthEnter}
@@ -145,12 +150,21 @@ export function login(params) {
         <SshAuthentication
           hostnameMode="hidden"
           hostname={params.hostname}
-          loadingData={false}
+          loadingData={loadingData}
           onChange={setSshAuthValues}
           onEnter={onSshAuthEnter}
         />,
       );
     }
+  };
+
+  const mountLogin = function () {
+    const node = component.container.find(".remote-login").get(0);
+    if (!node || login_root) {
+      return;
+    }
+    login_root = createRoot(node);
+    renderLogin(false);
   };
 
   component.container.children().on("shown.bs.modal", function () {
