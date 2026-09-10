@@ -253,8 +253,8 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
               onChange={(event) => setHostnameAndMaybePersist(event.target.value)}
             />
             <label htmlFor={hostnameId}>Hostname</label>
-            <div className="invalid-feedback">Please enter a hostname.</div>
           </div>
+          <div className="invalid-feedback">Please enter a hostname.</div>
         </div>
       </div>
       <div className="form-floating mb-3">
@@ -282,9 +282,6 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
             onChange={(event) => setUsernameAndPersist(event.target.value)}
           />
           <label htmlFor={usernameId}>{REMOTE_AUTH_LABELS.username}</label>
-          <div className="invalid-feedback">
-            Please enter a {REMOTE_AUTH_LABELS.username.toLowerCase()}.
-          </div>
         </div>
         <span className="input-group-text">@</span>
         <button
@@ -320,6 +317,9 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
             onChange={(event) => setDomainAndPersist(event.target.value)}
           />
           <label htmlFor={domainId}>Domain</label>
+        </div>
+        <div className="invalid-feedback">
+          Please enter a {REMOTE_AUTH_LABELS.username.toLowerCase()}.
         </div>
       </div>
       {!sessionExists && (

@@ -281,8 +281,8 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
               <label className="form-label" htmlFor={hostnameId}>
                 Hostname
               </label>
-              <div className="invalid-feedback">Please enter a hostname.</div>
             </div>
+            <div className="invalid-feedback">Please enter a hostname.</div>
           </div>
         </div>
       )}

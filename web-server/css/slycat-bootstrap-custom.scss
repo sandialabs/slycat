@@ -31,3 +31,13 @@
 .slycat-dropdown-toggle-no-arrow::after {
   display: none;
 }
+
+// Keep input-group validation messages on their own row so they do not
+// stretch dropdown addons. Bootstrap only shows sibling .invalid-feedback.
+.input-group > .invalid-feedback {
+  flex: 0 0 100%;
+}
+
+.was-validated .input-group:has(.form-control:invalid) > .invalid-feedback {
+  display: block;
+}
