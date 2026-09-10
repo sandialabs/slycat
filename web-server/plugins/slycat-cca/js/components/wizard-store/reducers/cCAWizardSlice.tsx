@@ -130,6 +130,7 @@ export const cCAWizardSlice = createSlice({
     },
     setDataLocation: (state, action: PayloadAction<dataLocationType>) => {
       state.dataLocation = action.payload;
+      state.authError = undefined;
     },
     setMid: (state, action: PayloadAction<string>) => {
       state.mid = action.payload;

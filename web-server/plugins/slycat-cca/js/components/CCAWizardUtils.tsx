@@ -277,6 +277,7 @@ export const useCCAHandleBack = () => {
     }
 
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
+      dispatch(setAuthError(undefined));
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
       return;
     }
@@ -287,6 +288,7 @@ export const useCCAHandleBack = () => {
     }
 
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
+      dispatch(setAuthError(undefined));
       dispatch(setTabName(TabNames.CCA_DATA_WIZARD_SELECTION_TAB));
       return;
     }
