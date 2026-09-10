@@ -277,7 +277,7 @@ function constructor(params) {
     }
   };
 
-  const renderSshLogin = function (loadingData) {
+  const renderSshLogin = function (loadingData, focusPassword) {
     if (!component.ssh_wizard_login_root) {
       return;
     }
@@ -285,6 +285,7 @@ function constructor(params) {
       <SshAuthentication
         hostnameMode="editable"
         loadingData={loadingData}
+        focusPassword={Boolean(focusPassword)}
         onChange={setSshAuthValues}
         onEnter={onSshAuthEnter}
       />,
@@ -326,13 +327,14 @@ function constructor(params) {
     }
   };
 
-  const renderSmbLogin = function (loadingData) {
+  const renderSmbLogin = function (loadingData, focusPassword) {
     if (!component.smb_wizard_login_root) {
       return;
     }
     component.smb_wizard_login_root.render(
       <SmbAuthentication
         loadingData={loadingData}
+        focusPassword={Boolean(focusPassword)}
         onChange={setSmbAuthValues}
         onEnter={onSmbAuthEnter}
       />,
@@ -620,16 +622,14 @@ function constructor(params) {
           alert(`could not connect ${response.statusText} , ${data.msg}`);
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.focus("password");
-          renderSmbLogin(false);
+          renderSmbLogin(false, true);
         }
       })
       .catch((error) => {
         console.log("could not connect", error);
         component.remote.enable(true);
         component.remote.status_type("danger");
-        component.remote.focus("password");
-        renderSmbLogin(false);
+        renderSmbLogin(false, true);
       });
   };
   component.connect = function () {
@@ -664,8 +664,7 @@ function constructor(params) {
         component.remote.enable(true);
         component.remote.status_type("danger");
         component.remote.status(reason_phrase);
-        component.remote.focus("password");
-        renderSshLogin(false);
+        renderSshLogin(false, true);
       },
     });
   };

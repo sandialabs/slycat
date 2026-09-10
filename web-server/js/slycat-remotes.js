@@ -48,8 +48,7 @@ export function login(params) {
           component.remote.enable(true);
           component.remote.status_type("danger");
           component.remote.status(reason_phrase);
-          component.remote.focus("password");
-          renderLogin(false);
+          renderLogin(false, true);
         },
       });
     } else {
@@ -67,15 +66,13 @@ export function login(params) {
           } else {
             component.remote.enable(true);
             component.remote.status_type("danger");
-            component.remote.focus("password");
-            renderLogin(false);
+            renderLogin(false, true);
           }
         })
         .catch(() => {
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.focus("password");
-          renderLogin(false);
+          renderLogin(false, true);
         });
     }
   };
@@ -132,7 +129,7 @@ export function login(params) {
     }
   };
 
-  const renderLogin = function (loadingData) {
+  const renderLogin = function (loadingData, focusPassword) {
     if (!login_root) {
       return;
     }
@@ -140,6 +137,7 @@ export function login(params) {
       login_root.render(
         <SmbAuthentication
           loadingData={loadingData}
+          focusPassword={Boolean(focusPassword)}
           smbInfo={smb_info}
           onChange={setSmbAuthValues}
           onEnter={onSmbAuthEnter}
@@ -151,6 +149,7 @@ export function login(params) {
           hostnameMode="hidden"
           hostname={params.hostname}
           loadingData={loadingData}
+          focusPassword={Boolean(focusPassword)}
           onChange={setSshAuthValues}
           onEnter={onSshAuthEnter}
         />,

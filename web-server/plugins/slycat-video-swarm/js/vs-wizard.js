@@ -185,7 +185,7 @@ component.reauth = function() {
     }
   };
 
-  const renderSshLogin = function (loadingData) {
+  const renderSshLogin = function (loadingData, focusPassword) {
     if (!component.ssh_wizard_login_root) {
       return;
     }
@@ -194,6 +194,7 @@ component.reauth = function() {
         hostnameMode="locked"
         agent={true}
         loadingData={loadingData}
+        focusPassword={Boolean(focusPassword)}
         onChange={setSshAuthValues}
         onEnter={onSshAuthEnter}
       />,
@@ -487,8 +488,7 @@ component.reauth = function() {
         component.remote.enable(true);
         component.remote.status_type("danger");
         component.remote.status(reason_phrase);
-        component.remote.focus("password");
-        renderSshLogin(false);
+        renderSshLogin(false, true);
       },
     });
   };

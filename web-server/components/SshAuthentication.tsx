@@ -21,6 +21,8 @@ type SshAuthenticationBase = {
   onChange: (values: SshAuthValues) => void;
   onEnter?: (values: SshAuthValues) => void;
   loadingData?: boolean;
+  /** After a failed login, focus and select the password field. */
+  focusPassword?: boolean;
 };
 
 export type SshAuthenticationProps =
@@ -55,6 +57,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
   const isLocked = hostnameMode === "locked";
   const agent = props.hostnameMode === "hidden" ? false : props.agent === true;
   const loadingData = Boolean(props.loadingData);
+  const focusPassword = Boolean(props.focusPassword);
 
   const ids = React.useId();
   const hostnameId = `${ids}-hostname`;
@@ -107,6 +110,20 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
     }
     // Only auto-focus when the hidden form first appears.
   }, [isHidden]);
+
+  React.useEffect(() => {
+    if (!focusPassword || loadingData) {
+      return;
+    }
+    const input = passwordInputRef.current;
+    if (!input) {
+      return;
+    }
+    input.focus();
+    if (input.value) {
+      input.setSelectionRange(0, input.value.length);
+    }
+  }, [focusPassword, loadingData]);
 
   React.useEffect(() => {
     if (isHidden) {
