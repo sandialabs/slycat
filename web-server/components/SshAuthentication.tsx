@@ -282,7 +282,9 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
                 Hostname
               </label>
             </div>
-            <div className="invalid-feedback">Please enter a hostname.</div>
+            <div className={`invalid-feedback${validated && !hostname ? " d-block" : ""}`}>
+              Please enter a hostname.
+            </div>
           </div>
         </div>
       )}

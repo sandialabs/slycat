@@ -254,7 +254,9 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
             />
             <label htmlFor={hostnameId}>Hostname</label>
           </div>
-          <div className="invalid-feedback">Please enter a hostname.</div>
+          <div className={`invalid-feedback${validated && !hostname ? " d-block" : ""}`}>
+            Please enter a hostname.
+          </div>
         </div>
       </div>
       <div className="form-floating mb-3">
@@ -265,9 +267,11 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
           className="form-control"
           type="text"
           value={share}
+          required
           onChange={(event) => setShareAndMaybePersist(event.target.value)}
         />
         <label htmlFor={shareId}>Share Name</label>
+        <div className="invalid-feedback">Please enter a share name.</div>
       </div>
       <div className="input-group has-validation mb-3">
         <div className="form-floating">
@@ -314,12 +318,16 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
             disabled={loadingData}
             value={domain}
             type="text"
+            required={!sessionExists}
             onChange={(event) => setDomainAndPersist(event.target.value)}
           />
           <label htmlFor={domainId}>Domain</label>
         </div>
-        <div className="invalid-feedback">
+        <div className={`invalid-feedback${validated && !username && !sessionExists ? " d-block" : ""}`}>
           Please enter a {REMOTE_AUTH_LABELS.username.toLowerCase()}.
+        </div>
+        <div className={`invalid-feedback${validated && !domain && !sessionExists ? " d-block" : ""}`}>
+          Please enter a domain.
         </div>
       </div>
       {!sessionExists && (

@@ -37,7 +37,3 @@
 .input-group > .invalid-feedback {
   flex: 0 0 100%;
 }
-
-.was-validated .input-group:has(.form-control:invalid) > .invalid-feedback {
-  display: block;
-}
