@@ -605,12 +605,11 @@ function constructor(params) {
           component.remote.status_type(null);
           component.remote.status(null);
           renderSmbLogin(false);
-          component.tab(3);
-          const smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
-          smb_wizard_browse_root.render(
+          component.smb_wizard_browse_root.render(
             <div>
               <RemoteFileBrowser
                 onSelectFileCallBack={onSelectTableFile}
+                onSelectParserCallBack={onSelectParserCallBack}
                 onReauthCallBack={onReauth}
                 hostname={component.remote.hostname()}
                 useSMB={true}
@@ -618,6 +617,7 @@ function constructor(params) {
               />
             </div>,
           );
+          component.tab(3);
         } else {
           component.remote.enable(true);
           component.remote.status_type("danger");
