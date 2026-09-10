@@ -932,24 +932,18 @@ export const useHandleAuthentication = () => {
             password,
           },
         })
-        .then(async () => {
-          return client.get_remotes_fetch(hostname).then((json: any) => {
-            dispatch(setLoading(false));
-            if (json.status === false) {
-              dispatch(setAuthError(formatRemoteAuthError()));
-              return;
-            }
-            dispatch(
-              setAuthInfo({
-                ...authInfo,
-                hostname,
-                username,
-                password,
-                sessionExists: true,
-              }),
-            );
-            dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
-          });
+        .then(() => {
+          dispatch(setLoading(false));
+          dispatch(
+            setAuthInfo({
+              ...authInfo,
+              hostname,
+              username,
+              password,
+              sessionExists: true,
+            }),
+          );
+          dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
         })
         .catch((errorResponse: any) => {
           dispatch(setLoading(false));
