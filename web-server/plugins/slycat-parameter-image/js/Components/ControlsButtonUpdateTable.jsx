@@ -130,6 +130,16 @@ export default class ControlsButtonUpdateTable extends Component {
     );
   };
 
+  submitRemoteLogin = () => {
+    if (this.state.loadingData) {
+      return;
+    }
+    const form = document.querySelector(`#${this.state.modalId} form.SshAuthentication`);
+    if (form instanceof HTMLFormElement) {
+      form.requestSubmit();
+    }
+  };
+
   sourceSelect = (value) => {
     this.setState({ selectedOption: value });
   };
@@ -346,16 +356,27 @@ export default class ControlsButtonUpdateTable extends Component {
     }
     if (this.state.sessionExists != true && this.state.visible_tab === "2") {
       footerJSX.push(
-        <ConnectButton
-          ref={this.connectButtonRef}
-          key={3}
-          text="Continue"
-          loadingData={this.state.loadingData}
-          hostname={this.state.hostname}
-          username={this.state.username}
-          password={this.state.password}
-          callBack={this.connectButtonCallBack}
-        />,
+        <React.Fragment key={3}>
+          <span className="d-none">
+            <ConnectButton
+              ref={this.connectButtonRef}
+              text="Continue"
+              loadingData={this.state.loadingData}
+              hostname={this.state.hostname}
+              username={this.state.username}
+              password={this.state.password}
+              callBack={this.connectButtonCallBack}
+            />
+          </span>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={this.state.loadingData}
+            onClick={this.submitRemoteLogin}
+          >
+            Continue
+          </button>
+        </React.Fragment>,
       );
     } else if (this.state.visible_tab != "1" && this.state.visible_tab != "3") {
       footerJSX.push(
