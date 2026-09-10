@@ -151,7 +151,6 @@ const useUploadProgressCallbacks = () => {
 export const useCCAHandleContinue = () => {
   const tabName = useAppSelector(selectTab);
   const dataLocation = useAppSelector(selectDataLocation);
-  const authInfo = useAppSelector(selectAuthInfo);
   const parser = useAppSelector(selectParser);
   const localFileSelected = useAppSelector(selectLocalFileSelected);
   const hdf5InputTable = useAppSelector(selectHdf5InputTable);
@@ -161,12 +160,10 @@ export const useCCAHandleContinue = () => {
 
   const uploadSelection = useUploadSelection();
   const uploadHandleRemoteFileSubmit = useHandleRemoteFileSubmit();
-  const handleAuthentication = useHandleAuthentication();
   const finishModel = useFinishModel();
   const [handleLocalFileSubmit] = useHandleLocalFileSubmit();
   const setUploadStatus = useSetUploadStatus();
   const uploadTableFile = useUploadTableFile();
-  const connectSMB = useConnectSMB();
 
   /**
    * Advance the wizard based on the current tab and state.
@@ -184,10 +181,9 @@ export const useCCAHandleContinue = () => {
     }
 
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
-      if (!authInfo.sessionExists) {
-        connectSMB(() => dispatch(setTabName(TabNames.CCA_SMB_TAB)));
-      } else {
-        dispatch(setTabName(TabNames.CCA_SMB_TAB));
+      const form = document.querySelector("form.SmbAuthentication");
+      if (form instanceof HTMLFormElement) {
+        form.requestSubmit();
       }
       return;
     }
@@ -198,10 +194,9 @@ export const useCCAHandleContinue = () => {
     }
 
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
-      if (authInfo?.sessionExists) {
-        dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
-      } else {
-        handleAuthentication();
+      const form = document.querySelector("form.SshAuthentication");
+      if (form instanceof HTMLFormElement) {
+        form.requestSubmit();
       }
       return;
     }
@@ -246,13 +241,10 @@ export const useCCAHandleContinue = () => {
   }, [
     tabName,
     dataLocation,
-    authInfo?.sessionExists,
     localFileSelected,
     hdf5InputTable,
     hdf5OutputTable,
     dispatch,
-    connectSMB,
-    handleAuthentication,
     uploadHandleRemoteFileSubmit,
     handleLocalFileSubmit,
     parser,
@@ -925,13 +917,11 @@ export const useHandleAuthentication = () => {
       const username = credentials?.username ?? authInfo.username;
       const password = credentials?.password ?? authInfo.password;
 
-      dispatch(setLoading(true));
-
       if (!password) {
-        dispatch(setLoading(false));
-        alert("password is empty");
         return;
       }
+
+      dispatch(setLoading(true));
 
       client
         .post_remotes_fetch({
@@ -1065,6 +1055,10 @@ export const useConnectSMB = () => {
       const password = credentials?.password ?? authValues.password ?? "";
       const share = credentials?.share ?? authValues.share ?? "";
       const domain = credentials?.domain ?? authValues.domain ?? "";
+
+      if (!password) {
+        return;
+      }
 
       dispatch(setLoading(true));
 

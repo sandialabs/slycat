@@ -59,6 +59,7 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
   const [password, setPassword] = React.useState("");
   const [sessionExists, setSessionExists] = React.useState(false);
   const [ready, setReady] = React.useState(false);
+  const [validated, setValidated] = React.useState(false);
 
   const hostnameRef = React.useRef(hostname);
   hostnameRef.current = hostname;
@@ -192,8 +193,17 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
     setDomain(value);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    setValidated(true);
+    if (!form.checkValidity()) {
+      const firstInvalid = form.querySelector(":invalid");
+      if (firstInvalid instanceof HTMLElement) {
+        firstInvalid.focus();
+      }
+      return;
+    }
     onEnterRef.current?.(currentValues());
   };
 
@@ -202,9 +212,13 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
   }
 
   return (
-    <form className="SmbAuthentication" onSubmit={handleSubmit}>
+    <form
+      className={validated ? "SmbAuthentication was-validated" : "SmbAuthentication"}
+      onSubmit={handleSubmit}
+      noValidate
+    >
       <div className="mb-3">
-        <div className="input-group">
+        <div className="input-group has-validation">
           <button
             className="btn btn-secondary dropdown-toggle"
             type="button"
@@ -235,9 +249,11 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
               disabled={loadingData}
               value={hostname}
               type="text"
+              required
               onChange={(event) => setHostnameAndMaybePersist(event.target.value)}
             />
             <label htmlFor={hostnameId}>Hostname</label>
+            <div className="invalid-feedback">Please enter a hostname.</div>
           </div>
         </div>
       </div>
@@ -253,18 +269,22 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
         />
         <label htmlFor={shareId}>Share Name</label>
       </div>
-      <div className="input-group mb-3">
+      <div className="input-group has-validation mb-3">
         <div className="form-floating">
           <input
             id={usernameId}
-            placeholder="Username"
+            placeholder={REMOTE_AUTH_LABELS.username}
             disabled={loadingData}
             className="form-control"
             type="text"
             value={username}
+            required={!sessionExists}
             onChange={(event) => setUsernameAndPersist(event.target.value)}
           />
           <label htmlFor={usernameId}>{REMOTE_AUTH_LABELS.username}</label>
+          <div className="invalid-feedback">
+            Please enter a {REMOTE_AUTH_LABELS.username.toLowerCase()}.
+          </div>
         </div>
         <span className="input-group-text">@</span>
         <button
@@ -312,9 +332,13 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
             className="form-control"
             type="password"
             value={password}
+            required
             onChange={(event) => setPassword(event.target.value)}
           />
           <label htmlFor={passwordId}>{REMOTE_AUTH_LABELS.password}</label>
+          <div className="invalid-feedback">
+            Please enter {REMOTE_AUTH_LABELS.password.toLowerCase()}.
+          </div>
         </div>
       )}
       <button type="submit" hidden aria-hidden="true" disabled={loadingData} />
