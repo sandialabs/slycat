@@ -18,7 +18,10 @@ import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import URI from "urijs";
 import vsWizardUI from "../html/vs-wizard.html";
-import { remoteControlsReauth } from "js/slycat-remote-controls";
+import React from "react";
+import { createRoot } from "react-dom/client";
+import SshAuthentication from "components/SshAuthentication.tsx";
+import { remoteControlsReauth } from "utils/remote-auth";
 import request from "./vs-request-data.js";
 
 function constructor(params) {
@@ -114,12 +117,16 @@ component.remote = mapping.fromJS({
   session_exists: false,
   progress: ko.observable(null),
 });
+component.ssh_wizard_login_root = null;
+component.ssh_wizard_login_dispose_bound = false;
 
 // Navigate to login controls and set alert message to 
 // inform user their session has been disconnected.
 component.reauth = function() {
+    component.remote.session_exists(false);
     remoteControlsReauth(component.remote.status, component.remote.status_type);
     component.tab(3);
+    mountSshLogin();
   };
 
   // file parser (table is csv table, vs is videoswarm specific files)
@@ -155,17 +162,63 @@ component.reauth = function() {
 
   // if the user selects the cancel button we delete the model just created
   component.cancel = function () {
+    unmountSshLogin();
     if (component.model._id()) client.delete_model({ mid: component.model._id() });
+  };
+
+  const setSshAuthValues = function (values) {
+    component.remote.hostname(values.hostname);
+    component.remote.username(values.username);
+    component.remote.password(values.password);
+    component.remote.session_exists(values.sessionExists);
+  };
+
+  const onSshAuthEnter = function (values) {
+    setSshAuthValues(values);
+    component.connect();
+  };
+
+  const unmountSshLogin = function () {
+    if (component.ssh_wizard_login_root) {
+      component.ssh_wizard_login_root.unmount();
+      component.ssh_wizard_login_root = null;
+    }
+  };
+
+  const mountSshLogin = function () {
+    const node = document.querySelector("#slycat-wizard .ssh-wizard-login");
+    if (!node) {
+      return;
+    }
+    unmountSshLogin();
+    component.ssh_wizard_login_root = createRoot(node);
+    if (!component.ssh_wizard_login_dispose_bound) {
+      component.ssh_wizard_login_dispose_bound = true;
+      ko.utils.domNodeDisposal.addDisposeCallback(node, unmountSshLogin);
+    }
+    component.ssh_wizard_login_root.render(
+      <SshAuthentication
+        hostnameMode="locked"
+        agent={true}
+        loadingData={false}
+        onChange={setSshAuthValues}
+        onEnter={onSshAuthEnter}
+      />,
+    );
   };
 
   // first tab is used to select upload type
   component.select_type = function () {
     var type = component.vs_type();
+    component.remote.password(null);
+    component.remote.status(null);
+    component.remote.status_type(null);
 
     if (type === "local") {
       component.tab(1);
     } else if (type === "remote") {
       component.tab(3);
+      mountSshLogin();
     }
   };
 
