@@ -82,6 +82,7 @@ function constructor(params) {
   component.smb_wizard_login_root = null;
   component.ssh_wizard_login_root = null;
   component.ssh_wizard_login_dispose_bound = false;
+  component.smb_wizard_login_dispose_bound = false;
   component.smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
 
   // Navigate to login controls and set alert message to
@@ -220,10 +221,7 @@ function constructor(params) {
 
   component.cancel = function () {
     unmountSshLogin();
-    if (component.smb_wizard_login_root) {
-      component.smb_wizard_login_root.unmount();
-      component.smb_wizard_login_root = null;
-    }
+    unmountSmbLogin();
     if (component.model._id()) {
       client
         .get_project_data_in_model_fetch({
@@ -321,6 +319,13 @@ function constructor(params) {
     component.connectSMB();
   };
 
+  const unmountSmbLogin = function () {
+    if (component.smb_wizard_login_root) {
+      component.smb_wizard_login_root.unmount();
+      component.smb_wizard_login_root = null;
+    }
+  };
+
   const renderSmbLogin = function (loadingData) {
     if (!component.smb_wizard_login_root) {
       return;
@@ -339,14 +344,11 @@ function constructor(params) {
     if (!node) {
       return;
     }
-    if (!component.smb_wizard_login_root) {
-      component.smb_wizard_login_root = createRoot(node);
-      ko.utils.domNodeDisposal.addDisposeCallback(node, function () {
-        if (component.smb_wizard_login_root) {
-          component.smb_wizard_login_root.unmount();
-          component.smb_wizard_login_root = null;
-        }
-      });
+    unmountSmbLogin();
+    component.smb_wizard_login_root = createRoot(node);
+    if (!component.smb_wizard_login_dispose_bound) {
+      component.smb_wizard_login_dispose_bound = true;
+      ko.utils.domNodeDisposal.addDisposeCallback(node, unmountSmbLogin);
     }
     renderSmbLogin(false);
   };
