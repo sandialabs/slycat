@@ -11,6 +11,7 @@ import "bootstrap";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
+import SshAuthentication from "components/SshAuthentication.tsx";
 import { postSmbSession } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
@@ -89,43 +90,77 @@ export function login(params) {
   component.container = $($.parseHTML(template)).appendTo($("body"));
   component.ispasswordrequired = ispasswordrequired;
   component.smb = params.smb;
-  let smb_login_root = null;
+  let login_root = null;
+
+  const setSmbAuthValues = function (values) {
+    component.remote.hostname(values.hostname);
+    component.remote.username(values.username);
+    component.remote.password(values.password);
+    component.remote.share(values.share);
+    component.remote.domain(values.domain);
+    component.remote.session_exists(values.sessionExists);
+  };
+
+  const onSmbAuthEnter = function (values) {
+    setSmbAuthValues(values);
+    component.login();
+  };
+
+  const setSshAuthValues = function (values) {
+    component.remote.hostname(values.hostname);
+    component.remote.username(values.username);
+    component.remote.password(values.password);
+    component.remote.session_exists(values.sessionExists);
+  };
+
+  const onSshAuthEnter = function (values) {
+    setSshAuthValues(values);
+    component.login();
+  };
+
+  const unmountLogin = function () {
+    if (login_root) {
+      login_root.unmount();
+      login_root = null;
+    }
+  };
+
+  const mountLogin = function () {
+    const node = component.container.find(".remote-login").get(0);
+    if (!node || login_root) {
+      return;
+    }
+    login_root = createRoot(node);
+    if (params.smb) {
+      login_root.render(
+        <SmbAuthentication
+          loadingData={false}
+          smbInfo={smb_info}
+          onChange={setSmbAuthValues}
+          onEnter={onSmbAuthEnter}
+        />,
+      );
+    } else {
+      login_root.render(
+        <SshAuthentication
+          hostnameMode="hidden"
+          hostname={params.hostname}
+          loadingData={false}
+          onChange={setSshAuthValues}
+          onEnter={onSshAuthEnter}
+        />,
+      );
+    }
+  };
+
   component.container.children().on("shown.bs.modal", function () {
-    component.remote.focus(true);
+    mountLogin();
   });
   component.container.children().on("hidden.bs.modal", function () {
-    if (smb_login_root) {
-      smb_login_root.unmount();
-      smb_login_root = null;
-    }
+    unmountLogin();
     component.container.remove();
   });
   ko.applyBindings(component, component.container.get(0));
-
-  // If protocol is SMB, use the React login
-  if (params.smb) {
-    const setSmbAuthValues = function (values) {
-      component.remote.hostname(values.hostname);
-      component.remote.username(values.username);
-      component.remote.password(values.password);
-      component.remote.share(values.share);
-      component.remote.domain(values.domain);
-      component.remote.session_exists(values.sessionExists);
-    };
-    const onSmbAuthEnter = function (values) {
-      setSmbAuthValues(values);
-      component.login();
-    };
-    smb_login_root = createRoot(component.container.find(".smb-login").get(0));
-    smb_login_root.render(
-      <SmbAuthentication
-        loadingData={false}
-        smbInfo={smb_info}
-        onChange={setSmbAuthValues}
-        onEnter={onSmbAuthEnter}
-      />,
-    );
-  }
   component.container.children().modal("show");
 }
 

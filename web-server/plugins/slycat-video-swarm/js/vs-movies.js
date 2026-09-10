@@ -13,7 +13,6 @@ import "jquery-ui";
 import api_root from "js/slycat-api-root";
 import server_root from "js/slycat-server-root";
 import URI from "urijs";
-import "js/slycat-login-controls";
 import * as remotes from "js/slycat-remotes";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 $.widget("mp.movies", {

@@ -10,7 +10,6 @@ import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
 import "jquery-ui";
-import "js/slycat-login-controls";
 import { load as geometryLoad } from "./vtk-geometry-viewer";
 import {
   changeCurrentFrame,
