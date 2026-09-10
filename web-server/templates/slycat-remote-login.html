@@ -19,7 +19,7 @@
           <div
             class="alert alert-danger slycat-big-scrolling-alert"
             role="alert"
-            data-bind="visible:remote.status_type() == 'danger', text: 'Remote authentication failed.'"
+            data-bind="visible:remote.status_type() == 'danger', text: remote.status() || 'Remote authentication failed.'"
           ></div>
           <!-- /ko -->
         </div>

@@ -7,18 +7,21 @@ import type { SmbAuthValues } from "utils/remote-auth";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import {
   AuthenticationInformation,
+  selectAuthError,
   selectLoading,
   setAuthInfo,
   setTabName,
   TabNames,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useConnectSMB } from "../CCAWizardUtils";
+import { CCAError } from "../CCAError";
 
 export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const dispatch = useAppDispatch();
   const connectSMB = useConnectSMB();
   const loading = useAppSelector(selectLoading);
+  const authError = useAppSelector(selectAuthError);
 
   const applyValues = React.useCallback(
     (values: SmbAuthValues) => {
@@ -74,10 +77,12 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
       {!hidden && (
         <SmbAuthentication
           loadingData={loading}
+          focusPassword={Boolean(authError)}
           onChange={applyValues}
           onEnter={handleEnter}
         />
       )}
+      {authError && <CCAError errorMessage={authError} />}
     </div>
   );
 };

@@ -69,6 +69,7 @@ export interface CCAWizardState {
   hdf5OutputTable: string | undefined;
   fileName: string | undefined;
   errorMessage: string | undefined;
+  authError: string | undefined;
 }
 const initialState: CCAWizardState = {
   tab: TabNames.CCA_DATA_WIZARD_SELECTION_TAB,
@@ -100,6 +101,7 @@ const initialState: CCAWizardState = {
   hdf5OutputTable: undefined,
   fileName: undefined,
   errorMessage: undefined,
+  authError: undefined,
 };
 export const cCAWizardSlice = createSlice({
   name: "cCAWizard",
@@ -171,6 +173,9 @@ export const cCAWizardSlice = createSlice({
     setErrorMessage: (state, action: PayloadAction<string>) => {
       state.errorMessage = action.payload;
     },
+    setAuthError: (state, action: PayloadAction<string | undefined>) => {
+      state.authError = action.payload;
+    },
     resetCCAWizard: () => initialState,
   },
 });
@@ -200,6 +205,7 @@ export const {
   setHdf5OutputTable,
   setFileName,
   setErrorMessage,
+  setAuthError,
 } = cCAWizardSlice.actions;
 // Other code such as selectors can use the imported `RootState` type
 export const selectTab = (state: RootState) => state.cCAWizard.tab;
@@ -224,5 +230,6 @@ export const selectHdf5InputTable = (state: RootState) => state.cCAWizard.hdf5In
 export const selectHdf5OutputTable = (state: RootState) => state.cCAWizard.hdf5OutputTable;
 export const selectErrorMessages = (state: RootState) => state.cCAWizard.errorMessages;
 export const selectErrorMessage = (state: RootState) => state.cCAWizard.errorMessage;
+export const selectAuthError = (state: RootState) => state.cCAWizard.authError;
 
 export default cCAWizardSlice.reducer;

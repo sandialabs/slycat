@@ -37,6 +37,7 @@ import {
   setAttributes,
   setAuthInfo,
   setErrorMessages,
+  setAuthError,
   setFileUploaded,
   setLoading,
   setLocalFileSelected,
@@ -51,8 +52,7 @@ import {
   setErrorMessage,
   TabNames,
 } from "./wizard-store/reducers/CCAWizardSlice";
-import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
-import { postSmbSession } from "utils/remote-auth";
+import { formatRemoteAuthError, postSmbSession } from "utils/remote-auth";
 
 /**
  * Shared error text for failed parser/upload operations.
@@ -921,6 +921,7 @@ export const useHandleAuthentication = () => {
         return;
       }
 
+      dispatch(setAuthError(undefined));
       dispatch(setLoading(true));
 
       client
@@ -933,37 +934,26 @@ export const useHandleAuthentication = () => {
         })
         .then(async () => {
           return client.get_remotes_fetch(hostname).then((json: any) => {
-            if (json.status === false) {
-              alert("connection could not be established");
-            } else {
-              dispatch(
-                setAuthInfo({
-                  ...authInfo,
-                  hostname,
-                  username,
-                  password,
-                  sessionExists: true,
-                }),
-              );
-            }
-
             dispatch(setLoading(false));
+            if (json.status === false) {
+              dispatch(setAuthError(formatRemoteAuthError()));
+              return;
+            }
+            dispatch(
+              setAuthInfo({
+                ...authInfo,
+                hostname,
+                username,
+                password,
+                sessionExists: true,
+              }),
+            );
             dispatch(setTabName(TabNames.CCA_REMOTE_BROWSER_TAB));
           });
         })
         .catch((errorResponse: any) => {
           dispatch(setLoading(false));
-
-          if (errorResponse.status == 403) {
-            alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
-        \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
-          } else if (errorResponse.status == 401) {
-            alert(
-              `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
-            );
-          } else {
-            alert(`${errorResponse.statusText}`);
-          }
+          dispatch(setAuthError(formatRemoteAuthError(errorResponse)));
         });
     },
     [authInfo, dispatch],
@@ -1060,6 +1050,7 @@ export const useConnectSMB = () => {
         return;
       }
 
+      dispatch(setAuthError(undefined));
       dispatch(setLoading(true));
 
       postSmbSession({
@@ -1090,22 +1081,20 @@ export const useConnectSMB = () => {
               callBackSuccess();
             }
           } else {
-            alert(`could not connect ${response.statusText} , ${data.msg}`);
+            dispatch(
+              setAuthError(
+                formatRemoteAuthError({
+                  status: response.status,
+                  statusText: response.statusText,
+                  message: data.msg,
+                }),
+              ),
+            );
           }
         })
         .catch((errorResponse) => {
           dispatch(setLoading(false));
-
-          if (errorResponse.status == 403) {
-            alert(`${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorForbiddenDescription}
-        \n-${REMOTE_AUTH_LABELS.authErrorForbiddenNote}`);
-          } else if (errorResponse.status == 401) {
-            alert(
-              `${errorResponse.statusText} \n\n-${REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription}`,
-            );
-          } else {
-            alert(`${errorResponse.statusText}`);
-          }
+          dispatch(setAuthError(formatRemoteAuthError(errorResponse)));
         });
     },
     [authValues, dispatch],

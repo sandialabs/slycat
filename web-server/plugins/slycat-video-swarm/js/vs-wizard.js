@@ -21,7 +21,7 @@ import vsWizardUI from "../html/vs-wizard.html";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import SshAuthentication from "components/SshAuthentication.tsx";
-import { remoteControlsReauth } from "utils/remote-auth";
+import { formatRemoteAuthError, remoteControlsReauth } from "utils/remote-auth";
 import request from "./vs-request-data.js";
 
 function constructor(params) {
@@ -487,7 +487,12 @@ component.reauth = function() {
         $(".remote-browser-continue").toggleClass("disabled", false);
         component.remote.enable(true);
         component.remote.status_type("danger");
-        component.remote.status(reason_phrase);
+        component.remote.status(
+          formatRemoteAuthError({
+            status: request.status,
+            statusText: request.statusText || reason_phrase,
+          }),
+        );
         renderSshLogin(false, true);
       },
     });

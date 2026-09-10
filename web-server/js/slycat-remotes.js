@@ -12,7 +12,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import SshAuthentication from "components/SshAuthentication.tsx";
-import { postSmbSession } from "utils/remote-auth";
+import { formatRemoteAuthError, postSmbSession } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 export function login(params) {
@@ -47,7 +47,12 @@ export function login(params) {
         error: function (request, status, reason_phrase) {
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
+          component.remote.status(
+            formatRemoteAuthError({
+              status: request.status,
+              statusText: request.statusText || reason_phrase,
+            }),
+          );
           renderLogin(false, true);
         },
       });
@@ -59,19 +64,34 @@ export function login(params) {
         server: component.remote.hostname() || params.hostname,
         share: component.remote.share() || "",
       })
-        .then((response) => {
+        .then(async (response) => {
           if (response.ok) {
             component.container.children().modal("hide");
             params.success(response.status);
           } else {
+            let message;
+            try {
+              const data = await response.json();
+              message = data.msg;
+            } catch {
+              // Response body may not be JSON.
+            }
             component.remote.enable(true);
             component.remote.status_type("danger");
+            component.remote.status(
+              formatRemoteAuthError({
+                status: response.status,
+                statusText: response.statusText,
+                message,
+              }),
+            );
             renderLogin(false, true);
           }
         })
-        .catch(() => {
+        .catch((error) => {
           component.remote.enable(true);
           component.remote.status_type("danger");
+          component.remote.status(formatRemoteAuthError(error));
           renderLogin(false, true);
         });
     }

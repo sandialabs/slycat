@@ -163,3 +163,37 @@ export const remoteControlsReauth = (
   );
   statusType("danger");
 };
+
+export type RemoteAuthErrorInput = {
+  status?: number;
+  statusText?: string;
+  message?: string;
+};
+
+const joinAlertLines = (parts: Array<string | undefined | null>): string => {
+  return parts
+    .map((part) => (typeof part === "string" ? part.trim() : ""))
+    .filter((part) => part.length > 0)
+    .join("\n\n");
+};
+
+/**
+ * Copy for a failed remote login, suitable for a Bootstrap alert (pre-line).
+ */
+export const formatRemoteAuthError = (error?: RemoteAuthErrorInput | null): string => {
+  const status = error?.status;
+  const statusText = typeof error?.statusText === "string" ? error.statusText.trim() : "";
+  const message = typeof error?.message === "string" ? error.message.trim() : "";
+
+  if (status === 403) {
+    return joinAlertLines([
+      statusText,
+      REMOTE_AUTH_LABELS.authErrorForbiddenDescription,
+      REMOTE_AUTH_LABELS.authErrorForbiddenNote,
+    ]);
+  }
+  if (status === 401) {
+    return joinAlertLines([statusText, REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription]);
+  }
+  return joinAlertLines([message, statusText]) || "connection could not be established";
+};

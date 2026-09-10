@@ -20,7 +20,7 @@ import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import SshAuthentication from "components/SshAuthentication.tsx";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
-import { postSmbSession, remoteControlsReauth } from "utils/remote-auth";
+import { formatRemoteAuthError, postSmbSession, remoteControlsReauth } from "utils/remote-auth";
 
 function constructor(params) {
   var component = {};
@@ -619,9 +619,15 @@ function constructor(params) {
             </div>,
           );
         } else {
-          alert(`could not connect ${response.statusText} , ${data.msg}`);
           component.remote.enable(true);
           component.remote.status_type("danger");
+          component.remote.status(
+            formatRemoteAuthError({
+              status: response.status,
+              statusText: response.statusText,
+              message: data.msg,
+            }),
+          );
           renderSmbLogin(false, true);
         }
       })
@@ -629,6 +635,7 @@ function constructor(params) {
         console.log("could not connect", error);
         component.remote.enable(true);
         component.remote.status_type("danger");
+        component.remote.status(formatRemoteAuthError(error));
         renderSmbLogin(false, true);
       });
   };
@@ -663,7 +670,12 @@ function constructor(params) {
       error: function (request, status, reason_phrase) {
         component.remote.enable(true);
         component.remote.status_type("danger");
-        component.remote.status(reason_phrase);
+        component.remote.status(
+          formatRemoteAuthError({
+            status: request.status,
+            statusText: request.statusText || reason_phrase,
+          }),
+        );
         renderSshLogin(false, true);
       },
     });

@@ -7,18 +7,21 @@ import type { SshAuthValues } from "utils/remote-auth";
 import { useAppDispatch, useAppSelector } from "../wizard-store/hooks";
 import {
   AuthenticationInformation,
+  selectAuthError,
   selectLoading,
   setAuthInfo,
   setTabName,
   TabNames,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleAuthentication } from "../CCAWizardUtils";
+import { CCAError } from "../CCAError";
 
 export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
   const dispatch = useAppDispatch();
   const handleAuthentication = useHandleAuthentication();
   const loading = useAppSelector(selectLoading);
+  const authError = useAppSelector(selectAuthError);
 
   const applyValues = React.useCallback(
     (values: SshAuthValues) => {
@@ -50,15 +53,17 @@ export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
   );
 
   return (
-    <div>
+    <div hidden={hidden}>
       {!hidden && (
         <SshAuthentication
           hostnameMode="editable"
           loadingData={loading}
+          focusPassword={Boolean(authError)}
           onChange={applyValues}
           onEnter={handleEnter}
         />
       )}
+      {authError && <CCAError errorMessage={authError} />}
     </div>
   );
 };
