@@ -27,7 +27,7 @@ export function login(params) {
     component.container.children().modal("hide");
     if (params.cancel) params.cancel();
   };
-  component.login = function () {
+  const connectRemote = function () {
     if (!component.remote.enable()) {
       return;
     }
@@ -96,6 +96,19 @@ export function login(params) {
         });
     }
   };
+
+  component.login = function () {
+    if (!component.remote.enable()) {
+      return;
+    }
+    const form = component.container.find("form.SshAuthentication, form.SmbAuthentication").get(0);
+    if (form instanceof HTMLFormElement) {
+      form.requestSubmit();
+      return;
+    }
+    connectRemote();
+  };
+
   component.title = ko.observable(params.title || "Login");
   component.message = ko.observable(params.message || "");
   component.remote = mapping.fromJS({
@@ -127,7 +140,7 @@ export function login(params) {
 
   const onSmbAuthEnter = function (values) {
     setSmbAuthValues(values);
-    component.login();
+    connectRemote();
   };
 
   const setSshAuthValues = function (values) {
@@ -139,7 +152,7 @@ export function login(params) {
 
   const onSshAuthEnter = function (values) {
     setSshAuthValues(values);
-    component.login();
+    connectRemote();
   };
 
   const unmountLogin = function () {

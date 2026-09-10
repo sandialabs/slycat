@@ -267,7 +267,7 @@ function constructor(params) {
 
   const onSshAuthEnter = function (values) {
     setSshAuthValues(values);
-    component.connect();
+    postSshSession();
   };
 
   const unmountSshLogin = function () {
@@ -317,7 +317,7 @@ function constructor(params) {
 
   const onSmbAuthEnter = function (values) {
     setSmbAuthValues(values);
-    component.connectSMB();
+    postSmbLogin();
   };
 
   const unmountSmbLogin = function () {
@@ -562,7 +562,7 @@ function constructor(params) {
     );
   };
 
-  component.connectSMB = function () {
+  const postSmbLogin = function () {
     if (!component.remote.enable()) {
       return;
     }
@@ -639,7 +639,22 @@ function constructor(params) {
         renderSmbLogin(false, true);
       });
   };
-  component.connect = function () {
+
+  component.connectSMB = function () {
+    if (!component.remote.enable()) {
+      return;
+    }
+    if (component.remote.session_exists()) {
+      postSmbLogin();
+      return;
+    }
+    const form = document.querySelector("#slycat-wizard form.SmbAuthentication");
+    if (form instanceof HTMLFormElement) {
+      form.requestSubmit();
+    }
+  };
+
+  const postSshSession = function () {
     if (!component.remote.enable()) {
       return;
     }
@@ -679,6 +694,20 @@ function constructor(params) {
         renderSshLogin(false, true);
       },
     });
+  };
+
+  component.connect = function () {
+    if (!component.remote.enable()) {
+      return;
+    }
+    if (component.remote.session_exists()) {
+      postSshSession();
+      return;
+    }
+    const form = document.querySelector("#slycat-wizard form.SshAuthentication");
+    if (form instanceof HTMLFormElement) {
+      form.requestSubmit();
+    }
   };
 
   component.load_hdf5_input = function () {

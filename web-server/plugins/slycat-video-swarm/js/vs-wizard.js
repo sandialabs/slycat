@@ -175,7 +175,7 @@ component.reauth = function() {
 
   const onSshAuthEnter = function (values) {
     setSshAuthValues(values);
-    component.connect();
+    postSshSession();
   };
 
   const unmountSshLogin = function () {
@@ -452,8 +452,7 @@ component.reauth = function() {
     });
   };
 
-  // code to connect to remove server
-  component.connect = function () {
+  const postSshSession = function () {
     if (!component.remote.enable()) {
       return;
     }
@@ -496,6 +495,21 @@ component.reauth = function() {
         renderSshLogin(false, true);
       },
     });
+  };
+
+  // code to connect to remove server
+  component.connect = function () {
+    if (!component.remote.enable()) {
+      return;
+    }
+    if (component.remote.session_exists()) {
+      postSshSession();
+      return;
+    }
+    const form = document.querySelector("#slycat-wizard form.SshAuthentication");
+    if (form instanceof HTMLFormElement) {
+      form.requestSubmit();
+    }
   };
 
   // upload remote table
