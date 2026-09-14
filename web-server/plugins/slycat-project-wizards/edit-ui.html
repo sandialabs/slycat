@@ -267,29 +267,29 @@
 
         <div class="row">
           <div class="col-sm-12">
-            <!-- ko foreach: metagroup_writers -->
+            <!-- ko foreach: modified.acl.groups.writers -->
             <div style="margin: 5px" class="btn-group" role="group">
               <button
                 class="btn btn-sm btn-warning"
-                data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + name() + ' as a writer'}"
+                data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + $data + ' as a writer'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
               <div class="btn btn-sm btn-warning" style="pointer-events: none">
-                <span data-bind="text:name"></span>
+                <span data-bind="text: $data"></span>
               </div>
             </div>
             <!-- /ko -->
-            <!-- ko foreach: metagroup_readers -->
+            <!-- ko foreach: modified.acl.groups.readers -->
             <div style="margin: 5px" class="btn-group" role="group">
               <button
                 class="btn btn-sm btn-primary"
-                data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + name() + ' as a reader'}"
+                data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + $data + ' as a reader'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
               <div class="btn btn-sm btn-primary" style="pointer-events: none">
-                <span data-bind="text:name"></span>
+                <span data-bind="text: $data"></span>
               </div>
             </div>
             <!-- /ko -->

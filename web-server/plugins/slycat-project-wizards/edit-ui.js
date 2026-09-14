@@ -94,11 +94,11 @@ function constructor(params) {
 
   component.assigned_metagroup_names = ko.pureComputed(function () {
     var assigned = {};
-    component.metagroup_readers().forEach(function (item) {
-      assigned[item.name()] = true;
+    component.modified.acl.groups.readers().forEach(function (item) {
+      assigned[item] = true;
     });
-    component.metagroup_writers().forEach(function (item) {
-      assigned[item.name()] = true;
+    component.modified.acl.groups.writers().forEach(function (item) {
+      assigned[item] = true;
     });
     return assigned;
   });
@@ -294,9 +294,9 @@ function constructor(params) {
   };
 
   component.remove_user = function (user) {
-    component.modified.acl.readers.remove(function (item) {
+    -function (item) {
       return item.user() == user;
-    });
+    };
     component.modified.acl.writers.remove(function (item) {
       return item.user() == user;
     });
@@ -322,12 +322,13 @@ function constructor(params) {
   };
 
   component.remove_metagroup = function (name) {
-    component.metagroup_readers.remove(function (item) {
-      return item.name() == name;
+    component.modified.acl.groups.readers.remove(function (item) {
+      return item === name;
     });
-    component.metagroup_writers.remove(function (item) {
-      return item.name() == name;
+    component.modified.acl.groups.writers.remove(function (item) {
+      return item === name;
     });
+    console.log(name, component.modified.acl.groups.readers());
   };
 
   component.clear_metagroup_selection = function () {
@@ -352,7 +353,7 @@ function constructor(params) {
           "' to the project?  Members of this group will have read access to all project data.",
         ok: function () {
           component.remove_metagroup(name);
-          component.metagroup_readers.push({ name: ko.observable(name) });
+          component.modified.acl.groups.readers.push(name);
           component.clear_metagroup_selection();
         },
       });
@@ -366,7 +367,7 @@ function constructor(params) {
           "' to the project?  Members of this group will have read and write access to all project data.",
         ok: function () {
           component.remove_metagroup(name);
-          component.metagroup_writers.push({ name: ko.observable(name) });
+          component.modified.acl.groups.writers.push(name);
           component.clear_metagroup_selection();
         },
       });
@@ -389,13 +390,12 @@ function constructor(params) {
   };
 
   component.remove_project_metagroup = function (context) {
-    component.remove_metagroup(context.name());
+    component.remove_metagroup(context);
   };
 
   component.save_project = function (formElement) {
     // Validating
     formElement.classList.add("was-validated");
-
     // If valid...
     if (formElement.checkValidity() === true) {
       // Clearing form validation
