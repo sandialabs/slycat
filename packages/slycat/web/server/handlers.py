@@ -254,7 +254,10 @@ def post_projects():
                 "administrators": [{"user": cherrypy.request.login}],
                 "readers": [],
                 "writers": [],
-                "groups": [],
+                "groups": {
+                    "readers": [],
+                    "writers": [],
+                },
             },
             "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "creator": cherrypy.request.login,
@@ -345,6 +348,7 @@ def put_project(pid):
       cherrypy.HTTPError
         400 missing readers
     """
+    # TODO: update this func for meta groups
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -3035,7 +3039,11 @@ def get_user(uid, time):
 
     if uid == "-":
         uid = cherrypy.request.login
-    user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
+    cherrypy.log.error(
+        "slycat.web.server.handlers.py get_user",
+        "uid: %s" % uid,
+    )
+    user = cherrypy.request.app.config["slycat-web-server"]["directory"]["user"](uid)
     if user is None:
         cherrypy.log.error(
             "slycat.web.server.handlers.py get_user",
@@ -3044,7 +3052,122 @@ def get_user(uid, time):
         raise cherrypy.HTTPError(404)
     # Add the uid to the record, since the caller may not know it.
     user["uid"] = uid
-    return user
+    return json.loads(json.dumps(user, cls=MyEncoder))
+
+
+@cherrypy.tools.json_out(on=True)
+def get_groups(search_string: str):
+    """
+    Search for directory groups matching the provided search string.
+
+    This CherryPy endpoint queries the configured directory group lookup
+    function and returns the matching groups as JSON. The result is serialized
+    using the custom ``MyEncoder`` encoder to support objects that are not
+    directly JSON serializable.
+
+    Args:
+        search_string (str): The group name, partial group name, or other
+            search term used to query the configured directory service.
+
+    Returns:
+        object: A JSON-serializable representation of the matching groups.
+
+    Raises:
+        cherrypy.HTTPError: Raises HTTP 404 if no groups are found.
+
+    Notes:
+        The group lookup function is expected to be configured at:
+
+        ``cherrypy.request.app.config["slycat-web-server"]["directory"]["groups"]``
+
+        That configured function is called with ``search_string`` and should
+        return group results or ``None`` if no matching groups are found.
+    """
+
+    # Log the incoming group search request.
+    cherrypy.log.error("calling groups %s" % search_string)
+
+    # Call the configured directory group lookup function.
+    results = cherrypy.request.app.config["slycat-web-server"]["directory"]["groups"](
+        search_string
+    )
+
+    # Convert results to a JSON-compatible structure using the custom encoder,
+    # then log the serialized result.
+    cherrypy.log.error("result %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+
+    # If the directory lookup returns no results, log the error and return 404.
+    if results is None:
+        cherrypy.log.error(
+            "slycat.web.server.handlers.py get_groups",
+            "cherrypy.HTTPError 404 no groups found for: %s" % search_string,
+        )
+        raise cherrypy.HTTPError(404)
+
+    # Return the results as a JSON-compatible Python object. The json_out tool
+    # will serialize this return value to JSON for the HTTP response.
+    return json.loads(json.dumps(results, cls=MyEncoder))
+
+
+@cherrypy.tools.json_out(on=True)
+def get_user_groups(search_string: str):
+    """
+    Retrieve directory groups associated with a user matching the search string.
+
+    This CherryPy endpoint queries the configured directory ``user_groups``
+    lookup function and returns the groups associated with the specified user.
+    The response is converted into a JSON-compatible structure using the custom
+    ``MyEncoder`` encoder before being returned. The ``json_out`` CherryPy tool
+    then serializes the returned value as JSON for the HTTP response.
+
+    Args:
+        search_string (str): The user identifier, username, UID, email address,
+            or other search term used to locate the user whose groups should be
+            retrieved.
+
+    Returns:
+        object: A JSON-compatible representation of the groups associated with
+        the matching user.
+
+    Raises:
+        cherrypy.HTTPError: Raises HTTP 404 if no user groups are found.
+
+    Notes:
+        The user group lookup function is expected to be configured at:
+
+        ``cherrypy.request.app.config["slycat-web-server"]["directory"]["user_groups"]``
+
+        That configured function is called with ``search_string`` and should
+        return the user group results, or ``None`` if no matching groups are
+        found.
+    """
+
+    # Log the incoming user group lookup request.
+    cherrypy.log.error("calling groups %s" % search_string)
+
+    # Call the configured directory user-group lookup function.
+    results = cherrypy.request.app.config["slycat-web-server"]["directory"][
+        "user_groups"
+    ](search_string)
+
+    # Convert results to a JSON-compatible structure using the custom encoder,
+    # then log the serialized result.
+    # cherrypy.log.error("result %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+
+    # If the directory lookup returns no results, log the error and return 404.
+    if results is None:
+        cherrypy.log.error(
+            "slycat.web.server.handlers.py get_user_groups",
+            "cherrypy.HTTPError 404 no groups found for: %s" % search_string,
+        )
+        raise cherrypy.HTTPError(404)
+
+    # Log the final result before returning it.
+    # cherrypy.log.error("result3 %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+
+    # Return the results as a JSON-compatible Python object. The json_out tool
+    # will serialize this return value to JSON for the HTTP response.
+    return json.loads(json.dumps(results, cls=MyEncoder))
 
 
 @cherrypy.tools.json_out(on=True)
@@ -3475,9 +3598,9 @@ def post_combine_hdf5_tables(mid):
     )
 
     if len(column_headers_input) == 0:
-        column_headers_input.append('missing_input_header')
+        column_headers_input.append("missing_input_header")
     if len(column_headers_output) == 0:
-        column_headers_output.append('missing_output_header')
+        column_headers_output.append("missing_output_header")
 
     # Once we have column headers, this is how we can get/store them.
     for i, column in enumerate(column_headers_input):
@@ -3489,7 +3612,11 @@ def post_combine_hdf5_tables(mid):
             input_headers.append(str(column))
         attributes.append(
             {
-                "name": str(column.decode("utf-8")) if isinstance(column, bytes) else str(column),
+                "name": (
+                    str(column.decode("utf-8"))
+                    if isinstance(column, bytes)
+                    else str(column)
+                ),
                 "type": str(type(unformatted_input[0][i]))
                 .split("numpy.")[1]
                 .split("'>")[0],
@@ -3502,7 +3629,11 @@ def post_combine_hdf5_tables(mid):
             output_headers.append(str(column))
         attributes.append(
             {
-                "name": str(column.decode("utf-8")) if isinstance(column, bytes) else str(column),
+                "name": (
+                    str(column.decode("utf-8"))
+                    if isinstance(column, bytes)
+                    else str(column)
+                ),
                 "type": str(type(unformatted_output[0][j]))
                 .split("numpy.")[1]
                 .split("'>")[0],
@@ -3547,15 +3678,15 @@ def post_browse_hdf5(path, pid, mid):
             try:
                 rows = obj.shape[0]
             except:
-                rows = ''
+                rows = ""
             try:
                 cols = obj.shape[1]
             except:
-                cols = ''
-            dimensions = '(' + str(rows) + ', ' + str(cols) + ')'
+                cols = ""
+            dimensions = "(" + str(rows) + ", " + str(cols) + ")"
             return dimensions
         else:
-            return ''
+            return ""
 
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
@@ -3572,7 +3703,7 @@ def post_browse_hdf5(path, pid, mid):
             # key will be all the sub groups and datasets in the current path
             tree_structure["name"].append(key)
             try:
-                tree_structure["sizes"].append(get_dimensions(obj[path + '/' + key]))
+                tree_structure["sizes"].append(get_dimensions(obj[path + "/" + key]))
             except Exception as e:
                 cherrypy.log.error(str(e))
                 tree_structure["sizes"].append(dimensions)
