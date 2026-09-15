@@ -172,7 +172,9 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   const heatmapWidth = Math.max(paneWidth - 24, 120);
   const heatmapHeight = Math.max(paneHeight - 72, 120);
 
-  return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} />);
+  // means-ci panel
+  return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} 
+    use_colors={false} use_numbers={true} show_plot={()=>{console.log('show plot')}}/>);
 };
 
 export default PSUQSAPanel;

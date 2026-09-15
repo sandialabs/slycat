@@ -7,13 +7,22 @@ import * as d3 from "d3v7";
 
 const MARGIN = { top: 10, right: 10, bottom: 30, left: 24 };
 
+const num_formatter = new Intl.NumberFormat('en-US', {
+  maximumSignificantDigits: 4,
+  maximumFractionDigits: 2,
+});
+
 type HeatmapProps = {
   width: number;
   height: number;
   data: { x: string; y: string; value: number | null }[];
+  use_colors: boolean;
+  use_numbers: boolean;
+  show_plot: () => void;
 };
 
-export const Heatmap = ({ width, height, data }: HeatmapProps) => {
+export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plot }: HeatmapProps) => {
+
   // bounds = area inside the axis
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -42,8 +51,22 @@ export const Heatmap = ({ width, height, data }: HeatmapProps) => {
   }
 
   // Color scale
-  const colorScale = d3.scaleSequential().interpolator(d3.interpolateInferno).domain([min, max]);
+  const colorScale = d3.scaleSequential().interpolator(d3.interpolatePuBu).domain([min, max]);
 
+  // Text color
+  function getTextColor(bgColorString, use_colors) {
+
+    // only change text if we're using colors
+    if (!use_colors) 
+      return "black"
+
+    // get color lightness
+    const color = d3.lab(bgColorString);
+
+    // If lightness is greater than 50%, use black text. Otherwise, use white.
+    return color.l > 50 ? "black" : "white";
+  }
+  
   // Build the rectangles (skip null values)
   const allRects = data.map((d, i) => {
     if (d.value === null) {
@@ -52,15 +75,40 @@ export const Heatmap = ({ width, height, data }: HeatmapProps) => {
     return (
       <rect
         key={i}
+        id={i}
         x={xScale(d.x)}
         y={yScale(d.y)}
         width={xScale.bandwidth()}
         height={yScale.bandwidth()}
         opacity={1}
-        fill={colorScale(d.value)}
+        fill={use_colors ? colorScale(d.value) : "white"}
         rx={5}
-        stroke={"white"}
-      />
+        stroke={"black"}
+        onClick={show_plot}
+        style={{cursor: 'pointer'}}>
+          <title>Click to show plot</title>
+      </rect>
+    );
+  });
+
+  // Add the numbers (skip null values)
+  const allNums = data.map((d, i) => {
+    if (d.value === null) {
+      return null;
+    }
+    return (
+      <text
+        key={i}
+        id={i}
+        x={xScale(d.x) + xScale.bandwidth() / 2}
+        y={yScale(d.y) + yScale.bandwidth() / 2}
+        textAnchor =  {"middle"}
+        dominantBaseline={"middle"}
+        onClick={show_plot}
+        style={{cursor: "pointer", fill: getTextColor(colorScale(d.value), use_colors)}}>
+          {num_formatter.format(d.value)}
+          <title>Click to show plot</title>
+      </text>
     );
   });
 
@@ -107,6 +155,7 @@ export const Heatmap = ({ width, height, data }: HeatmapProps) => {
           transform={`translate(${[MARGIN.left, MARGIN.top].join(",")})`}
         >
           {allRects}
+          {use_numbers ? allNums : null}
           {xLabels}
           {yLabels}
         </g>

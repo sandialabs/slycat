@@ -173,7 +173,8 @@ def register_slycat_plugin(context):
         
         # check if output columns are empty
         if len(output_columns) == 0:
-            response = {"error": "No output columns.  Cannot compute means/CI table without output columns."}
+            response = {"error": "No output columns.  Cannot compute means/CI table without output columns.  " +
+                        "Use Edit -> Select Columns to select output columns."}
             return json.dumps(response)
 
         # get the table meta data (for output column names)
