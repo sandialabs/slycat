@@ -12,7 +12,13 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import SshAuthentication from "components/SshAuthentication.tsx";
-import { applyRemoteLoginError, formatRemoteAuthError, postSmbSession, remoteLoginDangerMessage } from "utils/remote-auth";
+import {
+  applyRemoteLoginError,
+  formatRemoteAuthError,
+  postSmbSession,
+  remoteAuthErrorFromResponse,
+  remoteLoginDangerMessage,
+} from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 export function login(params) {
@@ -69,29 +75,17 @@ export function login(params) {
             component.container.children().modal("hide");
             params.success(response.status);
           } else {
-            let message;
-            try {
-              const data = await response.json();
-              message = data.msg;
-            } catch {
-              // Response body may not be JSON.
-            }
+            const error = await remoteAuthErrorFromResponse(response);
             component.remote.enable(true);
             component.remote.status_type("danger");
-            component.remote.status(
-              formatRemoteAuthError({
-                status: response.status,
-                statusText: response.statusText,
-                message,
-              }),
-            );
+            component.remote.status(formatRemoteAuthError(error));
             renderLogin(false);
           }
         })
-        .catch((error) => {
+        .catch(() => {
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.status(formatRemoteAuthError(error));
+          component.remote.status(formatRemoteAuthError());
           renderLogin(false);
         });
     }

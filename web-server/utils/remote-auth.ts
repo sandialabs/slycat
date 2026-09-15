@@ -205,6 +205,27 @@ const joinAlertLines = (parts: Array<string | undefined | null>): string => {
 };
 
 /**
+ * Build alert input from a failed fetch Response. The body is read only when
+ * `!response.ok`; a non-JSON body (e.g. the 401 HTML page) is ignored.
+ */
+export const remoteAuthErrorFromResponse = async (
+  response: Response,
+): Promise<RemoteAuthErrorInput> => {
+  let message: string | undefined;
+  if (!response.ok) {
+    try {
+      const data = (await response.json()) as { msg?: unknown };
+      if (typeof data?.msg === "string") {
+        message = data.msg;
+      }
+    } catch {
+      // Response body may not be JSON.
+    }
+  }
+  return { status: response.status, statusText: response.statusText, message };
+};
+
+/**
  * Copy for a failed remote login, suitable for a Bootstrap alert (pre-line).
  */
 export const formatRemoteAuthError = (error?: RemoteAuthErrorInput | null): string => {

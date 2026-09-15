@@ -69,7 +69,9 @@ class Smb(object):
             cherrypy.log.error("Connected to %s smb server" % self.server)
             return self.connected
         except Exception as e:
-            cherrypy.log.error("Connect failed. Reason: %s", e)
+            # Pass a string: cherrypy.log.error joins its args, and an exception
+            # object here raises a TypeError that would replace the real reason.
+            cherrypy.log.error("Connect failed. Reason: %s %s" % (type(e).__name__, str(e)))
             return False
 
     def list_shares(self):
@@ -174,24 +176,22 @@ def create_session(username, password, server, share):
     """
     _start_session_cleanup_worker()
     smb_id = uuid.uuid4().hex
+    connection_failed = "401 Remote smb connection failed: could not connect to smb drive"
     try:
         with session_cache_lock:
             session_cache[smb_id] = Smb(username, password, server, share)
             if session_cache[smb_id].connect():
                 return smb_id
-            raise cherrypy.HTTPError(
-                "401 Remote smb connection failed: could not connect to smb drive"
-            )
+            raise cherrypy.HTTPError(connection_failed)
+    except cherrypy.HTTPError:
+        raise
     except Exception as e:
         cherrypy.log.error(
-            "Unknown exception for %s@%s: %s %s" % (username, server, type(e), str(e))
+            "slycat.web.server.smb.py create_session: unknown exception for %s@%s: %s %s"
+            % (username, server, type(e).__name__, str(e))
         )
-        cherrypy.log.error(
-            "slycat.web.server.smb.py create_session",
-            "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s."
-            % (username, server, type(e), str(e)),
-        )
-        raise cherrypy.HTTPError("401 Remote smb connection failed: %s" % str(e))
+        # Keep the reason phrase fixed; exception text is for the log, not the UI.
+        raise cherrypy.HTTPError(connection_failed)
 
 
 def check_session(sid: str) -> bool:

@@ -24,6 +24,7 @@ import {
   applyRemoteLoginError,
   formatRemoteAuthError,
   postSmbSession,
+  remoteAuthErrorFromResponse,
   remoteControlsReauth,
   remoteLoginDangerMessage,
 } from "utils/remote-auth";
@@ -609,9 +610,9 @@ function constructor(params) {
       share: component.remote.share() || "",
     })
       .then(async (response) => {
-        console.log("authenticated.", response);
-        const data = await response.json();
-        if (response.ok && data.status) {
+        // 200 with status:false means the session could not be saved.
+        const data = response.ok ? await response.json().catch(() => null) : null;
+        if (response.ok && data?.status) {
           component.remote.session_exists(true);
           component.remote.enable(true);
           component.remote.status_type(null);
@@ -631,15 +632,12 @@ function constructor(params) {
           );
           component.tab(3);
         } else {
+          const error = response.ok
+            ? { status: response.status, statusText: response.statusText, message: data?.msg }
+            : await remoteAuthErrorFromResponse(response);
           component.remote.enable(true);
           component.remote.status_type("danger");
-          component.remote.status(
-            formatRemoteAuthError({
-              status: response.status,
-              statusText: response.statusText,
-              message: data.msg,
-            }),
-          );
+          component.remote.status(formatRemoteAuthError(error));
           renderSmbLogin(false);
         }
       })
@@ -647,7 +645,7 @@ function constructor(params) {
         console.log("could not connect", error);
         component.remote.enable(true);
         component.remote.status_type("danger");
-        component.remote.status(formatRemoteAuthError(error));
+        component.remote.status(formatRemoteAuthError());
         renderSmbLogin(false);
       });
   };

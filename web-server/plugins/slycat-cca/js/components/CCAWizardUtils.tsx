@@ -52,7 +52,11 @@ import {
   setErrorMessage,
   TabNames,
 } from "./wizard-store/reducers/CCAWizardSlice";
-import { formatRemoteAuthError, postSmbSession } from "utils/remote-auth";
+import {
+  formatRemoteAuthError,
+  postSmbSession,
+  remoteAuthErrorFromResponse,
+} from "utils/remote-auth";
 
 /**
  * Shared error text for failed parser/upload operations.
@@ -1059,38 +1063,48 @@ export const useConnectSMB = () => {
         .then(async (response: Response) => {
           dispatch(setLoading(false));
 
-          const data = await response.json();
+          if (!response.ok) {
+            dispatch(setAuthError(formatRemoteAuthError(await remoteAuthErrorFromResponse(response))));
+            return;
+          }
 
-          if (response.ok && data.status) {
-            dispatch(
-              setAuthInfo({
-                ...authValues,
-                hostname,
-                username,
-                password,
-                share,
-                domain,
-                sessionExists: true,
-              }),
-            );
-            if (callBackSuccess) {
-              callBackSuccess();
-            }
-          } else {
+          // 200 with status:false means the session could not be saved.
+          const data = (await response.json().catch(() => null)) as {
+            status?: boolean;
+            msg?: string;
+          } | null;
+
+          if (!data?.status) {
             dispatch(
               setAuthError(
                 formatRemoteAuthError({
                   status: response.status,
                   statusText: response.statusText,
-                  message: data.msg,
+                  message: data?.msg,
                 }),
               ),
             );
+            return;
+          }
+
+          dispatch(
+            setAuthInfo({
+              ...authValues,
+              hostname,
+              username,
+              password,
+              share,
+              domain,
+              sessionExists: true,
+            }),
+          );
+          if (callBackSuccess) {
+            callBackSuccess();
           }
         })
-        .catch((errorResponse) => {
+        .catch(() => {
           dispatch(setLoading(false));
-          dispatch(setAuthError(formatRemoteAuthError(errorResponse)));
+          dispatch(setAuthError(formatRemoteAuthError()));
         });
     },
     [authValues, dispatch],
