@@ -11,7 +11,6 @@ retains certain rights in this software.
 // 4/27/2017
 
 import api_root from "js/slycat-api-root";
-import * as remotes from "js/slycat-remotes";
 import client from "js/slycat-web-client";
 import React from "react";
 import { createRoot } from "react-dom/client";
