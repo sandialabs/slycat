@@ -57,6 +57,7 @@ export function login(params) {
             formatRemoteAuthError({
               status: request.status,
               statusText: request.statusText || reason_phrase,
+              hostnameHidden: true,
             }),
           );
           renderLogin(false);

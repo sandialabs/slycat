@@ -195,6 +195,8 @@ export type RemoteAuthErrorInput = {
   status?: number;
   statusText?: string;
   message?: string;
+  /** The form has no hostname field (pin-media SSH), so 401 copy should not mention it. */
+  hostnameHidden?: boolean;
 };
 
 const joinAlertLines = (parts: Array<string | undefined | null>): string => {
@@ -241,7 +243,12 @@ export const formatRemoteAuthError = (error?: RemoteAuthErrorInput | null): stri
     ]);
   }
   if (status === 401) {
-    return joinAlertLines([statusText, REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription]);
+    return joinAlertLines([
+      statusText,
+      error?.hostnameHidden
+        ? REMOTE_AUTH_LABELS.authErrorForbiddenDescription
+        : REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription,
+    ]);
   }
   return joinAlertLines([message, statusText]) || "connection could not be established";
 };
