@@ -90,7 +90,8 @@ function constructor(params) {
   component.ssh_wizard_login_root = null;
   component.ssh_wizard_login_dispose_bound = false;
   component.smb_wizard_login_dispose_bound = false;
-  component.smb_wizard_browse_root = createRoot(document.querySelector(".smb-wizard-browse"));
+  component.smb_wizard_browse_root = null;
+  component.smb_wizard_browse_dispose_bound = false;
 
   // Navigate to login controls and set alert message to
   // inform user their session has been disconnected.
@@ -229,6 +230,7 @@ function constructor(params) {
   component.cancel = function () {
     unmountSshLogin();
     unmountSmbLogin();
+    unmountSmbBrowse();
     if (component.model._id()) {
       client
         .get_project_data_in_model_fetch({
@@ -575,24 +577,46 @@ function constructor(params) {
     );
   };
 
+  const unmountSmbBrowse = function () {
+    if (component.smb_wizard_browse_root) {
+      component.smb_wizard_browse_root.unmount();
+      component.smb_wizard_browse_root = null;
+    }
+  };
+
+  const renderSmbBrowse = function () {
+    const node = document.querySelector("#slycat-wizard .smb-wizard-browse");
+    if (!node) {
+      return;
+    }
+    if (!component.smb_wizard_browse_root) {
+      component.smb_wizard_browse_root = createRoot(node);
+      if (!component.smb_wizard_browse_dispose_bound) {
+        component.smb_wizard_browse_dispose_bound = true;
+        ko.utils.domNodeDisposal.addDisposeCallback(node, unmountSmbBrowse);
+      }
+    }
+    component.smb_wizard_browse_root.render(
+      <div>
+        <RemoteFileBrowser
+          onSelectFileCallBack={onSelectTableFile}
+          onSelectParserCallBack={onSelectParserCallBack}
+          onReauthCallBack={onReauth}
+          hostname={component.remote.hostname()}
+          useSMB={true}
+          showSelector={false}
+        />
+      </div>,
+    );
+  };
+
   const postSmbLogin = function () {
     if (!component.remote.enable()) {
       return;
     }
 
     if (component.remote.session_exists()) {
-      component.smb_wizard_browse_root.render(
-        <div>
-          <RemoteFileBrowser
-            onSelectFileCallBack={onSelectTableFile}
-            onSelectParserCallBack={onSelectParserCallBack}
-            onReauthCallBack={onReauth}
-            hostname={component.remote.hostname()}
-            useSMB={true}
-            showSelector={false}
-          />
-        </div>,
-      );
+      renderSmbBrowse();
       component.tab(3);
       return;
     }
@@ -618,18 +642,7 @@ function constructor(params) {
           component.remote.status_type(null);
           component.remote.status(null);
           renderSmbLogin(false);
-          component.smb_wizard_browse_root.render(
-            <div>
-              <RemoteFileBrowser
-                onSelectFileCallBack={onSelectTableFile}
-                onSelectParserCallBack={onSelectParserCallBack}
-                onReauthCallBack={onReauth}
-                hostname={component.remote.hostname()}
-                useSMB={true}
-                showSelector={false}
-              />
-            </div>,
-          );
+          renderSmbBrowse();
           component.tab(3);
         } else {
           const error = response.ok
@@ -1012,9 +1025,9 @@ function constructor(params) {
   component.back = function () {
     var target = component.tab();
 
-    // Need to unmount smb remote file browser on back button.
+    // Tear down the SMB browser on Back so a later Continue can create a new root.
     if (component.tab() == 3) {
-      component.smb_wizard_browse_root.unmount();
+      unmountSmbBrowse();
     }
 
     // Need to clean up project data if backing from tab 4
