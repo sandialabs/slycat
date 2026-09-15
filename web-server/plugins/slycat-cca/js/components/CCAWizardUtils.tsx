@@ -185,7 +185,7 @@ export const useCCAHandleContinue = () => {
     }
 
     if (tabName === TabNames.CCA_SMB_AUTHENTICATION_TAB && dataLocation === dataLocationType.SMB) {
-      const form = document.querySelector("form.SmbAuthentication");
+      const form = document.querySelector("#slycat-wizard form.SmbAuthentication");
       if (form instanceof HTMLFormElement) {
         form.requestSubmit();
       }
@@ -198,7 +198,7 @@ export const useCCAHandleContinue = () => {
     }
 
     if (tabName === TabNames.CCA_AUTHENTICATION_TAB) {
-      const form = document.querySelector("form.SshAuthentication");
+      const form = document.querySelector("#slycat-wizard form.SshAuthentication");
       if (form instanceof HTMLFormElement) {
         form.requestSubmit();
       }
