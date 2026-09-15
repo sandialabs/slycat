@@ -9,12 +9,12 @@ import {
   AuthenticationInformation,
   selectAuthError,
   selectLoading,
+  setAuthError,
   setAuthInfo,
   setTabName,
   TabNames,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleAuthentication } from "../CCAWizardUtils";
-import { CCAError } from "../CCAError";
 
 export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
@@ -52,18 +52,25 @@ export const CCAAuthenticationTab = (props: { hidden?: boolean }) => {
     [applyValues, dispatch, handleAuthentication],
   );
 
+  const handleAuthError = React.useCallback(
+    (message?: string) => {
+      dispatch(setAuthError(message));
+    },
+    [dispatch],
+  );
+
   return (
     <div hidden={hidden}>
       {!hidden && (
         <SshAuthentication
           hostnameMode="editable"
           loadingData={loading}
-          focusPassword={Boolean(authError)}
+          error={authError}
+          onError={handleAuthError}
           onChange={applyValues}
           onEnter={handleEnter}
         />
       )}
-      {authError && <CCAError errorMessage={authError} />}
     </div>
   );
 };

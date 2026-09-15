@@ -11,18 +11,21 @@ import {
   type SshAuthValues,
 } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+import {
+  RemoteAuthErrorAlert,
+  useRemoteLoginError,
+  type RemoteAuthErrorProps,
+} from "components/RemoteAuthErrorAlert";
 
 type RemoteHost = {
   hostname: string;
   agent?: boolean;
 };
 
-type SshAuthenticationBase = {
+type SshAuthenticationBase = RemoteAuthErrorProps & {
   onChange: (values: SshAuthValues) => void;
   onEnter?: (values: SshAuthValues) => void;
   loadingData?: boolean;
-  /** After a failed login, focus and select the password field. */
-  focusPassword?: boolean;
 };
 
 export type SshAuthenticationProps =
@@ -57,7 +60,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
   const isLocked = hostnameMode === "locked";
   const agent = props.hostnameMode === "hidden" ? false : props.agent === true;
   const loadingData = Boolean(props.loadingData);
-  const focusPassword = Boolean(props.focusPassword);
+  const { errorMessage, clearError } = useRemoteLoginError(props.error, props.onError);
 
   const ids = React.useId();
   const hostnameId = `${ids}-hostname`;
@@ -113,7 +116,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
   }, [isHidden]);
 
   React.useEffect(() => {
-    if (!focusPassword || loadingData) {
+    if (!errorMessage || loadingData) {
       return;
     }
     const input = passwordInputRef.current;
@@ -124,7 +127,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
     if (input.value) {
       input.setSelectionRange(0, input.value.length);
     }
-  }, [focusPassword, loadingData]);
+  }, [errorMessage, loadingData]);
 
   React.useEffect(() => {
     if (isHidden) {
@@ -217,6 +220,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    clearError();
     const form = event.currentTarget;
     setValidated(true);
     if (!form.checkValidity()) {
@@ -326,6 +330,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
           </div>
         </div>
       )}
+      <RemoteAuthErrorAlert message={errorMessage} />
       <button type="submit" hidden aria-hidden="true" disabled={loadingData} />
     </form>
   );

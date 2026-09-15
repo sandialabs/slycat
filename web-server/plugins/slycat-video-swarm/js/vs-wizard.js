@@ -21,7 +21,12 @@ import vsWizardUI from "../html/vs-wizard.html";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import SshAuthentication from "components/SshAuthentication.tsx";
-import { formatRemoteAuthError, remoteControlsReauth } from "utils/remote-auth";
+import {
+  applyRemoteLoginError,
+  formatRemoteAuthError,
+  remoteControlsReauth,
+  remoteLoginDangerMessage,
+} from "utils/remote-auth";
 import request from "./vs-request-data.js";
 
 function constructor(params) {
@@ -178,6 +183,10 @@ component.reauth = function() {
     postSshSession();
   };
 
+  const onRemoteLoginError = function (message) {
+    applyRemoteLoginError(component.remote.status, component.remote.status_type, message);
+  };
+
   const unmountSshLogin = function () {
     if (component.ssh_wizard_login_root) {
       component.ssh_wizard_login_root.unmount();
@@ -185,7 +194,7 @@ component.reauth = function() {
     }
   };
 
-  const renderSshLogin = function (loadingData, focusPassword) {
+  const renderSshLogin = function (loadingData) {
     if (!component.ssh_wizard_login_root) {
       return;
     }
@@ -194,7 +203,8 @@ component.reauth = function() {
         hostnameMode="locked"
         agent={true}
         loadingData={loadingData}
-        focusPassword={Boolean(focusPassword)}
+        error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
+        onError={onRemoteLoginError}
         onChange={setSshAuthValues}
         onEnter={onSshAuthEnter}
       />,
@@ -492,7 +502,7 @@ component.reauth = function() {
             statusText: request.statusText || reason_phrase,
           }),
         );
-        renderSshLogin(false, true);
+        renderSshLogin(false);
       },
     });
   };

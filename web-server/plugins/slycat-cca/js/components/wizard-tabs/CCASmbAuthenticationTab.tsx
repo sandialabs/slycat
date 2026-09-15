@@ -9,12 +9,12 @@ import {
   AuthenticationInformation,
   selectAuthError,
   selectLoading,
+  setAuthError,
   setAuthInfo,
   setTabName,
   TabNames,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useConnectSMB } from "../CCAWizardUtils";
-import { CCAError } from "../CCAError";
 
 export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;
@@ -56,6 +56,13 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
     [applyValues, connectSMB, dispatch],
   );
 
+  const handleAuthError = React.useCallback(
+    (message?: string) => {
+      dispatch(setAuthError(message));
+    },
+    [dispatch],
+  );
+
   return (
     <div hidden={hidden}>
       <div className="alert alert-primary" role="alert">
@@ -77,12 +84,12 @@ export const CCASmbAuthenticationTab = (props: { hidden?: boolean }) => {
       {!hidden && (
         <SmbAuthentication
           loadingData={loading}
-          focusPassword={Boolean(authError)}
+          error={authError}
+          onError={handleAuthError}
           onChange={applyValues}
           onEnter={handleEnter}
         />
       )}
-      {authError && <CCAError errorMessage={authError} />}
     </div>
   );
 };

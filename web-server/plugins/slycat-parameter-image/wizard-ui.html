@@ -115,19 +115,9 @@
         data-bind="visible: ps_type() == 'remote'"
       ></div>
       <div
-        class="alert slycat-big-scrolling-alert"
-        role="alert"
-        data-bind="visible: ps_type() == 'remote' && remote.status(), css: 'alert-' + remote.status_type(), text: remote.status"
-      ></div>
-      <div
         class="smb-wizard-login"
         style="padding-left: 16px"
         data-bind="visible: ps_type() == 'smb'"
-      ></div>
-      <div
-        class="alert slycat-big-scrolling-alert"
-        role="alert"
-        data-bind="visible: ps_type() == 'smb' && remote.status(), css: 'alert-' + remote.status_type(), text: remote.status"
       ></div>
     </div>
 

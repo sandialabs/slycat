@@ -16,11 +16,6 @@
           <p data-bind="visible:message, text:message"></p>
           <!-- ko if: ispasswordrequired.ssh_passwordrequired -->
           <div class="remote-login"></div>
-          <div
-            class="alert alert-danger slycat-big-scrolling-alert"
-            role="alert"
-            data-bind="visible:remote.status_type() == 'danger', text: remote.status() || 'Remote authentication failed.'"
-          ></div>
           <!-- /ko -->
         </div>
         <div class="modal-footer">

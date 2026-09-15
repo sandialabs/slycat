@@ -20,7 +20,13 @@ import RemoteFileBrowser from "components/FileBrowser/RemoteFileBrowser";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import SshAuthentication from "components/SshAuthentication.tsx";
 import HDF5Browser from "components/FileBrowser/HDF5Browser";
-import { formatRemoteAuthError, postSmbSession, remoteControlsReauth } from "utils/remote-auth";
+import {
+  applyRemoteLoginError,
+  formatRemoteAuthError,
+  postSmbSession,
+  remoteControlsReauth,
+  remoteLoginDangerMessage,
+} from "utils/remote-auth";
 
 function constructor(params) {
   var component = {};
@@ -270,6 +276,10 @@ function constructor(params) {
     postSshSession();
   };
 
+  const onRemoteLoginError = function (message) {
+    applyRemoteLoginError(component.remote.status, component.remote.status_type, message);
+  };
+
   const unmountSshLogin = function () {
     if (component.ssh_wizard_login_root) {
       component.ssh_wizard_login_root.unmount();
@@ -277,7 +287,7 @@ function constructor(params) {
     }
   };
 
-  const renderSshLogin = function (loadingData, focusPassword) {
+  const renderSshLogin = function (loadingData) {
     if (!component.ssh_wizard_login_root) {
       return;
     }
@@ -285,7 +295,8 @@ function constructor(params) {
       <SshAuthentication
         hostnameMode="editable"
         loadingData={loadingData}
-        focusPassword={Boolean(focusPassword)}
+        error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
+        onError={onRemoteLoginError}
         onChange={setSshAuthValues}
         onEnter={onSshAuthEnter}
       />,
@@ -327,14 +338,15 @@ function constructor(params) {
     }
   };
 
-  const renderSmbLogin = function (loadingData, focusPassword) {
+  const renderSmbLogin = function (loadingData) {
     if (!component.smb_wizard_login_root) {
       return;
     }
     component.smb_wizard_login_root.render(
       <SmbAuthentication
         loadingData={loadingData}
-        focusPassword={Boolean(focusPassword)}
+        error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
+        onError={onRemoteLoginError}
         onChange={setSmbAuthValues}
         onEnter={onSmbAuthEnter}
       />,
@@ -628,7 +640,7 @@ function constructor(params) {
               message: data.msg,
             }),
           );
-          renderSmbLogin(false, true);
+          renderSmbLogin(false);
         }
       })
       .catch((error) => {
@@ -636,7 +648,7 @@ function constructor(params) {
         component.remote.enable(true);
         component.remote.status_type("danger");
         component.remote.status(formatRemoteAuthError(error));
-        renderSmbLogin(false, true);
+        renderSmbLogin(false);
       });
   };
 
@@ -691,7 +703,7 @@ function constructor(params) {
             statusText: request.statusText || reason_phrase,
           }),
         );
-        renderSshLogin(false, true);
+        renderSshLogin(false);
       },
     });
   };

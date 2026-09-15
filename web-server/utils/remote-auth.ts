@@ -164,6 +164,33 @@ export const remoteControlsReauth = (
   statusType("danger");
 };
 
+/** Danger copy from Knockout `remote.status`, or undefined while connecting. */
+export const remoteLoginDangerMessage = (
+  statusType?: string | null,
+  status?: string | null,
+): string | undefined => {
+  if (statusType !== "danger") {
+    return undefined;
+  }
+  const message = typeof status === "string" ? status.trim() : "";
+  return message || undefined;
+};
+
+export const applyRemoteLoginError = (
+  status: (value: string | null) => void,
+  statusType: (value: string | null) => void,
+  message?: string | null,
+): void => {
+  const text = typeof message === "string" ? message.trim() : "";
+  if (text) {
+    status(text);
+    statusType("danger");
+    return;
+  }
+  status(null);
+  statusType(null);
+};
+
 export type RemoteAuthErrorInput = {
   status?: number;
   statusText?: string;

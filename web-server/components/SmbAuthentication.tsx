@@ -6,18 +6,21 @@ import * as React from "react";
 import client from "js/slycat-web-client";
 import { checkRemoteSession, SMB_STORAGE_KEYS, type SmbAuthValues } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+import {
+  RemoteAuthErrorAlert,
+  useRemoteLoginError,
+  type RemoteAuthErrorProps,
+} from "components/RemoteAuthErrorAlert";
 
 export type SmbInfo = {
   hostname: string;
   collab?: string;
 };
 
-export type SmbAuthenticationProps = {
+export type SmbAuthenticationProps = RemoteAuthErrorProps & {
   onChange: (values: SmbAuthValues) => void;
   onEnter?: (values: SmbAuthValues) => void;
   loadingData?: boolean;
-  /** After a failed login, focus and select the password field. */
-  focusPassword?: boolean;
   /** Pin-media: seed hostname/share from the URI and do not persist those keys. */
   smbInfo?: SmbInfo;
 };
@@ -33,7 +36,7 @@ const persist = (key: string, value: string): void => {
 
 const SmbAuthentication = (props: SmbAuthenticationProps) => {
   const loadingData = Boolean(props.loadingData);
-  const focusPassword = Boolean(props.focusPassword);
+  const { errorMessage, clearError } = useRemoteLoginError(props.error, props.onError);
   const smbInfo = props.smbInfo;
   const persistHostAndShare = smbInfo === undefined;
 
@@ -156,7 +159,7 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
   }, [hostname, username, password, share, domain, sessionExists, ready]);
 
   React.useEffect(() => {
-    if (!focusPassword || loadingData) {
+    if (!errorMessage || loadingData) {
       return;
     }
     const input = passwordInputRef.current;
@@ -167,7 +170,7 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
     if (input.value) {
       input.setSelectionRange(0, input.value.length);
     }
-  }, [focusPassword, loadingData]);
+  }, [errorMessage, loadingData]);
 
   const setHostnameAndMaybePersist = (value: string) => {
     if (persistHostAndShare) {
@@ -195,6 +198,7 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    clearError();
     const form = event.currentTarget;
     setValidated(true);
     if (!form.checkValidity()) {
@@ -349,6 +353,7 @@ const SmbAuthentication = (props: SmbAuthenticationProps) => {
           </div>
         </div>
       )}
+      <RemoteAuthErrorAlert message={errorMessage} />
       <button type="submit" hidden aria-hidden="true" disabled={loadingData} />
     </form>
   );

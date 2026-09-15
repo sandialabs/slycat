@@ -12,7 +12,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import SmbAuthentication from "components/SmbAuthentication.tsx";
 import SshAuthentication from "components/SshAuthentication.tsx";
-import { formatRemoteAuthError, postSmbSession } from "utils/remote-auth";
+import { applyRemoteLoginError, formatRemoteAuthError, postSmbSession, remoteLoginDangerMessage } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 
 export function login(params) {
@@ -53,7 +53,7 @@ export function login(params) {
               statusText: request.statusText || reason_phrase,
             }),
           );
-          renderLogin(false, true);
+          renderLogin(false);
         },
       });
     } else {
@@ -85,14 +85,14 @@ export function login(params) {
                 message,
               }),
             );
-            renderLogin(false, true);
+            renderLogin(false);
           }
         })
         .catch((error) => {
           component.remote.enable(true);
           component.remote.status_type("danger");
           component.remote.status(formatRemoteAuthError(error));
-          renderLogin(false, true);
+          renderLogin(false);
         });
     }
   };
@@ -155,6 +155,10 @@ export function login(params) {
     connectRemote();
   };
 
+  const onRemoteLoginError = function (message) {
+    applyRemoteLoginError(component.remote.status, component.remote.status_type, message);
+  };
+
   const unmountLogin = function () {
     if (login_root) {
       login_root.unmount();
@@ -162,7 +166,7 @@ export function login(params) {
     }
   };
 
-  const renderLogin = function (loadingData, focusPassword) {
+  const renderLogin = function (loadingData) {
     if (!login_root) {
       return;
     }
@@ -170,7 +174,8 @@ export function login(params) {
       login_root.render(
         <SmbAuthentication
           loadingData={loadingData}
-          focusPassword={Boolean(focusPassword)}
+          error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
+          onError={onRemoteLoginError}
           smbInfo={smb_info}
           onChange={setSmbAuthValues}
           onEnter={onSmbAuthEnter}
@@ -182,7 +187,8 @@ export function login(params) {
           hostnameMode="hidden"
           hostname={params.hostname}
           loadingData={loadingData}
-          focusPassword={Boolean(focusPassword)}
+          error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
+          onError={onRemoteLoginError}
           onChange={setSshAuthValues}
           onEnter={onSshAuthEnter}
         />,
