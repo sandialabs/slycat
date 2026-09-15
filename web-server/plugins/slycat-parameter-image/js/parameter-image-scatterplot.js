@@ -7,7 +7,7 @@ import api_root from "js/slycat-api-root";
 import d3 from "d3";
 import * as d3v7 from "d3v7";
 import URI from "urijs";
-import * as remotes from "js/slycat-remotes";
+import { ensureRemoteSession } from "components/RemoteLoginModal";
 import _ from "lodash";
 import "jquery-ui";
 import { load as geometryLoad } from "./vtk-geometry-viewer";
@@ -291,7 +291,6 @@ $.widget("parameter_image.scatterplot", {
       self.options.scale_v = self.options.v;
     }
 
-    this.remotes = remotes.create_pool();
     self.hover_timer = null;
     self.close_hover_timer = null;
 
@@ -3047,13 +3046,75 @@ $.widget("parameter_image.scatterplot", {
       if (this.status == 404 || this.status == 400) {
         if (!self.login_open) {
           self.login_open = true;
-          self.remotes.get_remote({
+          ensureRemoteSession({
             smb: uri.protocol() == "smb",
             hostname: uri.hostname(),
             collab_name: collab_name ? collab_name : null,
             title: "Login to " + uri.hostname(),
             message: "Loading " + uri.pathname(),
-            cancel: function () {
+          })
+            .then(function (hostname) {
+              var xhr = new XMLHttpRequest();
+              var api = "/file";
+              if (self.options.video_file_extensions.indexOf(uri.suffix()) > -1) {
+                api = "/file";
+              }
+
+              xhr.image = image;
+              //Double encode to avoid cherrypy's auto unencode in the controller
+              xhr.open(
+                "GET",
+                api_root +
+                  "remotes/" +
+                  uri.hostname() +
+                  api +
+                  uri.pathname() +
+                  "?cache=project&project=" +
+                  self.options.model.project +
+                  "&key=" +
+                  URI.encode(URI.encode(uri.host() + uri.path())),
+                true,
+              );
+              xhr.responseType = "arraybuffer";
+              xhr.onload = function (e) {
+                // If we get 404, the remote session no longer exists because it timed-out.
+                // If we get 500, there was an internal error communicating to the remote host.
+                // Retry so login can run again if needed.
+                if (this.status == 404 || this.status == 500) {
+                  self._open_images(images);
+                  return;
+                }
+                // If we get 400, it means that the session is good and we're
+                // communicating with the remote host, but something else went wrong
+                // (probably file permissions issues).
+                if (this.status == 400) {
+                  var message = this.getResponseHeader("slycat-message");
+                  var hint = this.getResponseHeader("slycat-hint");
+
+                  if (message && hint) {
+                    window.alert(message + "\n\n" + hint);
+                  } else if (message) {
+                    window.alert(message);
+                  } else {
+                    window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
+                  }
+
+                  return;
+                } else {
+                  // We received the image, so put it in the cache and start-over.
+                  var array_buffer_view = new Uint8Array(this.response);
+                  var blob = new Blob([array_buffer_view], {
+                    type: this.getResponseHeader("content-type"),
+                  });
+                  self.options.image_cache[image.uri] = blob;
+                  self._open_images(images, true);
+                }
+              };
+
+              xhr.send();
+              self.login_open = false;
+            },
+            function () {
               var jFrame = $(
                 ".scaffolding." + image.image_class + '[data-uid="' + image.uid + '"]',
               );
@@ -3108,70 +3169,7 @@ $.widget("parameter_image.scatterplot", {
                   })(image, frame),
                 );
               self.login_open = false;
-            },
-            success: function (hostname) {
-              var xhr = new XMLHttpRequest();
-              var api = "/file";
-              if (self.options.video_file_extensions.indexOf(uri.suffix()) > -1) {
-                api = "/file";
-              }
-
-              xhr.image = image;
-              //Double encode to avoid cherrypy's auto unencode in the controller
-              xhr.open(
-                "GET",
-                api_root +
-                  "remotes/" +
-                  uri.hostname() +
-                  api +
-                  uri.pathname() +
-                  "?cache=project&project=" +
-                  self.options.model.project +
-                  "&key=" +
-                  URI.encode(URI.encode(uri.host() + uri.path())),
-                true,
-              );
-              xhr.responseType = "arraybuffer";
-              xhr.onload = function (e) {
-                // If we get 404, the remote session no longer exists because it timed-out.
-                // If we get 500, there was an internal error communicating to the remote host.
-                // Either way, delete the cached session and create a new one.
-                if (this.status == 404 || this.status == 500) {
-                  self.remotes.delete_remote(uri.hostname());
-                  self._open_images(images);
-                  return;
-                }
-                // If we get 400, it means that the session is good and we're
-                // communicating with the remote host, but something else went wrong
-                // (probably file permissions issues).
-                if (this.status == 400) {
-                  var message = this.getResponseHeader("slycat-message");
-                  var hint = this.getResponseHeader("slycat-hint");
-
-                  if (message && hint) {
-                    window.alert(message + "\n\n" + hint);
-                  } else if (message) {
-                    window.alert(message);
-                  } else {
-                    window.alert("Error loading image " + this.image.uri + ": " + this.statusText);
-                  }
-
-                  return;
-                } else {
-                  // We received the image, so put it in the cache and start-over.
-                  var array_buffer_view = new Uint8Array(this.response);
-                  var blob = new Blob([array_buffer_view], {
-                    type: this.getResponseHeader("content-type"),
-                  });
-                  self.options.image_cache[image.uri] = blob;
-                  self._open_images(images, true);
-                }
-              };
-
-              xhr.send();
-              self.login_open = false;
-            },
-          });
+            });
         }
       } else {
         // We received the image, so put it in the cache and start-over.

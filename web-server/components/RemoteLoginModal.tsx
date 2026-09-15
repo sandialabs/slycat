@@ -10,6 +10,7 @@ import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import SmbAuthentication from "components/SmbAuthentication";
 import SshAuthentication from "components/SshAuthentication";
 import {
+  checkRemoteSession,
   formatRemoteAuthError,
   postSmbSession,
   remoteAuthErrorFromResponse,
@@ -29,6 +30,8 @@ export type RemoteLoginParams = {
   success?: (sid: unknown) => void;
   cancel?: () => void;
 };
+
+export type EnsureRemoteSessionParams = Omit<RemoteLoginParams, "success" | "cancel">;
 
 type RemoteLoginModalProps = {
   smb: boolean;
@@ -349,6 +352,22 @@ export const showRemoteLogin = (params: RemoteLoginParams): void => {
       onHidden={unmount}
     />,
   );
+};
+
+/** Resolve if a session exists or the user logs in. Reject if they cancel. */
+export const ensureRemoteSession = (params: EnsureRemoteSessionParams): Promise<string> => {
+  return checkRemoteSession(params.hostname).then((result) => {
+    if (result.sessionExists) {
+      return params.hostname;
+    }
+    return new Promise((resolve, reject) => {
+      showRemoteLogin({
+        ...params,
+        success: () => resolve(params.hostname),
+        cancel: () => reject(new Error("cancelled")),
+      });
+    });
+  });
 };
 
 export default RemoteLoginModal;

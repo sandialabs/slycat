@@ -13,7 +13,7 @@ import "jquery-ui";
 import api_root from "js/slycat-api-root";
 import server_root from "js/slycat-server-root";
 import URI from "urijs";
-import * as remotes from "js/slycat-remotes";
+import { ensureRemoteSession } from "components/RemoteLoginModal";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
 $.widget("mp.movies", {
   options: {
@@ -42,7 +42,6 @@ $.widget("mp.movies", {
     var self = this;
     self.videos_container = this.element;
     self.login_open = false;
-    self.remotes = remotes.create_pool();
     self._open_movies(self.options.pinned_simulations);
   },
 
@@ -283,14 +282,12 @@ $.widget("mp.movies", {
       if (this.status == 404) {
         if (!self.login_open) {
           self.login_open = true;
-          self.remotes.get_remote({
+          ensureRemoteSession({
             hostname: uri.hostname(),
             title: `${REMOTE_AUTH_LABELS.signIn} to ${uri.hostname()}`,
             message: "Loading " + uri.pathname(),
-            cancel: function () {
-              self.login_open = false;
-            },
-            success: function (hostname) {
+          })
+            .then(function (hostname) {
               var xhr = new XMLHttpRequest();
               var api = "/file";
 
@@ -313,9 +310,8 @@ $.widget("mp.movies", {
               xhr.onload = function (e) {
                 // If we get 404, the remote session no longer exists because it timed-out.
                 // If we get 500, there was an internal error communicating to the remote host.
-                // Either way, delete the cached session and create a new one.
+                // Retry so login can run again if needed.
                 if (this.status == 404 || this.status == 500) {
-                  self.remotes.delete_remote(uri.hostname());
                   self._open_movies(simulation_indexes);
                   return;
                 }
@@ -351,7 +347,10 @@ $.widget("mp.movies", {
               xhr.send();
               self.login_open = false;
             },
-          });
+            function () {
+              self.login_open = false;
+            },
+          );
         }
       } else {
         // We received the image, so put it in the cache and start-over.
