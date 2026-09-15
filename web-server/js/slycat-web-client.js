@@ -326,7 +326,7 @@ module.get_project_file_names = function (params) {
   $.ajax({
     dataType: 'json',
     type: 'GET',
-    url: `${api_root}/projects/${params.pid}/name`,
+    url: `${api_root}projects/${params.pid}/name`,
     success(result) {
       if (params.success) params.success(result);
     },
