@@ -23,6 +23,7 @@ export const REMOTE_AUTH_LABELS = {
   authErrorForbiddenNote:
     "Note: you may have tried too many times with bad credentials and have been suspended for the next few minutes.",
   authErrorUnauthorizedDescription: "Make sure the Hostname is entered correctly.",
+  authErrorRetryLater: "You can wait a bit and try again.",
 } as const;
 
 export const COLUMN_LABELS = {

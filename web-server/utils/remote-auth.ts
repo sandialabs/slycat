@@ -246,7 +246,7 @@ export const formatRemoteAuthError = (error?: RemoteAuthErrorInput | null): stri
     return joinAlertLines([
       statusText,
       error?.hostnameHidden
-        ? REMOTE_AUTH_LABELS.authErrorForbiddenDescription
+        ? REMOTE_AUTH_LABELS.authErrorRetryLater
         : REMOTE_AUTH_LABELS.authErrorUnauthorizedDescription,
     ]);
   }
