@@ -1286,16 +1286,20 @@ def create_session(hostname, username, password, agent):
             % (username, hostname, str(e)),
         )
         raise cherrypy.HTTPError("403 Remote authentication failed.")
+    except socket.gaierror as e:
+        cherrypy.log.error(
+            "slycat.web.server.remote.py create_session: host not found for %s@%s: %s"
+            % (username, hostname, str(e))
+        )
+        raise cherrypy.HTTPError(
+            "401 Remote connection failed: the host could not be found."
+        )
     except Exception as e:
         cherrypy.log.error(
-            "Unknown exception for %s@%s: %s %s" % (username, hostname, type(e), str(e))
+            "slycat.web.server.remote.py create_session: unknown exception for %s@%s: %s %s"
+            % (username, hostname, type(e).__name__, str(e))
         )
-        cherrypy.log.error(
-            "slycat.web.server.remote.py create_session",
-            "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s."
-            % (username, hostname, type(e), str(e)),
-        )
-        raise cherrypy.HTTPError("401 Remote connection failed: %s" % str(e))
+        raise cherrypy.HTTPError("401 Remote connection failed.")
 
 
 def get_session(sid, calling_client=None):
