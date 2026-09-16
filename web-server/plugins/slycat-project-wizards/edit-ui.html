@@ -51,7 +51,7 @@
           <div class="col-sm-10">
             <input
               id="slycat-edit-project-name"
-              class="form-control form-control-sm"
+              class="form-control"
               type="text"
               data-bind="value: modified.name"
               required
@@ -66,7 +66,7 @@
           <div class="col-sm-10">
             <textarea
               id="slycat-edit-project-description"
-              class="form-control form-control-sm"
+              class="form-control"
               rows="5"
               data-bind="value: modified.description"
             ></textarea>
@@ -99,7 +99,7 @@
             <div class="col">
               <input
                 type="text"
-                class="form-control form-control-sm"
+                class="form-control"
                 data-bind="textInput: new_user, attr: { placeholder: slycatAuthLabelUsername }"
                 required
               />
@@ -109,7 +109,7 @@
               </div>
             </div>
             <div class="col-4">
-              <select class="form-select form-select-sm" data-bind="value:permission">
+              <select class="form-select" data-bind="value:permission">
                 <option value="reader">Reader</option>
                 <option value="writer">Writer</option>
                 <option value="administrator">Administrator</option>
@@ -117,7 +117,7 @@
             </div>
             <div class="col-auto">
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-secondary"
                 type="button"
                 data-bind="
                 click: function(data, event) { add_project_member(document.getElementById('edit-project-members-form'), data, event) }
@@ -143,12 +143,12 @@
             <!-- ko foreach: modified.acl.administrators -->
             <div class="btn-group" role="group">
               <button
-                class="btn btn-sm btn-danger"
+                class="btn btn-danger"
                 data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user + ' as an administrator'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
-              <div class="btn btn-sm btn-danger" style="pointer-events: none">
+              <div class="btn btn-danger" style="pointer-events: none">
                 <span data-bind="text:user"></span>
               </div>
             </div>
@@ -156,13 +156,13 @@
             <!-- ko foreach: modified.acl.writers -->
             <div style="margin: 5px" class="btn-group" role="group">
               <button
-                class="btn btn-sm btn-warning"
+                class="btn btn-warning"
                 title="Remove this user"
                 data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user + ' as a writer'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
-              <div class="btn btn-sm btn-warning" style="pointer-events: none">
+              <div class="btn btn-warning" style="pointer-events: none">
                 <span data-bind="text:user"></span>
               </div>
             </div>
@@ -170,12 +170,12 @@
             <!-- ko foreach: modified.acl.readers -->
             <div style="margin: 5px" class="btn-group" role="group">
               <button
-                class="btn btn-sm btn-primary"
+                class="btn btn-primary"
                 data-bind="click:$parent.remove_project_member, attr:{title:'Remove ' + user + ' as a reader'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
-              <div class="btn btn-sm btn-primary" style="pointer-events: none">
+              <div class="btn btn-primary" style="pointer-events: none">
                 <span data-bind="text:user"></span>
               </div>
             </div>
@@ -192,7 +192,7 @@
         <div class="mb-2">
           <input
             type="search"
-            class="form-control form-control-sm"
+            class="form-control"
             placeholder="Search metagroups..."
             autocomplete="off"
             data-bind="textInput: metagroup_search, event: { keydown: metagroup_search_keydown }"
@@ -240,14 +240,14 @@
 
         <div class="row g-2 align-items-center justify-content-end mb-2 mt-4">
           <div class="col-4">
-            <select class="form-select form-select-sm" data-bind="value: metagroup_permission">
+            <select class="form-select" data-bind="value: metagroup_permission">
               <option value="reader">Reader</option>
               <option value="writer">Writer</option>
             </select>
           </div>
           <div class="col-auto">
             <button
-              class="btn btn-sm btn-secondary"
+              class="btn btn-secondary"
               type="button"
               data-bind="click: add_project_metagroup, enable: selected_metagroup"
             >
@@ -270,12 +270,12 @@
             <!-- ko foreach: modified.acl.groups.writers -->
             <div style="margin: 5px" class="btn-group" role="group">
               <button
-                class="btn btn-sm btn-warning"
+                class="btn btn-warning"
                 data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + $data + ' as a writer'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
-              <div class="btn btn-sm btn-warning" style="pointer-events: none">
+              <div class="btn btn-warning" style="pointer-events: none">
                 <span data-bind="text: $data"></span>
               </div>
             </div>
@@ -283,12 +283,12 @@
             <!-- ko foreach: modified.acl.groups.readers -->
             <div style="margin: 5px" class="btn-group" role="group">
               <button
-                class="btn btn-sm btn-primary"
+                class="btn btn-primary"
                 data-bind="click:$parent.remove_project_metagroup, attr:{title:'Remove ' + $data + ' as a reader'}"
               >
                 <i class="fa-regular fa-trash-can"></i>
               </button>
-              <div class="btn btn-sm btn-primary" style="pointer-events: none">
+              <div class="btn btn-primary" style="pointer-events: none">
                 <span data-bind="text: $data"></span>
               </div>
             </div>
