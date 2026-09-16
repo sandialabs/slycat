@@ -63,17 +63,26 @@
   font-weight: 500;
 }
 
-.edit-project-metagroups-table thead th.text-end {
-  text-align: right;
-}
-
 .edit-project-metagroups-table tbody td {
   padding: 0.5rem;
   text-align: left;
 }
 
-.edit-project-metagroups-table tbody td.text-end {
+.edit-project-metagroups-table .members-col {
+  width: 1%;
+  white-space: nowrap;
   text-align: right;
+}
+
+.edit-project-metagroups-table thead th.members-col .members-box {
+  display: inline-block;
+  text-align: right;
+}
+
+.edit-project-metagroups-table tbody td.members-col .members-box {
+  display: inline-block;
+  min-width: 7ch;
+  text-align: center;
 }
 
 .edit-project-metagroups-table tbody tr {
