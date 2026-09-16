@@ -236,7 +236,7 @@ function constructor(params) {
                 " to the project?  They will have read access to all project data.",
               ok: function () {
                 component.remove_user(user.uid);
-                component.modified.acl.readers.push({ user: ko.observable(user.uid) });
+                component.modified.acl.readers.push({ user: user.uid });
                 // Clear new user name because you won't want to add them twice
                 component.new_user("");
               },
@@ -251,7 +251,7 @@ function constructor(params) {
                 " to the project?  They will have read and write access to all project data.",
               ok: function () {
                 component.remove_user(user.uid);
-                component.modified.acl.writers.push({ user: ko.observable(user.uid) });
+                component.modified.acl.writers.push({ user: user.uid });
                 // Clear new user name because you won't want to add them twice
                 component.new_user("");
               },
@@ -266,7 +266,7 @@ function constructor(params) {
                 " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members.",
               ok: function () {
                 component.remove_user(user.uid);
-                component.modified.acl.administrators.push({ user: ko.observable(user.uid) });
+                component.modified.acl.administrators.push({ user: user.uid });
                 // Clear new user name because you won't want to add them twice
                 component.new_user("");
               },
@@ -294,32 +294,49 @@ function constructor(params) {
   };
 
   component.remove_user = function (user) {
-    -function (item) {
-      return item.user() == user;
-    };
+    component.modified.acl.readers.remove(function (item) {
+      let itemUser = item.user;
+      if (typeof item.user === "function") {
+        itemUser = item.user();
+      }
+      return itemUser == user;
+    });
     component.modified.acl.writers.remove(function (item) {
-      return item.user() == user;
+      let itemUser = item.user;
+      if (typeof item.user === "function") {
+        itemUser = item.user();
+      }
+      return itemUser == user;
     });
     component.modified.acl.administrators.remove(function (item) {
-      return item.user() == user;
+      let itemUser = item.user;
+      if (typeof item.user === "function") {
+        itemUser = item.user();
+      }
+      return itemUser == user;
     });
   };
 
   component.remove_project_member = function (context) {
-    if (component.user().name === context.user()) {
+    // console.log(component.user().uid === context.user());
+    let user = context.user;
+    if (typeof context.user === "function") {
+      user = context.user();
+    }
+    if (component.user().uid === user) {
       dialog.confirm({
         title: "Warning!",
         message:
           "You are removing yourself as an administrator. \
           If you do this and save changes, you will be unable to access this project.",
         ok: function () {
-          component.remove_user(context.user());
+          component.remove_user(user);
         },
       });
     } else {
-      component.remove_user(context.user());
+      component.remove_user(user);
     }
-  };
+  };;
 
   component.remove_metagroup = function (name) {
     component.modified.acl.groups.readers.remove(function (item) {
