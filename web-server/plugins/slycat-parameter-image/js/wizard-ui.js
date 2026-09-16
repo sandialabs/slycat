@@ -618,26 +618,6 @@ function constructor(params) {
         client.post_combine_hdf5_tables({
           mid: component.model._id(),
           success: (results) => {
-            if (component.model._id() && component.useProjectData() == false) {
-              client
-                .get_project_data_in_model_fetch({
-                  mid: component.model._id(),
-                })
-                .then((did) => {
-                  // if the data id isn't empty
-                  // delete model first
-                  // client.delete_model_fetch({ mid: component.model._id() }).then(() => {
-                  if (did.length >= 1) {
-                    client
-                      .get_project_data_parameter_fetch({ did: did, param: "mid" })
-                      .then((models) => {
-                        // if there are no more models using that project data, delete it
-                        client.delete_project_data_fetch({ did: did });
-                      });
-                  }
-                  // });
-                });
-            }
             component.finish();
           },
           error: (results) => {
@@ -859,7 +839,31 @@ function constructor(params) {
           client.post_model_finish({
             mid: component.model._id(),
             success: function () {
-              component.go_to_model();
+              if (component.model._id() && component.useProjectData() == false) {
+                client
+                  .get_project_data_in_model_fetch({
+                    mid: component.model._id(),
+                  })
+                  .then((did) => {
+                    // if the data id isn't empty
+                    if (did.length >= 1) {
+                      return client
+                        .get_project_data_parameter_fetch({ did: did, param: "mid" })
+                        .then((models) => {
+                          return client.delete_project_data_fetch({ did: did });
+                        });
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  })
+                  .finally(() => {
+                    component.go_to_model();
+                  });
+              }
+              else {
+                component.go_to_model();
+              }
             },
           });
         },
@@ -877,36 +881,44 @@ function constructor(params) {
     }
 
     // Need to clean up project data if backing from tab 4
-    if (component.tab() == 4) {
+    if (component.tab() == 4 || component.tab() == 6) {
       // Have to get the project data that was just added the current model
       client
         .get_project_data_in_model_fetch({
           mid: component.model._id(),
         })
-        .then((did) => {
-          // if the data id isn't empty
-          if (did[0] !== "") {
-            // Remove project data id from model
+        .then((didResult) => {
+
+        const did = Array.isArray(didResult)
+        ? didResult.filter((did) => did)
+        : didResult
+          ? [didResult]
+          : [];
+
+        if (did.length === 0) {
+          return;
+        }
+        // if the data id isn't empty
+        // Remove project data id from model
+        client
+          .delete_project_data_in_model_fetch({ did: did, mid: component.model._id() })
+          .then(() => {
+            // Remove model id from project data
             client
-              .delete_project_data_in_model_fetch({ did: did, mid: component.model._id() })
+              .delete_model_in_project_data_fetch({ mid: component.model._id(), did: did })
               .then(() => {
-                // Remove model id from project data
+                // Get the list of models using that project data
                 client
-                  .delete_model_in_project_data_fetch({ mid: component.model._id(), did: did })
-                  .then(() => {
-                    // Get the list of models using that project data
-                    client
-                      .get_project_data_parameter_fetch({ did: did, param: "mid" })
-                      .then((models) => {
-                        // if there are no more models using that project data, delete it
-                        if (models && models.length === 0) {
-                          client.delete_project_data_fetch({ did: did });
-                        }
-                      });
+                  .get_project_data_parameter_fetch({ did: did, param: "mid" })
+                  .then((models) => {
+                    // if there are no more models using that project data, delete it
+                    if (models && models.length === 0) {
+                      client.delete_project_data_fetch({ did: did });
+                    }
                   });
               });
-          }
-        });
+          });
+      });
     }
 
     // Skip Upload Table tab if we're on the Choose Host tab.

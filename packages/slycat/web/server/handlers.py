@@ -1156,13 +1156,20 @@ def delete_project_data(did, **kwargs):
     Returns:
         Nothing
     """
+
     database = slycat.web.server.database.couchdb.connect()
     with slycat.web.server.database.couchdb.db_lock:
 
         project_data = database.get("project_data", did)
         project = database.get("project", project_data["project"])
+        if project_data['project'] == project["_id"]:
+            hdf5_name = project_data["hdf5_name"]
+            hdf5_path = (
+                cherrypy.request.app.config["slycat-web-server"]["data-store"]
+                + "/project_data/"
+                + hdf5_name
+            )
         slycat.web.server.authentication.require_project_writer(project)
-
         for model in database.scan("slycat/models"):
             updated = False
             if "project_data" in model:
@@ -1174,6 +1181,7 @@ def delete_project_data(did, **kwargs):
                 database.save(model)
 
         with slycat.web.server.get_project_data_lock(did):
+            os.remove(hdf5_path)
             database.delete(project_data)
 
         cherrypy.response.status = "204 Project Data deleted."
