@@ -1985,11 +1985,12 @@ def delete_model_in_project_data(mid, did):
 
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
+    model = couchdb.get("model", mid)
+    project = couchdb.get("project", model["project"])
+    # Check writer access before the try so unauthorized deletes return 403
+    # instead of being logged and still returning 204.
+    slycat.web.server.authentication.require_project_writer(project)
     try:
-        model = couchdb.get("model", mid)
-        project = couchdb.get("project", model["project"])
-        slycat.web.server.authentication.require_project_writer(project)
-
         for project_data in couchdb.scan(
             "slycat/project_datas", startkey=model["project"], endkey=model["project"]
         ):
@@ -3044,6 +3045,13 @@ def get_user(uid, time):
         raise cherrypy.HTTPError(404)
     # Add the uid to the record, since the caller may not know it.
     user["uid"] = uid
+    # Flag whether this record is the signed-in user and a server administrator.
+    # Used by the UI to derive project role without injecting a fake
+    # server_administrators entry onto every project in the projects list.
+    if uid == cherrypy.request.login:
+        user["server_administrator"] = (
+            slycat.web.server.authentication.is_server_administrator()
+        )
     return user
 
 

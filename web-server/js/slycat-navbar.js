@@ -34,6 +34,14 @@ import config from "config.json";
 
 import { DOCS_URL, GITHUB_URL, ABOUT_MODAL_ID, RANDD100_URL } from "components/Footer/Footer";
 import { COPYRIGHT_TEXT, LICENSE_TEXT_HTML_FORMATTED } from "utils/copyright";
+import {
+  canCreateModel,
+  canDeleteModel,
+  canDeleteProject,
+  canEditModel,
+  canEditProject,
+  getProjectRole,
+} from "utils/project-role";
 
 export function renderNavBar() {
   // Let's check to see if we have a session by trying to retrieve the projects list.
@@ -161,29 +169,13 @@ export function renderNavBar() {
       }
 
       component.relation = ko.pureComputed(function () {
-        if (component.project()[0]) {
-          var users = component.project()[0].acl;
-          var get_name = function (x) {
-            return x.user();
-          };
-          var roles = {
-            server_administrator: users.server_administrators
-              ? users.server_administrators().map(get_name)
-              : [],
-            administrator: users.administrators().map(get_name),
-            writer: users.writers().map(get_name),
-            reader: users.readers().map(get_name),
-          };
-          for (var role in roles) {
-            if (roles[role].indexOf(component.user.uid()) != -1) {
-              if (role === "server_administrator") {
-                return "administrator";
-              }
-              return role;
-            }
-          }
+        if (!component.project()[0]) {
+          return "none";
         }
-        return "none";
+        const acl = mapping.toJS(component.project()[0].acl);
+        const uid = component.user.uid();
+        const serverAdministrator = Boolean(ko.unwrap(component.user.server_administrator));
+        return getProjectRole(acl, uid, { serverAdministrator });
       });
 
       // Keep track of the current model, if any.
@@ -349,43 +341,41 @@ export function renderNavBar() {
       // var create_wizards = component.wizards.filter(filter_by_action("create"));
       var create_wizards = component.wizards.filter(
         filter_by_action("create", function (wizard) {
-          // Readers are prevented from creating anything at the model or project level
-          if (
-            component.relation() === "reader" &&
-            (wizard.require.context() === "model" || wizard.require.context() === "project")
-          ) {
-            return false;
-          } else {
+          // Anyone can create a new project. Creating models requires writer or administrator.
+          if (wizard.require.context() === "global") {
             return true;
           }
+          return canCreateModel(component.relation());
         }),
       );
       var edit_wizards = component.wizards.filter(
         filter_by_action("edit", function (wizard) {
-          // Editing is permitted only to administrators. Also to writers at the model level.
-          return (
-            component.relation() === "administrator" ||
-            (component.relation() === "writer" && wizard.require.context() === "model")
-          );
+          // Editing models is permitted to writers and administrators.
+          // Editing projects is permitted to administrators only.
+          // Edit Project is registered as context "global", not "project".
+          if (wizard.require.context() === "model") {
+            return canEditModel(component.relation());
+          }
+          if (
+            wizard.require.context() === "project" ||
+            wizard.require.context() === "global"
+          ) {
+            return canEditProject(component.relation());
+          }
+          return false;
         }),
       );
       // var edit_wizards = component.wizards.filter(filter_by_action("edit"));
       var info_wizards = component.wizards.filter(filter_by_action("info"));
       var delete_wizards = component.wizards.filter(
         filter_by_action("delete", function (wizard) {
-          // Writers and readers are prevented from deleting projects
-          if (
-            wizard.require.context() === "project" &&
-            (component.relation() === "writer" || component.relation() === "reader")
-          ) {
-            return false;
+          if (wizard.require.context() === "model") {
+            return canDeleteModel(component.relation());
           }
-          // Readers are prevented from deleting models
-          else if (wizard.require.context() === "model" && component.relation() === "reader") {
-            return false;
-          } else {
-            return true;
+          if (wizard.require.context() === "project") {
+            return canDeleteProject(component.relation());
           }
+          return false;
         }),
       );
 
@@ -446,7 +436,8 @@ export function renderNavBar() {
       });
 
       // Get information about the current user.
-      component.user = mapping.fromJS({ uid: "", name: "" });
+      // Include server_administrator so relation() can subscribe before get_user returns.
+      component.user = mapping.fromJS({ uid: "", name: "", server_administrator: false });
       client.get_user({
         success: function (user) {
           mapping.fromJS(user, component.user);

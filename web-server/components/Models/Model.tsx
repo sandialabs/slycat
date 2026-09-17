@@ -7,6 +7,7 @@ import styles from "./Models.module.scss";
 import ModelTypeBadge from "./ModelTypeBadge";
 import Icon from "components/Icons/Icon";
 import { formatDateToLocaleString } from "utils/formatting";
+import { useCanDeleteModel } from "store";
 
 interface ModelProps {
   markings: any[];
@@ -38,7 +39,11 @@ const delete_model = (name: string, id: string, e: React.MouseEvent) => {
     ],
     callback(button: any) {
       if (button?.label === "Delete") {
-        client.delete_model({ mid: id, success: () => location.reload() });
+        client.delete_model({
+          mid: id,
+          success: () => location.reload(),
+          error: dialog.ajax_error("Couldn't delete model."),
+        });
       }
     },
   });
@@ -66,6 +71,7 @@ const Model: React.FC<ModelProps> = ({
 }) => {
   const recognized_marking = markings.find((obj) => obj.type == marking);
   const model_href = server_root + "models/" + id;
+  const canDelete = useCanDeleteModel();
 
   const navigateToModel = () => {
     window.location.assign(model_href);
@@ -104,27 +110,31 @@ const Model: React.FC<ModelProps> = ({
             by <span>{creator}</span>
             {outlier !== null ? `, outlier score: ${outlier.toFixed(2)}` : null}
           </small>
-            <input
-              type="checkbox"
-              className="form-check-input me-3 mt-0"
-              style={{ width: "1.2em", height: "1.2em" }}
-              checked={selected}
-              title="Select model for bulk delete"
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => {
-                e.stopPropagation();
-                onSelect(id, e);
-              }}
-            />
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-danger"
-              name={id}
-              onClick={(e) => delete_model(name, id, e)}
-              title="Delete this model"
-            >
-              <Icon type="trash-can" />
-            </button>
+            {canDelete && (
+              <>
+                <input
+                  type="checkbox"
+                  className="form-check-input me-3 mt-0"
+                  style={{ width: "1.2em", height: "1.2em" }}
+                  checked={selected}
+                  title="Select model for bulk delete"
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onSelect(id, e);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger"
+                  name={id}
+                  onClick={(e) => delete_model(name, id, e)}
+                  title="Delete this model"
+                >
+                  <Icon type="trash-can" />
+                </button>
+              </>
+            )}
         </div>
       </div>
     </div>

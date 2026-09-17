@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import * as dialog from "../js/slycat-dialog";
-import client from "../js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
+import client from "js/slycat-web-client";
 import ModelTypeBadge from "./Models/ModelTypeBadge";
 import Icon from "components/Icons/Icon";
 import { formatDateToLocaleString } from "utils/formatting";
+import { useCanDeleteModel } from "store";
 
 export interface TemplateProps {
   id: string;
@@ -15,6 +16,7 @@ export interface TemplateProps {
   onRefresh: () => void;
 }
 const Template: React.FC<TemplateProps> = (props) => {
+  const canModify = useCanDeleteModel();
   const delete_template = () => {
     const templateId = props.id;
     const projectId = props.project;
@@ -69,24 +71,28 @@ const Template: React.FC<TemplateProps> = (props) => {
       <div className="d-flex flex-row align-items-baseline mb-1">
         <strong className="flex-fill">{props.name}</strong>
         <ModelTypeBadge modelType={props.model_type} className="ms-4 me-3" />
-        <button
-          type="button"
-          className="btn btn-sm btn-outline-primary me-1"
-          name={props.id}
-          onClick={() => edit_template()}
-          title="Edit this template"
-        >
-          <Icon type="pencil" />
-        </button>
-        <button
-          type="button"
-          className="btn btn-sm btn-outline-danger"
-          name={props.id}
-          onClick={() => delete_template()}
-          title="Delete this template"
-        >
-          <Icon type="trash-can" />
-        </button>
+        {canModify && (
+          <>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary me-1"
+              name={props.id}
+              onClick={() => edit_template()}
+              title="Edit this template"
+            >
+              <Icon type="pencil" />
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              name={props.id}
+              onClick={() => delete_template()}
+              title="Delete this template"
+            >
+              <Icon type="trash-can" />
+            </button>
+          </>
+        )}
       </div>
       <div className="d-flex flex-row mt-0 align-items-baseline">
         <small className="fst-italic text-body-secondary flex-fill">
