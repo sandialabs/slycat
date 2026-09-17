@@ -947,6 +947,7 @@ function constructor(params) {
       target--;
       target--;
       target--;
+      $(".local-browser-continue").toggleClass("disabled", false);
       component.browser.progress(null);
       component.browser.progress_status("");
     }
