@@ -352,10 +352,17 @@ export function renderNavBar() {
         filter_by_action("edit", function (wizard) {
           // Editing models is permitted to writers and administrators.
           // Editing projects is permitted to administrators only.
+          // Edit Project is registered as context "global", not "project".
           if (wizard.require.context() === "model") {
             return canEditModel(component.relation());
           }
-          return canEditProject(component.relation());
+          if (
+            wizard.require.context() === "project" ||
+            wizard.require.context() === "global"
+          ) {
+            return canEditProject(component.relation());
+          }
+          return false;
         }),
       );
       // var edit_wizards = component.wizards.filter(filter_by_action("edit"));
