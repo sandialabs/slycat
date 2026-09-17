@@ -92,6 +92,18 @@ function constructor(params) {
     component.browser.progress(10);
     component.browser.progress_status("Parsing...");
 
+    const fileName = component.selected_file();
+    const splitFileName = fileName.split(".");
+    const fileExtension = splitFileName[splitFileName.length - 1];
+
+    if (fileExtension == "csv") {
+      component.parser("slycat-csv-parser");
+    } else if (fileExtension == "dat") {
+      component.parser("slycat-dakota-parser");
+    } else if (fileExtension == "h5" || fileExtension == "hdf5") {
+      component.parser("slycat-hdf5-parser");
+    }
+      
     client.put_project_csv_data({
       pid: component.project._id(),
       file_key: component.selected_file(),
@@ -120,7 +132,7 @@ function constructor(params) {
           component.server_files.push(fileName);
         }
       },
-      error: dialog.ajax_error("There was an error retrieving the CSV data."),
+      error: dialog.ajax_error("There was an error retrieving the CSV file names."),
     });
   };
 
@@ -134,6 +146,12 @@ function constructor(params) {
       success: function (mid) {
         component.model._id(mid);
         component.remote.focus(true);
+        client.put_model_parameter({
+          mid: mid,
+          aid: "error-messages",
+          value: [],
+          input: true,
+        });
       },
       error: dialog.ajax_error("Error creating model."),
     });
@@ -215,7 +233,7 @@ function constructor(params) {
 
   component.cancel = function () {
     component.smb_wizard_login_root.unmount();
-    if (component.model._id()) {
+    if (component.model._id() && component.ps_type() != "server") {
       client
         .get_project_data_in_model_fetch({
           mid: component.model._id(),
@@ -618,26 +636,6 @@ function constructor(params) {
         client.post_combine_hdf5_tables({
           mid: component.model._id(),
           success: (results) => {
-            if (component.model._id() && component.useProjectData() == false) {
-              client
-                .get_project_data_in_model_fetch({
-                  mid: component.model._id(),
-                })
-                .then((did) => {
-                  // if the data id isn't empty
-                  // delete model first
-                  // client.delete_model_fetch({ mid: component.model._id() }).then(() => {
-                  if (did.length >= 1) {
-                    client
-                      .get_project_data_parameter_fetch({ did: did, param: "mid" })
-                      .then((models) => {
-                        // if there are no more models using that project data, delete it
-                        client.delete_project_data_fetch({ did: did });
-                      });
-                  }
-                  // });
-                });
-            }
             component.finish();
           },
           error: (results) => {
@@ -859,7 +857,31 @@ function constructor(params) {
           client.post_model_finish({
             mid: component.model._id(),
             success: function () {
-              component.go_to_model();
+              if (component.model._id() && component.useProjectData() == false && component.ps_type() != "server") {
+                client
+                  .get_project_data_in_model_fetch({
+                    mid: component.model._id(),
+                  })
+                  .then((did) => {
+                    // if the data id isn't empty
+                    if (did.length >= 1) {
+                      return client
+                        .get_project_data_parameter_fetch({ did: did, param: "mid" })
+                        .then((models) => {
+                          return client.delete_project_data_fetch({ did: did });
+                        });
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  })
+                  .finally(() => {
+                    component.go_to_model();
+                  });
+              }
+              else {
+                component.go_to_model();
+              }
             },
           });
         },
@@ -877,36 +899,44 @@ function constructor(params) {
     }
 
     // Need to clean up project data if backing from tab 4
-    if (component.tab() == 4) {
+    if (component.tab() == 4 || component.tab() == 6 && component.ps_type() != "server") {
       // Have to get the project data that was just added the current model
       client
         .get_project_data_in_model_fetch({
           mid: component.model._id(),
         })
-        .then((did) => {
-          // if the data id isn't empty
-          if (did[0] !== "") {
-            // Remove project data id from model
+        .then((didResult) => {
+
+        const did = Array.isArray(didResult)
+        ? didResult.filter((did) => did)
+        : didResult
+          ? [didResult]
+          : [];
+
+        if (did.length === 0) {
+          return;
+        }
+        // if the data id isn't empty
+        // Remove project data id from model
+        client
+          .delete_project_data_in_model_fetch({ did: did, mid: component.model._id() })
+          .then(() => {
+            // Remove model id from project data
             client
-              .delete_project_data_in_model_fetch({ did: did, mid: component.model._id() })
+              .delete_model_in_project_data_fetch({ mid: component.model._id(), did: did })
               .then(() => {
-                // Remove model id from project data
+                // Get the list of models using that project data
                 client
-                  .delete_model_in_project_data_fetch({ mid: component.model._id(), did: did })
-                  .then(() => {
-                    // Get the list of models using that project data
-                    client
-                      .get_project_data_parameter_fetch({ did: did, param: "mid" })
-                      .then((models) => {
-                        // if there are no more models using that project data, delete it
-                        if (models && models.length === 0) {
-                          client.delete_project_data_fetch({ did: did });
-                        }
-                      });
+                  .get_project_data_parameter_fetch({ did: did, param: "mid" })
+                  .then((models) => {
+                    // if there are no more models using that project data, delete it
+                    if (models && models.length === 0) {
+                      client.delete_project_data_fetch({ did: did });
+                    }
                   });
               });
-          }
-        });
+          });
+      });
     }
 
     // Skip Upload Table tab if we're on the Choose Host tab.
@@ -924,11 +954,23 @@ function constructor(params) {
       target--;
     }
 
-    if (component.tab() == 6) {
+    if (component.ps_type() != "server" && component.tab() == 6) {
       target--;
       target--;
       target--;
       target--;
+      $(".local-browser-continue").toggleClass("disabled", false);
+      component.browser.progress(null);
+      component.browser.progress_status("");
+    }
+
+    if (component.ps_type() == "server" && component.tab() == 6) {
+      target--;
+      target--;
+      target--;
+      target--;
+      target--;
+      $(".local-browser-continue").toggleClass("disabled", false);
       component.browser.progress(null);
       component.browser.progress_status("");
     }

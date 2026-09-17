@@ -873,6 +873,21 @@ export const useHandleTableIngestionOnChange = (attributes: Attribute[]) => {
   );
 };
 
+const cleanupProjectDataForModel = (mid: string | undefined) => {
+    return client.get_project_data_in_model_fetch({
+      mid: mid,
+    })
+    .then((did) => {
+      // if the data id isn't empty
+      if (did.length >= 1) {
+        return client.delete_project_data_fetch({ did: did });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+};
+
 /**
  * Hook for dealing with submission to the server of the final model values such as name and description.
  * @returns a function for finalizing the cca model
@@ -885,7 +900,8 @@ export const useFinishModel = () => {
 
   return React.useCallback(() => {
     // Update the final model metadata and trigger model completion.
-    client.put_model({
+    cleanupProjectDataForModel(mid).then(() => {
+      client.put_model({
       mid,
       name,
       description,
@@ -893,12 +909,13 @@ export const useFinishModel = () => {
       success: () => {
         client.post_model_finish({
           mid,
-          success: () => {
+          success: function () {
             location.href = `${server_root}models/${mid}`;
           },
         });
       },
       error: dialog.ajax_error("Error updating model."),
+      });
     });
   }, [mid, name, description, marking]);
 };

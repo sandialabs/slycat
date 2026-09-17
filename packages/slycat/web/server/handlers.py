@@ -488,6 +488,9 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 # determine the type of data we just got and if we need to extract it eg for csv files
                 # HDF5 file path
                 if (".h5" in item["file_name"]) or (".hdf5" in item["file_name"]):
+                    model = database.get("model", mid)
+                    model["project_data"] = [item["_id"]]
+                    database.save(model)
                     with open(hdf5_path, "rb") as fh:
                         file_obj = fh.read()
                         attachment.append(file_obj)
@@ -1156,13 +1159,20 @@ def delete_project_data(did, **kwargs):
     Returns:
         Nothing
     """
+
     database = slycat.web.server.database.couchdb.connect()
     with slycat.web.server.database.couchdb.db_lock:
 
         project_data = database.get("project_data", did)
         project = database.get("project", project_data["project"])
+        if project_data['project'] == project["_id"]:
+            hdf5_name = project_data["hdf5_name"]
+            hdf5_path = (
+                cherrypy.request.app.config["slycat-web-server"]["data-store"]
+                + "/project_data/"
+                + hdf5_name
+            )
         slycat.web.server.authentication.require_project_writer(project)
-
         for model in database.scan("slycat/models"):
             updated = False
             if "project_data" in model:
@@ -1174,6 +1184,7 @@ def delete_project_data(did, **kwargs):
                 database.save(model)
 
         with slycat.web.server.get_project_data_lock(did):
+            os.remove(hdf5_path)
             database.delete(project_data)
 
         cherrypy.response.status = "204 Project Data deleted."
