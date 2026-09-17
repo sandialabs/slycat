@@ -12,7 +12,7 @@ import ko from "knockout";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import URI from "urijs";
-import { AppStoreProvider, appStore, currentUserFromApi, setCurrentUser, setCurrentProject } from "store";
+import { AppStoreProvider, appStore, currentUserFromApi, currentProjectFromApi, setCurrentUser, setCurrentProject } from "store";
 
 // Wait for document ready
 $(() => {
@@ -39,12 +39,7 @@ $(() => {
         pid: projectId,
         success(projectResult) {
           document.title = `${projectResult.name} - Slycat Project`;
-          appStore.dispatch(
-            setCurrentProject({
-              _id: projectResult._id,
-              acl: projectResult.acl,
-            }),
-          );
+          appStore.dispatch(setCurrentProject(currentProjectFromApi(projectResult)));
           // After getting the project, get the models and render the ProjectPage into #slycat-project-react
           client.get_project_models({
             pid: projectId,
