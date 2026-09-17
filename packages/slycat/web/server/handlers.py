@@ -488,6 +488,9 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 # determine the type of data we just got and if we need to extract it eg for csv files
                 # HDF5 file path
                 if (".h5" in item["file_name"]) or (".hdf5" in item["file_name"]):
+                    model = database.get("model", mid)
+                    model["project_data"] = [item["_id"]]
+                    database.save(model)
                     with open(hdf5_path, "rb") as fh:
                         file_obj = fh.read()
                         attachment.append(file_obj)
