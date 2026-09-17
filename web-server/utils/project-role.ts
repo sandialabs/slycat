@@ -53,22 +53,16 @@ export function getProjectRole(
   return "none";
 }
 
-export function canDeleteProject(role: ProjectRole): boolean {
+function isProjectAdmin(role: ProjectRole): boolean {
   return role === "administrator";
 }
 
-export function canEditProject(role: ProjectRole): boolean {
-  return role === "administrator";
-}
-
-export function canDeleteModel(role: ProjectRole): boolean {
+function isProjectWriter(role: ProjectRole): boolean {
   return role === "administrator" || role === "writer";
 }
 
-export function canEditModel(role: ProjectRole): boolean {
-  return role === "administrator" || role === "writer";
-}
-
-export function canCreateModel(role: ProjectRole): boolean {
-  return role === "administrator" || role === "writer";
-}
+export const canDeleteProject = isProjectAdmin;
+export const canEditProject = isProjectAdmin;
+export const canDeleteModel = isProjectWriter;
+export const canEditModel = isProjectWriter;
+export const canCreateModel = isProjectWriter;
