@@ -857,7 +857,7 @@ function constructor(params) {
           client.post_model_finish({
             mid: component.model._id(),
             success: function () {
-              if (component.model._id() && component.useProjectData() == false) {
+              if (component.model._id() && component.useProjectData() == false && component.ps_type() != "server") {
                 client
                   .get_project_data_in_model_fetch({
                     mid: component.model._id(),
