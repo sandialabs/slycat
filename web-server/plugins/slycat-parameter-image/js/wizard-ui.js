@@ -92,6 +92,18 @@ function constructor(params) {
     component.browser.progress(10);
     component.browser.progress_status("Parsing...");
 
+    const fileName = component.selected_file();
+    const splitFileName = fileName.split(".");
+    const fileExtension = splitFileName[splitFileName.length - 1];
+
+    if (fileExtension == "csv") {
+      component.parser("slycat-csv-parser");
+    } else if (fileExtension == "dat") {
+      component.parser("slycat-dakota-parser");
+    } else if (fileExtension == "h5" || fileExtension == "hdf5") {
+      component.parser("slycat-hdf5-parser");
+    }
+      
     client.put_project_csv_data({
       pid: component.project._id(),
       file_key: component.selected_file(),
@@ -221,7 +233,7 @@ function constructor(params) {
 
   component.cancel = function () {
     component.smb_wizard_login_root.unmount();
-    if (component.model._id()) {
+    if (component.model._id() && component.ps_type() != "server") {
       client
         .get_project_data_in_model_fetch({
           mid: component.model._id(),
@@ -887,7 +899,7 @@ function constructor(params) {
     }
 
     // Need to clean up project data if backing from tab 4
-    if (component.tab() == 4 || component.tab() == 6) {
+    if (component.tab() == 4 || component.tab() == 6 && component.ps_type() != "server") {
       // Have to get the project data that was just added the current model
       client
         .get_project_data_in_model_fetch({
@@ -942,7 +954,18 @@ function constructor(params) {
       target--;
     }
 
-    if (component.tab() == 6) {
+    if (component.ps_type() != "server" && component.tab() == 6) {
+      target--;
+      target--;
+      target--;
+      target--;
+      $(".local-browser-continue").toggleClass("disabled", false);
+      component.browser.progress(null);
+      component.browser.progress_status("");
+    }
+
+    if (component.ps_type() == "server" && component.tab() == 6) {
+      target--;
       target--;
       target--;
       target--;
