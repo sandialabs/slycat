@@ -92,6 +92,24 @@ export function currentUserFromApi(user: {
   };
 }
 
+export function currentProjectFromApi(project: {
+  _id?: string;
+  acl?: ProjectAcl;
+} | null | undefined): CurrentProject | null {
+  if (!project?._id) {
+    return null;
+  }
+  // get_project injects server_administrators for the signed-in server admin.
+  // Role uses currentUser.server_administrator instead; keep Redux ACL aligned
+  // with CouchDB so a later edit form does not show a fake member.
+  const acl = { ...(project.acl ?? {}) };
+  delete acl.server_administrators;
+  return {
+    _id: project._id,
+    acl,
+  };
+}
+
 export function selectCurrentUser(state: AppStoreState): CurrentUser | null {
   return state.auth.currentUser;
 }
