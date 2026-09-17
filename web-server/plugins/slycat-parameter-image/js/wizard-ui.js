@@ -120,7 +120,7 @@ function constructor(params) {
           component.server_files.push(fileName);
         }
       },
-      error: dialog.ajax_error("There was an error retrieving the CSV data."),
+      error: dialog.ajax_error("There was an error retrieving the CSV file names."),
     });
   };
 
@@ -134,6 +134,12 @@ function constructor(params) {
       success: function (mid) {
         component.model._id(mid);
         component.remote.focus(true);
+        client.put_model_parameter({
+          mid: mid,
+          aid: "error-messages",
+          value: [],
+          input: true,
+        });
       },
       error: dialog.ajax_error("Error creating model."),
     });
