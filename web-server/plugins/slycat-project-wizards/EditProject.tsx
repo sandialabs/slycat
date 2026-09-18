@@ -459,7 +459,7 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
               ) : null}
             </div>
 
-            <hr className="my-3" />
+            <hr className="my-4" />
 
             <div className="mb-3">
               <ProjectAclTable
