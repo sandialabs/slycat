@@ -4,7 +4,13 @@
 
 export type UserPermission = "reader" | "writer" | "administrator";
 export type MetagroupPermission = "reader" | "writer";
-export type AclChipRole = UserPermission;
+export type AclRole = UserPermission;
+export type AclChipRole = AclRole;
+
+export interface AclTableRow {
+  name: string;
+  role: AclRole;
+}
 
 export interface AclUser {
   user: string;
@@ -73,6 +79,21 @@ export function normalizeAcl(acl: unknown): ProjectAcl {
 
 export function userNames(list: AclUser[]): string[] {
   return list.map((item) => item.user);
+}
+
+export function aclUserRows(acl: ProjectAcl): AclTableRow[] {
+  return [
+    ...acl.administrators.map((item) => ({ name: item.user, role: "administrator" as const })),
+    ...acl.writers.map((item) => ({ name: item.user, role: "writer" as const })),
+    ...acl.readers.map((item) => ({ name: item.user, role: "reader" as const })),
+  ];
+}
+
+export function aclMetagroupRows(acl: ProjectAcl): AclTableRow[] {
+  return [
+    ...acl.groups.writers.map((name) => ({ name, role: "writer" as const })),
+    ...acl.groups.readers.map((name) => ({ name, role: "reader" as const })),
+  ];
 }
 
 export function removeUserFromAcl(acl: ProjectAcl, uid: string): ProjectAcl {

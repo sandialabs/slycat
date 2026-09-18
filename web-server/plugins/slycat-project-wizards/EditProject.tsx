@@ -7,10 +7,11 @@ import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
 import api_root from "js/slycat-api-root";
-import "@fortawesome/fontawesome-free/css/all.css";
 import "./edit-ui.css";
-import ProjectAclChips from "./ProjectAclChips";
+import ProjectAclTable, { ACL_METAGROUPS_LABEL, ACL_USERS_LABEL } from "./ProjectAclTable";
 import {
+  aclMetagroupRows,
+  aclUserRows,
   addMetagroupToAcl,
   addUserToAcl,
   metagroupPermissionDescription,
@@ -18,7 +19,6 @@ import {
   permissionDescription,
   removeMetagroupFromAcl,
   removeUserFromAcl,
-  userNames,
   type MetagroupPermission,
   type ProjectAcl,
   type ProjectSnapshot,
@@ -71,18 +71,22 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
     let cancelled = false;
     const query = metagroupSearch.trim();
     const searchId = ++searchIdRef.current;
+
+    if (!query) {
+      setMetagroupSearchResults([]);
+      setMetagroupSearchLoading(false);
+      setSelectedMetagroup(null);
+      return;
+    }
+
+    setMetagroupSearchLoading(true);
+    setMetagroupSearchResults([]);
+    setSelectedMetagroup(null);
+
     const timer = window.setTimeout(() => {
       if (cancelled) {
         return;
       }
-      if (!query) {
-        setMetagroupSearchResults([]);
-        setMetagroupSearchLoading(false);
-        setSelectedMetagroup(null);
-        return;
-      }
-
-      setMetagroupSearchLoading(true);
 
       fetch(api_root + "groups/" + encodeURIComponent(query))
         .then((response) => {
@@ -101,19 +105,12 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
             memberCount: group.member_count,
           }));
           setMetagroupSearchResults(matches);
-          setSelectedMetagroup((selected) => {
-            if (!selected) {
-              return null;
-            }
-            return matches.some((group) => group.name === selected.name) ? selected : null;
-          });
         })
         .catch(() => {
           if (cancelled || searchId !== searchIdRef.current) {
             return;
           }
           setMetagroupSearchResults([]);
-          setSelectedMetagroup(null);
         })
         .then(() => {
           if (!cancelled && searchId === searchIdRef.current) {
@@ -131,7 +128,10 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
   const metagroupSearchHelper = (() => {
     const query = metagroupSearch.trim();
     if (!query) {
-      return "Type to search metagroups.";
+      return "";
+    }
+    if (metagroupSearchLoading && metagroupSearchResults.length === 0) {
+      return "Searching...";
     }
     if (!metagroupSearchLoading && metagroupSearchResults.length === 0) {
       return "No metagroups match your search.";
@@ -395,8 +395,17 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
             aria-labelledby="edit-project-permissions-tab"
             style={{ display: tab === 1 ? undefined : "none" }}
           >
-            <div className="mb-4">
-              <h5 className="edit-project-section-heading pt-3">Individual Users</h5>
+            <div className="mb-3">
+              <ProjectAclTable
+                title={ACL_USERS_LABEL}
+                kind="user"
+                rows={aclUserRows(acl)}
+                removable
+                onRemove={removeProjectMember}
+              />
+            </div>
+
+            <div className="mb-3">
               <form
                 id="edit-project-members-form"
                 ref={membersFormRef}
@@ -410,7 +419,7 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                   <div className="col">
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-control form-control-sm"
                       placeholder={SLYCAT_AUTH_LABELS.username}
                       value={newUser}
                       onChange={(event) => setNewUser(event.target.value)}
@@ -422,7 +431,7 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                   </div>
                   <div className="col-4">
                     <select
-                      className="form-select"
+                      className="form-select form-select-sm"
                       value={permission}
                       onChange={(event) => setPermission(event.target.value as UserPermission)}
                     >
@@ -433,8 +442,9 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                   </div>
                   <div className="col-auto">
                     <button
-                      className="btn btn-secondary"
+                      className="btn btn-sm btn-primary"
                       type="button"
+                      disabled={!newUser.trim()}
                       onClick={() => addProjectMember(membersFormRef.current)}
                     >
                       Add
@@ -442,49 +452,30 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                   </div>
                 </div>
               </form>
-              <div className="row">
-                <div className="col-sm-12">
-                  <p
-                    className="form-text"
-                    style={{ textAlign: "center", paddingTop: 10, paddingBottom: 20 }}
-                  >
-                    {permissionDescription(permission)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-sm-12">
-                  <ProjectAclChips
-                    names={userNames(acl.administrators)}
-                    role="administrator"
-                    removable
-                    onRemove={removeProjectMember}
-                  />
-                  <ProjectAclChips
-                    names={userNames(acl.writers)}
-                    role="writer"
-                    removable
-                    onRemove={removeProjectMember}
-                  />
-                  <ProjectAclChips
-                    names={userNames(acl.readers)}
-                    role="reader"
-                    removable
-                    onRemove={removeProjectMember}
-                  />
-                </div>
-              </div>
+              {newUser.trim() ? (
+                <p className="form-text text-center mt-1 mb-0">
+                  {permissionDescription(permission)}
+                </p>
+              ) : null}
             </div>
 
-            <hr className="mt-5 mb-4" />
+            <hr className="my-3" />
 
             <div className="mb-3">
-              <h5 className="edit-project-section-heading">Metagroups</h5>
+              <ProjectAclTable
+                title={ACL_METAGROUPS_LABEL}
+                kind="group"
+                rows={aclMetagroupRows(acl)}
+                removable
+                onRemove={(name) => setAcl((prev) => removeMetagroupFromAcl(prev, name))}
+              />
+            </div>
+
+            <div className="mb-3">
               <div className="mb-2">
                 <input
                   type="search"
-                  className="form-control"
+                  className="form-control form-control-sm"
                   placeholder="Search metagroups..."
                   autoComplete="off"
                   value={metagroupSearch}
@@ -500,31 +491,18 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                 />
               </div>
 
-              <div className="edit-project-metagroups-table-wrap mb-4">
-                <table className="edit-project-metagroups-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Name</th>
-                      <th scope="col">Owner</th>
-                      <th scope="col" className="members-col">
-                        <span className="members-box">Members</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  {metagroupSearchLoading ? (
-                    <tbody>
+              {metagroupSearchResults.length > 0 ? (
+                <div className="edit-project-metagroups-table-wrap mb-2">
+                  <table className="edit-project-metagroups-table">
+                    <thead>
                       <tr>
-                        <td colSpan={3} className="text-muted">
-                          Searching...
-                          <span
-                            className="spinner-border spinner-border-sm"
-                            role="status"
-                            aria-hidden="true"
-                          ></span>
-                        </td>
+                        <th scope="col">Name</th>
+                        <th scope="col">Owner</th>
+                        <th scope="col" className="members-col">
+                          <span className="members-box">Members</span>
+                        </th>
                       </tr>
-                    </tbody>
-                  ) : (
+                    </thead>
                     <tbody>
                       {metagroupSearchResults.map((group) => (
                         <tr
@@ -541,17 +519,26 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                         </tr>
                       ))}
                     </tbody>
-                  )}
-                </table>
-              </div>
+                  </table>
+                </div>
+              ) : null}
               {metagroupSearchHelper ? (
-                <p className="form-text">{metagroupSearchHelper}</p>
+                <p className="form-text">
+                  {metagroupSearchHelper}
+                  {metagroupSearchLoading ? (
+                    <span
+                      className="spinner-border spinner-border-sm ms-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  ) : null}
+                </p>
               ) : null}
 
-              <div className="row g-2 align-items-center justify-content-end mb-2 mt-4">
+              <div className="row g-2 align-items-center justify-content-end mt-2">
                 <div className="col-4">
                   <select
-                    className="form-select"
+                    className="form-select form-select-sm"
                     value={metagroupPermission}
                     onChange={(event) =>
                       setMetagroupPermission(event.target.value as MetagroupPermission)
@@ -563,7 +550,7 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                 </div>
                 <div className="col-auto">
                   <button
-                    className="btn btn-secondary"
+                    className="btn btn-sm btn-primary"
                     type="button"
                     disabled={!selectedMetagroup}
                     onClick={() => addProjectMetagroup()}
@@ -572,33 +559,11 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                   </button>
                 </div>
               </div>
-              <div className="row">
-                <div className="col-sm-12">
-                  <p
-                    className="form-text"
-                    style={{ textAlign: "center", paddingTop: 10, paddingBottom: 20 }}
-                  >
-                    {metagroupPermissionDescription(metagroupPermission)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-sm-12">
-                  <ProjectAclChips
-                    names={acl.groups.writers}
-                    role="writer"
-                    removable
-                    onRemove={(name) => setAcl((prev) => removeMetagroupFromAcl(prev, name))}
-                  />
-                  <ProjectAclChips
-                    names={acl.groups.readers}
-                    role="reader"
-                    removable
-                    onRemove={(name) => setAcl((prev) => removeMetagroupFromAcl(prev, name))}
-                  />
-                </div>
-              </div>
+              {selectedMetagroup ? (
+                <p className="form-text text-center mt-1 mb-0">
+                  {metagroupPermissionDescription(metagroupPermission)}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

@@ -3,8 +3,17 @@
  retains certain rights in this software. */
 
 import React from "react";
-import ProjectAclChips from "./ProjectAclChips";
-import { normalizeAcl, userNames, type ProjectSnapshot } from "./projectAcl";
+import ProjectAclTable, {
+  ACL_METAGROUPS_LABEL,
+  ACL_TABLE_LABEL,
+  ACL_USERS_LABEL,
+} from "./ProjectAclTable";
+import {
+  aclMetagroupRows,
+  aclUserRows,
+  normalizeAcl,
+  type ProjectSnapshot,
+} from "./projectAcl";
 
 type ProjectDetailsProps = {
   project: ProjectSnapshot;
@@ -38,28 +47,20 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
         </div>
         <div className="card mb-3">
           <div className="card-header">
-            <strong>Members</strong>
+            <strong>{ACL_TABLE_LABEL}</strong>
           </div>
           <div className="card-body">
-            <div className="row">
-              <div className="col-sm-12">
-                <ProjectAclChips names={userNames(acl.administrators)} role="administrator" size="sm" />
-                <ProjectAclChips names={userNames(acl.writers)} role="writer" size="sm" />
-                <ProjectAclChips names={userNames(acl.readers)} role="reader" size="sm" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="card mb-3">
-          <div className="card-header">
-            <strong>Metagroups</strong>
-          </div>
-          <div className="card-body">
-            <div className="row">
-              <div className="col-sm-12">
-                <ProjectAclChips names={acl.groups.writers} role="writer" size="sm" />
-                <ProjectAclChips names={acl.groups.readers} role="reader" size="sm" />
-              </div>
+            <ProjectAclTable
+              title={ACL_USERS_LABEL}
+              kind="user"
+              rows={aclUserRows(acl)}
+            />
+            <div className="mt-3">
+              <ProjectAclTable
+                title={ACL_METAGROUPS_LABEL}
+                kind="group"
+                rows={aclMetagroupRows(acl)}
+              />
             </div>
           </div>
         </div>
