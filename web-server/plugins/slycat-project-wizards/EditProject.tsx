@@ -2,7 +2,8 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import { SLYCAT_AUTH_LABELS } from "utils/ui-labels";
@@ -19,6 +20,7 @@ import {
   permissionDescription,
   removeMetagroupFromAcl,
   removeUserFromAcl,
+  type AclRole,
   type MetagroupPermission,
   type ProjectAcl,
   type ProjectSnapshot,
@@ -42,6 +44,77 @@ type EditProjectProps = {
   project: ProjectSnapshot;
 };
 
+type ProjectConfirm = {
+  title: string;
+  message: string;
+  onOk: () => void;
+};
+
+const ProjectConfirmDialog: React.FC<{
+  confirm: ProjectConfirm;
+  onCancel: () => void;
+}> = ({ confirm, onCancel }) => {
+  const okRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    okRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirm, onCancel]);
+
+  return createPortal(
+    <div className="bootstrap-styles">
+      <div className="modal edit-project-confirm-overlay">
+        <div
+          className="modal-dialog modal-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-project-confirm-title"
+        >
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title" id="edit-project-confirm-title">
+                {confirm.title}
+              </h3>
+              <button
+                type="button"
+                className="btn-close"
+                aria-label="Close"
+                onClick={onCancel}
+              ></button>
+            </div>
+            <div className="modal-body">
+              <p className="mb-0">{confirm.message}</p>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-light" onClick={onCancel}>
+                Cancel
+              </button>
+              <button
+                ref={okRef}
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  confirm.onOk();
+                  onCancel();
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
 const EditProject: React.FC<EditProjectProps> = ({ project }) => {
   const [tab, setTab] = useState(0);
   const [name, setName] = useState(project.name || "");
@@ -58,6 +131,8 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
   const generalFormRef = useRef<HTMLFormElement>(null);
   const membersFormRef = useRef<HTMLFormElement>(null);
   const searchIdRef = useRef(0);
+  const [projectConfirm, setProjectConfirm] = useState<ProjectConfirm | null>(null);
+  const cancelProjectConfirm = useCallback(() => setProjectConfirm(null), []);
 
   useEffect(() => {
     client.get_user({
@@ -153,37 +228,37 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
       uid: newUser,
       success: (user: { uid: string; name: string }) => {
         if (permission === "reader") {
-          dialog.confirm({
+          setProjectConfirm({
             title: "Add Project Reader",
             message:
               "Add " + user.name + " to the project?  They will have read access to all project data.",
-            ok: () => {
+            onOk: () => {
               setAcl((prev) => addUserToAcl(prev, user.uid, "reader"));
               setNewUser("");
             },
           });
         }
         if (permission === "writer") {
-          dialog.confirm({
+          setProjectConfirm({
             title: "Add Project Writer",
             message:
               "Add " +
               user.name +
               " to the project?  They will have read and write access to all project data.",
-            ok: () => {
+            onOk: () => {
               setAcl((prev) => addUserToAcl(prev, user.uid, "writer"));
               setNewUser("");
             },
           });
         }
         if (permission === "administrator") {
-          dialog.confirm({
+          setProjectConfirm({
             title: "Add Project Administrator",
             message:
               "Add " +
               user.name +
               " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members.",
-            ok: () => {
+            onOk: () => {
               setAcl((prev) => addUserToAcl(prev, user.uid, "administrator"));
               setNewUser("");
             },
@@ -209,20 +284,76 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
     });
   };
 
-  const removeProjectMember = (uid: string) => {
+  const removeProjectMember = (uid: string, role: UserPermission) => {
     if (currentUser.uid === uid) {
-      dialog.confirm({
+      setProjectConfirm({
         title: "Warning!",
         message:
-          "You are removing yourself as an administrator. \
-          If you do this and save changes, you will be unable to access this project.",
-        ok: () => {
+          "You are removing yourself as an administrator. If you do this and save changes, you will be unable to access this project.",
+        onOk: () => {
           setAcl((prev) => removeUserFromAcl(prev, uid));
         },
       });
-    } else {
-      setAcl((prev) => removeUserFromAcl(prev, uid));
+      return;
     }
+    if (role === "writer") {
+      setProjectConfirm({
+        title: "Remove Project Writer",
+        message:
+          "Remove " + uid + " from the project?  They will no longer have read and write access to all project data.",
+        onOk: () => {
+          setAcl((prev) => removeUserFromAcl(prev, uid));
+        },
+      });
+      return;
+    }
+    if (role === "administrator") {
+      setProjectConfirm({
+        title: "Remove Project Administrator",
+        message:
+          "Remove " +
+          uid +
+          " from the project?  They will no longer have read and write access to all project data, and will no longer be able to add and remove other project members.",
+        onOk: () => {
+          setAcl((prev) => removeUserFromAcl(prev, uid));
+        },
+      });
+      return;
+    }
+    setProjectConfirm({
+      title: "Remove Project Reader",
+      message:
+        "Remove " + uid + " from the project?  They will no longer have read access to all project data.",
+      onOk: () => {
+        setAcl((prev) => removeUserFromAcl(prev, uid));
+      },
+    });
+  };
+
+  const removeProjectMetagroup = (name: string, role: AclRole) => {
+    if (role === "writer") {
+      setProjectConfirm({
+        title: "Remove Project Writer Metagroup",
+        message:
+          "Remove metagroup '" +
+          name +
+          "' from the project?  Members of this group will no longer have read and write access to all project data.",
+        onOk: () => {
+          setAcl((prev) => removeMetagroupFromAcl(prev, name));
+        },
+      });
+      return;
+    }
+    setProjectConfirm({
+      title: "Remove Project Reader Metagroup",
+      message:
+        "Remove metagroup '" +
+        name +
+        "' from the project?  Members of this group will no longer have read access to all project data.",
+      onOk: () => {
+        setAcl((prev) => removeMetagroupFromAcl(prev, name));
+      },
+    });
   };
 
   const clearMetagroupSelection = () => {
@@ -236,26 +367,26 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
     }
     const groupName = group.name;
     if (metagroupPermission === "reader") {
-      dialog.confirm({
+      setProjectConfirm({
         title: "Add Project Reader Metagroup",
         message:
           "Add metagroup '" +
           groupName +
           "' to the project?  Members of this group will have read access to all project data.",
-        ok: () => {
+        onOk: () => {
           setAcl((prev) => addMetagroupToAcl(prev, groupName, "reader"));
           clearMetagroupSelection();
         },
       });
     }
     if (metagroupPermission === "writer") {
-      dialog.confirm({
+      setProjectConfirm({
         title: "Add Project Writer Metagroup",
         message:
           "Add metagroup '" +
           groupName +
           "' to the project?  Members of this group will have read and write access to all project data.",
-        ok: () => {
+        onOk: () => {
           setAcl((prev) => addMetagroupToAcl(prev, groupName, "writer"));
           clearMetagroupSelection();
         },
@@ -467,7 +598,7 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
                 kind="group"
                 rows={aclMetagroupRows(acl)}
                 removable
-                onRemove={(name) => setAcl((prev) => removeMetagroupFromAcl(prev, name))}
+                onRemove={removeProjectMetagroup}
               />
             </div>
 
@@ -577,6 +708,9 @@ const EditProject: React.FC<EditProjectProps> = ({ project }) => {
           Save Changes
         </button>
       </div>
+      {projectConfirm ? (
+        <ProjectConfirmDialog confirm={projectConfirm} onCancel={cancelProjectConfirm} />
+      ) : null}
     </>
   );
 };

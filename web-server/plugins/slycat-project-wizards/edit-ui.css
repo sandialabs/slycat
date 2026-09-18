@@ -151,3 +151,26 @@
 .edit-project-metagroups-table tbody tr.selected td {
   color: white;
 }
+
+/* Small nested confirm so it does not match the Edit Project modal. */
+.edit-project-confirm-overlay.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1065;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.edit-project-confirm-overlay .modal-dialog {
+  margin: 1rem;
+}
+
+.edit-project-confirm-overlay .modal-title {
+  font-size: 1.25rem;
+}
+
+.edit-project-confirm-overlay .modal-content {
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
+}

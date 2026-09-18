@@ -36,7 +36,7 @@ type ProjectAclTableProps = {
   kind: AclRowKind;
   rows: AclTableRow[];
   removable?: boolean;
-  onRemove?: (name: string) => void;
+  onRemove?: (name: string, role: AclRole) => void;
 };
 
 const IconLabel: React.FC<{ type: IconName; title: string; label: string }> = ({
@@ -100,7 +100,7 @@ const ProjectAclTable: React.FC<ProjectAclTableProps> = ({
                       type="button"
                       className="btn btn-sm btn-outline-danger"
                       title={`Remove ${row.name} as ${REMOVE_AS[row.role]}`}
-                      onClick={() => onRemove?.(row.name)}
+                      onClick={() => onRemove?.(row.name, row.role)}
                     >
                       <Icon type="trash-can" title={`Remove ${row.name}`} />
                       <span className="visually-hidden">Remove {row.name}</span>
