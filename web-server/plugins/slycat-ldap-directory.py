@@ -678,18 +678,19 @@ def groups(search_string):
             member_uids = decode_attr_list(attrs, "memberUid")
 
             group_name = cn or dn
-
-            matches.append(
-                {
-                    "name": group_name,
-                    "dn": dn,
-                    "displayName": group_name,
-                    "owner": uid_from_dn(owner_dn),
-                    "owner_dn": owner_dn,
-                    "member_count": len(member_uids),
-                    "memberUid": member_uids,
-                }
-            )
+            # filter on groups with owners
+            if len(owner_dn) > 0:
+                matches.append(
+                    {
+                        "name": group_name,
+                        "dn": dn,
+                        "displayName": group_name,
+                        "owner": uid_from_dn(owner_dn),
+                        "owner_dn": owner_dn,
+                        "member_count": len(member_uids),
+                        "memberUid": member_uids,
+                    }
+                )
 
         return matches
 
