@@ -53,7 +53,9 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
 
   // Fetch means & confidence intervals when switching to the means-ci view.
   useEffect(() => {
-    if (activeView !== "means-ci") {
+
+    // only means-ci and pearsons are implemented
+    if (activeView !== "means-ci" && activeView !== "pearsons") {
       return;
     }
 
@@ -61,58 +63,117 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     dispatch(setStatus("loading"));
     dispatch(setError(null));
 
-    client.post_sensitive_model_command({
-      mid,
-      type: "parameter-image",
-      command: "compute-means-ci",
-      parameters: {},
-      success: (result: string | object) => {
-        if (cancelled) {
-          return;
-        }
-        try {
-          const parsed = typeof result === "string" ? JSON.parse(result) : result;
-
-          if (parsed.error) {
-            dispatch(setError(String(parsed.error)));
+    // means-ci
+    if (activeView == "means-ci") {
+      client.post_sensitive_model_command({
+        mid,
+        type: "parameter-image",
+        command: "compute-means-ci",
+        parameters: {},
+        success: (result: string | object) => {
+          if (cancelled) {
             return;
           }
+          try {
+            const parsed = typeof result === "string" ? JSON.parse(result) : result;
 
-          const mean_ci_table: (string | number)[][] = parsed.mean_ci_table;
-          if (!Array.isArray(mean_ci_table) || mean_ci_table.length < 2) {
-            dispatch(setError("Means/CI response did not include a valid table."));
-            return;
-          }
-
-          // Reshape server table into Heatmap cells { x, y, value }
-          const header = mean_ci_table[0].slice(1).map(String);
-          const cells: HeatmapCell[] = [];
-          for (let i = 1; i < mean_ci_table.length; i++) {
-            const row = mean_ci_table[i];
-            const rowLabel = String(row[0]);
-            for (let j = 0; j < header.length; j++) {
-              const raw = row[j + 1];
-              const value = typeof raw === "number" ? raw : Number(raw);
-              cells.push({
-                x: header[j],
-                y: rowLabel,
-                value: Number.isFinite(value) ? value : null,
-              });
+            if (parsed.error) {
+              dispatch(setError(String(parsed.error)));
+              return;
             }
-          }
 
-          dispatch(setHeatmapResult({ heatmapCells: cells }));
-        } catch (e) {
-          dispatch(setError(e instanceof Error ? e.message : "Failed to parse means/CI response."));
-        }
-      },
-      error: (_request: unknown, _status: string, reason_phrase: string) => {
-        if (cancelled) {
-          return;
-        }
-        dispatch(setError(reason_phrase || "Failed to compute means and confidence intervals."));
-      },
-    });
+            const mean_ci_table: (string | number)[][] = parsed.mean_ci_table;
+            if (!Array.isArray(mean_ci_table) || mean_ci_table.length < 2) {
+              dispatch(setError("Means/CI response did not include a valid table."));
+              return;
+            }
+
+            // Reshape server table into Heatmap cells { x, y, value }
+            const header = mean_ci_table[0].slice(1).map(String);
+            const cells: HeatmapCell[] = [];
+            for (let i = 1; i < mean_ci_table.length; i++) {
+              const row = mean_ci_table[i];
+              const rowLabel = String(row[0]);
+              for (let j = 0; j < header.length; j++) {
+                const raw = row[j + 1];
+                const value = typeof raw === "number" ? raw : Number(raw);
+                cells.push({
+                  x: header[j],
+                  y: rowLabel,
+                  value: Number.isFinite(value) ? value : null,
+                });
+              }
+            }
+
+            dispatch(setHeatmapResult({ heatmapCells: cells }));
+          } catch (e) {
+            dispatch(setError(e instanceof Error ? e.message : "Failed to parse means/CI response."));
+          }
+        },
+        error: (_request: unknown, _status: string, reason_phrase: string) => {
+          if (cancelled) {
+            return;
+          }
+          dispatch(setError(reason_phrase || "Failed to compute means and confidence intervals."));
+        },
+      });
+    }
+
+    // pearsons
+    if (activeView == "pearsons") {
+      client.post_sensitive_model_command({
+        mid,
+        type: "parameter-image",
+        command: "compute-pearsons",
+        parameters: {},
+        success: (result: string | object) => {
+          if (cancelled) {
+            return;
+          }
+          try {
+            const parsed = typeof result === "string" ? JSON.parse(result) : result;
+            
+            if (parsed.error) {
+              dispatch(setError(String(parsed.error)));
+              return;
+            }
+
+            const pearsons_table: (string | number)[][] = parsed.pearsons_table;
+            if (!Array.isArray(pearsons_table) || pearsons_table.length < 2) {
+              dispatch(setError("Pearson response did not include a valid table."));
+              return;
+            }
+
+            // Reshape server table into Heatmap cells { x, y, value }
+            const header = pearsons_table[0].slice(1).map(String);
+            const cells: HeatmapCell[] = [];
+            for (let i = 1; i < pearsons_table.length; i++) {
+              const row = pearsons_table[i];
+              const rowLabel = String(row[0]);
+              for (let j = 0; j < header.length; j++) {
+                const raw = row[j + 1];
+                const value = typeof raw === "number" ? raw : Number(raw);
+                cells.push({
+                  x: header[j],
+                  y: rowLabel,
+                  value: Number.isFinite(value) ? value : null,
+                });
+              }
+            }
+
+            dispatch(setHeatmapResult({ heatmapCells: cells }));
+          } catch (e) {
+            dispatch(setError(e instanceof Error ? e.message : "Failed to parse Pearson response."));
+          }
+        },
+        error: (_request: unknown, _status: string, reason_phrase: string) => {
+          if (cancelled) {
+            return;
+          }
+          dispatch(setError(reason_phrase || "Failed to compute Pearson's correlation."));
+        },
+      });
+    }
 
     return () => {
       cancelled = true;
@@ -154,17 +215,6 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     return panelShell(<div className="text-danger">{error ?? "Request failed."}</div>);
   }
 
-  // Pearson's stub: no fetch yet, so no cells — show guidance until implemented
-  if (activeView === "pearsons" && (!heatmapCells || heatmapCells.length === 0)) {
-    return panelShell(
-      <p className="text-muted mb-0">
-        Not implemented yet. When ready: fetch the correlation matrix here, reshape into{" "}
-        <code>{"{ x, y, value }"}</code> cells, dispatch <code>setHeatmapResult</code>, and this
-        panel will render <code>Heatmap</code> the same way as Means/CI.
-      </p>,
-    );
-  }
-
   if (!heatmapCells || heatmapCells.length === 0) {
     return panelShell(<div className="text-muted">No data yet.</div>);
   }
@@ -173,8 +223,33 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   const heatmapHeight = Math.max(paneHeight - 72, 120);
 
   // means-ci panel
+
+  // define callback to show histogram for means-ci
+  // e is event info, d is heatmap data
+  function show_hist(e, d) {
+    console.log("show histogram");
+    console.log(d);
+    console.log(d.y);
+  }
+
+  if (activeView === "means-ci")
   return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} 
-    use_colors={false} use_numbers={true} show_plot={()=>{console.log('show plot')}}/>);
+    use_colors={false} use_numbers={true} show_plot={show_hist}/>);
+
+  // define callback to show histogram for pearsons
+  // e is event info, d is heatmap data
+  function show_plot(e, d) {
+    console.log("show scatter plot");
+    console.log(d);
+    console.log(d.x);
+    console.log(d.y);
+  }
+
+  // Pearson's panel
+  if (activeView === "pearsons")
+    return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} 
+      use_colors={true} use_numbers={true} show_plot={show_plot}/>);
+
 };
 
 export default PSUQSAPanel;

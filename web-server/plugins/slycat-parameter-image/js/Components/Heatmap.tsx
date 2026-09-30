@@ -8,8 +8,7 @@ import * as d3 from "d3v7";
 const MARGIN = { top: 10, right: 10, bottom: 30, left: 24 };
 
 const num_formatter = new Intl.NumberFormat('en-US', {
-  maximumSignificantDigits: 4,
-  maximumFractionDigits: 2,
+  maximumSignificantDigits: 3,
 });
 
 type HeatmapProps = {
@@ -18,7 +17,7 @@ type HeatmapProps = {
   data: { x: string; y: string; value: number | null }[];
   use_colors: boolean;
   use_numbers: boolean;
-  show_plot: () => void;
+  show_plot: (e, d) => void;
 };
 
 export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plot }: HeatmapProps) => {
@@ -84,7 +83,7 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
         fill={use_colors ? colorScale(d.value) : "white"}
         rx={5}
         stroke={"black"}
-        onClick={show_plot}
+        onClick={(e) => show_plot(e, d)}
         style={{cursor: 'pointer'}}>
           <title>Click to show plot</title>
       </rect>
@@ -104,7 +103,7 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
         y={yScale(d.y) + yScale.bandwidth() / 2}
         textAnchor =  {"middle"}
         dominantBaseline={"middle"}
-        onClick={show_plot}
+        onClick={(e) => show_plot(e, d)}
         style={{cursor: "pointer", fill: getTextColor(colorScale(d.value), use_colors)}}>
           {num_formatter.format(d.value)}
           <title>Click to show plot</title>

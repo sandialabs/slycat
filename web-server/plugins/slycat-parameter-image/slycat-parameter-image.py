@@ -166,33 +166,15 @@ def register_slycat_plugin(context):
     # compute means and confidence intervals from data table
     def compute_means_ci(database, model, verb, type, command, **kwargs):
 
-        # get output columns
-        output_columns = slycat.web.server.get_model_parameter(
-            database, model, "output-columns")
-        cherrypy.log.error(str(output_columns))
+        # get output columns/names
+        response, output_columns, output_column_names = \
+            _get_model_columns(database, model, 'output', 'means/CI')
         
-        # check if output columns are empty
-        if len(output_columns) == 0:
-            response = {"error": "No output columns.  Cannot compute means/CI table without output columns.  " +
-                        "Use Edit -> Select Columns to select output columns."}
+        # check for errors
+        if response is not None:
             return json.dumps(response)
 
-        # get the table meta data (for output column names)
-        metadata = slycat.web.server.get_model_arrayset_metadata(
-            database, model, "data-table", "0")["arrays"][0]
-        output_column_metadata = [metadata["attributes"][i] for i in output_columns]
-
-        # check that output columns are floats
-        for column in output_column_metadata:
-            if column['type'] != b'float64':
-                response = {"error": "Found non-numeric output column " + column['name'] +
-                            ".  Cannot compute means/CI table using non-numeric data."}
-                return json.dumps(response)
-
-        # get output column names
-        output_column_names = [column['name'] for column in output_column_metadata]
-
-        # get the output columns
+        # get the output columns data
         data_table = []
         for column in output_columns:
             data_table.append(slycat.web.server.get_model_arrayset_data(
@@ -202,7 +184,7 @@ def register_slycat_plugin(context):
         mean_ci_table = [['Output', 'Mean', 'Lower CI', 'Upper CI']]
         for i in range(len(output_columns)):
             mean, lower_CI, upper_CI = _compute_CI (data_table[i])
-            mean_ci_table.append([output_column_names[i].decode(), 
+            mean_ci_table.append([output_column_names[i], 
                                   mean, lower_CI, upper_CI])
         
         # return table
@@ -232,7 +214,109 @@ def register_slycat_plugin(context):
             ci_upper = mean
 
         return mean, ci_lower, ci_upper
+
+    # compute pearson's correlation from data table
+    def compute_pearsons(database, model, verb, type, command, **kwargs):
+
+        # get input columns/names
+        response, input_columns, input_column_names = \
+            _get_model_columns(database, model, 'input', "Pearson's")
+        if response is not None:
+            return json.dumps(response)
         
+        # get output columns/names
+        response, output_columns, output_column_names = \
+            _get_model_columns(database, model, 'output', "Pearson's")
+        if response is not None:
+            return json.dumps(response)
+        
+        # get the input column data
+        input_data_table = []
+        for column in input_columns:
+            input_data_table.append(slycat.web.server.get_model_arrayset_data(
+                database, model, "data-table", "0/%s/..." % column)[0])
+            
+        # get the output column data
+        output_data_table = []
+        for column in output_columns:
+            output_data_table.append(slycat.web.server.get_model_arrayset_data(
+                database, model, "data-table", "0/%s/..." % column)[0])
+
+        # compute pairwise Pearson's correlation matrix
+        pearsons_mat = pairwise_pearson_corr(numpy.array(input_data_table).T, \
+            numpy.array(output_data_table).T)
+        
+        # put correlations into table
+        pearsons_table = [['Output'] + input_column_names]
+        for i in range(len(output_columns)):
+            pearsons_table.append([output_column_names[i]] + list(pearsons_mat[:,i]))
+
+        # return table
+        return json.dumps({"pearsons_table": pearsons_table})
+
+    # helper function to compute pairwise correlation
+    # from searching "pairwise pearson correlation between two matrices" in Google
+    # modified to ignore NaNs
+    def pairwise_pearson_corr(A, B):
+        # A: shape (n_samples, n_features_A)
+        # B: shape (n_samples, n_features_B)
+        
+        # remove rows with nans
+        nan_rows = numpy.isnan(numpy.hstack((A,B))).any(axis=1)
+        cleaned_A = A[~nan_rows]
+        cleaned_B = B[~nan_rows]
+
+        # Subtract mean of each column
+        A_centered = cleaned_A - cleaned_A.mean(axis=0)
+        B_centered = cleaned_B - cleaned_B.mean(axis=0)
+        
+        # Divide by standard deviation of each column
+        A_std = A_centered.std(axis=0, ddof=1)
+        B_std = B_centered.std(axis=0, ddof=1)
+        
+        A_norm = A_centered / A_std
+        B_norm = B_centered / B_std
+        
+        # Compute correlation matrix via dot product
+        # Result shape: (n_features_A, n_features_B)
+        return numpy.dot(A_norm.T, B_norm) / (A.shape[0] - 1)
+
+    # helper function to get column data/names
+    # column_type is "input" or "output"
+    def _get_model_columns (database, model, column_type, algorithm_name):
+
+        # assume null response
+        response = None
+        model_columns = None
+        model_column_names = None
+
+        # get model columns
+        model_columns = slycat.web.server.get_model_parameter(
+            database, model, column_type + "-columns")
+
+        # check if model columns are empty
+        if len(model_columns) == 0:
+            response = {"error": "No " + column_type + " columns.  Cannot compute " +
+                        algorithm_name + " table without " + column_type + " columns.  " +
+                        "Use Edit -> Select Columns to select " + column_type + " columns."}
+
+        # get the table meta data (for model column names)
+        metadata = slycat.web.server.get_model_arrayset_metadata(
+            database, model, "data-table", "0")["arrays"][0]
+        model_column_metadata = [metadata["attributes"][i] for i in model_columns]
+
+        # check that output columns are floats
+        for column in model_column_metadata:
+            if column['type'] != b'float64':
+                response = {"error": "Found non-numeric " + column_type + ' column "' + 
+                            column['name'].decode() + '".  Cannot compute ' + algorithm_name + 
+                            " table using non-numeric data."}
+
+        # get output column names
+        model_column_names = [column['name'].decode() for column in model_column_metadata]
+
+        return response, model_columns, model_column_names
+
     def finish(database, model):
         """
         Called to finish the model.
@@ -337,6 +421,9 @@ def register_slycat_plugin(context):
     # Register commands for UQ/SA analysis
     context.register_model_command(
         "POST", "parameter-image", "compute-means-ci", compute_means_ci
+    )
+    context.register_model_command(
+        "POST", "parameter-image", "compute-pearsons", compute_pearsons
     )
 
     # Register custom wizards for creating PI models.
