@@ -23,23 +23,54 @@ type HeatmapProps = {
   show_plot: (e: React.MouseEvent<SVGElement>, cell: HeatmapCell) => void;
 };
 
+// Band identity is the column index when the cell has one, so two columns
+// with the same alias or raw name stay in separate bands. Statistic headers
+// have no index and use their label. The label is tick text only.
+function bandKey(label: string, index: number | undefined): string {
+  return index != null ? `index:${index}` : label;
+}
+
+type AxisGroup = { key: string; label: string };
+
+function axisGroups(
+  data: HeatmapCell[],
+  labelOf: (cell: HeatmapCell) => string,
+  indexOf: (cell: HeatmapCell) => number | undefined,
+): AxisGroup[] {
+  const groups: AxisGroup[] = [];
+  const seen = new Set<string>();
+  for (const cell of data) {
+    const key = bandKey(labelOf(cell), indexOf(cell));
+    if (!seen.has(key)) {
+      seen.add(key);
+      groups.push({ key, label: labelOf(cell) });
+    }
+  }
+  return groups;
+}
+
 export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plot }: HeatmapProps) => {
 
   // bounds = area inside the axis
   const boundsWidth = width - MARGIN.right - MARGIN.left;
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
 
-  // groups
-  const allYGroups = useMemo(() => [...new Set(data.map((d) => d.y))], [data]);
-  const allXGroups = useMemo(() => [...new Set(data.map((d) => d.x))], [data]);
+  const allXGroups = useMemo(
+    () => axisGroups(data, (cell) => cell.x, (cell) => cell.xIndex),
+    [data],
+  );
+  const allYGroups = useMemo(
+    () => axisGroups(data, (cell) => cell.y, (cell) => cell.yIndex),
+    [data],
+  );
 
   // x and y scales
   const xScale = useMemo(() => {
-    return d3.scaleBand().range([0, boundsWidth]).domain(allXGroups).padding(0.01);
+    return d3.scaleBand().range([0, boundsWidth]).domain(allXGroups.map((group) => group.key)).padding(0.01);
   }, [allXGroups, boundsWidth]);
 
   const yScale = useMemo(() => {
-    return d3.scaleBand().range([boundsHeight, 0]).domain(allYGroups).padding(0.01);
+    return d3.scaleBand().range([boundsHeight, 0]).domain(allYGroups.map((group) => group.key)).padding(0.01);
   }, [allYGroups, boundsHeight]);
 
   const [min, max] = useMemo(
@@ -56,7 +87,7 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
   const colorScale = d3.scaleSequential().interpolator(d3.interpolatePuBu).domain([min, max]);
 
   // Text color
-  function getTextColor(bgColorString, use_colors) {
+  function getTextColor(bgColorString: string, use_colors: boolean) {
 
     // only change text if we're using colors
     if (!use_colors) 
@@ -74,12 +105,14 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
     if (d.value === null) {
       return null;
     }
+    const x = xScale(bandKey(d.x, d.xIndex)) ?? 0;
+    const y = yScale(bandKey(d.y, d.yIndex)) ?? 0;
     return (
       <rect
         key={i}
-        id={i}
-        x={xScale(d.x)}
-        y={yScale(d.y)}
+        id={String(i)}
+        x={x}
+        y={y}
         width={xScale.bandwidth()}
         height={yScale.bandwidth()}
         opacity={1}
@@ -98,12 +131,14 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
     if (d.value === null) {
       return null;
     }
+    const x = (xScale(bandKey(d.x, d.xIndex)) ?? 0) + xScale.bandwidth() / 2;
+    const y = (yScale(bandKey(d.y, d.yIndex)) ?? 0) + yScale.bandwidth() / 2;
     return (
       <text
         key={i}
-        id={i}
-        x={xScale(d.x) + xScale.bandwidth() / 2}
-        y={yScale(d.y) + yScale.bandwidth() / 2}
+        id={String(i)}
+        x={x}
+        y={y}
         textAnchor =  {"middle"}
         dominantBaseline={"middle"}
         onClick={(e) => show_plot(e, d)}
@@ -114,28 +149,28 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
     );
   });
 
-  const xLabels = allXGroups.map((name, i) => {
-    const xPos = xScale(name) ?? 0;
+  const xLabels = allXGroups.map((group) => {
+    const xPos = xScale(group.key) ?? 0;
     return (
       <text
-        key={i}
+        key={group.key}
         x={xPos + xScale.bandwidth() / 2}
         y={boundsHeight + 10}
         textAnchor="middle"
         dominantBaseline="middle"
         fontSize={10}
       >
-        {name}
+        {group.label}
       </text>
     );
   });
 
-  const yLabels = allYGroups.map((name, i) => {
+  const yLabels = allYGroups.map((group) => {
     const xPos = -8;
-    const yPos = (yScale(name) ?? 0) + yScale.bandwidth() / 2;
+    const yPos = (yScale(group.key) ?? 0) + yScale.bandwidth() / 2;
     return (
       <text
-        key={i}
+        key={group.key}
         x={xPos}
         y={yPos}
         textAnchor="middle"
@@ -143,7 +178,7 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
         fontSize={10}
         transform={`rotate(-90, ${xPos}, ${yPos})`}
       >
-        {name}
+        {group.label}
       </text>
     );
   });

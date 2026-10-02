@@ -11,9 +11,11 @@ export type HeatmapCell = {
   x: string;
   y: string;
   value: number | null;
-  // Pearson cells store the data-table column indexes for the scatterplot
-  // X and Y axes. Means-and-CI cells omit them: those x labels (Mean, Lower
-  // CI, Upper CI) are statistics, not columns.
+  // Column indexes from the server. They are the click identity and the key
+  // for alias lookup at render. Pearson cells set both. Means-and-CI cells
+  // set yIndex (the output column) and omit xIndex: Mean, Lower CI, and
+  // Upper CI are statistics, not columns. Stored x/y for real columns are
+  // empty until the panel fills them from variable labels.
   xIndex?: number;
   yIndex?: number;
 };

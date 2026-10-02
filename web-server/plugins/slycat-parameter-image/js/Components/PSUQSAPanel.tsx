@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
-import { useSelector, useDispatch, useStore } from "react-redux";
+import React, { useEffect, useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import client from "js/slycat-web-client";
 import { Heatmap } from "./Heatmap";
 import { setXIndex, setYIndex } from "../actions";
-import { RootState } from "../store";
+import { selectVariableLabels } from "../selectors";
 import {
   setStatus,
   setError,
@@ -28,50 +28,130 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
   pearsons: "Pearson's Correlation",
 };
 
+// Not columns. The server sends only the output index and the three numbers.
+const MEAN_CI_STATISTICS = ["Mean", "Lower CI", "Upper CI"] as const;
+
+type MeansCiRow = {
+  output_index: number;
+  mean: number | null;
+  lower: number | null;
+  upper: number | null;
+};
+
+type PearsonsPayload = {
+  input_indexes: number[];
+  output_indexes: number[];
+  values: (number | null)[][];
+};
+
+function finiteOrNull(raw: unknown): number | null {
+  // Number(null) is 0, which would draw a missing value as a real zero.
+  if (raw == null) {
+    return null;
+  }
+  const value = typeof raw === "number" ? raw : Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+function columnIndex(raw: unknown): number | null {
+  const index = typeof raw === "number" ? raw : Number(raw);
+  return Number.isInteger(index) && index >= 0 ? index : null;
+}
+
 /**
- * Turn the Pearson response table into heatmap cells.
+ * Turn a means-and-CI response into heatmap cells.
  *
- * `x` and `y` stay the text drawn on the heatmap. `xIndex` and `yIndex` are
- * the data-table column indexes those labels refer to, resolved here from raw
- * column names (not variable aliases). Clicks dispatch those indexes, so a
- * later change to the drawn label does not break axis switching. A label that
- * is not a column is an error: we do not render a heatmap whose clicks do nothing.
+ * The server sends output column indexes, not names. `x` is a statistic
+ * label. `y` stays empty until cellsWithVariableLabels fills the alias.
  */
-function pearsonsTableToCells(
-  table: (string | number)[][],
-  columnNames: string[],
-): { cells: HeatmapCell[] } | { error: string } {
-  const header = table[0].slice(1).map(String);
-  const xIndexes: number[] = [];
-  for (const label of header) {
-    const xIndex = columnNames.indexOf(label);
-    if (xIndex < 0) {
-      return { error: `Pearson column "${label}" is not a table column.` };
-    }
-    xIndexes.push(xIndex);
+function meansCiToCells(rows: MeansCiRow[]): { cells: HeatmapCell[] } | { error: string } {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { error: "Means/CI response did not include any rows." };
   }
 
   const cells: HeatmapCell[] = [];
-  for (let i = 1; i < table.length; i++) {
-    const row = table[i];
-    const yLabel = String(row[0]);
-    const yIndex = columnNames.indexOf(yLabel);
-    if (yIndex < 0) {
-      return { error: `Pearson row "${yLabel}" is not a table column.` };
+  for (const row of rows) {
+    const yIndex = columnIndex(row?.output_index);
+    if (yIndex == null) {
+      return { error: "Means/CI response included an invalid output index." };
     }
-    for (let j = 0; j < header.length; j++) {
-      const raw = row[j + 1];
-      const value = typeof raw === "number" ? raw : Number(raw);
+    const stats = [row.mean, row.lower, row.upper];
+    MEAN_CI_STATISTICS.forEach((label, statistic) => {
       cells.push({
-        x: header[j],
-        y: yLabel,
-        value: Number.isFinite(value) ? value : null,
-        xIndex: xIndexes[j],
+        x: label,
+        y: "",
+        value: finiteOrNull(stats[statistic]),
+        yIndex,
+      });
+    });
+  }
+  return { cells };
+}
+
+/**
+ * Turn a Pearson response into heatmap cells.
+ *
+ * The server sends data-table indexes and values[output][input]. Stored `x`
+ * and `y` stay empty; clicks dispatch the indexes, and the heatmap text is
+ * the variable label applied at render. An invalid index is an error so we
+ * do not draw a cell that cannot switch axes.
+ */
+function pearsonsToCells(payload: PearsonsPayload): { cells: HeatmapCell[] } | { error: string } {
+  const inputIndexes = payload?.input_indexes;
+  const outputIndexes = payload?.output_indexes;
+  const values = payload?.values;
+  if (
+    !Array.isArray(inputIndexes) ||
+    inputIndexes.length === 0 ||
+    !Array.isArray(outputIndexes) ||
+    outputIndexes.length === 0 ||
+    !Array.isArray(values) ||
+    values.length !== outputIndexes.length
+  ) {
+    return { error: "Pearson response did not include indexes and values." };
+  }
+
+  const cells: HeatmapCell[] = [];
+  for (let i = 0; i < outputIndexes.length; i++) {
+    const yIndex = columnIndex(outputIndexes[i]);
+    const row = values[i];
+    if (yIndex == null || !Array.isArray(row) || row.length !== inputIndexes.length) {
+      return { error: "Pearson response included an invalid row." };
+    }
+    for (let j = 0; j < inputIndexes.length; j++) {
+      const xIndex = columnIndex(inputIndexes[j]);
+      if (xIndex == null) {
+        return { error: "Pearson response included an invalid input index." };
+      }
+      cells.push({
+        x: "",
+        y: "",
+        value: finiteOrNull(row[j]),
+        xIndex,
         yIndex,
       });
     }
   }
   return { cells };
+}
+
+/**
+ * Replace axis text that refers to a table column with the current variable
+ * label (alias, or the raw name when there is no alias).
+ *
+ * This is display-only and runs at render, so an alias edit updates an open
+ * heatmap without refetching. A missing label becomes `Column ${index}`.
+ * The heatmap bands themselves are keyed by index, not by this text.
+ * Statistic headers have no index and stay as stored. Clicks still use
+ * xIndex and yIndex.
+ */
+function cellsWithVariableLabels(cells: HeatmapCell[], variableLabels: string[]): HeatmapCell[] {
+  const labelFor = (index: number) => variableLabels[index] || `Column ${index}`;
+  return cells.map((cell) => ({
+    ...cell,
+    x: cell.xIndex != null ? labelFor(cell.xIndex) : cell.x,
+    y: cell.yIndex != null ? labelFor(cell.yIndex) : cell.y,
+  }));
 }
 
 /**
@@ -84,6 +164,8 @@ function pearsonsTableToCells(
  * - Heatmap is presentational only — no fetching inside it.
  * - Pearson cells carry xIndex/yIndex. A click dispatches setXIndex/setYIndex;
  *   ui.js watchers update the scatterplot and related controls.
+ * - The server sends column indexes. Drawn axis text uses variable aliases
+ *   via selectVariableLabels. Clicks dispatch those indexes.
  * - Close button calls layout.close("east"); Redux clears via onclose_end in ui.js.
  *
  * Next steps:
@@ -92,13 +174,16 @@ function pearsonsTableToCells(
  */
 const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   const dispatch = useDispatch();
-  // Read at response time inside the fetch effect. Not a dependency: table
-  // metadata is already loaded, and watching it would refetch on unrelated updates.
-  const store = useStore<RootState>();
   const activeView = useSelector(selectUqsaActiveView);
   const status = useSelector(selectUqsaStatus);
   const error = useSelector(selectUqsaError);
   const heatmapCells = useSelector(selectUqsaHeatmapCells);
+  // Same labels as the dropdowns, table, and scatterplot: alias, else raw name.
+  const variableLabels = useSelector(selectVariableLabels);
+  const labeledCells = useMemo(
+    () => (heatmapCells ? cellsWithVariableLabels(heatmapCells, variableLabels) : heatmapCells),
+    [heatmapCells, variableLabels],
+  );
   const paneWidth = useSelector(selectUqsaPaneWidth);
   const paneHeight = useSelector(selectUqsaPaneHeight);
 
@@ -133,30 +218,13 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
               return;
             }
 
-            const mean_ci_table: (string | number)[][] = parsed.mean_ci_table;
-            if (!Array.isArray(mean_ci_table) || mean_ci_table.length < 2) {
-              dispatch(setError("Means/CI response did not include a valid table."));
+            const shaped = meansCiToCells(parsed.rows);
+            if ("error" in shaped) {
+              dispatch(setError(shaped.error));
               return;
             }
 
-            // Reshape server table into Heatmap cells { x, y, value }
-            const header = mean_ci_table[0].slice(1).map(String);
-            const cells: HeatmapCell[] = [];
-            for (let i = 1; i < mean_ci_table.length; i++) {
-              const row = mean_ci_table[i];
-              const rowLabel = String(row[0]);
-              for (let j = 0; j < header.length; j++) {
-                const raw = row[j + 1];
-                const value = typeof raw === "number" ? raw : Number(raw);
-                cells.push({
-                  x: header[j],
-                  y: rowLabel,
-                  value: Number.isFinite(value) ? value : null,
-                });
-              }
-            }
-
-            dispatch(setHeatmapResult({ heatmapCells: cells }));
+            dispatch(setHeatmapResult({ heatmapCells: shaped.cells }));
           } catch (e) {
             dispatch(setError(e instanceof Error ? e.message : "Failed to parse means/CI response."));
           }
@@ -189,16 +257,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
               return;
             }
 
-            const pearsons_table: (string | number)[][] = parsed.pearsons_table;
-            if (!Array.isArray(pearsons_table) || pearsons_table.length < 2) {
-              dispatch(setError("Pearson response did not include a valid table."));
-              return;
-            }
-
-            // Column names are read when the response arrives so this effect
-            // does not refetch when other state changes.
-            const columnNames = store.getState().derived.table_metadata["column-names"];
-            const shaped = pearsonsTableToCells(pearsons_table, columnNames);
+            const shaped = pearsonsToCells(parsed);
             if ("error" in shaped) {
               dispatch(setError(shaped.error));
               return;
@@ -221,7 +280,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     return () => {
       cancelled = true;
     };
-  }, [activeView, mid, dispatch, store]);
+  }, [activeView, mid, dispatch]);
 
   const title = activeView ? VIEW_TITLES[activeView] : null;
 
@@ -258,7 +317,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     return panelShell(<div className="text-danger">{error ?? "Request failed."}</div>);
   }
 
-  if (!heatmapCells || heatmapCells.length === 0) {
+  if (!heatmapCells || heatmapCells.length === 0 || !labeledCells) {
     return panelShell(<div className="text-muted">No data yet.</div>);
   }
 
@@ -276,15 +335,16 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   }
 
   if (activeView === "means-ci")
-  return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} 
+  return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={labeledCells} 
     use_colors={false} use_numbers={true} show_plot={show_hist}/>);
 
   // A click only switches axes. ui.js watches x_index and y_index and updates
   // the scatterplot, X/Y dropdowns, table icons, bookmarks, and closes the
-  // histogram when Y changes. Indexes were stored when the Pearson table was
-  // shaped, so this handler does not look up column names.
+  // histogram when Y changes. The indexes came from the server, so this
+  // handler does not look up column names.
   function show_plot(_e: React.MouseEvent<SVGElement>, cell: HeatmapCell) {
-    // Means-and-CI cells have no indexes. Pearson cells always do.
+    // Means-and-CI cells have a row index but no x index, so this does not run for them.
+    // Pearson cells always have both.
     if (cell.xIndex == null || cell.yIndex == null) {
       return;
     }
@@ -294,7 +354,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
 
   // Pearson's panel
   if (activeView === "pearsons")
-    return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} 
+    return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={labeledCells} 
       use_colors={true} use_numbers={true} show_plot={show_plot}/>);
 
 };

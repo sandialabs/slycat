@@ -166,8 +166,7 @@ def register_slycat_plugin(context):
     # compute means and confidence intervals from data table
     def compute_means_ci(database, model, verb, type, command, **kwargs):
 
-        # get output columns/names
-        response, output_columns, output_column_names = \
+        response, output_columns = \
             _get_model_columns(database, model, 'output', 'means/CI')
         
         # check for errors
@@ -180,15 +179,20 @@ def register_slycat_plugin(context):
             data_table.append(slycat.web.server.get_model_arrayset_data(
                 database, model, "data-table", "0/%s/..." % column)[0])
 
-        # compute means-ci table
-        mean_ci_table = [['Output', 'Mean', 'Lower CI', 'Upper CI']]
+        # Identity is the data-table attribute index. Statistic names
+        # (Mean, Lower CI, Upper CI) are not columns, so the client supplies them.
+        # Attribute names stay in error strings only.
+        rows = []
         for i in range(len(output_columns)):
             mean, lower_CI, upper_CI = _compute_CI (data_table[i])
-            mean_ci_table.append([output_column_names[i], 
-                                  mean, lower_CI, upper_CI])
-        
-        # return table
-        return json.dumps({"mean_ci_table": mean_ci_table})
+            rows.append({
+                "output_index": int(output_columns[i]),
+                "mean": mean,
+                "lower": lower_CI,
+                "upper": upper_CI,
+            })
+
+        return json.dumps({"rows": rows})
 
     # helper function to compute confidence intervals for a vector of data
     def _compute_CI (data, confidence=0.95):
@@ -218,14 +222,12 @@ def register_slycat_plugin(context):
     # compute pearson's correlation from data table
     def compute_pearsons(database, model, verb, type, command, **kwargs):
 
-        # get input columns/names
-        response, input_columns, input_column_names = \
+        response, input_columns = \
             _get_model_columns(database, model, 'input', "Pearson's")
         if response is not None:
             return json.dumps(response)
         
-        # get output columns/names
-        response, output_columns, output_column_names = \
+        response, output_columns = \
             _get_model_columns(database, model, 'output', "Pearson's")
         if response is not None:
             return json.dumps(response)
@@ -246,13 +248,17 @@ def register_slycat_plugin(context):
         pearsons_mat = pairwise_pearson_corr(numpy.array(input_data_table).T, \
             numpy.array(output_data_table).T)
         
-        # put correlations into table
-        pearsons_table = [['Output'] + input_column_names]
-        for i in range(len(output_columns)):
-            pearsons_table.append([output_column_names[i]] + list(pearsons_mat[:,i]))
+        # pairwise_pearson_corr returns (n_inputs, n_outputs). The old table
+        # used column i for output i, so values[output][input] is that column.
+        # Indexes are the column identity. Values are dumped as NumPy floats,
+        # the same way the old name-labeled table was.
+        values = [list(pearsons_mat[:, output_i]) for output_i in range(len(output_columns))]
 
-        # return table
-        return json.dumps({"pearsons_table": pearsons_table})
+        return json.dumps({
+            "input_indexes": [int(index) for index in input_columns],
+            "output_indexes": [int(index) for index in output_columns],
+            "values": values,
+        })
 
     # helper function to compute pairwise correlation
     # from searching "pairwise pearson correlation between two matrices" in Google
@@ -281,14 +287,13 @@ def register_slycat_plugin(context):
         # Result shape: (n_features_A, n_features_B)
         return numpy.dot(A_norm.T, B_norm) / (A.shape[0] - 1)
 
-    # helper function to get column data/names
-    # column_type is "input" or "output"
+    # column_type is "input" or "output".
+    # Returns an error response and the data-table attribute indexes.
+    # A non-float64 column puts that attribute's name in the error string.
     def _get_model_columns (database, model, column_type, algorithm_name):
 
         # assume null response
         response = None
-        model_columns = None
-        model_column_names = None
 
         # get model columns
         model_columns = slycat.web.server.get_model_parameter(
@@ -300,22 +305,19 @@ def register_slycat_plugin(context):
                         algorithm_name + " table without " + column_type + " columns.  " +
                         "Use Edit -> Select Columns to select " + column_type + " columns."}
 
-        # get the table meta data (for model column names)
+        # get the table meta data (for the non-numeric error message)
         metadata = slycat.web.server.get_model_arrayset_metadata(
             database, model, "data-table", "0")["arrays"][0]
         model_column_metadata = [metadata["attributes"][i] for i in model_columns]
 
-        # check that output columns are floats
+        # check that columns are floats
         for column in model_column_metadata:
             if column['type'] != b'float64':
                 response = {"error": "Found non-numeric " + column_type + ' column "' + 
                             column['name'].decode() + '".  Cannot compute ' + algorithm_name + 
                             " table using non-numeric data."}
 
-        # get output column names
-        model_column_names = [column['name'].decode() for column in model_column_metadata]
-
-        return response, model_columns, model_column_names
+        return response, model_columns
 
     def finish(database, model):
         """
