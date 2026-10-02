@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch, useStore } from "react-redux";
 import client from "js/slycat-web-client";
 import { Heatmap } from "./Heatmap";
+import { setXIndex, setYIndex } from "../actions";
+import { RootState } from "../store";
 import {
   setStatus,
   setError,
@@ -27,6 +29,52 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
 };
 
 /**
+ * Turn the Pearson response table into heatmap cells.
+ *
+ * `x` and `y` stay the text drawn on the heatmap. `xIndex` and `yIndex` are
+ * the data-table column indexes those labels refer to, resolved here from raw
+ * column names (not variable aliases). Clicks dispatch those indexes, so a
+ * later change to the drawn label does not break axis switching. A label that
+ * is not a column is an error: we do not render a heatmap whose clicks do nothing.
+ */
+function pearsonsTableToCells(
+  table: (string | number)[][],
+  columnNames: string[],
+): { cells: HeatmapCell[] } | { error: string } {
+  const header = table[0].slice(1).map(String);
+  const xIndexes: number[] = [];
+  for (const label of header) {
+    const xIndex = columnNames.indexOf(label);
+    if (xIndex < 0) {
+      return { error: `Pearson column "${label}" is not a table column.` };
+    }
+    xIndexes.push(xIndex);
+  }
+
+  const cells: HeatmapCell[] = [];
+  for (let i = 1; i < table.length; i++) {
+    const row = table[i];
+    const yLabel = String(row[0]);
+    const yIndex = columnNames.indexOf(yLabel);
+    if (yIndex < 0) {
+      return { error: `Pearson row "${yLabel}" is not a table column.` };
+    }
+    for (let j = 0; j < header.length; j++) {
+      const raw = row[j + 1];
+      const value = typeof raw === "number" ? raw : Number(raw);
+      cells.push({
+        x: header[j],
+        y: yLabel,
+        value: Number.isFinite(value) ? value : null,
+        xIndex: xIndexes[j],
+        yIndex,
+      });
+    }
+  }
+  return { cells };
+}
+
+/**
  * East-pane React island for Uncertainty Quantification / Sensitivity Analysis.
  *
  * Pattern for Shawn:
@@ -34,16 +82,19 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
  * - This panel owns client API calls (in useEffect) and puts results in Redux.
  * - Both means-ci and pearsons render the same Heatmap from heatmapCells.
  * - Heatmap is presentational only — no fetching inside it.
+ * - Pearson cells carry xIndex/yIndex. A click dispatches setXIndex/setYIndex;
+ *   ui.js watchers update the scatterplot and related controls.
  * - Close button calls layout.close("east"); Redux clears via onclose_end in ui.js.
  *
  * Next steps:
- * - Pearson's: add a useEffect branch like means-ci; reshape the correlation
- *   matrix into Heatmap cells { x, y, value } and dispatch setHeatmapResult.
  * - Heatmap polish: tooltips, color legend, responsive wrapper from
  *   https://www.react-graph-gallery.com/heatmap
  */
 const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   const dispatch = useDispatch();
+  // Read at response time inside the fetch effect. Not a dependency: table
+  // metadata is already loaded, and watching it would refetch on unrelated updates.
+  const store = useStore<RootState>();
   const activeView = useSelector(selectUqsaActiveView);
   const status = useSelector(selectUqsaStatus);
   const error = useSelector(selectUqsaError);
@@ -144,24 +195,16 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
               return;
             }
 
-            // Reshape server table into Heatmap cells { x, y, value }
-            const header = pearsons_table[0].slice(1).map(String);
-            const cells: HeatmapCell[] = [];
-            for (let i = 1; i < pearsons_table.length; i++) {
-              const row = pearsons_table[i];
-              const rowLabel = String(row[0]);
-              for (let j = 0; j < header.length; j++) {
-                const raw = row[j + 1];
-                const value = typeof raw === "number" ? raw : Number(raw);
-                cells.push({
-                  x: header[j],
-                  y: rowLabel,
-                  value: Number.isFinite(value) ? value : null,
-                });
-              }
+            // Column names are read when the response arrives so this effect
+            // does not refetch when other state changes.
+            const columnNames = store.getState().derived.table_metadata["column-names"];
+            const shaped = pearsonsTableToCells(pearsons_table, columnNames);
+            if ("error" in shaped) {
+              dispatch(setError(shaped.error));
+              return;
             }
 
-            dispatch(setHeatmapResult({ heatmapCells: cells }));
+            dispatch(setHeatmapResult({ heatmapCells: shaped.cells }));
           } catch (e) {
             dispatch(setError(e instanceof Error ? e.message : "Failed to parse Pearson response."));
           }
@@ -178,7 +221,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     return () => {
       cancelled = true;
     };
-  }, [activeView, mid, dispatch]);
+  }, [activeView, mid, dispatch, store]);
 
   const title = activeView ? VIEW_TITLES[activeView] : null;
 
@@ -226,23 +269,27 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
 
   // define callback to show histogram for means-ci
   // e is event info, d is heatmap data
-  function show_hist(e, d) {
+  function show_hist(_e: React.MouseEvent<SVGElement>, cell: HeatmapCell) {
     console.log("show histogram");
-    console.log(d);
-    console.log(d.y);
+    console.log(cell);
+    console.log(cell.y);
   }
 
   if (activeView === "means-ci")
   return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={heatmapCells} 
     use_colors={false} use_numbers={true} show_plot={show_hist}/>);
 
-  // define callback to show histogram for pearsons
-  // e is event info, d is heatmap data
-  function show_plot(e, d) {
-    console.log("show scatter plot");
-    console.log(d);
-    console.log(d.x);
-    console.log(d.y);
+  // A click only switches axes. ui.js watches x_index and y_index and updates
+  // the scatterplot, X/Y dropdowns, table icons, bookmarks, and closes the
+  // histogram when Y changes. Indexes were stored when the Pearson table was
+  // shaped, so this handler does not look up column names.
+  function show_plot(_e: React.MouseEvent<SVGElement>, cell: HeatmapCell) {
+    // Means-and-CI cells have no indexes. Pearson cells always do.
+    if (cell.xIndex == null || cell.yIndex == null) {
+      return;
+    }
+    dispatch(setXIndex(cell.xIndex));
+    dispatch(setYIndex(cell.yIndex));
   }
 
   // Pearson's panel

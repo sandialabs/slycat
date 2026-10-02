@@ -4,6 +4,7 @@
 
 import React, { useMemo } from "react";
 import * as d3 from "d3v7";
+import { HeatmapCell } from "../uqsaSlice";
 
 const MARGIN = { top: 10, right: 10, bottom: 30, left: 24 };
 
@@ -14,10 +15,12 @@ const num_formatter = new Intl.NumberFormat('en-US', {
 type HeatmapProps = {
   width: number;
   height: number;
-  data: { x: string; y: string; value: number | null }[];
+  data: HeatmapCell[];
   use_colors: boolean;
   use_numbers: boolean;
-  show_plot: (e, d) => void;
+  // Forwards the clicked cell. Pearson cells include xIndex/yIndex; this
+  // component does not look up columns or touch the scatterplot.
+  show_plot: (e: React.MouseEvent<SVGElement>, cell: HeatmapCell) => void;
 };
 
 export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plot }: HeatmapProps) => {

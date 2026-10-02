@@ -11,13 +11,18 @@ export type HeatmapCell = {
   x: string;
   y: string;
   value: number | null;
+  // Pearson cells store the data-table column indexes for the scatterplot
+  // X and Y axes. Means-and-CI cells omit them: those x labels (Mean, Lower
+  // CI, Upper CI) are statistics, not columns.
+  xIndex?: number;
+  yIndex?: number;
 };
 
 export interface UqsaState {
   activeView: UqsaActiveView;
   status: UqsaStatus;
   error: string | null;
-  // Heatmap cells { x, y, value } — used by both means-ci and pearsons
+  // Heatmap cells { x, y, value, xIndex?, yIndex? } — used by both means-ci and pearsons
   heatmapCells: HeatmapCell[] | null;
   paneWidth: number;
   paneHeight: number;
