@@ -18,9 +18,11 @@ type HeatmapProps = {
   data: HeatmapCell[];
   use_colors: boolean;
   use_numbers: boolean;
-  // Forwards the clicked cell. Pearson cells include xIndex/yIndex; this
-  // component does not look up columns or touch the scatterplot.
-  show_plot: (e: React.MouseEvent<SVGElement>, cell: HeatmapCell) => void;
+  // Forwards the clicked cell. This component does not look up columns or
+  // touch the scatterplot. The panel decides what the indexes mean.
+  onCellClick: (e: React.MouseEvent<SVGElement>, cell: HeatmapCell) => void;
+  // Tooltip on the rect and the number. The panel knows which view is open.
+  clickTitle: string;
 };
 
 // Band identity is the column index when the cell has one, so two columns
@@ -49,7 +51,15 @@ function axisGroups(
   return groups;
 }
 
-export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plot }: HeatmapProps) => {
+export const Heatmap = ({
+  width,
+  height,
+  data,
+  use_colors,
+  use_numbers,
+  onCellClick,
+  clickTitle,
+}: HeatmapProps) => {
 
   // bounds = area inside the axis
   const boundsWidth = width - MARGIN.right - MARGIN.left;
@@ -119,9 +129,9 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
         fill={use_colors ? colorScale(d.value) : "white"}
         rx={5}
         stroke={"black"}
-        onClick={(e) => show_plot(e, d)}
+        onClick={(e) => onCellClick(e, d)}
         style={{cursor: 'pointer'}}>
-          <title>Click to show plot</title>
+          <title>{clickTitle}</title>
       </rect>
     );
   });
@@ -141,10 +151,10 @@ export const Heatmap = ({ width, height, data, use_colors, use_numbers, show_plo
         y={y}
         textAnchor =  {"middle"}
         dominantBaseline={"middle"}
-        onClick={(e) => show_plot(e, d)}
+        onClick={(e) => onCellClick(e, d)}
         style={{cursor: "pointer", fill: getTextColor(colorScale(d.value), use_colors)}}>
           {num_formatter.format(d.value)}
-          <title>Click to show plot</title>
+          <title>{clickTitle}</title>
       </text>
     );
   });

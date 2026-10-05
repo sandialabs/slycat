@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import client from "js/slycat-web-client";
 import { Heatmap } from "./Heatmap";
 import { setXIndex, setYIndex } from "../actions";
+import { setShowHistogram } from "../scatterplotSlice";
 import { selectVariableLabels } from "../selectors";
 import {
   setStatus,
@@ -198,7 +199,9 @@ function cellsWithVariableLabels(cells: HeatmapCell[], variableLabels: string[])
  * - This panel owns client API calls (in useEffect) and puts results in Redux.
  * - Both means-ci and pearsons render the same Heatmap from heatmapCells.
  * - Heatmap is presentational only — no fetching inside it.
- * - Pearson cells carry xIndex/yIndex. A click dispatches setXIndex/setYIndex;
+ * - A click dispatches existing scatterplot actions. Pearson cells carry
+ *   xIndex and yIndex, so they set both axes. Means-and-CI cells carry only
+ *   yIndex (the output). That sets X and opens the frequency histogram.
  *   ui.js watchers update the scatterplot and related controls.
  * - The server sends column indexes. Drawn axis text uses variable aliases
  *   via selectVariableLabels. Clicks dispatch those indexes.
@@ -366,39 +369,43 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     return panelShell(null);
   }
 
-  // means-ci panel
-
-  // define callback to show histogram for means-ci
-  // e is event info, d is heatmap data
-  function show_hist(_e: React.MouseEvent<SVGElement>, cell: HeatmapCell) {
-    console.log("show histogram");
-    console.log(cell);
-    console.log(cell.y);
-  }
-
-  if (activeView === "means-ci")
-  return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={labeledCells} 
-    use_colors={false} use_numbers={true} show_plot={show_hist}/>);
-
-  // A click only switches axes. ui.js watches x_index and y_index and updates
-  // the scatterplot, X/Y dropdowns, table icons, bookmarks, and closes the
-  // histogram when Y changes. The indexes came from the server, so this
-  // handler does not look up column names.
-  function show_plot(_e: React.MouseEvent<SVGElement>, cell: HeatmapCell) {
-    // Means-and-CI cells have a row index but no x index, so this does not run for them.
-    // Pearson cells always have both.
-    if (cell.xIndex == null || cell.yIndex == null) {
+  // The cell's indexes pick the action. The label strings are display-only.
+  //
+  // Pearson cells have both indexes, so the click sets both scatterplot axes
+  // and closes the histogram. ui.js watches those indexes and updates the
+  // plot, dropdowns, table icons, and bookmarks. y_index_changed also closes
+  // the histogram, but only when Y actually changes, so this click closes it
+  // itself. A two-variable scatterplot should be showing, not the frequency of X.
+  //
+  // Means-and-CI cells have only yIndex. That index is the output column.
+  // Mean, Lower CI, and Upper CI are statistics, so every cell in the row is
+  // the same variable. The histogram is the frequency of X, and setting Y
+  // would close it, so this sets X to yIndex and then opens the histogram.
+  // Do not use cell.y; that string is the alias.
+  function onCellClick(_e: React.MouseEvent<SVGElement>, cell: HeatmapCell) {
+    if (cell.xIndex != null && cell.yIndex != null) {
+      dispatch(setXIndex(cell.xIndex));
+      dispatch(setYIndex(cell.yIndex));
+      dispatch(setShowHistogram(false));
       return;
     }
-    dispatch(setXIndex(cell.xIndex));
-    dispatch(setYIndex(cell.yIndex));
+    if (cell.yIndex != null) {
+      dispatch(setXIndex(cell.yIndex));
+      dispatch(setShowHistogram(true));
+    }
   }
 
-  // Pearson's panel
-  if (activeView === "pearsons")
-    return panelShell(<Heatmap width={heatmapWidth} height={heatmapHeight} data={labeledCells} 
-      use_colors={true} use_numbers={true} show_plot={show_plot}/>);
-
+  return panelShell(
+    <Heatmap
+      width={heatmapWidth}
+      height={heatmapHeight}
+      data={labeledCells}
+      use_colors={activeView === "pearsons"}
+      use_numbers={true}
+      onCellClick={onCellClick}
+      clickTitle={activeView === "means-ci" ? "Click to show histogram" : "Click to show plot"}
+    />,
+  );
 };
 
 export default PSUQSAPanel;
