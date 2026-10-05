@@ -72,6 +72,12 @@
             data-bind="checked: ps_type" />
           Slycat Server
         </label>
+        <div
+          class="alert alert-danger slycat-big-scrolling-alert"
+          role="alert"
+          data-bind="visible:error_messages().length > 0, text: error_messages()"
+          style="white-space: pre-line"
+        ></div>
       </div>
 
       <div class="form-check ms-5" data-bind="visible: ps_type() == 'server'">

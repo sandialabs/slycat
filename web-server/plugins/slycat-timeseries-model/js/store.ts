@@ -6,12 +6,15 @@ import {
   initialState as dataInitialState,
 } from "./services/dataSlice";
 import controlsReducer, { initialState as controlsInitialState } from "./services/controlsSlice";
+import legendReducer from "./services/legendSlice";
 import modelSlice from "./services/modelSlice";
 // @ts-ignore
 import client from "js/slycat-web-client";
 // @ts-ignore
 import bookmark_manager from "js/slycat-bookmark-manager";
 import _ from "lodash";
+// @ts-ignore
+import slycat_color_maps from "js/slycat-color-maps";
 
 // We need to hydrate the store with the bookmarked state before rendering the app.
 // First we need to get the model because the bookmark manager needs the model ID and project ID.
@@ -97,10 +100,18 @@ const store = client
         };
       }
 
-      const store = configureStore({
+      // Unknown / renamed bookmarked colormaps fall back to Night.
+      if (preloadedState?.controls) {
+        preloadedState.controls.colormap = slycat_color_maps.resolve_colormap_name(
+          preloadedState.controls.colormap,
+        );
+      }
+
+        const store = configureStore({
         reducer: {
           [apiSlice.reducerPath]: apiSlice.reducer,
           controls: controlsReducer,
+          legend: legendReducer,
           model: modelSlice,
           [DATA_SLICE_NAME]: dataSlice.reducer,
         },
@@ -120,8 +131,9 @@ const store = client
             // in the bookmark, just UI state.
             // Passing 'undefined' removes it from bookmark. Passing 'null' actually
             // sets it to null, so I think it's better to remove it entirely.
+            // Legend display state (uniqueValues, sizes) is ephemeral — rebuild on load.
             // eslint-disable-next-line no-undefined
-            { ...store.getState(), api: undefined },
+            { ...store.getState(), api: undefined, legend: undefined },
         });
       };
       store.subscribe(bookmarkReduxStateTree);

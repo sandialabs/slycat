@@ -41,6 +41,7 @@ module.uploadFile = function (fileObject, useProjectData = false) {
           fileObject.hostname,
           fileObject.paths,
           fileObject,
+          useProjectData
         );
       },
     });
@@ -279,7 +280,7 @@ function finishMultipleUpload(progress, uid, fileSlicesUploaded, fileObject) {
  * @param fileObject
  *  object that contains all info about the file we wish to upload to couch
  */
-function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject) {
+function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject, useProjectData) {
   if (fileObject.progress) {
     // Setting initial progress to 10%
     fileObject.progress(10);
@@ -296,7 +297,7 @@ function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject) {
     hostname: hostname,
     success: function () {
       // console.log("File uploaded.");
-      finishUpload(pid, mid, uid, null, 1, fileObject);
+      finishUpload(pid, mid, uid, null, 1, fileObject, useProjectData);
     },
     error: function () {
       if (fileObject.error) {

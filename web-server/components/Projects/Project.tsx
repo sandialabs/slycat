@@ -5,6 +5,8 @@ import * as dialog from "js/slycat-dialog";
 import styles from "./Projects.module.scss";
 import Icon from "components/Icons/Icon";
 import { formatDateToLocaleString } from "utils/formatting";
+import { useCanDeleteProject } from "store";
+import type { ProjectAcl } from "utils/project-role";
 
 interface ProjectProps {
   name: string;
@@ -12,10 +14,11 @@ interface ProjectProps {
   description: string;
   creator: string;
   created: string;
+  acl?: ProjectAcl;
 }
 
 /**
- * Delete a model, with a modal warning, given the name and model ID.
+ * Delete a project, with a modal warning, given the name and project ID.
  */
 const delete_project = (name: string, id: string, e: React.MouseEvent) => {
   // stop propagation of the click event
@@ -30,7 +33,11 @@ const delete_project = (name: string, id: string, e: React.MouseEvent) => {
     ],
     callback(button: any) {
       if (button?.label === "Delete") {
-        client.delete_project({ pid: id, success: () => location.reload() });
+        client.delete_project({
+          pid: id,
+          success: () => location.reload(),
+          error: dialog.ajax_error("Couldn't delete project."),
+        });
       }
     },
   });
@@ -39,8 +46,9 @@ const delete_project = (name: string, id: string, e: React.MouseEvent) => {
 /**
  * react component for project info on the project list
  */
-const Project: React.FC<ProjectProps> = ({ name, id, description, creator, created }) => {
+const Project: React.FC<ProjectProps> = ({ name, id, description, creator, created, acl }) => {
   const project_href = server_root + "projects/" + id;
+  const canDelete = useCanDeleteProject(acl);
 
   const navigateToProject = () => {
     window.location.assign(project_href);
@@ -63,17 +71,19 @@ const Project: React.FC<ProjectProps> = ({ name, id, description, creator, creat
         <small className="fst-italic text-body-secondary flex-fill">
           Created <span>{formatDateToLocaleString(created)}</span> by <span>{creator}</span>
         </small>
-        <span>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-danger"
-            name={id}
-            onClick={(e) => delete_project(name, id, e)}
-            title="Delete this project"
-          >
-            <Icon type="trash-can" />
-          </button>
-        </span>
+        {canDelete && (
+          <span>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              name={id}
+              onClick={(e) => delete_project(name, id, e)}
+              title="Delete this project"
+            >
+              <Icon type="trash-can" />
+            </button>
+          </span>
+        )}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 // @ts-ignore
 import initialize_timeseries_model from "../js/timeseries";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import LoadingPage from "../plugin-components/LoadingPage";
 import Controls from "./Controls";
 import Dendrogram from "./Dendrogram";
@@ -35,10 +35,22 @@ type Props = {
  */
 const TimeseriesComponents = (props: Props) => {
   const { model, clusters, tableMetadata, dispatch, get_state, subscribe } = props;
+  const initializedRef = useRef(false);
 
-  if (model.state == "closed" && clusters && tableMetadata) {
+  // Must not call initialize (and its Redux dispatches) during render — that
+  // triggers "Cannot update a component while rendering a different component".
+  useEffect(() => {
+    if (
+      initializedRef.current ||
+      model.state !== "closed" ||
+      !clusters ||
+      !tableMetadata
+    ) {
+      return;
+    }
+    initializedRef.current = true;
     initialize_timeseries_model(dispatch, get_state, subscribe, model, clusters, tableMetadata);
-  }
+  }, [model, clusters, tableMetadata, dispatch, get_state, subscribe]);
 
   // check if we are running or wating on the cluster
   if (model["state"] === "waiting" || model["state"] === "running") {
@@ -59,7 +71,7 @@ const TimeseriesComponents = (props: Props) => {
       <Controls modelId={model._id} aid="inputs" model_name={model.name} metadata={tableMetadata} />
       <Dendrogram modelId={model._id} />
       <Waveforms modelId={model._id} />
-      <Legend modelId={model._id} />
+      <Legend />
       <Table modelId={model._id} />
     </>
   );

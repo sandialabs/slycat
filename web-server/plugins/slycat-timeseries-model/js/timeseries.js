@@ -16,7 +16,6 @@ import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import * as chunker from "./chunker";
-import "./timeseries-legend";
 import "./timeseries-table";
 import "./timeseries-dendrogram";
 import "./timeseries-waveformplot";
@@ -37,6 +36,7 @@ import {
   setHiddenSimulations,
   setCurrentVIndex,
 } from "./services/dataSlice";
+import { setLegend, setLegendSize } from "./services/legendSlice";
 import { COLUMN_LABELS } from "utils/ui-labels";
 
 export default function initialize_timeseries_model(
@@ -127,11 +127,13 @@ export default function initialize_timeseries_model(
       size: 130,
       resizeWhileDragging: false,
       onresize_end: function () {
-        if ($("#legend").data("timeseries-legend")) {
-          $("#legend").legend("option", {
-            width: $("#legend-pane").width(),
-            height: $("#legend-pane").height(),
-          });
+        if (legend_ready) {
+          dispatch(
+            setLegendSize({
+              width: $("#legend-pane").width(),
+              height: $("#legend-pane").height(),
+            }),
+          );
         }
       },
     },
@@ -435,23 +437,18 @@ export default function initialize_timeseries_model(
     ) {
       legend_ready = true;
 
-      $("#legend-pane .load-status").css("display", "none");
-
-      $("#legend-pane").css(
-        "background",
-        slycat_color_maps.get_background(get_state().controls.colormap).toString(),
+      dispatch(
+        setLegend({
+          ready: true,
+          width: $("#legend-pane").width(),
+          height: $("#legend-pane").height(),
+          label: table_metadata["column-names"][selected_column[cluster_index]],
+          min: table_metadata["column-min"][selected_column[cluster_index]],
+          max: table_metadata["column-max"][selected_column[cluster_index]],
+          v_type: selected_column_type[cluster_index],
+          uniqueValues: uniqueValues,
+        }),
       );
-
-      $("#legend").legend({
-        width: $("#legend-pane").width(),
-        height: $("#legend-pane").height(),
-        gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
-        label: table_metadata["column-names"][selected_column[cluster_index]],
-        min: table_metadata["column-min"][selected_column[cluster_index]],
-        max: table_metadata["column-max"][selected_column[cluster_index]],
-        v_type: selected_column_type[cluster_index],
-        uniqueValues: uniqueValues,
-      });
     }
 
     // Setup the waveform plot ...
@@ -673,32 +670,23 @@ export default function initialize_timeseries_model(
   );
 
   function selected_colormap_changed(newColormap) {
-    // First we change background colors, gradients, and other things that don't require recalculating the colorscale
-    $("#legend-pane").css(
-      "background",
-      slycat_color_maps.get_background(get_state().controls.colormap).toString(),
-    );
-    $("#legend").legend("option", {
-      gradient: slycat_color_maps.get_gradient_data(get_state().controls.colormap),
-    });
+    // Legend pane background updates via React (Legend.tsx) from colormap.
+    // Refresh colorscale / widgets after uniqueValues are ready so discrete
+    // legends do not briefly show the wrong gradient.
 
     $("#dendrogram-sparkline-backdrop").css({
-      "background-color": slycat_color_maps
-        .get_background(get_state().controls.colormap)
-        .toString(),
+      "background-color": slycat_color_maps.get_background(newColormap).toString(),
     });
 
     $("#waveform-pane").css({
-      "background-color": slycat_color_maps
-        .get_background(get_state().controls.colormap)
-        .toString(),
+      "background-color": slycat_color_maps.get_background(newColormap).toString(),
     });
     $("#waveform-viewer rect.selectionMask").css({
-      fill: slycat_color_maps.get_background(get_state().controls.colormap),
-      "fill-opacity": slycat_color_maps.get_opacity(get_state().controls.colormap),
+      fill: slycat_color_maps.get_background(newColormap),
+      "fill-opacity": slycat_color_maps.get_opacity(newColormap),
     });
 
-    // Now we get the new colorscale and update components
+    // Refresh colorscale, widgets, and legend
     update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
     $.ajax({
@@ -863,13 +851,18 @@ export default function initialize_timeseries_model(
           $("#waveform-viewer").waveformplot("option", "color-options", parameters);
           $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
           $("#table").table("option", "colorscale", colorscale);
-          $("#legend").legend("option", {
-            min: table_metadata["column-min"][selected_column[cluster_index]],
-            max: table_metadata["column-max"][selected_column[cluster_index]],
-            label: table_metadata["column-names"][selected_column[cluster_index]],
-            v_type: selected_column_type[cluster_index],
-            uniqueValues: uniqueValues,
-          });
+          if (legend_ready) {
+            dispatch(
+              setLegend({
+                ready: true,
+                min: table_metadata["column-min"][selected_column[cluster_index]],
+                max: table_metadata["column-max"][selected_column[cluster_index]],
+                label: table_metadata["column-names"][selected_column[cluster_index]],
+                v_type: selected_column_type[cluster_index],
+                uniqueValues: uniqueValues,
+              }),
+            );
+          }
         },
       });
     });

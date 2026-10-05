@@ -10,7 +10,6 @@ import {
   setScaleInputs,
 } from "../wizard-store/reducers/CCAWizardSlice";
 import { useHandleTableIngestionOnChange } from "../CCAWizardUtils";
-import '../../../css/ui.css';
 
 export const CCATableIngestion = (props: { hidden?: boolean }) => {
   const { hidden = false } = props;

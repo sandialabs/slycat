@@ -386,15 +386,9 @@ class CCAScatterplot extends React.Component {
   update_color_domain = () =>
   {
     // console.log("CCAScatterplot update_color_domain()");
-    this.color = slycat_color_maps.get_color_scale(this.props.colormap);
     var v_min = d3.min(this.props.v);
     var v_max = d3.max(this.props.v);
-    var domain = []
-    var domain_scale = d3.scale.linear().domain([0, this.color.domain().length]).range([v_min, v_max]);
-    for(var i in this.color.domain()) {
-      domain.push(domain_scale(i));
-    }
-    this.color.domain(domain);
+    this.color = slycat_color_maps.get_color_scale(this.props.colormap, v_min, v_max);
   }
 
   update_indices = () =>

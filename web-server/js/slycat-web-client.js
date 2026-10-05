@@ -258,47 +258,31 @@ module.get_project_data_fetch = async function (params, successFunction, errorFu
     });
 };
 
-module.get_project_data_parameter_fetch = async function (params, successFunction, errorFunction) {
+module.get_project_data_parameter_fetch = async function (params) {
   return fetch(`${api_root}projects/data/${params.did}/parameters/${params.param}`, {
     credentials: 'same-origin',
     cache: 'no-store',
     dataType: 'json'
-  })
-    .then(async function (response) {
-      if (!response.ok) {
-        throw `bad response with: ${response.status} :: ${response.statusText}`;
-      }
+  }).then(async function (response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
       return response.json();
-    })
-    .catch(error => {
-      if (errorFunction) {
-        errorFunction(error);
-      } else {
-        console.log(error);
-      }
     });
 };
 
-module.get_project_data_in_model_fetch = async function (params, successFunction, errorFunction) {
+module.get_project_data_in_model_fetch = async function (params) {
   return fetch(`${api_root}projects/data/model/${params.mid}`, {
     credentials: 'same-origin',
     cache: 'no-store',
     dataType: 'json'
-  })
-    .then(async function (response) {
-      if (!response.ok) {
-        throw `bad response with: ${response.status} :: ${response.statusText}`;
-      }
-      return response.json();
-    })
-    .catch(error => {
-      if (errorFunction) {
-        errorFunction(error);
-      } else {
-        console.log(error);
-      }
-    });
-};
+  }).then(async function (response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  });
+}
 
 module.put_project_data_parameter = function (params) {
   $.ajax({
@@ -326,7 +310,7 @@ module.get_project_file_names = function (params) {
   $.ajax({
     dataType: 'json',
     type: 'GET',
-    url: `${api_root}/projects/${params.pid}/name`,
+    url: `${api_root}projects/${params.pid}/name`,
     success(result) {
       if (params.success) params.success(result);
     },
@@ -1578,24 +1562,16 @@ module.put_project = function (params) {
   });
 };
 
-module.delete_project_data_fetch = async function (params, successFunction, errorFunction) {
+module.delete_project_data_fetch = async function (params) {
   return fetch(`${api_root}projects/data/${params.did}`, {
     method: 'DELETE',
     credentials: 'same-origin',
     cache: 'no-store'
-  })
-    .then(function (response) {
-      if (!response.ok) {
-        throw `bad response with: ${response.status} :: ${response.statusText}`;
-      }
-    })
-    .catch(error => {
-      if (errorFunction) {
-        errorFunction(error);
-      } else {
-        console.log(error);
-      }
-    });
+  }).then(function (response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+  });
 };
 
 module.delete_project_cache = function (params) {

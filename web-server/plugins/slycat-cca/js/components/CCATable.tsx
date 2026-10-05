@@ -122,20 +122,14 @@ class CCATable extends React.Component {
     var columns = self.grid.getColumns();
     for (var i in columns) {
       var column = columns[i];
-      if (this.props.colormap !== null && column.id == variable) {
-        // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
-        column.colormap = self.props.colormap.copy();
-
-        var new_domain = [];
-        var domain_scale = d3.scale
-          .linear()
-          .domain([0, column.colormap.range().length])
-          .range([
-            self.props.metadata["column-min"][column.id],
-            self.props.metadata["column-max"][column.id],
-          ]);
-        for (var i in column.colormap.range()) new_domain.push(domain_scale(i));
-        column.colormap.domain(new_domain);
+      if (this.props.colormapName && column.id == variable) {
+        // Build a column-specific scale from the colormap name and this column's range.
+        // Discrete maps become quantize([min, max]); continuous maps stay linear.
+        column.colormap = slycat_color_maps.get_color_scale(
+          this.props.colormapName,
+          self.props.metadata["column-min"][column.id],
+          self.props.metadata["column-max"][column.id],
+        );
 
         column.cssClass = column.cssClass.split(" ")[0] + " highlight";
       } else {
@@ -240,7 +234,7 @@ class CCATable extends React.Component {
       this._color_variable(this.props.variable_selection);
     }
     // Color variable when colormap changes
-    if (prevProps.colormap !== this.props.colormap) {
+    if (prevProps.colormapName !== this.props.colormapName) {
       this._color_variable(this.props.variable_selection);
     }
     // Set selected rows when selection changes
@@ -281,7 +275,7 @@ const mapStateToProps = (state) => {
     others: state.derived.other_columns,
     metadata: state.derived.table_metadata,
     row_selection: state.simulations_selected,
-    colormap: slycat_color_maps.get_color_scale(state.colormap),
+    colormapName: state.colormap,
     sort_variable: state.variable_sorted,
     sort_order: state.variable_sort_direction,
     variable_selection: state.variable_selected,

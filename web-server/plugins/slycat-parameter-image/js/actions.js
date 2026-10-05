@@ -12,6 +12,7 @@ export const SET_THREE_D_COLORBY_RANGE = "SET_THREE_D_COLORBY_RANGE";
 export const SET_THREE_D_COLORBY_LEGEND = "SET_THREE_D_COLORBY_LEGEND";
 export const UPDATE_THREE_D_CAMERAS = "UPDATE_THREE_D_CAMERAS";
 export const TOGGLE_THREE_D_SYNC = "TOGGLE_THREE_D_SYNC";
+export const TOGGLE_SHOW_THREE_D_LEGENDS = "TOGGLE_SHOW_THREE_D_LEGENDS";
 export const SET_UNSELECTED_POINT_SIZE = "SET_UNSELECTED_POINT_SIZE";
 export const SET_UNSELECTED_BORDER_SIZE = "SET_UNSELECTED_BORDER_SIZE";
 export const SET_SELECTED_POINT_SIZE = "SET_SELECTED_POINT_SIZE";
@@ -162,6 +163,12 @@ export function updateThreeDCameras(cameras) {
 export function toggleThreeDSync() {
   return {
     type: TOGGLE_THREE_D_SYNC,
+  };
+}
+
+export function toggleShowThreeDLegends() {
+  return {
+    type: TOGGLE_SHOW_THREE_D_LEGENDS,
   };
 }
 

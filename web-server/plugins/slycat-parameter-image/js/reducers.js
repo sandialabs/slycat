@@ -13,6 +13,7 @@ import {
   SET_THREE_D_COLORBY_LEGEND,
   UPDATE_THREE_D_CAMERAS,
   TOGGLE_THREE_D_SYNC,
+  TOGGLE_SHOW_THREE_D_LEGENDS,
   SET_UNSELECTED_POINT_SIZE,
   SET_UNSELECTED_BORDER_SIZE,
   SET_SELECTED_POINT_SIZE,
@@ -60,7 +61,6 @@ import {
 } from "components/ScatterplotOptions/ScatterplotOptions";
 
 import { DEFAULT_FONT_SIZE, DEFAULT_FONT_FAMILY } from "./Components/ControlsButtonVarOptions";
-import { AnimationActionLoopStyles } from "three";
 import _ from "lodash";
 
 const initialState = {
@@ -69,6 +69,7 @@ const initialState = {
   axesVariables: {},
   currentFrame: {},
   threeD_sync: false,
+  show_threeD_legends: true,
   three_d_colormaps: {},
   open_media: [],
 };
@@ -211,6 +212,11 @@ export default function ps_reducer(state = initialState, action) {
     case TOGGLE_THREE_D_SYNC:
       return Object.assign({}, state, {
         threeD_sync: !state.threeD_sync,
+      });
+
+    case TOGGLE_SHOW_THREE_D_LEGENDS:
+      return Object.assign({}, state, {
+        show_threeD_legends: !state.show_threeD_legends,
       });
 
     case SET_UNSELECTED_POINT_SIZE:
@@ -414,8 +420,18 @@ export default function ps_reducer(state = initialState, action) {
       });
 
     case SET_V_INDEX:
+      // Same index redispatched after setVValues must not wipe fresh column data.
+      if (action.index === state.v_index) {
+        return state;
+      }
+      // Clear stale vValues so legend/selectors do not mix new index metadata
+      // with the previous column's values while the new column loads.
       return Object.assign({}, state, {
         v_index: action.index,
+        derived: {
+          ...state.derived,
+          vValues: [],
+        },
       });
 
     case SET_MEDIA_INDEX:

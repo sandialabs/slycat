@@ -31,7 +31,7 @@ import {
 import ControlsDropdownColor from "components/ControlsDropdownColor";
 import slycat_color_maps from "js/slycat-color-maps";
 import { v4 as uuidv4 } from "uuid";
-import { toggleShowHistogram, toggleAutoScale } from "../scatterplotSlice";
+import { toggleShowHistogram, setShowHistogram, toggleAutoScale } from "../scatterplotSlice";
 import {
   RootState,
   VariableRangesType,
@@ -98,6 +98,7 @@ interface PSControlsBarProps {
   v_index: number;
   toggleAutoScale: () => void;
   toggleShowHistogram: () => void;
+  setShowHistogram: (value: boolean) => void;
   setVideoSyncTime: (value: number) => void;
   toggleSyncScaling: () => void;
   toggleSyncThreeDColorvar: () => void;
@@ -396,6 +397,9 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
         items: y_axis_dropdown_items,
         selected: this.props.y_index,
         set_selected: (key, state_label, trigger, e, props) => {
+          if (this.props.show_histogram) {
+            this.props.setShowHistogram(false);
+          }
           this.props.setYIndex(Number(key));
         },
       },
@@ -511,7 +515,7 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
     let current_frame_video = false;
     let current_frame_video_playing = false;
     for (let open_media of this.props.open_media) {
-      if (open_media.video) {
+      if (open_media.video && !open_media.orbitPreview) {
         any_video_open = true;
         if (open_media.current_frame) {
           current_frame_video = true;
@@ -701,8 +705,8 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 button_style={button_style}
                 colormaps={slycat_color_maps}
                 colormap={this.props.colormap}
-                key_id="color-switcher"
-                id="color-switcher"
+                key_id="colors-dropdown"
+                id="colors-dropdown"
                 label="Color"
                 title="Change color scheme"
                 state_label="color"
@@ -788,6 +792,7 @@ export default connect(mapStateToProps, {
   setVIndex,
   setMediaIndex,
   toggleShowHistogram,
+  setShowHistogram,
   toggleAutoScale,
   setHiddenSimulations,
   setManuallyHiddenSimulations,

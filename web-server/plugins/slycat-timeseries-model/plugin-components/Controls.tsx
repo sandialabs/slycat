@@ -94,8 +94,8 @@ export const Controls: React.FC<Props> = (props) => {
                 button_style={button_style}
                 colormaps={slycat_color_maps}
                 colormap={colormap}
-                key_id="color-switcher"
-                id="color-switcher"
+                key_id="colors-dropdown"
+                id="colors-dropdown"
                 label="Color"
                 title="Change color scheme"
                 state_label="color"
