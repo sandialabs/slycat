@@ -26,8 +26,6 @@ export interface UqsaState {
   error: string | null;
   // Heatmap cells { x, y, value, xIndex?, yIndex? } — used by both means-ci and pearsons
   heatmapCells: HeatmapCell[] | null;
-  paneWidth: number;
-  paneHeight: number;
 }
 
 export const initialState: UqsaState = {
@@ -35,8 +33,6 @@ export const initialState: UqsaState = {
   status: "idle",
   error: null,
   heatmapCells: null,
-  paneWidth: 0,
-  paneHeight: 0,
 };
 
 export const uqsaSlice = createSlice({
@@ -71,27 +67,15 @@ export const uqsaSlice = createSlice({
       state.error = null;
       state.heatmapCells = null;
     },
-    setPaneSize: (state, action: PayloadAction<{ width: number; height: number }>) => {
-      state.paneWidth = action.payload.width;
-      state.paneHeight = action.payload.height;
-    },
   },
 });
 
-export const {
-  setActiveView,
-  setStatus,
-  setError,
-  setHeatmapResult,
-  clearResults,
-  setPaneSize,
-} = uqsaSlice.actions;
+export const { setActiveView, setStatus, setError, setHeatmapResult, clearResults } =
+  uqsaSlice.actions;
 
 export const selectUqsaActiveView = (state: RootState) => state[SLICE_NAME].activeView;
 export const selectUqsaStatus = (state: RootState) => state[SLICE_NAME].status;
 export const selectUqsaError = (state: RootState) => state[SLICE_NAME].error;
 export const selectUqsaHeatmapCells = (state: RootState) => state[SLICE_NAME].heatmapCells;
-export const selectUqsaPaneWidth = (state: RootState) => state[SLICE_NAME].paneWidth;
-export const selectUqsaPaneHeight = (state: RootState) => state[SLICE_NAME].paneHeight;
 
 export default uqsaSlice.reducer;

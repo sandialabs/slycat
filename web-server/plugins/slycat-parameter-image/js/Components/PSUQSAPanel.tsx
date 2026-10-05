@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import client from "js/slycat-web-client";
 import { Heatmap } from "./Heatmap";
@@ -12,8 +12,6 @@ import {
   selectUqsaStatus,
   selectUqsaError,
   selectUqsaHeatmapCells,
-  selectUqsaPaneWidth,
-  selectUqsaPaneHeight,
   HeatmapCell,
   UqsaActiveView,
 } from "../uqsaSlice";
@@ -30,6 +28,44 @@ const VIEW_TITLES: Record<Exclude<UqsaActiveView, null>, string> = {
 
 // Not columns. The server sends only the output index and the three numbers.
 const MEAN_CI_STATISTICS = ["Mean", "Lower CI", "Upper CI"] as const;
+
+// Heatmap subtracts its own axis margins from the box we give it.
+// Below this, the plot area collapses.
+const MIN_HEATMAP_SIZE = 64;
+
+/**
+ * Pixel size of a DOM node.
+ *
+ * layout.east.size is the bookmarked jquery-layout pane size (same field as
+ * the west pane). That includes the title and padding, so it is the wrong
+ * number for the SVG. Measuring the content box tracks every resize,
+ * including window resizes the user did not make, without storing width and
+ * height on the analysis state.
+ */
+function useElementSize<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) {
+      return;
+    }
+    const update = () => {
+      const width = node.clientWidth;
+      const height = node.clientHeight;
+      setSize((current) =>
+        current.width === width && current.height === height ? current : { width, height },
+      );
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, width: size.width, height: size.height };
+}
 
 type MeansCiRow = {
   output_index: number;
@@ -166,6 +202,8 @@ function cellsWithVariableLabels(cells: HeatmapCell[], variableLabels: string[])
  *   ui.js watchers update the scatterplot and related controls.
  * - The server sends column indexes. Drawn axis text uses variable aliases
  *   via selectVariableLabels. Clicks dispatch those indexes.
+ * - East pane size is layout.east.size, recorded in ui.js when the user
+ *   finishes a drag. This panel measures the heatmap box; it does not store it.
  * - Close button calls layout.close("east"); Redux clears via onclose_end in ui.js.
  *
  * Next steps:
@@ -184,8 +222,7 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     () => (heatmapCells ? cellsWithVariableLabels(heatmapCells, variableLabels) : heatmapCells),
     [heatmapCells, variableLabels],
   );
-  const paneWidth = useSelector(selectUqsaPaneWidth);
-  const paneHeight = useSelector(selectUqsaPaneHeight);
+  const contentBox = useElementSize<HTMLDivElement>();
 
   // Fetch means & confidence intervals when switching to the means-ci view.
   useEffect(() => {
@@ -294,12 +331,14 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
   );
 
   const panelShell = (body: React.ReactNode) => (
-    <div className="p-3 overflow-auto h-100 d-flex flex-column">
+    <div className="uqsa-panel p-3 d-flex flex-column">
       <div className="d-flex align-items-start justify-content-between gap-2 mb-3">
         {title ? <h5 className="mb-0">{title}</h5> : <span />}
         {closeButton}
       </div>
-      <div className="flex-grow-1">{body}</div>
+      <div className="uqsa-panel-body" ref={contentBox.ref}>
+        {body}
+      </div>
     </div>
   );
 
@@ -321,8 +360,11 @@ const PSUQSAPanel: React.FC<PSUQSAPanelProps> = ({ mid, layout }) => {
     return panelShell(<div className="text-muted">No data yet.</div>);
   }
 
-  const heatmapWidth = Math.max(paneWidth - 24, 120);
-  const heatmapHeight = Math.max(paneHeight - 72, 120);
+  const heatmapWidth = contentBox.width;
+  const heatmapHeight = contentBox.height;
+  if (heatmapWidth < MIN_HEATMAP_SIZE || heatmapHeight < MIN_HEATMAP_SIZE) {
+    return panelShell(null);
+  }
 
   // means-ci panel
 

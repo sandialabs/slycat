@@ -62,12 +62,15 @@ import data_reducer, {
 import uqsa_reducer, {
   SLICE_NAME as UQSA_SLICE_NAME,
   initialState as uqsaInitialState,
-  setPaneSize,
   setActiveView,
   selectUqsaActiveView,
-  selectUqsaPaneWidth,
 } from "./uqsaSlice";
-import layout_reducer, { SLICE_NAME as LAYOUT_SLICE_NAME, setWestPaneSize } from "./layoutSlice";
+import layout_reducer, {
+  SLICE_NAME as LAYOUT_SLICE_NAME,
+  setWestPaneSize,
+  setEastPaneSize,
+  selectLayoutEastSize,
+} from "./layoutSlice";
 import {
   setXValues,
   setYValues,
@@ -210,7 +213,9 @@ $(document).ready(function () {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   // jquery.layout applies the new size after ondrag_end, then fires onresize_end with the final size.
+  // Window resizes also fire onresize_end, so the flag keeps those from overwriting a user size.
   let westUserDragging = false;
+  let eastUserDragging = false;
 
   layout = $("#parameter-image-plus-layout").layout({
     north: {
@@ -241,17 +246,28 @@ $(document).ready(function () {
       },
     },
     east: {
-      // UQ/SA
+      // UQ/SA. size 0 in Redux means "user has not resized": keep this default.
+      // A remembered size is applied on open, same as the west pane.
       initClosed: true,
       size: $("#parameter-image-plus-layout").width() / 4,
-      onresize_end: function (pane_name, pane_element, pane_state, pane_options, layout_name) {
-        if (window.store) {
-          window.store.dispatch(
-            setPaneSize({
-              width: pane_state.innerWidth,
-              height: pane_state.innerHeight,
-            }),
-          );
+      ondrag_end: function () {
+        eastUserDragging = true;
+      },
+      onresize_end: function (pane_name, pane_element, pane_state) {
+        if (eastUserDragging && window.store) {
+          eastUserDragging = false;
+          window.store.dispatch(setEastPaneSize(pane_state.size));
+        }
+      },
+      onopen_end: function () {
+        if (!window.store || !layout) {
+          return;
+        }
+        const userSize = selectLayoutEastSize(window.store.getState());
+        // Skip when the pane is already that size. sizePane from here would
+        // otherwise resize a pane that just opened.
+        if (userSize > 0 && Number(layout.state.east.size) !== userSize) {
+          layout.sizePane("east", userSize);
         }
       },
       onclose_end: function () {
@@ -514,12 +530,11 @@ $(document).ready(function () {
             derivedState,
           );
 
-          // Persist uqsa.activeView and pane size; strip cells/status so results refetch
+          // Persist the selected analysis only. Drop cells and status so results refetch.
+          // Pane size is layout.east and arrives with the rest of the bookmarked layout state.
           preloadedState.uqsa = {
             ...uqsaInitialState,
             activeView: preloadedState.uqsa?.activeView ?? null,
-            paneWidth: preloadedState.uqsa?.paneWidth ?? 0,
-            paneHeight: preloadedState.uqsa?.paneHeight ?? 0,
           };
 
           // Unknown / renamed bookmarked colormaps fall back to Night.
@@ -572,11 +587,9 @@ $(document).ready(function () {
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
                 derived: undefined,
-                // Persist selected analysis and pane size; heatmap data is recomputed
+                // Persist the selected analysis. Pane size is on layout, and heatmap data is recomputed.
                 uqsa: {
                   activeView: uqsa?.activeView ?? null,
-                  paneWidth: uqsa?.paneWidth ?? 0,
-                  paneHeight: uqsa?.paneHeight ?? 0,
                 },
               },
             });
@@ -603,11 +616,13 @@ $(document).ready(function () {
             selectManuallyHiddenSimulations(store.getState()),
           );
 
-          // Reopen UQ/SA east pane when a bookmarked analysis is restored
+          // Reopen UQ/SA when a bookmarked analysis is restored.
+          // Set the size before opening so the pane does not flash the default width.
+          // Later opens in this session go through onopen_end, which applies the same size.
           if (selectUqsaActiveView(window.store.getState())) {
-            const bookmarkedPaneWidth = selectUqsaPaneWidth(window.store.getState());
-            if (bookmarkedPaneWidth > 0) {
-              layout.sizePane("east", bookmarkedPaneWidth);
+            const bookmarkedPaneSize = selectLayoutEastSize(window.store.getState());
+            if (bookmarkedPaneSize > 0) {
+              layout.sizePane("east", bookmarkedPaneSize);
             }
             layout.open("east");
           }
@@ -1208,16 +1223,6 @@ $(document).ready(function () {
           </Provider>
         </StrictMode>,
       );
-
-      // Seed east pane size in Redux (pane may still be closed)
-      if (layout.state?.east) {
-        window.store.dispatch(
-          setPaneSize({
-            width: layout.state.east.innerWidth,
-            height: layout.state.east.innerHeight,
-          }),
-        );
-      }
     }
   }
 
