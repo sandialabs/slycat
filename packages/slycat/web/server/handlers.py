@@ -416,6 +416,7 @@ def delete_project(pid):
             )
             os.remove(hdf5_path)
             couchdb.delete(data)
+            cherrypy.log.error("%s Deleted project_data for PID=%s, %s." % (model["creator"], project["_id"], hdf5_name))
 
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
@@ -851,9 +852,7 @@ def create_project_data(mid, aid, file):
                 model["project_data"].append(did)
                 database.save(model)
             database.save(data)
-            cherrypy.log.error(
-                "[MICROSERVICE] Added HDF5 project data %s." % data["file_name"]
-            )
+            cherrypy.log.error("%s Created project_data for PID=%s, %s." % (model["creator"], pid, hdf5_name))
 
             # If we decide later to store inputs and outputs separately, this code will pull them out from the original file
 
@@ -957,8 +956,7 @@ def create_project_data(mid, aid, file):
             model["project_data"].append(did)
             database.save(model)
         database.save(data)
-        cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
-
+        cherrypy.log.error("%s Created project_data for PID=%s, %s." % (model["creator"], pid, hdf5_name))
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
@@ -1186,6 +1184,7 @@ def delete_project_data(did, **kwargs):
         with slycat.web.server.get_project_data_lock(did):
             os.remove(hdf5_path)
             database.delete(project_data)
+            cherrypy.log.error("%s Deleted project_data for PID=%s, %s." % (model["creator"], project["_id"], hdf5_name))
 
         cherrypy.response.status = "204 Project Data deleted."
 
