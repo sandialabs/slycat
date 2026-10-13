@@ -21,6 +21,11 @@ import {
   DataState,
 } from "./dataSlice";
 import {
+  SLICE_NAME as UQSA_SLICE_NAME,
+  initialState as uqsaInitialState,
+  UqsaState,
+} from "./uqsaSlice";
+import {
   SLICE_NAME as LAYOUT_SLICE_NAME,
   initialState as layoutInitialState,
   LayoutState,
@@ -158,6 +163,7 @@ export type RootState = {
   video_sync_time: number;
   [SCATTERPLOT_SLICE_NAME]: ScatterplotState;
   [DATA_SLICE_NAME]: DataState;
+  [UQSA_SLICE_NAME]: UqsaState;
   [LAYOUT_SLICE_NAME]: LayoutState;
   derived: DerivedStateType;
   media_index: number;
@@ -202,6 +208,7 @@ export const initialState: RootState = {
   media_index: -1,
   [SCATTERPLOT_SLICE_NAME]: { ...scatterplotInitialState },
   [DATA_SLICE_NAME]: { ...dataInitialState },
+  [UQSA_SLICE_NAME]: { ...uqsaInitialState },
   [LAYOUT_SLICE_NAME]: { ...layoutInitialState },
   derived: {
     variableAliases: {},
