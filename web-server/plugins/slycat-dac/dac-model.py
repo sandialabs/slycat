@@ -642,6 +642,13 @@ def register_slycat_plugin(context):
     
         return json.dumps({"lof": lof_values.tolist()})
 
+    # compute silhouette cluster score
+    def compute_silhouette (database, model, verb, type, command, **kwargs):
+
+        cherrypy.log.error("silhouette")
+
+        return json.dumps({"silhouette": [1]})
+
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
 
@@ -2227,6 +2234,7 @@ def register_slycat_plugin(context):
     context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)
     context.register_model_command("POST", "DAC", "compute_lof", compute_lof)
+    context.register_model_command("POST", "DAC", "compute_silhouette", compute_silhouette)
     context.register_model_command("POST", "DAC", "update_alpha_lof", update_alpha_LOF)
 
     # register input wizard with slycat

@@ -173,11 +173,25 @@ S. Martin
             </button>
           </div>
 
+          <div class="dropdown btn-group mt-1">
+            <button 
+              class="btn btn-primary dropdown-toggle" 
+              type="button" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false">
+              <i class="fa fa-calculator"></i>
+            </button>
+            <div class="dropdown-menu">
+              <a class="dropdown-menu-item">Local Outlier Factor</a>
+              <a class="dropdown-menu-item">Silhouette Cluster Score</a>
+            </div>
+          </div>
+
           <select
             class="dac-select"
             title="Color scatter plot by table column."
-            id="dac-scatter-select"
-          ></select>
+            id="dac-scatter-select">
+          </select>
         </div>
       </div>
 
