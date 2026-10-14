@@ -21,9 +21,18 @@ import threading
 import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
-import imp
 
-import cherrypy
+import importlib.util
+import sys
+
+def load_module_from_path(module_name, module_path):
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
 
 # CSV file parser
 def parse_csv(file):
@@ -149,8 +158,10 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     """
 
     # import error handling from source
-    dac_error = imp.load_source('dac_error_handling',
-                           os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+    dac_error = load_module_from_path(
+        "dac_error_handling",
+        os.path.join(os.path.dirname(__file__), "py", "dac_error_handling.py"),
+    )
 
     dac_error.log_dac_msg("PTS Zip parser started.")
 
@@ -272,12 +283,16 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
     try:
 
         # import dac_upload_model from source
-        push = imp.load_source('dac_upload_model',
-                    os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+        push = load_module_from_path(
+            "dac_upload_model",
+            os.path.join(os.path.dirname(__file__), "py", "dac_upload_model.py"),
+        )
 
         # import dac_compute_coords
-        compute_coords = imp.load_source('dac_compute_coords', 
-                    os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+        compute_coords = load_module_from_path(
+            "dac_compute_coords",
+            os.path.join(os.path.dirname(__file__), "py", "dac_compute_coords.py"),
+        )
         
         dac_error.log_dac_msg("PTS Zip thread started.")
 
