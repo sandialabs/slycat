@@ -4,6 +4,7 @@
 
 import server_root from "js/slycat-server-root";
 import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
 import deleteUI from "./delete-ui.html";
 
 function constructor(params)
@@ -52,7 +53,8 @@ function constructor(params)
             redirect();
           }
         });
-      }
+      },
+      error: dialog.ajax_error("Couldn't delete model.")
     });
   }
   return component;

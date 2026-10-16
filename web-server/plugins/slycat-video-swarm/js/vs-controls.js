@@ -21,6 +21,8 @@ $.widget("mp.controls", {
     pinned_simulations: [],
     video_sync: false,
     video_sync_time: 0,
+    min_time: null,
+    max_time: null,
     current_video: null,
     playing_videos: [],
   },
@@ -212,12 +214,21 @@ $.widget("mp.controls", {
 
     function handleVideoSyncTimeChange(element) {
       var val = parseFloat($(element).val());
-      if (isNaN(val)) {
-        val = 0;
+      if (!Number.isFinite(val)) {
+        $(element).val(self.options.video_sync_time);
+        return;
+      }
+      var min = self.options.min_time;
+      var max = self.options.max_time;
+      if (min != null && val < min) {
+        val = min;
+      }
+      if (max != null && val > max) {
+        val = max;
       }
       $(element).val(val);
       self.options.video_sync_time = val;
-      self.element.trigger("video_sync_time", val);
+      self.element.trigger("diagram_time_changed", val);
     }
 
     function openCSVSaveChoiceDialog() {
@@ -347,6 +358,9 @@ $.widget("mp.controls", {
 
   _set_video_sync_time: function () {
     var self = this;
+    if (this.video_sync_time.is(":focus")) {
+      return;
+    }
     this.video_sync_time.val(self.options.video_sync_time);
   },
 
@@ -459,10 +473,10 @@ $.widget("mp.controls", {
         self._respond_pinned_simulations_changed();
       }
     } else if (key == "video_sync_time") {
-      if (this.options[key] != value) {
-        this.options[key] = value;
-        self._set_video_sync_time();
-      }
+      this.options[key] = value;
+      self._set_video_sync_time();
+    } else if (key == "min_time" || key == "max_time") {
+      this.options[key] = value;
     } else if (key == "current_video") {
       if (this.options[key] != value) {
         this.options[key] = value;

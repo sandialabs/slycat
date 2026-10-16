@@ -5,10 +5,11 @@ retains certain rights in this software. */
 import React, { useEffect, useId, useRef } from "react";
 import * as d3 from "d3v7";
 
-import type {
-  ColorByLegendGradientStop,
-  ColorByLegendModel,
-  ColorByLegendScaleKind,
+import {
+  legendExtentNumber,
+  type ColorByLegendGradientStop,
+  type ColorByLegendModel,
+  type ColorByLegendScaleKind,
 } from "js/slycat-color-maps-methods";
 import {
   createHybridNumericTickFormat,
@@ -101,6 +102,19 @@ function createLegendScale(
 
   const lo = min ?? 0;
   const hi = max ?? 1;
+  const loNum = legendExtentNumber(lo);
+  const hiNum = legendExtentNumber(hi);
+  // When min and max are equal, put the tick in the middle of the bar.
+  // Log scales cannot use the same value for both ends of the domain, so use linear.
+  if (loNum !== undefined && hiNum !== undefined && loNum === hiNum) {
+    const mid: [number, number] = [height / 2, height / 2];
+    if (scaleKind === "time") {
+      const d = lo instanceof Date ? lo : new Date(lo);
+      return d3.scaleTime().domain([d, d]).range(mid);
+    }
+    return d3.scaleLinear().domain([hiNum, loNum]).range(mid);
+  }
+
   // Top of vertical legend is max (matches existing PS/CCA/Timeseries legends).
   if (scaleKind === "log") {
     return d3.scaleLog().domain([hi as number, lo as number]).range(range);

@@ -48,8 +48,8 @@ class CCAControlsBar extends React.Component {
               button_style={button_style}
               colormaps={slycat_color_maps}
               colormap={this.props.colormap}
-              key_id="color-switcher"
-              id="color-switcher"
+              key_id="colors-dropdown"
+              id="colors-dropdown"
               label="Color"
               title="Change color scheme"
               state_label="color"

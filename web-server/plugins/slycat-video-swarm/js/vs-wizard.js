@@ -20,7 +20,6 @@ import URI from "urijs";
 import vsWizardUI from "../html/vs-wizard.html";
 import { remoteControlsReauth } from "js/slycat-remote-controls";
 import request from "./vs-request-data.js";
-import { TorusGeometry } from "three";
 
 function constructor(params) {
   // functions accessible outside this define are returned via component

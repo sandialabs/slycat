@@ -12,6 +12,8 @@ interface ColorMapsInterface {
     label: string;
     type: ColorMapType;
     background: string;
+    foreground: string;
+    background_2: string;
     null_color: string;
     outofdomain_color: string;
     scatterplot_grid_color: string;
@@ -33,8 +35,23 @@ function hexColors(hexes: string[]): d3.RGBColor[] {
   return hexes.map((hex) => d3.rgb(hex));
 }
 
+const DAY_HOVER = "rgb(227 227 227)";
+
+const nightChrome = {
+  background: GRAY2,
+  foreground: WHITE,
+  background_2: GRAY1,
+  null_color: GRAY4,
+  outofdomain_color: BLACK,
+  scatterplot_grid_color: GRAY3,
+  histogram_bar_color: HISTOGRAM_BLUE,
+  opacity: "0.5",
+};
+
 const dayChrome = {
   background: WHITE,
+  foreground: BLACK,
+  background_2: DAY_HOVER,
   null_color: GRAY2,
   outofdomain_color: BLACK,
   scatterplot_grid_color: GRAY1,
@@ -47,12 +64,7 @@ export default {
     night: {
       label: "Night",
       type: "continuous",
-      background: GRAY2,
-      null_color: GRAY4,
-      outofdomain_color: BLACK,
-      scatterplot_grid_color: GRAY3,
-      histogram_bar_color: HISTOGRAM_BLUE,
-      opacity: "0.5",
+      ...nightChrome,
       colors: [
         d3.rgb(59, 76, 192),
         d3.rgb(68, 90, 204),
@@ -92,12 +104,7 @@ export default {
     day: {
       label: "Day",
       type: "continuous",
-      background: WHITE,
-      null_color: GRAY2,
-      outofdomain_color: BLACK,
-      scatterplot_grid_color: GRAY1,
-      histogram_bar_color: HISTOGRAM_BLUE,
-      opacity: "0.7",
+      ...dayChrome,
       colors: [
         d3.rgb(100, 108, 234),
         d3.rgb(115, 118, 240),
@@ -137,46 +144,29 @@ export default {
     rainbow: {
       label: "Rainbow Night",
       type: "continuous",
-      background: GRAY2,
-      null_color: GRAY4,
-      outofdomain_color: BLACK,
-      scatterplot_grid_color: GRAY3,
-      histogram_bar_color: HISTOGRAM_BLUE,
+      ...nightChrome,
       opacity: "0.6",
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
     rainbow_day: {
       label: "Rainbow Day",
       type: "continuous",
-      background: WHITE,
-      null_color: GRAY2,
-      outofdomain_color: BLACK,
-      scatterplot_grid_color: GRAY1,
-      histogram_bar_color: HISTOGRAM_BLUE,
-      opacity: "0.7",
+      ...dayChrome,
       colors: [d3.rgb(0, 0, 255), d3.rgb(0, 255, 255), d3.rgb(255, 255, 0), d3.rgb(255, 0, 0)],
     },
     grayscale_night: {
       label: "Grayscale Night",
       type: "continuous",
-      background: GRAY2,
-      // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: GRAY4,
-      outofdomain_color: BLACK,
-      scatterplot_grid_color: GRAY3,
-      histogram_bar_color: HISTOGRAM_BLUE,
+      ...nightChrome,
+      // Inherited null_color / outofdomain_color can match this black–white scale.
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },
     grayscale_day: {
       label: "Grayscale Day",
       type: "continuous",
-      background: WHITE,
-      // ToDo: fix this, null and outofdomain colors need to be different than normal colors
-      null_color: GRAY2,
-      outofdomain_color: BLACK,
-      scatterplot_grid_color: GRAY1,
-      histogram_bar_color: HISTOGRAM_BLUE,
+      ...dayChrome,
+      // Inherited null_color / outofdomain_color can match this black–white scale.
       opacity: "0.6",
       colors: [d3.rgb(255, 255, 255), d3.rgb(0, 0, 0)],
     },

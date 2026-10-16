@@ -420,6 +420,7 @@ def delete_project(pid):
             )
             os.remove(hdf5_path)
             couchdb.delete(data)
+            cherrypy.log.error("%s Deleted project_data for PID=%s, %s." % (model["creator"], project["_id"], hdf5_name))
 
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
@@ -492,6 +493,9 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 # determine the type of data we just got and if we need to extract it eg for csv files
                 # HDF5 file path
                 if (".h5" in item["file_name"]) or (".hdf5" in item["file_name"]):
+                    model = database.get("model", mid)
+                    model["project_data"] = [item["_id"]]
+                    database.save(model)
                     with open(hdf5_path, "rb") as fh:
                         file_obj = fh.read()
                         attachment.append(file_obj)
@@ -727,10 +731,7 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
                 columns[index] = numpy.array(columns[index], dtype="float64")
                 column_types[index] = "float64"
             else:
-                stringType = "S" + str(
-                    len(columns[index][0])
-                )  # using length of first string for whole column
-                columns[index] = numpy.array(columns[index], dtype=stringType)
+                columns[index] = numpy.array(columns[index], dtype=numpy.dtypes.StringDType())
                 column_types[index] = "string"
         except:
             pass
@@ -855,9 +856,7 @@ def create_project_data(mid, aid, file):
                 model["project_data"].append(did)
                 database.save(model)
             database.save(data)
-            cherrypy.log.error(
-                "[MICROSERVICE] Added HDF5 project data %s." % data["file_name"]
-            )
+            cherrypy.log.error("%s Created project_data for PID=%s, %s." % (model["creator"], pid, hdf5_name))
 
             # If we decide later to store inputs and outputs separately, this code will pull them out from the original file
 
@@ -901,10 +900,7 @@ def create_project_data(mid, aid, file):
                     columns[index] = numpy.array(columns[index], dtype="float64")
                     column_types[index] = "float64"
                 else:
-                    stringType = "S" + str(
-                        len(columns[index][0])
-                    )  # using length of first string for whole column
-                    columns[index] = numpy.array(columns[index], dtype=stringType)
+                    columns[index] = numpy.array(columns[index], dtype=numpy.dtypes.StringDType())
                     column_types[index] = "string"
             except:
                 pass
@@ -964,8 +960,7 @@ def create_project_data(mid, aid, file):
             model["project_data"].append(did)
             database.save(model)
         database.save(data)
-        cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
-
+        cherrypy.log.error("%s Created project_data for PID=%s, %s." % (model["creator"], pid, hdf5_name))
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
@@ -1166,13 +1161,20 @@ def delete_project_data(did, **kwargs):
     Returns:
         Nothing
     """
+
     database = slycat.web.server.database.couchdb.connect()
     with slycat.web.server.database.couchdb.db_lock:
 
         project_data = database.get("project_data", did)
         project = database.get("project", project_data["project"])
+        if project_data['project'] == project["_id"]:
+            hdf5_name = project_data["hdf5_name"]
+            hdf5_path = (
+                cherrypy.request.app.config["slycat-web-server"]["data-store"]
+                + "/project_data/"
+                + hdf5_name
+            )
         slycat.web.server.authentication.require_project_writer(project)
-
         for model in database.scan("slycat/models"):
             updated = False
             if "project_data" in model:
@@ -1184,7 +1186,9 @@ def delete_project_data(did, **kwargs):
                 database.save(model)
 
         with slycat.web.server.get_project_data_lock(did):
+            os.remove(hdf5_path)
             database.delete(project_data)
+            cherrypy.log.error("%s Deleted project_data for PID=%s, %s." % (model["creator"], project["_id"], hdf5_name))
 
         cherrypy.response.status = "204 Project Data deleted."
 
@@ -1995,11 +1999,12 @@ def delete_model_in_project_data(mid, did):
 
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
+    model = couchdb.get("model", mid)
+    project = couchdb.get("project", model["project"])
+    # Check writer access before the try so unauthorized deletes return 403
+    # instead of being logged and still returning 204.
+    slycat.web.server.authentication.require_project_writer(project)
     try:
-        model = couchdb.get("model", mid)
-        project = couchdb.get("project", model["project"])
-        slycat.web.server.authentication.require_project_writer(project)
-
         for project_data in couchdb.scan(
             "slycat/project_datas", startkey=model["project"], endkey=model["project"]
         ):
@@ -3058,6 +3063,10 @@ def get_user(uid, time):
         raise cherrypy.HTTPError(404)
     # Add the uid to the record, since the caller may not know it.
     user["uid"] = uid
+    if uid == cherrypy.request.login:
+        user["server_administrator"] = (
+            slycat.web.server.authentication.is_server_administrator()
+        )
     return json.loads(json.dumps(user, cls=MyEncoder))
 
 
@@ -3174,7 +3183,9 @@ def get_user_groups(search_string: str):
     # Return the results as a JSON-compatible Python object. The json_out tool
     # will serialize this return value to JSON for the HTTP response.
     return json.loads(json.dumps(results, cls=MyEncoder))
-
+    # Flag whether this record is the signed-in user and a server administrator.
+    # Used by the UI to derive project role without injecting a fake
+    # server_administrators entry onto every project in the projects list.
 
 @cherrypy.tools.json_out(on=True)
 def get_model_statistics(mid):
@@ -3502,7 +3513,7 @@ def post_combine_hdf5_tables(mid):
     project_data = database.get("project_data", did)
     file_name = project_data["hdf5_name"]
     hdf5_path = (
-        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/" + file_name
     )
     h5 = h5py.File(hdf5_path, "r")
 
@@ -3730,7 +3741,7 @@ def post_browse_hdf5(path, pid, mid):
     project_data = database.get("project_data", did)
     file_name = project_data["hdf5_name"]
     hdf5_path = (
-        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/" + file_name
+        cherrypy.request.app.config["slycat-web-server"]["data-store"] + "/project_data/" + file_name
     )
     h5 = h5py.File(hdf5_path, "r")
     tree_structure = {}

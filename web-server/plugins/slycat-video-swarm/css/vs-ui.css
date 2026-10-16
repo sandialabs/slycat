@@ -30,6 +30,30 @@ retains certain rights in this software.
 	overflow: hidden !important;
 }
 
+/* Color-by legend React overlay. Root is none so plot selection works;
+   ColorByLegend sets pointer-events/cursor on g.legend when draggable.
+   Clip to the MDS pane so tick labels cannot paint into the movies pane. */
+#vs-colorby-legend-root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+#vs-colorby-legend {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#vs-colorby-legend g.legend:hover {
+  cursor: move;
+}
+
 .brush .extent
 {
 	fill-opacity: 0.1;
@@ -41,6 +65,16 @@ retains certain rights in this software.
 #mp-mds-scatterplot
 {
 	stroke-width: 1px;
+}
+
+#mp-mds-scatterplot circle
+{
+	cursor: pointer;
+}
+
+#mp-mds-pane.rubber-band-drag,
+#mp-mds-pane.rubber-band-drag circle {
+  cursor: crosshair;
 }
 
 
@@ -398,18 +432,6 @@ retains certain rights in this software.
 .center {
   text-align: center;
 }
-#color-switcher ul.dropdown-menu
-{
-  background-color: #F2F2F2;
-}
-.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
-{
-  background-color: #E4E4E4;
-}
-.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
-{
-  background-color: #337AB7;
-}
 #controls {
   height: 100%;
 }
@@ -508,9 +530,6 @@ retains certain rights in this software.
 #scatterplot .media-layer .open-image:hover .close-button,
 {
   visibility: visible;
-}
-#scatterplot g.legend:hover {
-  cursor: move;
 }
 #scatterplot .image-frame rect.outline {
   shape-rendering: crispEdges;
@@ -956,6 +975,7 @@ a {
   padding-bottom: 20px;
   background-color: black;
   width: calc(100% - 32px);
+  cursor: pointer;
 }
 .videoContainer video {
   display: block;
@@ -973,10 +993,10 @@ a {
   font-size: 14px;
   color: #c8c8c8 !important;
   padding: 2px 4px;
+  cursor: pointer;
 }
 .frame-button:hover {
   color: white !important;
-  cursor: pointer;
 }
 .frame-button.close-button {
   float: left;
@@ -1053,4 +1073,17 @@ a {
 }
 #waveform-pane:hover #waveform-selector-progress-wrapper {
   display: block;
+}
+
+.slycat-scrubber {
+  cursor: pointer;
+}
+
+.slycat-scrubber .thumb {
+  cursor: grab;
+}
+
+.slycat-scrubber.dragging,
+.slycat-scrubber.dragging .thumb {
+  cursor: grabbing;
 }
