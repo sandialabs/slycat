@@ -1,0 +1,176 @@
+/* Edit Project modal — Display Settings / TableIngestion-inspired styling */
+
+/* Tab label typography matches Display Settings (Bootstrap h5 in nav-links). */
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link h5 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
+/* Match Display Settings unselected tab color (Bootstrap link color).
+   Overrides #slycat-wizard wizard nav rule that forces #333. */
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active),
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active) h5 {
+  color: var(--bs-link-color, rgb(0, 100, 144));
+}
+
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active):hover,
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link:not(.active):hover h5 {
+  color: var(--bs-link-hover-color, rgb(0, 80, 115));
+}
+
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link.active,
+#slycat-wizard .edit-project-nav-tabs > .nav-item > .nav-link.active h5 {
+  color: var(--bs-nav-tabs-link-active-color, var(--bs-emphasis-color, #212529));
+}
+
+/* Form labels match Display Settings bold field-label treatment. */
+.edit-project-tab-content .col-form-label {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.edit-project-tab-content .edit-project-section-heading {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.edit-project-acl-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  color: rgb(165, 165, 165);
+}
+
+.edit-project-acl-table-wrap {
+  /* Header is shorter than a result row (no remove button). Show the header
+     plus 3.5 results; the clipped half-row makes it obvious there is more. */
+  --edit-project-acl-header-height: 1.75em;
+  --edit-project-acl-row-height: 1.9375em;
+  max-height: calc(
+    var(--edit-project-acl-header-height) + var(--edit-project-acl-row-height) * 3.5 + 2px
+  );
+  overflow: auto;
+  border: 1px solid #ddd;
+}
+
+.edit-project-acl-table > :not(caption) > * > * {
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+.edit-project-acl-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--bs-table-bg, #f8f9fa);
+}
+
+.edit-project-acl-table .btn.btn-sm {
+  --bs-btn-padding-y: 0.1rem;
+  --bs-btn-padding-x: 0.35rem;
+  --bs-btn-border-width: 0;
+  line-height: 1;
+}
+
+.edit-project-acl-table .btn-outline-danger {
+  --bs-btn-hover-color: var(--bs-btn-color);
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-btn-color);
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-active-shadow: none;
+}
+
+.edit-project-metagroups-table-wrap {
+  /* Compact lookup rows are 1.75em tall. Show the header plus 3.5 results;
+     the clipped half-row makes it obvious there is more to scroll. */
+  --edit-project-metagroup-row-height: 1.75em;
+  max-height: calc(var(--edit-project-metagroup-row-height) * 4.5 + 2px);
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+.edit-project-metagroups-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.edit-project-metagroups-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 0.15rem 0.5rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.edit-project-metagroups-table tbody td {
+  padding: 0.15rem 0.5rem;
+  text-align: left;
+}
+
+.edit-project-metagroups-table .members-col {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.edit-project-metagroups-table thead th.members-col .members-box {
+  display: inline-block;
+  text-align: right;
+}
+
+.edit-project-metagroups-table tbody td.members-col .members-box {
+  display: inline-block;
+  min-width: 7ch;
+  text-align: center;
+}
+
+.edit-project-metagroups-table tbody tr {
+  cursor: pointer;
+}
+
+.edit-project-metagroups-table tbody tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+.edit-project-metagroups-table tbody tr.selected {
+  background-color: #337ab7;
+}
+
+.edit-project-metagroups-table tbody tr.selected td {
+  color: white;
+}
+
+/* Small nested confirm so it does not match the Edit Project modal. */
+.edit-project-confirm-overlay.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1065;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.edit-project-confirm-overlay .modal-dialog {
+  margin: 1rem;
+}
+
+.edit-project-confirm-overlay .modal-title {
+  font-size: 1.25rem;
+}
+
+.edit-project-confirm-overlay .modal-content {
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
+}

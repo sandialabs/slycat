@@ -1103,7 +1103,7 @@ def check_rules(groups):
                 try:
                     lookupResult = cherrypy.request.app.config["slycat-web-server"][
                         "directory"
-                    ](user_name)
+                    ]["user"](user_name)
                     if lookupResult != {}:
                         deny = False
                 except:

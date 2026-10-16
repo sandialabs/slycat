@@ -14,3 +14,4 @@ npTDMS==1.6.0
 pandas
 pysmb
 natsort
+python-ldap
