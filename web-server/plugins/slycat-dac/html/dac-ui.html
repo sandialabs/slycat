@@ -33,7 +33,7 @@ S. Martin
 
   <div class="ui-layout-center dac-model-content" id="dac-main-console" style="display: none">
     <div class="ui-layout-center" id="dac-control-bar-scatter-plot">
-      <div class="ui-layout-north">
+      <div class="ui-layout-north" id="dac-control-bar">
         <!-- MDS Scatter Plot Buttons (above scatter plot)-->
         <div class="bootstrap-styles">
           <div
@@ -173,17 +173,31 @@ S. Martin
             </button>
           </div>
 
-          <div class="dropdown btn-group mt-1">
-            <button 
-              class="btn btn-primary dropdown-toggle" 
-              type="button" 
-              data-bs-toggle="dropdown" 
-              aria-expanded="false">
-              <i class="fa fa-calculator"></i>
+          <div id="dac-calculator-button" class="btn-group mt-1">
+            <button
+              id="dac-calculator-dropdown"
+              class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+              data-bs-boundary="body"
+              style="min-width: auto; width: 50px"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              title="Select calculation to perform."
+            >
+              <i class="fa fa-calculator" aria-hidden="true"></i>
             </button>
-            <div class="dropdown-menu">
-              <a class="dropdown-menu-item">Local Outlier Factor</a>
-              <a class="dropdown-menu-item">Silhouette Cluster Score</a>
+            <div class="dropdown-menu" 
+              aria-labelledby="filter-dropdown"
+              data-bs-boundary="viewport"
+              style="overflow: visible">
+              <button
+                type="button"
+                class="dropdown-item"
+              >Local Outlier Factor</button>
+              <button 
+                type="button"
+                class="dropdown-item"
+              >Silhouette Cluster Score</button>
             </div>
           </div>
 
