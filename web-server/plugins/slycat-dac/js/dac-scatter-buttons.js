@@ -37,6 +37,7 @@ var diff_desired_state = null;
 // is lof button out of date?
 // true if correct, false if out of date
 var lof_button_state = true;
+var lof_dropdown_state = true;
 
 // maximum number of plots
 var max_num_plots = null;
@@ -108,6 +109,11 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
     lof_color_by_col = init_lof_values;
     $("#dac-lof-button").on("click", lof_button);
     module.update_lof_button(init_lof_button_state);
+
+    // set up lof dropdown
+    var init_lof_dropdown_state = init_lof_button_state;
+    $("#dac-lof-dropdown").on("click", lof_dropdown);
+    module.update_lof_dropdown(init_lof_dropdown_state);
 
     // set initial zoom button indicator
     module.set_zoom_button(init_zoom_flag);
@@ -716,6 +722,84 @@ function set_curr_color_by_col (color_by_string_data, ordered_strings)
 module.get_color_by_col = function()
 {
     return curr_color_by_col;
+}
+
+// lof dropdown calls server to recompute lof then draws new color
+function lof_dropdown()
+{
+    
+        // call server to compute lof
+	client.post_sensitive_model_command(
+        {
+            mid: mid,
+            type: "DAC",
+            command: "compute_lof",
+            parameters: {alpha: alpha_sliders.get_alpha_values(),
+                         subset: selections.get_subset(),
+                         include_columns: var_include_columns,
+                         use_PCA_comps: use_PCA_comps},
+            success: function (result)
+                {
+    
+                    // collect result, if not available default to empty
+                    lof_color_by_col = [];
+                    if (JSON.parse(result).hasOwnProperty("lof")) {
+                        lof_color_by_col = JSON.parse(result)["lof"];
+                    }
+                    
+                    // set color by pulldown to display lof
+                    $("#dac-scatter-select").prop("selectedIndex", 1);
+                    curr_color_by_sel = -2;
+                    curr_color_by_col = lof_color_by_col;
+    
+                    // re-color by lof
+                    scatter_plot.update_color(curr_color_by_col);
+    
+                    // update lof button event
+                    var LOFButtonEvent = new CustomEvent("DACLOFButtonChanged", 
+                        { detail: true });
+                    document.body.dispatchEvent(LOFButtonEvent);
+    
+                    // fire new colorby event
+                    var colorbyEvent = new CustomEvent("DACColorByChanged",
+                        {detail: curr_color_by_sel});
+                    document.body.dispatchEvent(colorbyEvent);
+    
+                    // update lof values
+                    client.put_model_parameter ({
+                        mid: mid,
+                        aid: "dac-lof-values",
+                        value: lof_color_by_col
+                    })
+    
+                },
+            error: function ()
+        
+                {
+                    dialog.ajax_error ('Server failure: could not compute Local Outlier Factor.')("","","");
+                }
+    
+        });
+    
+}
+
+// update scatter dropdown if sliders changed to yellow
+// true if correct, false if out of date
+module.update_lof_dropdown = function(lof_state)
+{
+
+    // set lof dropdown state
+    lof_dropdown_state = lof_state;
+
+    // color button yellow if out of sync
+    if (lof_state) {
+        $("#dac-lof-dropdown").removeClass("bg-warning");
+        $("#dac-calculator-dropdown").removeClass("bg-warning");
+    } else {
+        $("#dac-lof-dropdown").addClass("bg-warning");
+        $("#dac-calculator-dropdown").addClass("bg-warning");
+    }
+
 }
 
 // lof button calls server to recompute lof then draws new color

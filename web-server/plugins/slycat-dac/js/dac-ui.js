@@ -1173,6 +1173,7 @@ $(document).ready(function() {
     function lof_button_changed (new_lof_state)
     {
         scatter_buttons.update_lof_button(new_lof_state.detail);
+        scatter_buttons.update_lof_dropdown(new_lof_state.detail);
 
         // update bookmark to reflect to lof value
         bookmarker.updateState({"dac-lof-button-state": new_lof_state.detail});
