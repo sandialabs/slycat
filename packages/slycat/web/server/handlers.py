@@ -348,7 +348,7 @@ def put_project(pid):
       cherrypy.HTTPError
         400 missing readers
     """
-    # TODO: update this func for meta groups
+
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
