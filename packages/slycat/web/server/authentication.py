@@ -56,9 +56,9 @@ def is_project_writer(project):
         user_groups = (
             cherrypy.request.app.config["slycat-web-server"]["directory"][
                 "user_groups"
-            ](username)["group_names"]
-            or []
-        )
+            ](username)
+            or {}
+        ).get("group_names", []) or []
 
         acl_writer_users = {
             writer.get("user") for writer in acl_writers if isinstance(writer, dict)
@@ -126,9 +126,9 @@ def is_project_reader(project: Any) -> bool:
         user_groups = (
             cherrypy.request.app.config["slycat-web-server"]["directory"][
                 "user_groups"
-            ](username)["group_names"]
-            or []
-        )
+            ](username)
+            or {}
+        ).get("group_names", []) or []
 
         acl_reader_users = {
             reader.get("user") for reader in acl_readers if isinstance(reader, dict)

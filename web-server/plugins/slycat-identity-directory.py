@@ -13,17 +13,21 @@ def init(domain, blacklist=[]):
   configuration["blacklist"] = blacklist
 
 def user(uid):
-  global configuration
-  if uid in configuration["blacklist"]:
+    global configuration
+    if uid in configuration["blacklist"]:
+        return None
+    return {"name": uid, "email": "%s@%s" % (uid, configuration["domain"])}
+
+
+def get_user_groups(connection, uid):
     return None
-  return {
-    "name": uid,
-    "email": "%s@%s" % (uid, configuration["domain"])
-    }
+
+
 def user_groups(uid):
-   pass
+    return None
+
 def groups(search_string):
-   pass
+    return []
+
 def register_slycat_plugin(context):
   context.register_directory("identity", init, user, user_groups, groups)
-
