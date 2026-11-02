@@ -48,8 +48,8 @@ def is_project_writer(project):
     try:
         acl = project_acl(project)
 
-        acl_groups = acl.get("groups").get("writers") or []
-        acl_writers = acl.get("writers") or []
+        acl_groups = ((acl or {}).get("groups") or {}).get("writers") or []
+        acl_writers = (acl or {}).get("writers") or []
 
         username = cherrypy.request.login
 
