@@ -118,8 +118,8 @@ def is_project_reader(project: Any) -> bool:
     try:
         acl = project_acl(project)
 
-        acl_groups = acl.get("groups").get("readers") or []
-        acl_readers = acl.get("readers") or []
+        acl_groups = ((acl or {}).get("groups") or {}).get("readers") or []
+        acl_readers = (acl or {}).get("readers") or []
 
         username = cherrypy.request.login
 
