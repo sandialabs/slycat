@@ -78,7 +78,7 @@ def is_project_writer(project):
 
         cherrypy.log.error(traceback.format_exc())
         cherrypy.log.error(
-            f"Error checking reader ACL for project {project_id}: {error}\n"
+            f"Error checking writer ACL for project {project_id}: {error}\n"
         )
         return False
 
