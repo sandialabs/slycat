@@ -157,7 +157,7 @@
   position: fixed;
   inset: 0;
   z-index: 1065;
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.7);
