@@ -156,10 +156,6 @@ def user(uid):
         # Only perform an LDAP query if this uid is not already cached.
         if uid not in configuration["user-cache"]:
             try:
-                cherrypy.log.error(
-                    "slycat-ldap-directory.py user",
-                    "User ID, %s" % uid,
-                )
                 # Import ldap lazily so the module can be loaded in environments
                 # where LDAP support may not be installed until this function is used.
                 import ldap
@@ -657,8 +653,6 @@ def groups(search_string):
             "owner",
             "memberUid",
         ]
-
-        cherrypy.log.error("groups() filter: %s" % group_search_filter)
 
         results = connection.search_s(
             configuration["group_base_dn"],

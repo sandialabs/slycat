@@ -3050,10 +3050,6 @@ def get_user(uid, time):
 
     if uid == "-":
         uid = cherrypy.request.login
-    cherrypy.log.error(
-        "slycat.web.server.handlers.py get_user",
-        "uid: %s" % uid,
-    )
     user = cherrypy.request.app.config["slycat-web-server"]["directory"]["user"](uid)
     if user is None:
         cherrypy.log.error(
@@ -3108,9 +3104,6 @@ def get_groups(search_string: str):
     )
 
     # Convert results to a JSON-compatible structure using the custom encoder,
-    # then log the serialized result.
-    cherrypy.log.error("result %s" % json.loads(json.dumps(results, cls=MyEncoder)))
-
     # If the directory lookup returns no results, log the error and return 404.
     if results is None:
         cherrypy.log.error(
