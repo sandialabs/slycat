@@ -94,7 +94,9 @@ export const Heatmap = ({
   }
 
   // Color scale
-  const colorScale = d3.scaleSequential().interpolator(d3.interpolateBrBG).domain([min, max]);
+  const colorScale = d3.scaleSequential()
+                       .interpolator(t => d3.interpolateBrBG(1 - t))
+                       .domain([min, max]);
 
   // Text color
   function getTextColor(bgColorString: string, use_colors: boolean) {
