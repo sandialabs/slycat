@@ -538,6 +538,21 @@
   margin: 0;
 }
 
+/* UQ/SA east pane. Height has to be passed down so the heatmap can measure
+   the free space under the title. The bookmarked pane size is layout.east.size. */
+#uq-sa {
+  height: 100%;
+}
+.uqsa-panel {
+  height: 100%;
+  min-height: 0;
+}
+.uqsa-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 #scatterplot .scatterplot-svg {
   position: absolute;
   cursor: pointer;
