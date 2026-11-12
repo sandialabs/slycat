@@ -7,6 +7,8 @@ import { useDropdownMenuHeight } from "hooks/useDropdownMenuHeight";
 import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
 import styles from "./SearchWrapper.module.scss";
+import { useCanDeleteModel } from "store";
+import type { ProjectAcl } from "utils/project-role";
 
 const MODELS_LIST_UI_STORAGE_PREFIX = "slycat:modelsListUi:v1:";
 
@@ -180,7 +182,31 @@ interface Item {
   created: string;
   marking: string;
   model_type: string;
+  acl?: ProjectAcl;
 }
+
+type BulkDeleteModelsButtonProps = {
+  count: number;
+  hasItems: boolean;
+  onDelete: () => void;
+};
+
+const BulkDeleteModelsButton: React.FC<BulkDeleteModelsButtonProps> = ({
+  count,
+  hasItems,
+  onDelete,
+}) => {
+  const canDelete = useCanDeleteModel();
+  if (!canDelete || !hasItems || count === 0) {
+    return null;
+  }
+  return (
+    <button type="button" className="btn btn-sm btn-danger" onClick={() => onDelete()}>
+      <Icon type="trash-can" className="me-1" />
+      Delete {count} Selected {count === 1 ? "Model" : "Models"}
+    </button>
+  );
+};
 
 /**
  * class that filters on item objects and search term, switches between one and two columns
@@ -491,25 +517,6 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
   }
 
   /**
-   * creates the delete button field
-   *
-   * @memberof SearchWrapper
-   */
-  private readonly getDeleteField = (): JSX.Element | null => {
-    const n = this.state.models_selected.length;
-    return this.props.items.length > 0 && n > 0 ? (
-      <button
-        type="button"
-        className="btn btn-sm btn-danger"
-        onClick={(e) => this.delete_models()}
-      >
-        <Icon type="trash-can" className="me-1" />
-        Delete {n} Selected {n === 1 ? "Model" : "Models"}
-      </button>
-    ) : null;
-  };
-
-  /**
    * populate the model or projects list depending on the type passed to props
    *
    * @memberof SearchWrapper
@@ -582,7 +589,11 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
             <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
               {isModels ? (
                 <>
-                  {this.getDeleteField()}
+                  <BulkDeleteModelsButton
+                    count={this.state.models_selected.length}
+                    hasItems={this.props.items.length > 0}
+                    onDelete={() => this.delete_models()}
+                  />
                   <div className="btn-group" role="group" aria-label="Sort and column layout">
                     {this.getSortField()}
                     {this.getColumnField()}

@@ -1,35 +1,44 @@
-const webpack = require('webpack');
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-// Commenting out ExportNodeModules plugin because it crashes with Babel7
-// const ExportNodeModules = require('webpack-node-modules-list');
+const webpack = require("webpack");
+const { merge } = require("webpack-merge");
+const common = require("./webpack.common.js");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = merge(common, {
-  mode: 'production',
-  devtool: 'source-map',
+  mode: "production",
+  devtool: "source-map",
+
+  optimization: {
+    concatenateModules: true,
+  },
+  // Workaround for production runtime error from:
+  // node_modules/xmlbuilder2/node_modules/js-yaml/lib/type.js
+  //
+  // With webpack production module concatenation enabled, js-yaml's Type constructor
+  // can fail at runtime with:
+  //   TypeError: Cannot set properties of undefined (setting 'options')
+  // Transforming this nested js-yaml copy to CommonJS keeps it out of webpack
+  // scope-hoisting while preserving concatenateModules for the rest of the app.
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: /[\\/]node_modules[\\/]xmlbuilder2[\\/]node_modules[\\/]js-yaml[\\/]/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            babelrc: false,
+            configFile: false,
+            plugins: ["@babel/plugin-transform-modules-commonjs"],
+          },
+        },
+      },
+    ],
+  },
+
   plugins: [
-    // Don't need to add UglifyJSPlugin here because production mode automatically does that
-    // new UglifyJSPlugin({
-    //   sourceMap: true
-    // }),
-    // Deletes the web-server/dist folder so that old files don't remain there, only fresh ones from the last run.
     new CleanWebpackPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
+      "process.env.NODE_ENV": JSON.stringify("production"),
     }),
-    // Commenting out Visualizer and Analyzer plugins because they're not needed in production
-    // new Visualizer({
-    //   filename: 'webpack-visualizer-stats.html'
-    // }),
-    // new BundleAnalyzerPlugin({
-    //   analyzerMode: 'static',
-    //   reportFilename: 'webpack-bundle-analyzer-report.html',
-    //   openAnalyzer: false,
-    //   generateStatsFile: true,
-    //   statsFilename: 'webpack-bundle-analyzer-stats.json',
-    // }),
-    // Commenting out ExportNodeModules plugin because it crashes with Babel7
-    // new ExportNodeModules(),
-  ]
+  ],
 });

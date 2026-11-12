@@ -53,7 +53,10 @@ def user(username):
       raise cherrypy.HTTPError(500)
     
   return configuration["cache"][username]
-
+def user_groups(uid):
+   pass
+def groups(search_string):
+   pass
 def register_slycat_plugin(context):
-  context.register_directory("passwd", init, user)
+  context.register_directory("passwd", init, user, user_groups, groups)
 

@@ -254,7 +254,10 @@ def post_projects():
                 "administrators": [{"user": cherrypy.request.login}],
                 "readers": [],
                 "writers": [],
-                "groups": [],
+                "groups": {
+                    "readers": [],
+                    "writers": [],
+                },
             },
             "created": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "creator": cherrypy.request.login,
@@ -345,6 +348,7 @@ def put_project(pid):
       cherrypy.HTTPError
         400 missing readers
     """
+
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -416,6 +420,7 @@ def delete_project(pid):
             )
             os.remove(hdf5_path)
             couchdb.delete(data)
+            cherrypy.log.error("%s Deleted project_data for PID=%s, %s." % (model["creator"], project["_id"], hdf5_name))
 
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
@@ -488,6 +493,9 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 # determine the type of data we just got and if we need to extract it eg for csv files
                 # HDF5 file path
                 if (".h5" in item["file_name"]) or (".hdf5" in item["file_name"]):
+                    model = database.get("model", mid)
+                    model["project_data"] = [item["_id"]]
+                    database.save(model)
                     with open(hdf5_path, "rb") as fh:
                         file_obj = fh.read()
                         attachment.append(file_obj)
@@ -848,9 +856,7 @@ def create_project_data(mid, aid, file):
                 model["project_data"].append(did)
                 database.save(model)
             database.save(data)
-            cherrypy.log.error(
-                "[MICROSERVICE] Added HDF5 project data %s." % data["file_name"]
-            )
+            cherrypy.log.error("%s Created project_data for PID=%s, %s." % (model["creator"], pid, hdf5_name))
 
             # If we decide later to store inputs and outputs separately, this code will pull them out from the original file
 
@@ -954,8 +960,7 @@ def create_project_data(mid, aid, file):
             model["project_data"].append(did)
             database.save(model)
         database.save(data)
-        cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
-
+        cherrypy.log.error("%s Created project_data for PID=%s, %s." % (model["creator"], pid, hdf5_name))
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
@@ -1156,13 +1161,20 @@ def delete_project_data(did, **kwargs):
     Returns:
         Nothing
     """
+
     database = slycat.web.server.database.couchdb.connect()
     with slycat.web.server.database.couchdb.db_lock:
 
         project_data = database.get("project_data", did)
         project = database.get("project", project_data["project"])
+        if project_data['project'] == project["_id"]:
+            hdf5_name = project_data["hdf5_name"]
+            hdf5_path = (
+                cherrypy.request.app.config["slycat-web-server"]["data-store"]
+                + "/project_data/"
+                + hdf5_name
+            )
         slycat.web.server.authentication.require_project_writer(project)
-
         for model in database.scan("slycat/models"):
             updated = False
             if "project_data" in model:
@@ -1174,7 +1186,9 @@ def delete_project_data(did, **kwargs):
                 database.save(model)
 
         with slycat.web.server.get_project_data_lock(did):
+            os.remove(hdf5_path)
             database.delete(project_data)
+            cherrypy.log.error("%s Deleted project_data for PID=%s, %s." % (model["creator"], project["_id"], hdf5_name))
 
         cherrypy.response.status = "204 Project Data deleted."
 
@@ -1985,11 +1999,12 @@ def delete_model_in_project_data(mid, did):
 
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
+    model = couchdb.get("model", mid)
+    project = couchdb.get("project", model["project"])
+    # Check writer access before the try so unauthorized deletes return 403
+    # instead of being logged and still returning 204.
+    slycat.web.server.authentication.require_project_writer(project)
     try:
-        model = couchdb.get("model", mid)
-        project = couchdb.get("project", model["project"])
-        slycat.web.server.authentication.require_project_writer(project)
-
         for project_data in couchdb.scan(
             "slycat/project_datas", startkey=model["project"], endkey=model["project"]
         ):
@@ -3035,7 +3050,7 @@ def get_user(uid, time):
 
     if uid == "-":
         uid = cherrypy.request.login
-    user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
+    user = cherrypy.request.app.config["slycat-web-server"]["directory"]["user"](uid)
     if user is None:
         cherrypy.log.error(
             "slycat.web.server.handlers.py get_user",
@@ -3044,8 +3059,126 @@ def get_user(uid, time):
         raise cherrypy.HTTPError(404)
     # Add the uid to the record, since the caller may not know it.
     user["uid"] = uid
-    return user
+    if uid == cherrypy.request.login:
+        user["server_administrator"] = (
+            slycat.web.server.authentication.is_server_administrator()
+        )
+    return json.loads(json.dumps(user, cls=MyEncoder))
 
+
+@cherrypy.tools.json_out(on=True)
+def get_groups(search_string: str):
+    """
+    Search for directory groups matching the provided search string.
+
+    This CherryPy endpoint queries the configured directory group lookup
+    function and returns the matching groups as JSON. The result is serialized
+    using the custom ``MyEncoder`` encoder to support objects that are not
+    directly JSON serializable.
+
+    Args:
+        search_string (str): The group name, partial group name, or other
+            search term used to query the configured directory service.
+
+    Returns:
+        object: A JSON-serializable representation of the matching groups.
+
+    Raises:
+        cherrypy.HTTPError: Raises HTTP 404 if no groups are found.
+
+    Notes:
+        The group lookup function is expected to be configured at:
+
+        ``cherrypy.request.app.config["slycat-web-server"]["directory"]["groups"]``
+
+        That configured function is called with ``search_string`` and should
+        return group results or ``None`` if no matching groups are found.
+    """
+
+    # Log the incoming group search request.
+    cherrypy.log.error("calling groups %s" % search_string)
+
+    # Call the configured directory group lookup function.
+    results = cherrypy.request.app.config["slycat-web-server"]["directory"]["groups"](
+        search_string
+    )
+
+    # Convert results to a JSON-compatible structure using the custom encoder,
+    # If the directory lookup returns no results, log the error and return 404.
+    if results is None:
+        cherrypy.log.error(
+            "slycat.web.server.handlers.py get_groups",
+            "cherrypy.HTTPError 404 no groups found for: %s" % search_string,
+        )
+        raise cherrypy.HTTPError(404)
+
+    # Return the results as a JSON-compatible Python object. The json_out tool
+    # will serialize this return value to JSON for the HTTP response.
+    return json.loads(json.dumps(results, cls=MyEncoder))
+
+
+@cherrypy.tools.json_out(on=True)
+def get_user_groups(search_string: str):
+    """
+    Retrieve directory groups associated with a user matching the search string.
+
+    This CherryPy endpoint queries the configured directory ``user_groups``
+    lookup function and returns the groups associated with the specified user.
+    The response is converted into a JSON-compatible structure using the custom
+    ``MyEncoder`` encoder before being returned. The ``json_out`` CherryPy tool
+    then serializes the returned value as JSON for the HTTP response.
+
+    Args:
+        search_string (str): The user identifier, username, UID, email address,
+            or other search term used to locate the user whose groups should be
+            retrieved.
+
+    Returns:
+        object: A JSON-compatible representation of the groups associated with
+        the matching user.
+
+    Raises:
+        cherrypy.HTTPError: Raises HTTP 404 if no user groups are found.
+
+    Notes:
+        The user group lookup function is expected to be configured at:
+
+        ``cherrypy.request.app.config["slycat-web-server"]["directory"]["user_groups"]``
+
+        That configured function is called with ``search_string`` and should
+        return the user group results, or ``None`` if no matching groups are
+        found.
+    """
+
+    # Log the incoming user group lookup request.
+    cherrypy.log.error("calling groups %s" % search_string)
+
+    # Call the configured directory user-group lookup function.
+    results = cherrypy.request.app.config["slycat-web-server"]["directory"][
+        "user_groups"
+    ](search_string)
+
+    # Convert results to a JSON-compatible structure using the custom encoder,
+    # then log the serialized result.
+    # cherrypy.log.error("result %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+
+    # If the directory lookup returns no results, log the error and return 404.
+    if results is None:
+        cherrypy.log.error(
+            "slycat.web.server.handlers.py get_user_groups",
+            "cherrypy.HTTPError 404 no groups found for: %s" % search_string,
+        )
+        raise cherrypy.HTTPError(404)
+
+    # Log the final result before returning it.
+    # cherrypy.log.error("result3 %s" % json.loads(json.dumps(results, cls=MyEncoder)))
+
+    # Return the results as a JSON-compatible Python object. The json_out tool
+    # will serialize this return value to JSON for the HTTP response.
+    return json.loads(json.dumps(results, cls=MyEncoder))
+    # Flag whether this record is the signed-in user and a server administrator.
+    # Used by the UI to derive project role without injecting a fake
+    # server_administrators entry onto every project in the projects list.
 
 @cherrypy.tools.json_out(on=True)
 def get_model_statistics(mid):
@@ -3475,9 +3608,9 @@ def post_combine_hdf5_tables(mid):
     )
 
     if len(column_headers_input) == 0:
-        column_headers_input.append('missing_input_header')
+        column_headers_input.append("missing_input_header")
     if len(column_headers_output) == 0:
-        column_headers_output.append('missing_output_header')
+        column_headers_output.append("missing_output_header")
 
     # Once we have column headers, this is how we can get/store them.
     for i, column in enumerate(column_headers_input):
@@ -3489,7 +3622,11 @@ def post_combine_hdf5_tables(mid):
             input_headers.append(str(column))
         attributes.append(
             {
-                "name": str(column.decode("utf-8")) if isinstance(column, bytes) else str(column),
+                "name": (
+                    str(column.decode("utf-8"))
+                    if isinstance(column, bytes)
+                    else str(column)
+                ),
                 "type": str(type(unformatted_input[0][i]))
                 .split("numpy.")[1]
                 .split("'>")[0],
@@ -3502,7 +3639,11 @@ def post_combine_hdf5_tables(mid):
             output_headers.append(str(column))
         attributes.append(
             {
-                "name": str(column.decode("utf-8")) if isinstance(column, bytes) else str(column),
+                "name": (
+                    str(column.decode("utf-8"))
+                    if isinstance(column, bytes)
+                    else str(column)
+                ),
                 "type": str(type(unformatted_output[0][j]))
                 .split("numpy.")[1]
                 .split("'>")[0],
@@ -3547,15 +3688,15 @@ def post_browse_hdf5(path, pid, mid):
             try:
                 rows = obj.shape[0]
             except:
-                rows = ''
+                rows = ""
             try:
                 cols = obj.shape[1]
             except:
-                cols = ''
-            dimensions = '(' + str(rows) + ', ' + str(cols) + ')'
+                cols = ""
+            dimensions = "(" + str(rows) + ", " + str(cols) + ")"
             return dimensions
         else:
-            return ''
+            return ""
 
     def allkeys_single_level(obj, tree_structure):
         path = obj.name  # This is current top level path
@@ -3572,7 +3713,7 @@ def post_browse_hdf5(path, pid, mid):
             # key will be all the sub groups and datasets in the current path
             tree_structure["name"].append(key)
             try:
-                tree_structure["sizes"].append(get_dimensions(obj[path + '/' + key]))
+                tree_structure["sizes"].append(get_dimensions(obj[path + "/" + key]))
             except Exception as e:
                 cherrypy.log.error(str(e))
                 tree_structure["sizes"].append(dimensions)

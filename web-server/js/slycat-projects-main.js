@@ -14,6 +14,7 @@ import { createRoot } from "react-dom/client";
 // These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.
 import ko from "knockout";
 import ProjectsPage from "components/Projects/ProjectsPage";
+import { AppStoreProvider, appStore, currentUserFromApi, setCurrentUser, setCurrentProject } from "store";
 
 // Wait for document ready
 $(document).ready(function () {
@@ -23,13 +24,24 @@ $(document).ready(function () {
   client
     .get_user_fetch()
     // Once we have got the user, thus verified authentication, we import the navbar JS.
-    .then(() => import(/* webpackChunkName: "slycat-navbar" */ "js/slycat-navbar"))
+    .then((user) =>
+      import(/* webpackChunkName: "slycat-navbar" */ "js/slycat-navbar").then((navbar) => ({
+        navbar,
+        user,
+      })),
+    )
     // Once the navbar is loaded, we render it and load the list of projects.
-    .then((navbar) => {
+    .then(({ navbar, user }) => {
       navbar.renderNavBar();
+      appStore.dispatch(setCurrentUser(currentUserFromApi(user)));
+      appStore.dispatch(setCurrentProject(null));
       client.get_projects({
         success: function (result) {
-          const projects_list = <ProjectsPage projects={result.projects} />;
+          const projects_list = (
+            <AppStoreProvider>
+              <ProjectsPage projects={result.projects} />
+            </AppStoreProvider>
+          );
           const projects_list_root = createRoot(document.getElementById("slycat-projects"));
           projects_list_root.render(projects_list);
         },
