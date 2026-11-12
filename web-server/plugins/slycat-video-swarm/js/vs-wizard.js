@@ -178,9 +178,9 @@ component.reauth = function() {
     component.remote.session_exists(values.sessionExists);
   };
 
-  const onSshAuthEnter = function (values) {
+  const onSshAuthEnter = function (values, passwordRequired) {
     setSshAuthValues(values);
-    postSshSession();
+    postSshSession(passwordRequired);
   };
 
   const onRemoteLoginError = function (message) {
@@ -202,6 +202,7 @@ component.reauth = function() {
       <SshAuthentication
         hostnameMode="locked"
         agent={true}
+        useServerAuthMode
         loadingData={loadingData}
         error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
         onError={onRemoteLoginError}
@@ -462,7 +463,7 @@ component.reauth = function() {
     });
   };
 
-  const postSshSession = function () {
+  const postSshSession = function (passwordRequired = true) {
     if (!component.remote.enable()) {
       return;
     }
@@ -480,8 +481,8 @@ component.reauth = function() {
 
     client.post_remotes({
       hostname: component.remote.hostname(),
-      username: component.remote.username(),
-      password: component.remote.password(),
+      username: passwordRequired ? component.remote.username() : null,
+      password: passwordRequired ? component.remote.password() : null,
       success: function (sid) {
         $(".remote-browser-continue").toggleClass("disabled", false);
         component.remote.session_exists(true);

@@ -292,9 +292,9 @@ function constructor(params) {
     component.remote.session_exists(values.sessionExists);
   };
 
-  const onSshAuthEnter = function (values) {
+  const onSshAuthEnter = function (values, passwordRequired) {
     setSshAuthValues(values);
-    postSshSession();
+    postSshSession(passwordRequired);
   };
 
   const onRemoteLoginError = function (message) {
@@ -315,6 +315,7 @@ function constructor(params) {
     component.ssh_wizard_login_root.render(
       <SshAuthentication
         hostnameMode="editable"
+        useServerAuthMode
         loadingData={loadingData}
         error={remoteLoginDangerMessage(component.remote.status_type(), component.remote.status())}
         onError={onRemoteLoginError}
@@ -695,7 +696,7 @@ function constructor(params) {
     }
   };
 
-  const postSshSession = function () {
+  const postSshSession = function (passwordRequired = true) {
     if (!component.remote.enable()) {
       return;
     }
@@ -712,8 +713,8 @@ function constructor(params) {
 
     client.post_remotes({
       hostname: component.remote.hostname(),
-      username: component.remote.username(),
-      password: component.remote.password(),
+      username: passwordRequired ? component.remote.username() : null,
+      password: passwordRequired ? component.remote.password() : null,
       success: function (sid) {
         component.remote.session_exists(true);
         component.remote.sid(sid);

@@ -11,6 +11,7 @@ import {
   type SshAuthValues,
 } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+import { useSshPasswordRequired } from "utils/use-ssh-password-required";
 import {
   RemoteAuthErrorAlert,
   useRemoteLoginError,
@@ -24,8 +25,9 @@ type RemoteHost = {
 
 type SshAuthenticationBase = RemoteAuthErrorProps & {
   onChange: (values: SshAuthValues) => void;
-  onEnter?: (values: SshAuthValues) => void;
+  onEnter?: (values: SshAuthValues, passwordRequired: boolean) => void;
   loadingData?: boolean;
+  useServerAuthMode?: boolean;
 };
 
 export type SshAuthenticationProps =
@@ -60,6 +62,8 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
   const isLocked = hostnameMode === "locked";
   const agent = props.hostnameMode === "hidden" ? false : props.agent === true;
   const loadingData = Boolean(props.loadingData);
+  const serverPasswordRequired = useSshPasswordRequired();
+  const passwordRequired = !props.useServerAuthMode || serverPasswordRequired;
   const { errorMessage, clearError } = useRemoteLoginError(props.error, props.onError);
 
   const ids = React.useId();
@@ -84,6 +88,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
   onChangeRef.current = props.onChange;
   const onEnterRef = React.useRef(props.onEnter);
   onEnterRef.current = props.onEnter;
+  const hostnameInputRef = React.useRef<HTMLInputElement>(null);
   const usernameInputRef = React.useRef<HTMLInputElement>(null);
   const passwordInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -218,26 +223,28 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
     setUsername(value);
   };
 
+  const hostnameMissing = !isHidden && !hostname.trim();
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     clearError();
     const form = event.currentTarget;
     setValidated(true);
-    if (!form.checkValidity()) {
-      const firstInvalid = form.querySelector(":invalid");
-      if (firstInvalid instanceof HTMLElement) {
-        firstInvalid.focus();
-      }
+    if (hostnameMissing || !form.checkValidity()) {
+      const firstInvalid = hostnameMissing
+        ? hostnameInputRef.current
+        : form.querySelector<HTMLElement>(":invalid");
+      firstInvalid?.focus();
       return;
     }
-    onEnterRef.current?.(currentValues());
+    onEnterRef.current?.(currentValues(), passwordRequired);
   };
 
   if (!ready) {
     return <div />;
   }
 
-  const showCredentials = isHidden || !sessionExists;
+  const showCredentials = passwordRequired && (isHidden || !sessionExists);
 
   return (
     <form
@@ -273,6 +280,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
             <div className="form-floating">
               <input
                 id={hostnameId}
+                ref={hostnameInputRef}
                 placeholder="Hostname"
                 className="form-control"
                 readOnly={isLocked}
@@ -286,7 +294,7 @@ const SshAuthentication = (props: SshAuthenticationProps) => {
                 Hostname
               </label>
             </div>
-            <div className={`invalid-feedback${validated && !hostname ? " d-block" : ""}`}>
+            <div className={`invalid-feedback${validated && hostnameMissing ? " d-block" : ""}`}>
               Please enter a hostname.
             </div>
           </div>
