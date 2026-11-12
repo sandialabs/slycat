@@ -475,6 +475,25 @@ module.get_configuration_remote_hosts_fetch = async function () {
   });
 };
 
+let passwordRequirementsPromise;
+
+module.get_password_requirements_fetch = function () {
+  // Share one request per page between the navbar and the remote login forms.
+  if (!passwordRequirementsPromise) {
+    passwordRequirementsPromise = fetch(`${api_root}remotes/show/user-password`, {
+      credentials: 'same-origin',
+      cache: 'no-store'
+    }).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Could not load password requirements: ${response.status}`);
+      }
+      const { slycat, ssh } = (await response.json()) ?? {};
+      return { slycat: slycat !== false, ssh: ssh !== false };
+    }).catch(() => ({ slycat: true, ssh: true }));
+  }
+  return passwordRequirementsPromise;
+};
+
 module.get_configuration_smb_remote_hosts_fetch = async function () {
   return fetch(`${api_root}configuration/smb-remote-hosts`, {
     credentials: 'same-origin',

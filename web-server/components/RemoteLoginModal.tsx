@@ -6,7 +6,6 @@ import * as React from "react";
 import { createRoot } from "react-dom/client";
 import "bootstrap";
 import client from "js/slycat-web-client";
-import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import SmbAuthentication from "components/SmbAuthentication";
 import SshAuthentication from "components/SshAuthentication";
 import {
@@ -18,6 +17,7 @@ import {
   type SshAuthValues,
 } from "utils/remote-auth";
 import { REMOTE_AUTH_LABELS } from "utils/ui-labels";
+import { useSshPasswordRequired } from "utils/use-ssh-password-required";
 
 declare const $: any;
 
@@ -45,23 +45,6 @@ type RemoteLoginModalProps = {
 };
 
 type AuthValues = SshAuthValues | SmbAuthValues;
-
-const useSshPasswordRequired = (): boolean => {
-  const [required, setRequired] = React.useState(() =>
-    Boolean(ispasswordrequired.ssh_passwordrequired()),
-  );
-
-  React.useEffect(() => {
-    const subscription = ispasswordrequired.ssh_passwordrequired.subscribe((value: boolean) => {
-      setRequired(Boolean(value));
-    });
-    return () => {
-      subscription.dispose();
-    };
-  }, []);
-
-  return required;
-};
 
 const RemoteLoginModal = (props: RemoteLoginModalProps) => {
   const passwordRequired = useSshPasswordRequired();

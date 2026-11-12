@@ -16,7 +16,6 @@ import model_names from "js/slycat-model-names";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import "@asielick/knockout-projections";
-import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import "js/slycat-nag";
 import slycatNavbar from "templates/slycat-navbar.html";
 import slycatBookmarkItem from "templates/slycat-bookmark-item.html";
@@ -44,6 +43,11 @@ import {
 } from "utils/project-role";
 
 export function renderNavBar() {
+  const slycatPasswordRequired = ko.observable(true);
+  client.get_password_requirements_fetch().then(({ slycat }) => {
+    slycatPasswordRequired(slycat);
+  });
+
   // Let's check to see if we have a session by trying to retrieve the projects list.
   // If we get redirected, it likely means we don't have a session, so let's take the user
   // to the login page.
@@ -55,7 +59,7 @@ export function renderNavBar() {
     console.log(
       "we are being redirected or have another type of error, so let's go to the login page",
     );
-    ispasswordrequired.slycat_passwordrequired()
+    slycatPasswordRequired()
       ? (window.location.href = "/login/slycat-login.html?from=" + window.location.href)
       : (window.location.href = "/projects");
   });
@@ -91,7 +95,7 @@ export function renderNavBar() {
       function checkCookie() {
         var myCookie = getCookie("slycattimeout");
         if (myCookie == null) {
-          ispasswordrequired.slycat_passwordrequired()
+          slycatPasswordRequired()
             ? (window.location.href = "/login/slycat-login.html?from=" + window.location.href)
             : (window.location.href = "/projects");
         }
@@ -119,7 +123,7 @@ export function renderNavBar() {
       component.server_friendly_name =
         config.server_friendly_name != undefined ? config.server_friendly_name : "Slycat";
       component.model_names = model_names;
-      component.ispasswordrequired = ispasswordrequired;
+      component.slycatPasswordRequired = slycatPasswordRequired;
 
       // Keep track of the current project, if any.
       component.project_id = ko.observable(params.project_id);
