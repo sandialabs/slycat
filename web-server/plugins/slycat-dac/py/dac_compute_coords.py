@@ -28,6 +28,7 @@ import scipy.optimize
 from scipy import spatial
 from sklearn.decomposition import PCA
 from sklearn.neighbors import LocalOutlierFactor
+from sklearn.cluster import DBSCAN
 
 # better version of natural sort
 # from natsort import natsorted
@@ -40,6 +41,10 @@ import cherrypy
 # number of neighbors for LOF, defaults to 20 (same as scikit-learn)
 # may be adjustable in future versions
 LOF_K = 10
+
+# parameters for DBSCAN (sklearn defaults are 0.5 and 5)
+DBSCAN_EPS = 0.1
+DBSCAN_MIN_SAMPLES = 5
 
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D, full=False):
@@ -1103,3 +1108,75 @@ def compute_LOF_subset(dist_mats, alpha_values, old_lof_vals, subset, proj=None,
         lof_vals[proj_inds] = proj_vals
 
     return lof_vals
+
+
+# compute DBSCAN for a given set of mds coords, within a given subset
+def compute_DBSCAN(mds_coords, subset=None, eps=DBSCAN_EPS, min_samples=DBSCAN_MIN_SAMPLES):
+    """
+    Computes DBSCAN clustering on a given set of mds coords.
+    
+    INPUTS: -- mds_coords is the current set of mds coordinates
+            -- subset is a vector of length n with 1 = in subset, 0 = not in subset,
+               if None it is assumed to be identically 1
+    
+    OUTPUTS: vector of DBSCAN clusters.
+
+    NOTE: anything not in the subset is given a -1 clustering value.
+    """
+
+    # number of points
+    num_tests = mds_coords.shape[0]
+
+    # subset defaults to everything
+    if subset is None:
+        subset = np.ones(num_tests)
+
+    # get subset
+    subset_inds = np.where(subset)[0]
+    mds_subset = mds_coords[subset_inds,:]
+    
+    # perform DBSCAN, using -1 for points not in subset
+    DBSCAN_vals = -np.ones(num_tests)
+    clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(mds_subset)
+    DBSCAN_vals[subset_inds] = clustering.labels_
+    
+    return DBSCAN_vals
+
+
+# compute initial silhouette scores
+def init_silhouette(var_dist, num_neighbors=LOF_K, proj=None, 
+             landmarks=None, use_coordinates=False):
+    """
+    Computes the initial local outlier factor values (assuming alpha all 1)
+
+    INPUTS: -- var_dist is a list of distance matrices
+            -- num_neighbors is the number of neighbors to use for LOF
+            -- proj is a vector mask of projected points (optional)
+            -- landmarks is a vector of indices of landmark points (optional)
+            -- use_coordinates indicates that var_dist actually contains PCA intermediates
+
+    OUTPUTS: LOF_vec is a vector with num_points containing the LOF value
+             for each data point.
+    """
+
+    num_vars = len(var_dist)
+
+    # assume initial alpha values are all one
+    alpha_values = np.ones(num_vars)
+
+    # scale distance matrices (or coordinates) by maximum, unless maximum is zero
+    for i in range(0, num_vars):
+
+        coords_scale = np.amax(np.absolute(var_dist[i]))
+        if coords_scale < np.finfo(float).eps:
+            coords_scale = 1.0
+
+        var_dist[i] = var_dist[i] / coords_scale
+
+    # compute LOF values assuming alpha = 1 for scaling, full subset, full view
+    subset_mask = np.ones(var_dist[0].shape[0])
+    silhouette_vec = compute_LOF(var_dist, alpha_values, subset_mask, 
+                          num_neighbors=num_neighbors, proj=proj, 
+                          landmarks=landmarks, use_coordinates=use_coordinates)
+
+    return silhouette_vec

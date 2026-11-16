@@ -645,9 +645,25 @@ def register_slycat_plugin(context):
     # compute silhouette cluster score
     def compute_silhouette (database, model, verb, type, command, **kwargs):
 
-        cherrypy.log.error("silhouette")
+        
+        cherrypy.log.error("[DAC] silhouette score")
 
         return json.dumps({"silhouette": [1]})
+
+    # compute dbscan clustering
+    def compute_dbscan (database, model, verb, type, command, **kwargs):
+
+        # get current mds coords & subet
+        mds_coords = numpy.array(kwargs["mds_coords"])
+        subset = numpy.array(kwargs["subset"])
+
+        # remove unnecessary column from mds coords
+        mds_coords = mds_coords[:,0:2]
+
+        # compute DBSCAN
+        dbscan_values = dac.compute_DBSCAN(mds_coords,subset=subset)
+
+        return json.dumps({"dbscan": dbscan_values.tolist()})
 
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
@@ -2235,6 +2251,7 @@ def register_slycat_plugin(context):
     context.register_model_command("POST", "DAC", "filter_model", filter_model)
     context.register_model_command("POST", "DAC", "compute_lof", compute_lof)
     context.register_model_command("POST", "DAC", "compute_silhouette", compute_silhouette)
+    context.register_model_command("POST", "DAC", "compute_dbscan", compute_dbscan)
     context.register_model_command("POST", "DAC", "update_alpha_lof", update_alpha_LOF)
 
     # register input wizard with slycat

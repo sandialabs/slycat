@@ -656,6 +656,12 @@ module.update = function (alpha_values)
 
 }
 
+// returns current mds coords and subset
+module.get_mds_coords = function()
+{
+	return mds_coords;
+}
+
 // routine to filter scatter plot using table filters
 module.filter_plots = function ()
 {
