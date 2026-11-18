@@ -221,15 +221,42 @@ def get_projects_list(_=None):
     :return: json projects list
     """
     database = slycat.web.server.database.couchdb.connect()
-    projects = [
-        project
-        for project in database.scan("slycat/projects")
-        if slycat.web.server.authentication.is_project_reader(project)
-        or slycat.web.server.authentication.is_project_writer(project)
-        or slycat.web.server.authentication.is_project_administrator(project)
-        or slycat.web.server.authentication.is_server_administrator()
-    ]
+
+    is_server_admin = slycat.web.server.authentication.is_server_administrator()
+
+    def get_project_role(project):
+        """
+        Return the highest role for the current user on this project.
+
+        Priority:
+        administrator > writer > reader > none
+        """
+        if is_server_admin:
+            return "administrator"
+
+        if slycat.web.server.authentication.is_project_administrator(project):
+            return "administrator"
+
+        if slycat.web.server.authentication.is_project_writer(project):
+            return "writer"
+
+        if slycat.web.server.authentication.is_project_reader(project):
+            return "reader"
+
+        return "none"
+
+    projects = []
+
+    for project in database.scan("slycat/projects"):
+        role = get_project_role(project)
+
+        if role != "none":
+            project = dict(project)  # avoid mutating the original CouchDB doc directly
+            project["current_user_role"] = role
+            projects.append(project)
+
     projects = sorted(projects, key=lambda x: x["created"], reverse=True)
+
     return {"revision": 0, "projects": projects}
 
 
