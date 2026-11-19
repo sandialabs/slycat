@@ -227,21 +227,34 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     ];
 
     // check for DAC models
-    var dac_model = false;
+    var dac_model_outlier = false;
+    var dac_model_cluster = false;
     for (let i = 0; i < this.props.items.length; i++) {
       if (this.props.items[i]["model-type"] === "DAC") {
         if ("artifact:dac-outlier-summary" in this.props.items[i]) {
-          dac_model = true;
+          dac_model_outlier = true;
+        }
+        if ("artifact:dac-silhouette-summary" in this.props.items[i]) {
+          dac_model_cluster = true;
         }
       }
     }
 
-    // if DAC models are present, add outlier field
-    if (dac_model) {
+    // if DAC models are present w/ outliers, add outlier field
+    if (dac_model_outlier) {
       basicSortFields.push({
         key: "artifact:dac-outlier-summary",
         type: "numeric",
         label: "Outlier",
+      });
+    }
+
+    // if DAC models are present w/ clusters, add cluster field
+    if (dac_model_cluster) {
+      basicSortFields.push({
+        key: "artifact:dac-silhouette-summary",
+        type: "numeric",
+        label: "Cluster",
       });
     }
 
