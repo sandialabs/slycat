@@ -76,8 +76,8 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
                          init_fisher_order, init_fisher_pos, init_diff_desired_state,
                          VAR_INCLUDE_COLUMNS, datapoints_meta, meta_include_columns, data_table,
                          editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME,
-                         init_use_PCA_comps, init_lof_values, init_dbscan_values, 
-                         init_lof_dropdown_state, init_dbscan_dropdown_state)
+                         init_use_PCA_comps, init_lof_values, init_dbscan_values, init_silhouette_values,
+                         init_lof_dropdown_state, init_dbscan_dropdown_state, init_silhouette_dropdown_state)
 {
 
     // set up selection buttons (1-2-3 subset zoom)
@@ -126,8 +126,8 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
     module.update_dbscan_dropdown(init_dbscan_dropdown_state);
 
     // set up silhouette dropdown
-    silhouette_color_by_col = init_lof_values;
-    var init_silhouette_dropdown_state = init_lof_dropdown_state;
+    silhouette_color_by_col = init_silhouette_values;
+    var init_silhouette_dropdown_state = init_silhouette_dropdown_state;
     $("#dac-silhouette-dropdown").on("click", silhouette_dropdown);
     module.update_silhouette_dropdown(init_silhouette_dropdown_state);
 
@@ -834,7 +834,7 @@ module.update_lof_dropdown = function(lof_state)
         $("#dac-lof-dropdown").removeClass("bg-warning");
 
         // check other dropdown states
-        if (dbscan_dropdown_state) {
+        if (dbscan_dropdown_state && silhouette_dropdown_state) {
             $("#dac-calculator-dropdown").removeClass("bg-warning");
         }
 
@@ -913,7 +913,7 @@ module.update_dbscan_dropdown = function(dbscan_state)
         $("#dac-dbscan-dropdown").removeClass("bg-warning");
 
         // check other dropdown states
-        if (lof_dropdown_state) {
+        if (lof_dropdown_state && silhouette_dropdown_state) {
             $("#dac-calculator-dropdown").removeClass("bg-warning");
         }
 
@@ -932,15 +932,41 @@ function silhouette_dropdown () {
             mid: mid,
             type: "DAC",
             command: "compute_silhouette",
-            parameters: {alpha: alpha_sliders.get_alpha_values(),
-                         subset: selections.get_subset(),
-                         include_columns: var_include_columns,
-                         use_PCA_comps: use_PCA_comps},
+            parameters: {mds_coords: scatter_plot.get_mds_coords(),
+                         subset: selections.get_subset()},
             success: function (result)
                 {
     
-                    console.log(result);
+                    // collect result, if not available default to empty
+                    silhouette_color_by_col = [];
+                    if (JSON.parse(result).hasOwnProperty("silhouette")) {
+                        silhouette_color_by_col = JSON.parse(result)["silhouette"];
+                    }
                     
+                    // set color by pulldown to display dbscan
+                    $("#dac-scatter-select").prop("selectedIndex", 3);
+                    curr_color_by_sel = -4;
+                    curr_color_by_col = silhouette_color_by_col;
+    
+                    // re-color by dbscan
+                    scatter_plot.update_color(curr_color_by_col);
+
+                    // update dbscan dropdown event
+                    var SilhouetteDropdownEvent = new CustomEvent("DACSilhouetteDropdownChanged", 
+                        { detail: true });
+                    document.body.dispatchEvent(SilhouetteDropdownEvent);
+
+                    // fire new colorby event
+                    var colorbyEvent = new CustomEvent("DACColorByChanged",
+                        {detail: curr_color_by_sel});
+                    document.body.dispatchEvent(colorbyEvent);
+
+                    // update lof values
+                    client.put_model_parameter ({
+                        mid: mid,
+                        aid: "dac-silhouette-values",
+                        value: silhouette_color_by_col
+                    })
     
                 },
             error: function ()
@@ -957,7 +983,26 @@ function silhouette_dropdown () {
 // true if correct, false if out of date
 module.update_silhouette_dropdown = function(silhouette_state)
 {
-    console.log("update silhouette dropdown");
+    // set dbscan dropdown state
+    silhouette_dropdown_state = silhouette_state;
+
+    // color button yellow if out of sync
+    if (silhouette_state) {
+
+        $("#dac-silhouette-dropdown").removeClass("bg-warning");
+
+        // silhouette update implies dbscan update
+        $("#dac-dbscan-dropdown").removeClass("bg-warning");
+
+        // check other dropdown states
+        if (lof_dropdown_state) {
+            $("#dac-calculator-dropdown").removeClass("bg-warning");
+        }
+
+    } else {
+        $("#dac-silhouette-dropdown").addClass("bg-warning");
+        $("#dac-calculator-dropdown").addClass("bg-warning");
+    }
 
 }
 

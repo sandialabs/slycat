@@ -642,14 +642,6 @@ def register_slycat_plugin(context):
     
         return json.dumps({"lof": lof_values.tolist()})
 
-    # compute silhouette cluster score
-    def compute_silhouette (database, model, verb, type, command, **kwargs):
-
-        
-        cherrypy.log.error("[DAC] silhouette score")
-
-        return json.dumps({"silhouette": [1]})
-
     # compute dbscan clustering
     def compute_dbscan (database, model, verb, type, command, **kwargs):
 
@@ -661,9 +653,24 @@ def register_slycat_plugin(context):
         mds_coords = mds_coords[:,0:2]
 
         # compute DBSCAN
-        dbscan_values = dac.compute_DBSCAN(mds_coords,subset=subset)
+        dbscan_values = dac.compute_DBSCAN(mds_coords, subset=subset)
 
         return json.dumps({"dbscan": dbscan_values.tolist()})
+
+    # compute silhouette cluster score
+    def compute_silhouette (database, model, verb, type, command, **kwargs):
+
+        # get current mds coords & subet
+        mds_coords = numpy.array(kwargs["mds_coords"])
+        subset = numpy.array(kwargs["subset"])
+
+        # remove unnecessary column from mds coords
+        mds_coords = mds_coords[:,0:2]
+
+        # compute silhouette scores
+        silhouette_values = dac.compute_silhouette(mds_coords, subset=subset)
+
+        return json.dumps({"silhouette": silhouette_values.tolist()})
 
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):

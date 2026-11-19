@@ -102,7 +102,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     DBSCAN_vec = dac.compute_DBSCAN(mds_coords)
 
     # compute initial silhouette scores for all variables
-    silhouette_vec = dac.init_silhouette(var_dist, proj=proj, landmarks=landmarks, use_coordinates=use_coordinates)
+    silhouette_vec = dac.compute_silhouette(mds_coords, DBSCAN_vec)
 
     # compute LOF summary value for ranking this model
     LOF_summary = numpy.max(LOF_vec)
