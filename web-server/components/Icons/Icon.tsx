@@ -53,7 +53,16 @@ import { faWindowMinimize } from "@fortawesome/free-regular-svg-icons/faWindowMi
  *   // ...then in ICON_NAME_MAP:
  *   "text-columns": { library: "react-icons", component: PiTextColumns },
  */
-import { PiTextAlignJustify, PiTextColumns, PiRulerBold } from "react-icons/pi";
+import {
+  PiEye,
+  PiPencilSimple,
+  PiRulerBold,
+  PiShieldCheck,
+  PiTextAlignJustify,
+  PiTextColumns,
+  PiUser,
+  PiUsersThree,
+} from "react-icons/pi";
 import type { IconType } from "react-icons";
 
 type FontAwesomeMapEntry = { icon: IconDefinition };
@@ -90,6 +99,11 @@ export const ICON_NAME_MAP = {
   "text-columns": { library: "react-icons", component: PiTextColumns },
   "text-align-justify": { library: "react-icons", component: PiTextAlignJustify },
   ruler: { library: "react-icons", component: PiRulerBold },
+  user: { library: "react-icons", component: PiUser },
+  "users-three": { library: "react-icons", component: PiUsersThree },
+  "shield-check": { library: "react-icons", component: PiShieldCheck },
+  "pencil-simple": { library: "react-icons", component: PiPencilSimple },
+  eye: { library: "react-icons", component: PiEye },
 } satisfies Record<string, IconMapEntry>;
 
 export type IconName = keyof typeof ICON_NAME_MAP;

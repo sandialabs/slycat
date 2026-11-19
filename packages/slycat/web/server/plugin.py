@@ -72,7 +72,7 @@ class Manager(object):
           cherrypy.log.error(traceback.format_exc())
     
 
-  def register_directory(self, type, init, user):
+  def register_directory(self, type, init, user, user_groups, groups):
     """Register a new directory type.
 
     Parameters
@@ -90,7 +90,7 @@ class Manager(object):
       cherrypy.log.error("slycat.web.server.plugin.py register_directory", "Directory type '%s' has already been registered." % type)
       raise Exception("Directory type '%s' has already been registered." % type)
 
-    self.directories[type] = {"init":init, "user":user}
+    self.directories[type] = {"init":init, "user":user, "user_groups":user_groups, "groups":groups}
     cherrypy.log.error("Registered directory '%s'." % type)
 
   def register_marking(self, type, label, badge, page_before=None, page_after=None):

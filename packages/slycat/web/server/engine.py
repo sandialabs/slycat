@@ -181,6 +181,18 @@ def start(root_path, config_file):
         conditions={"method": ["GET"]},
     )
     dispatcher.connect(
+        "get_groups",
+        "/groups/:search_string",
+        slycat.web.server.handlers.get_groups,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
+        "get_user_groups",
+        "/user-groups/:search_string",
+        slycat.web.server.handlers.get_user_groups,
+        conditions={"method": ["GET"]},
+    )
+    dispatcher.connect(
         "get-time-series-names",
         "/remotes/:hostname/time_series_names/file{path:.*}",
         slycat.web.server.handlers.get_time_series_names,
@@ -785,9 +797,19 @@ def start(root_path, config_file):
     directory_args = configuration["slycat-web-server"]["directory"].get("args", [])
     directory_kwargs = configuration["slycat-web-server"]["directory"].get("kwargs", {})
     manager.directories[directory_type]["init"](*directory_args, **directory_kwargs)
-    configuration["slycat-web-server"]["directory"] = manager.directories[
+    # user info query
+    configuration["slycat-web-server"]["directory"]["user"] = manager.directories[
         directory_type
     ]["user"]
+    # get all groups for a user
+    configuration["slycat-web-server"]["directory"]["user_groups"] = manager.directories[
+        directory_type
+    ]["user_groups"]
+    # fuzzy search for groups
+    configuration["slycat-web-server"]["directory"]["groups"] = manager.directories[
+        directory_type
+    ]["groups"]
+    # TODO: add 2 new functions along with user here. get_user_meta_groups and query_meta_groups
 
     updated_remote_hosts = {}
     for remote in configuration["slycat-web-server"]["remote-hosts"]:
