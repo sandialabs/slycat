@@ -772,10 +772,8 @@ function lof_dropdown()
             mid: mid,
             type: "DAC",
             command: "compute_lof",
-            parameters: {alpha: alpha_sliders.get_alpha_values(),
-                         subset: selections.get_subset(),
-                         include_columns: var_include_columns,
-                         use_PCA_comps: use_PCA_comps},
+            parameters: {mds_coords: scatter_plot.get_mds_coords(),
+                         subset: selections.get_subset()},
             success: function (result)
                 {
     

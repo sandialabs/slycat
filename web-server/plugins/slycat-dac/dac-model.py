@@ -601,45 +601,56 @@ def register_slycat_plugin(context):
     # compute local outlier factor
     def compute_lof(database, model, verb, type, command, **kwargs):
 
-        # get alpha values and subset mask
-        alpha_values = numpy.array(kwargs["alpha"])
-        subset_mask = numpy.array(kwargs["subset"])
+        # old LOF using all dimensions
+        # # get alpha values and subset mask
+        # alpha_values = numpy.array(kwargs["alpha"])
+        # subset_mask = numpy.array(kwargs["subset"])
 
-        # only use included variables
-        include_columns = numpy.array(kwargs["include_columns"])
+        # # only use included variables
+        # include_columns = numpy.array(kwargs["include_columns"])
 
-        # use PCA components
-        use_PCA_comps = kwargs["use_PCA_comps"]
+        # # use PCA components
+        # use_PCA_comps = kwargs["use_PCA_comps"]
 
-        # check for projection mask
-        proj = numpy.ones(len(subset_mask))
-        if "artifact:dac-proj-mask" in model:
+        # # check for projection mask
+        # proj = numpy.ones(len(subset_mask))
+        # if "artifact:dac-proj-mask" in model:
 
-            # load projecgtion mask
-            proj = numpy.array(slycat.web.server.get_model_parameter(
-                database, model, "dac-proj-mask"))
+        #     # load projecgtion mask
+        #     proj = numpy.array(slycat.web.server.get_model_parameter(
+        #         database, model, "dac-proj-mask"))
 
-        # get landmarks
-        landmarks = None
-        if "artifact:dac-landmarks" in model:
+        # # get landmarks
+        # landmarks = None
+        # if "artifact:dac-landmarks" in model:
 
-            # load landmarks mask
-            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-landmarks", "0/0/..."))[0]
+        #     # load landmarks mask
+        #     landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+        #         database, model, "dac-landmarks", "0/0/..."))[0]
 
-        # get distance matrices as a list of numpy arrays from slycat server
-        dist_mats = []
-        for i in include_columns:
-            dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-var-dist", "%s/0/..." % i))))
+        # # get distance matrices as a list of numpy arrays from slycat server
+        # dist_mats = []
+        # for i in include_columns:
+        #     dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
+        #         database, model, "dac-var-dist", "%s/0/..." % i))))
         
 
-        # compute new lof
-        lof_values = dac.compute_LOF(dist_mats, alpha_values[include_columns],
-                                     subset_mask, proj=proj, 
-                                     landmarks=landmarks, 
-                                     use_coordinates=use_PCA_comps)
+        # # compute new lof
+        # lof_values = dac.compute_LOF(dist_mats, alpha_values[include_columns],
+        #                              subset_mask, proj=proj, 
+        #                              landmarks=landmarks, 
+        #                              use_coordinates=use_PCA_comps)
     
+        # get current mds coords & subet
+        mds_coords = numpy.array(kwargs["mds_coords"])
+        subset = numpy.array(kwargs["subset"])
+
+        # remove unnecessary column from mds coords
+        mds_coords = mds_coords[:,0:2]
+
+        # compute DBSCAN
+        lof_values = dac.compute_LOF(mds_coords, subset=subset)
+
         return json.dumps({"lof": lof_values.tolist()})
 
     # compute dbscan clustering

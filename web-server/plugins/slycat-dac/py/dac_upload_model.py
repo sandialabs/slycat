@@ -96,7 +96,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
         landmarks=landmarks, use_coordinates=use_coordinates)
 
     # compute initial LOF for all variables
-    LOF_vec = dac.init_LOF(var_dist, proj=proj, landmarks=landmarks, use_coordinates=use_coordinates)
+    LOF_vec = dac.compute_LOF(mds_coords)
 
     # compute initial DBSCAN for all variables
     DBSCAN_vec = dac.compute_DBSCAN(mds_coords)
