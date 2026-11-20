@@ -40,7 +40,7 @@ import {
   canDeleteProject,
   canEditModel,
   canEditProject,
-  getProjectRole,
+  acceptedProjectRole,
 } from "utils/project-role";
 
 export function renderNavBar() {
@@ -172,10 +172,7 @@ export function renderNavBar() {
         if (!component.project()[0]) {
           return "none";
         }
-        const acl = mapping.toJS(component.project()[0].acl);
-        const uid = component.user.uid();
-        const serverAdministrator = Boolean(ko.unwrap(component.user.server_administrator));
-        return getProjectRole(acl, uid, { serverAdministrator });
+        return acceptedProjectRole(ko.unwrap(component.project()[0].current_user_role));
       });
 
       // Keep track of the current model, if any.
@@ -436,7 +433,6 @@ export function renderNavBar() {
       });
 
       // Get information about the current user.
-      // Include server_administrator so relation() can subscribe before get_user returns.
       component.user = mapping.fromJS({ uid: "", name: "", server_administrator: false });
       client.get_user({
         success: function (user) {

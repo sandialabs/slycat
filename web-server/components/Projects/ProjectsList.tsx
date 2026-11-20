@@ -1,8 +1,6 @@
 import Project from "components/Projects/Project";
 import * as React from "react";
 
-import type { ProjectAcl } from "utils/project-role";
-
 /**
  * list of project data objects
  */
@@ -17,7 +15,7 @@ export interface ProjectsListProps {
  * @member description string description for the project
  * @member creator string name of the creator
  * @member created string representation of the creation time
- * @member acl project access control list
+ * @member current_user_role role returned by the server for the signed-in user
  */
 export interface ProjectData {
   name: string;
@@ -25,7 +23,7 @@ export interface ProjectData {
   description: string;
   creator: string;
   created: string;
-  acl?: ProjectAcl;
+  current_user_role?: string;
 }
 
 /**
@@ -59,7 +57,7 @@ export default class ProjectsList extends React.Component<ProjectsListProps, Pro
           description={project.description}
           created={project.created}
           creator={project.creator}
-          acl={project.acl}
+          current_user_role={project.current_user_role}
         />
       );
     });

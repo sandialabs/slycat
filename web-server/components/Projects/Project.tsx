@@ -6,7 +6,6 @@ import styles from "./Projects.module.scss";
 import Icon from "components/Icons/Icon";
 import { formatDateToLocaleString } from "utils/formatting";
 import { useCanDeleteProject } from "store";
-import type { ProjectAcl } from "utils/project-role";
 
 interface ProjectProps {
   name: string;
@@ -14,7 +13,7 @@ interface ProjectProps {
   description: string;
   creator: string;
   created: string;
-  acl?: ProjectAcl;
+  current_user_role?: string;
 }
 
 /**
@@ -46,9 +45,16 @@ const delete_project = (name: string, id: string, e: React.MouseEvent) => {
 /**
  * react component for project info on the project list
  */
-const Project: React.FC<ProjectProps> = ({ name, id, description, creator, created, acl }) => {
+const Project: React.FC<ProjectProps> = ({
+  name,
+  id,
+  description,
+  creator,
+  created,
+  current_user_role,
+}) => {
   const project_href = server_root + "projects/" + id;
-  const canDelete = useCanDeleteProject(acl);
+  const canDelete = useCanDeleteProject(current_user_role);
 
   const navigateToProject = () => {
     window.location.assign(project_href);

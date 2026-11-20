@@ -75,6 +75,10 @@ class ClearAllButton extends React.PureComponent {
   }
 }
 
+function canEditVariableAliases(userRole) {
+  return userRole === "writer" || userRole === "administrator";
+}
+
 class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -101,11 +105,10 @@ class ControlsButtonVarOptions extends React.PureComponent {
   }
 
   closeModal = (e) => {
-    // Write variable aliases to database if user's role is not 'reader'
+    // Write variable aliases only for a writer or administrator.
     let self = this;
 
-    // For users with role 'reader', just close the dialog and stop.
-    if (this.props.userRole == "reader") {
+    if (!canEditVariableAliases(this.props.userRole)) {
       $("#" + self.modalId).modal("hide");
       return;
     }
@@ -373,8 +376,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       <h5 className="mb-0">Variable Ranges</h5>
                     </a>
                   </li>
-                  {/* Show variable alias labels UI only to non-readers  */}
-                  {this.props.userRole != "reader" && (
+                  {/* Show variable alias labels only to writers and administrators. */}
+                  {canEditVariableAliases(this.props.userRole) && (
                     <li className="nav-item">
                       <a
                         className="nav-link"
@@ -566,8 +569,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
                       </div>
                     )}
                   </div>
-                  {/* Show variable alias labels UI only to non-readers  */}
-                  {this.props.userRole != "reader" && (
+                  {/* Show variable alias labels only to writers and administrators. */}
+                  {canEditVariableAliases(this.props.userRole) && (
                     <div
                       className="tab-pane"
                       id="variable-alias-tab-content"
