@@ -95,11 +95,20 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, alpha_columns, alpha_column_types, 
         landmarks=landmarks, use_coordinates=use_coordinates)
 
-    # new addition: compute initial LOF per variable
-    LOF_vec = dac.init_LOF(var_dist, proj=proj, landmarks=landmarks, use_coordinates=use_coordinates)
+    # compute initial LOF for all variables
+    LOF_vec = dac.compute_LOF(mds_coords)
+
+    # compute initial DBSCAN for all variables
+    DBSCAN_vec = dac.compute_DBSCAN(mds_coords)
+
+    # compute initial silhouette scores for all variables
+    silhouette_vec = dac.compute_silhouette(mds_coords, DBSCAN_vec)
 
     # compute LOF summary value for ranking this model
     LOF_summary = numpy.max(LOF_vec)
+
+    # compute silhouette summary values for ranking this model
+    silhouette_summary = numpy.mean(silhouette_vec)
 
     dac_error.log_dac_msg("Pushing data to database.")
 
@@ -271,6 +280,13 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     # upload lof values as parameter
     slycat.web.server.put_model_parameter(database, model, "dac-lof-values", LOF_vec.tolist())
     slycat.web.server.put_model_parameter(database, model, "dac-outlier-summary", LOF_summary)
+
+    # upload dbscan values as parameter
+    slycat.web.server.put_model_parameter(database, model, "dac-dbscan-values", DBSCAN_vec.tolist())
+
+    # upload silhouette values as parameter
+    slycat.web.server.put_model_parameter(database, model, "dac-silhouette-values", silhouette_vec.tolist())
+    slycat.web.server.put_model_parameter(database, model, "dac-silhouette-summary", silhouette_summary)
 
     # upload done indicator for polling routine
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])

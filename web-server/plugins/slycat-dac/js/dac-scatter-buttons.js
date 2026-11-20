@@ -34,22 +34,30 @@ var fisher_pos = null;
 var diff_button_used = false;
 var diff_desired_state = null;
 
-// is lof button out of date?
+// are dropdowns out of date?
 // true if correct, false if out of date
-var lof_button_state = true;
+var lof_dropdown_state = true;
+var dbscan_dropdown_state = true;
+var silhouette_dropdown_state = true;
 
 // maximum number of plots
 var max_num_plots = null;
 
 // color by selection menu (default is "Do Not Color")
 var curr_color_by_sel = -1;
-var color_by_cols = [-1, -2];
-var color_by_names = ["Do Not Color", "Local Outlier Factor"];
+var color_by_cols = [-1, -2, -3, -4];
+var color_by_names = ["Do Not Color", "Local Outlier Factor", "DBSCAN Clustering", "Silhouette Score"];
 var color_by_type = [];
 var max_color_by_name_length = null;
 
 // lof calculated values
 var lof_color_by_col = [];
+
+// dbscan values
+var dbscan_color_by_col = [];
+
+// silhouette values
+var silhouette_color_by_col = [];
 
 // current actual color by data
 var curr_color_by_col = [];
@@ -68,7 +76,8 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
                          init_fisher_order, init_fisher_pos, init_diff_desired_state,
                          VAR_INCLUDE_COLUMNS, datapoints_meta, meta_include_columns, data_table,
                          editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME,
-                         init_use_PCA_comps, init_lof_values, init_lof_button_state)
+                         init_use_PCA_comps, init_lof_values, init_dbscan_values, init_silhouette_values,
+                         init_lof_dropdown_state, init_dbscan_dropdown_state, init_silhouette_dropdown_state)
 {
 
     // set up selection buttons (1-2-3 subset zoom)
@@ -104,10 +113,23 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
     $("#dac-scatter-button-zoom").on("click",
         function() { selections.set_sel_type(0); scatter_plot.draw(); });
 
-    // set up lof button
+    // set up lof dropdown
     lof_color_by_col = init_lof_values;
-    $("#dac-lof-button").on("click", lof_button);
-    module.update_lof_button(init_lof_button_state);
+    var init_lof_dropdown_state = init_lof_dropdown_state;
+    $("#dac-lof-dropdown").on("click", lof_dropdown);
+    module.update_lof_dropdown(init_lof_dropdown_state);
+
+    // set up dbscan dropdown
+    dbscan_color_by_col = init_dbscan_values;
+    var init_dbscan_dropdown_state = init_dbscan_dropdown_state;
+    $("#dac-dbscan-dropdown").on("click", dbscan_dropdown);
+    module.update_dbscan_dropdown(init_dbscan_dropdown_state);
+
+    // set up silhouette dropdown
+    silhouette_color_by_col = init_silhouette_values;
+    var init_silhouette_dropdown_state = init_silhouette_dropdown_state;
+    $("#dac-silhouette-dropdown").on("click", silhouette_dropdown);
+    module.update_silhouette_dropdown(init_silhouette_dropdown_state);
 
     // set initial zoom button indicator
     module.set_zoom_button(init_zoom_flag);
@@ -221,8 +243,18 @@ module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_f
 
     } else if (init_color_by_sel === -2) {
 
-        // LOF coloring, set flag to compute later by scatter plot
+        // LOF coloring
         curr_color_by_col = lof_color_by_col;
+    
+    } else if (init_color_by_sel === -3) {
+
+        // DBSCAN coloring
+        curr_color_by_col = dbscan_color_by_col;
+
+    } else if (init_color_by_sel === -4) {
+
+        // silhouette coloring
+        curr_color_by_col = silhouette_color_by_col;
 
     // editable column coloring
     } else if (init_color_by_sel >= num_metadata_cols + num_origin_col) {
@@ -582,7 +614,19 @@ module.update_color_by_col = function(select_col)
         // display local outlier factor
         curr_color_by_col = lof_color_by_col;
         scatter_plot.update_color(curr_color_by_col);
-        
+
+    } else if (select_col === -3) {
+
+        // display dbscan clusters
+        curr_color_by_col = dbscan_color_by_col;
+        scatter_plot.update_color(curr_color_by_col);
+
+    } else if (select_col === -4) {
+
+        // display silhouette scores
+        curr_color_by_col = silhouette_color_by_col;
+        scatter_plot.update_color(curr_color_by_col);
+
     // editable column coloring
     } else if (select_col >= num_metadata_cols + num_origin_col) {
 
@@ -718,78 +762,244 @@ module.get_color_by_col = function()
     return curr_color_by_col;
 }
 
-// lof button calls server to recompute lof then draws new color
-function lof_button ()
+// lof dropdown calls server to recompute lof then draws new color
+function lof_dropdown()
 {
-
+    
     // call server to compute lof
 	client.post_sensitive_model_command(
-    {
-        mid: mid,
-        type: "DAC",
-        command: "compute_lof",
-        parameters: {alpha: alpha_sliders.get_alpha_values(),
-                     subset: selections.get_subset(),
-                     include_columns: var_include_columns,
-                     use_PCA_comps: use_PCA_comps},
-        success: function (result)
-            {
-
-                // collect result, if not available default to empty
-                lof_color_by_col = [];
-                if (JSON.parse(result).hasOwnProperty("lof")) {
-                    lof_color_by_col = JSON.parse(result)["lof"];
-                }
-                
-                // set color by pulldown to display lof
-                $("#dac-scatter-select").prop("selectedIndex", 1);
-                curr_color_by_sel = -2;
-                curr_color_by_col = lof_color_by_col;
-
-                // re-color by lof
-                scatter_plot.update_color(curr_color_by_col);
-
-                // update lof button event
-                var LOFButtonEvent = new CustomEvent("DACLOFButtonChanged", 
-                    { detail: true });
-                document.body.dispatchEvent(LOFButtonEvent);
-
-                // fire new colorby event
-		        var colorbyEvent = new CustomEvent("DACColorByChanged",
-                    {detail: curr_color_by_sel});
-                document.body.dispatchEvent(colorbyEvent);
-
-                // update lof values
-                client.put_model_parameter ({
-                    mid: mid,
-                    aid: "dac-lof-values",
-                    value: lof_color_by_col
-                })
-
-            },
-        error: function ()
+        {
+            mid: mid,
+            type: "DAC",
+            command: "compute_lof",
+            parameters: {mds_coords: scatter_plot.get_mds_coords(),
+                         subset: selections.get_subset()},
+            success: function (result)
+                {
     
-            {
-                dialog.ajax_error ('Server failure: could not compute Local Outlier Factor.')("","","");
-            }
-
-    });
-
+                    // collect result, if not available default to empty
+                    lof_color_by_col = [];
+                    if (JSON.parse(result).hasOwnProperty("lof")) {
+                        lof_color_by_col = JSON.parse(result)["lof"];
+                    }
+                    
+                    // set color by pulldown to display lof
+                    $("#dac-scatter-select").prop("selectedIndex", 1);
+                    curr_color_by_sel = -2;
+                    curr_color_by_col = lof_color_by_col;
+    
+                    // re-color by lof
+                    scatter_plot.update_color(curr_color_by_col);
+    
+                    // update lof button event
+                    var LOFDropdownEvent = new CustomEvent("DACLOFDropdownChanged", 
+                        { detail: true });
+                    document.body.dispatchEvent(LOFDropdownEvent);
+    
+                    // fire new colorby event
+                    var colorbyEvent = new CustomEvent("DACColorByChanged",
+                        {detail: curr_color_by_sel});
+                    document.body.dispatchEvent(colorbyEvent);
+    
+                    // update lof values
+                    client.put_model_parameter ({
+                        mid: mid,
+                        aid: "dac-lof-values",
+                        value: lof_color_by_col
+                    })
+    
+                },
+            error: function ()
+        
+                {
+                    dialog.ajax_error ('Server failure: could not compute Local Outlier Factor.')("","","");
+                }
+    
+        });
+    
 }
 
-// update scatter button if sliders changed to yellow
+// update scatter dropdown if sliders changed to yellow
 // true if correct, false if out of date
-module.update_lof_button = function(lof_state)
+module.update_lof_dropdown = function(lof_state)
 {
 
-    // set lof button state
-    lof_button_state = lof_state;
+    // set lof dropdown state
+    lof_dropdown_state = lof_state;
 
     // color button yellow if out of sync
     if (lof_state) {
-        $("#dac-lof-button").removeClass("bg-warning");
+        $("#dac-lof-dropdown").removeClass("bg-warning");
+
+        // check other dropdown states
+        if (dbscan_dropdown_state && silhouette_dropdown_state) {
+            $("#dac-calculator-dropdown").removeClass("bg-warning");
+        }
+
     } else {
-        $("#dac-lof-button").addClass("bg-warning");
+        $("#dac-lof-dropdown").addClass("bg-warning");
+        $("#dac-calculator-dropdown").addClass("bg-warning");
+    }
+
+}
+
+// dbscan button calls server to recompute dbscan clustering then draws new color
+function dbscan_dropdown () {
+
+    // call server to compute DBSCAN clusters
+	client.post_sensitive_model_command(
+        {
+            mid: mid,
+            type: "DAC",
+            command: "compute_dbscan",
+            parameters: {mds_coords: scatter_plot.get_mds_coords(),
+                         subset: selections.get_subset()},
+            success: function (result)
+                {
+    
+                    // collect result, if not available default to empty
+                    dbscan_color_by_col = [];
+                    if (JSON.parse(result).hasOwnProperty("dbscan")) {
+                        dbscan_color_by_col = JSON.parse(result)["dbscan"];
+                    }
+                    
+                    // set color by pulldown to display dbscan
+                    $("#dac-scatter-select").prop("selectedIndex", 2);
+                    curr_color_by_sel = -3;
+                    curr_color_by_col = dbscan_color_by_col;
+    
+                    // re-color by dbscan
+                    scatter_plot.update_color(curr_color_by_col);
+
+                    // update dbscan dropdown event
+                    var DBSCANDropdownEvent = new CustomEvent("DACDBSCANDropdownChanged", 
+                        { detail: true });
+                    document.body.dispatchEvent(DBSCANDropdownEvent);
+
+                    // fire new colorby event
+                    var colorbyEvent = new CustomEvent("DACColorByChanged",
+                        {detail: curr_color_by_sel});
+                    document.body.dispatchEvent(colorbyEvent);
+
+                    // update lof values
+                    client.put_model_parameter ({
+                        mid: mid,
+                        aid: "dac-dbscan-values",
+                        value: dbscan_color_by_col
+                    })
+
+                },
+            error: function ()
+        
+                {
+                    dialog.ajax_error ('Server failure: could not compute DSCAN clustering.')("","","");
+                }
+    
+        });
+
+}
+
+// update scatter dropdown if sliders changed to yellow
+// true if correct, false if out of date
+module.update_dbscan_dropdown = function(dbscan_state)
+{
+    // set dbscan dropdown state
+    dbscan_dropdown_state = dbscan_state;
+
+    // color button yellow if out of sync
+    if (dbscan_state) {
+        $("#dac-dbscan-dropdown").removeClass("bg-warning");
+
+        // check other dropdown states
+        if (lof_dropdown_state && silhouette_dropdown_state) {
+            $("#dac-calculator-dropdown").removeClass("bg-warning");
+        }
+
+    } else {
+        $("#dac-dbscan-dropdown").addClass("bg-warning");
+        $("#dac-calculator-dropdown").addClass("bg-warning");
+    }
+}
+
+// silhouette button calls server to recompute silhouette score then draws new color
+function silhouette_dropdown () {
+
+// call server to compute silhouette score
+	client.post_sensitive_model_command(
+        {
+            mid: mid,
+            type: "DAC",
+            command: "compute_silhouette",
+            parameters: {mds_coords: scatter_plot.get_mds_coords(),
+                         subset: selections.get_subset()},
+            success: function (result)
+                {
+    
+                    // collect result, if not available default to empty
+                    silhouette_color_by_col = [];
+                    if (JSON.parse(result).hasOwnProperty("silhouette")) {
+                        silhouette_color_by_col = JSON.parse(result)["silhouette"];
+                    }
+                    
+                    // set color by pulldown to display dbscan
+                    $("#dac-scatter-select").prop("selectedIndex", 3);
+                    curr_color_by_sel = -4;
+                    curr_color_by_col = silhouette_color_by_col;
+    
+                    // re-color by dbscan
+                    scatter_plot.update_color(curr_color_by_col);
+
+                    // update dbscan dropdown event
+                    var SilhouetteDropdownEvent = new CustomEvent("DACSilhouetteDropdownChanged", 
+                        { detail: true });
+                    document.body.dispatchEvent(SilhouetteDropdownEvent);
+
+                    // fire new colorby event
+                    var colorbyEvent = new CustomEvent("DACColorByChanged",
+                        {detail: curr_color_by_sel});
+                    document.body.dispatchEvent(colorbyEvent);
+
+                    // update lof values
+                    client.put_model_parameter ({
+                        mid: mid,
+                        aid: "dac-silhouette-values",
+                        value: silhouette_color_by_col
+                    })
+    
+                },
+            error: function ()
+        
+                {
+                    dialog.ajax_error ('Server failure: could not compute Silhouette Score.')("","","");
+                }
+    
+        });
+
+}
+
+// update scatter dropdown if sliders changed to yellow
+// true if correct, false if out of date
+module.update_silhouette_dropdown = function(silhouette_state)
+{
+    // set dbscan dropdown state
+    silhouette_dropdown_state = silhouette_state;
+
+    // color button yellow if out of sync
+    if (silhouette_state) {
+
+        $("#dac-silhouette-dropdown").removeClass("bg-warning");
+
+        // silhouette update implies dbscan update
+        $("#dac-dbscan-dropdown").removeClass("bg-warning");
+
+        // check other dropdown states
+        if (lof_dropdown_state) {
+            $("#dac-calculator-dropdown").removeClass("bg-warning");
+        }
+
+    } else {
+        $("#dac-silhouette-dropdown").addClass("bg-warning");
+        $("#dac-calculator-dropdown").addClass("bg-warning");
     }
 
 }
