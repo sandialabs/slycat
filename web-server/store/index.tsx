@@ -22,10 +22,9 @@ import currentProjectReducer, {
   type CurrentProjectState,
 } from "./currentProjectSlice";
 import {
+  acceptedProjectRole,
   canDeleteModel,
   canDeleteProject,
-  getProjectRole,
-  type ProjectAcl,
   type ProjectRole,
 } from "utils/project-role";
 
@@ -94,19 +93,14 @@ export function currentUserFromApi(user: {
 
 export function currentProjectFromApi(project: {
   _id?: string;
-  acl?: ProjectAcl;
+  current_user_role?: unknown;
 } | null | undefined): CurrentProject | null {
   if (!project?._id) {
     return null;
   }
-  // get_project injects server_administrators for the signed-in server admin.
-  // Role uses currentUser.server_administrator instead; keep Redux ACL aligned
-  // with CouchDB so a later edit form does not show a fake member.
-  const acl = { ...(project.acl ?? {}) };
-  delete acl.server_administrators;
   return {
     _id: project._id,
-    acl,
+    current_user_role: acceptedProjectRole(project.current_user_role),
   };
 }
 
@@ -119,22 +113,15 @@ export function selectCurrentProject(state: AppStoreState): CurrentProject | nul
 }
 
 export function selectCurrentProjectRole(state: AppStoreState): ProjectRole {
-  const user = state.auth.currentUser;
-  return getProjectRole(state.currentProject.project?.acl, user?.uid, {
-    serverAdministrator: Boolean(user?.server_administrator),
-  });
+  return acceptedProjectRole(state.currentProject.project?.current_user_role);
 }
 
 export function useCurrentUser(): CurrentUser | null {
   return useAppStoreSelector(selectCurrentUser);
 }
 
-export function useCanDeleteProject(acl: ProjectAcl | null | undefined): boolean {
-  const user = useCurrentUser();
-  const role = getProjectRole(acl, user?.uid, {
-    serverAdministrator: Boolean(user?.server_administrator),
-  });
-  return canDeleteProject(role);
+export function useCanDeleteProject(role: unknown): boolean {
+  return canDeleteProject(acceptedProjectRole(role));
 }
 
 export function useCanDeleteModel(): boolean {

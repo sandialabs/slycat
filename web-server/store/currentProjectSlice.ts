@@ -4,11 +4,11 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { ProjectAcl } from "utils/project-role";
+import type { ProjectRole } from "utils/project-role";
 
 export interface CurrentProject {
   _id: string;
-  acl: ProjectAcl;
+  current_user_role: ProjectRole;
 }
 
 export interface CurrentProjectState {

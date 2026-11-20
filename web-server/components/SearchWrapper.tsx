@@ -8,7 +8,6 @@ import * as dialog from "js/slycat-dialog";
 import client from "js/slycat-web-client.js";
 import styles from "./SearchWrapper.module.scss";
 import { useCanDeleteModel } from "store";
-import type { ProjectAcl } from "utils/project-role";
 
 const MODELS_LIST_UI_STORAGE_PREFIX = "slycat:modelsListUi:v1:";
 
@@ -182,7 +181,6 @@ interface Item {
   created: string;
   marking: string;
   model_type: string;
-  acl?: ProjectAcl;
 }
 
 type BulkDeleteModelsButtonProps = {

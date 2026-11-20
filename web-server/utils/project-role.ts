@@ -4,51 +4,14 @@
 
 export type ProjectRole = "administrator" | "writer" | "reader" | "none";
 
-export interface AclUser {
-  user: string;
-}
-
-export interface ProjectAcl {
-  administrators?: AclUser[];
-  writers?: AclUser[];
-  readers?: AclUser[];
-  server_administrators?: AclUser[];
-}
-
-export interface GetProjectRoleOptions {
-  serverAdministrator?: boolean;
-}
-
-function userInList(list: AclUser[] | undefined, uid: string): boolean {
-  return Array.isArray(list) && list.some((entry) => entry && entry.user === uid);
-}
+const PROJECT_ROLES: ReadonlySet<string> = new Set(["administrator", "writer", "reader", "none"]);
 
 /**
- * Derive the current user's role on a project from JSON ACL.
- * Precedence: server administrator, project administrator, writer, reader, none.
+ * Accept a role string from the server. Anything else, including a missing value, is none.
  */
-export function getProjectRole(
-  acl: ProjectAcl | null | undefined,
-  uid: string | null | undefined,
-  options: GetProjectRoleOptions = {},
-): ProjectRole {
-  if (!uid) {
-    return "none";
-  }
-  if (options.serverAdministrator) {
-    return "administrator";
-  }
-  if (!acl) {
-    return "none";
-  }
-  if (userInList(acl.server_administrators, uid) || userInList(acl.administrators, uid)) {
-    return "administrator";
-  }
-  if (userInList(acl.writers, uid)) {
-    return "writer";
-  }
-  if (userInList(acl.readers, uid)) {
-    return "reader";
+export function acceptedProjectRole(role: unknown): ProjectRole {
+  if (typeof role === "string" && PROJECT_ROLES.has(role)) {
+    return role as ProjectRole;
   }
   return "none";
 }
