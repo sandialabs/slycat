@@ -41,6 +41,7 @@ import h5py
 import csv
 import tempfile
 from urllib.parse import urlparse, urlencode, parse_qs
+import copy
 
 # decode base64 byte streams for file upload
 import base64
@@ -58,6 +59,30 @@ class MyEncoder(json.JSONEncoder):
             return str(obj.decode())
         else:
             return super(MyEncoder, self).default(obj)
+
+
+def get_project_role(project):
+    """
+    Return the highest role for the current user on this project.
+
+    Priority:
+    administrator > writer > reader > none
+    """
+    is_server_admin = slycat.web.server.authentication.is_server_administrator()
+
+    if is_server_admin:
+        return "administrator"
+
+    if slycat.web.server.authentication.is_project_administrator(project):
+        return "administrator"
+
+    if slycat.web.server.authentication.is_project_writer(project):
+        return "writer"
+
+    if slycat.web.server.authentication.is_project_reader(project):
+        return "reader"
+
+    return "none"
 
 
 def get_sid(hostname):
@@ -222,29 +247,6 @@ def get_projects_list(_=None):
     """
     database = slycat.web.server.database.couchdb.connect()
 
-    is_server_admin = slycat.web.server.authentication.is_server_administrator()
-
-    def get_project_role(project):
-        """
-        Return the highest role for the current user on this project.
-
-        Priority:
-        administrator > writer > reader > none
-        """
-        if is_server_admin:
-            return "administrator"
-
-        if slycat.web.server.authentication.is_project_administrator(project):
-            return "administrator"
-
-        if slycat.web.server.authentication.is_project_writer(project):
-            return "writer"
-
-        if slycat.web.server.authentication.is_project_reader(project):
-            return "reader"
-
-        return "none"
-
     projects = []
 
     for project in database.scan("slycat/projects"):
@@ -303,18 +305,32 @@ def post_projects():
 @cherrypy.tools.json_out(on=True)
 def get_project(pid):
     """
-    returns a project based on "content-type" header
-    :param pid: project ID
-    :return: Either html landing page of given project or the json
-    representation of the project
+    Return a project as JSON.
+
+    :param pid: Project ID.
+    :return: JSON representation of the project.
     """
+
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
+
     slycat.web.server.authentication.require_project_reader(project)
+
+    role = get_project_role(project)
+
+    # Copy before modifying the response so we do not mutate the CouchDB document.
+    response_project = copy.deepcopy(project)
+
     if slycat.web.server.authentication.is_server_administrator():
-        project["acl"]["server_administrators"] = []
-        project["acl"]["server_administrators"].append({"user": cherrypy.request.login})
-    return project
+        response_project.setdefault("acl", {})
+        response_project["acl"]["server_administrators"] = [
+            {"user": cherrypy.request.login}
+        ]
+
+    if role != "none":
+        response_project["current_user_role"] = role
+
+    return response_project
 
 
 def get_remote_host_dict():
