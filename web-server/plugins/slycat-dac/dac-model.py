@@ -878,9 +878,9 @@ def register_slycat_plugin(context):
     # inputs are described below, if no inputs for a particular command, use -1 in call.
     def manage_editable_cols(database, model, verb, type, command, **kwargs):
 
-        # check if user is a reader (if so do not change table)
+        # check if user is a writer (if not then return)
         project = database.get("project", model["project"])
-        if slycat.web.server.authentication.is_project_reader(project):
+        if not slycat.web.server.authentication.test_project_writer(project):
             return json.dumps({"error": "reader"})
 
         # get input parameters (-1 means ignore)
