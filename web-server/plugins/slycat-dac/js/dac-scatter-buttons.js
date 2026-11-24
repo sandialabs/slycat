@@ -991,6 +991,7 @@ module.update_silhouette_dropdown = function(silhouette_state)
 
         // silhouette update implies dbscan update
         $("#dac-dbscan-dropdown").removeClass("bg-warning");
+        dbscan_dropdown_state = true
 
         // check other dropdown states
         if (lof_dropdown_state) {
