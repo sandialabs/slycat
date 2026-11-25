@@ -107,8 +107,10 @@ $(document).ready(function() {
     // use PCA components
     var use_PCA_comps = false;
 
-    // use LOF values, if available
+    // use LOF, dbscan, silhouette values, if available
     var lof_values = [];
+    var dbscan_values = [];
+    var silhouette_values = [];
 
     // model name (for downloading tables)
     var MODEL_NAME = "";
@@ -621,28 +623,116 @@ $(document).ready(function() {
                                 // save lof values
                                 lof_values = result;
 
-                                // go to model
-                                launch_model();
+                                // go to dbscan
+                                setup_DBSCAN_values();
                             },
                             error: function () {
 
-                                // notify user that editable columns exist, but could not be loaded
+                                // notify user that LOF values exist, but could not be loaded
                                 dialog.ajax_error('Server error: could not load LOF data.')
                                 ("","","")
 
-                                // no lof values, go to model anyway
-                                launch_model();
+                                // no lof values, go to dbscan
+                                setup_DBSCAN_values();
                             }
                         });
                         
                     } else {
 
                         // no lof values is OK too
-                        launch_model();
+                        setup_DBSCAN_values();
                     }
 
                 }        
             });
+    }
+
+    function setup_DBSCAN_values () {
+
+    // get model data
+    client.get_model(
+        {
+            mid: mid,
+            success: function (result)
+            {
+                // check for lof values
+                if ('artifact:dac-dbscan-values' in result)
+                {
+                    // load LOF values
+                    client.get_model_parameter({
+                        mid: mid,
+                        aid: "dac-dbscan-values",
+                        success: function (result)
+                        {
+                            // save dbscan values
+                            dbscan_values = result;
+
+                            // go to silhouette
+                            setup_silhouette_values();
+                        },
+                        error: function () {
+
+                            // notify user that dbscan values exist, but could not be loaded
+                            dialog.ajax_error('Server error: could not load DBSCAN data.')
+                            ("","","")
+
+                            // no dbscan values, try silhouette
+                            setup_silhouette_values();
+                        }
+                    });
+                    
+                } else {
+
+                    // no dbscan values is OK too
+                    setup_silhouette_values();
+                }
+
+            }        
+        });
+    }
+
+    function setup_silhouette_values () {
+
+    // get model data
+    client.get_model(
+        {
+            mid: mid,
+            success: function (result)
+            {
+                // check for lof values
+                if ('artifact:dac-silhouette-values' in result)
+                {
+                    // load LOF values
+                    client.get_model_parameter({
+                        mid: mid,
+                        aid: "dac-silhouette-values",
+                        success: function (result)
+                        {
+                            // save silhouette values
+                            silhouette_values = result;
+
+                            // go to model
+                            launch_model();
+                        },
+                        error: function () {
+
+                            // notify user that silhouette values exist, but could not be loaded
+                            dialog.ajax_error('Server error: could not load Silhouette data.')
+                            ("","","")
+
+                            // no silhouette values, go to model anyway
+                            launch_model();
+                        }
+                    });
+                    
+                } else {
+
+                    // no silhouette values is OK too
+                    launch_model();
+                }
+
+            }        
+        });
     }
 
     // setup and launch model
@@ -726,8 +816,14 @@ $(document).ready(function() {
                 // set up alpha slider value change event
                 document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
 
-                // set up lof button change event
-                document.body.addEventListener("DACLOFButtonChanged", lof_button_changed);
+                // set up lof dropdown change event
+                document.body.addEventListener("DACLOFDropdownChanged", lof_dropdown_changed);
+
+                // set up dbscan dropdown change event
+                document.body.addEventListener("DACDBSCANDropdownChanged", dbscan_dropdown_changed);
+
+                // set up silhouette dropdown change event
+                document.body.addEventListener("DACSilhouetteDropdownChanged", silhouette_dropdown_changed);
 
                 // set up selection change event
                 document.body.addEventListener("DACSelectionsChanged", selections_changed);
@@ -890,10 +986,22 @@ $(document).ready(function() {
                     }
                     selections.update_subset(init_mds_subset);
 
-                    // initialize lof button
-                    var init_lof_button_state = true;
-                    if ("dac-lof-button-state" in bookmark) {
-                        init_lof_button_state = bookmark["dac-lof-button-state"];
+                    // initialize lof dropdown
+                    var init_lof_dropdown_state = true;
+                    if ("dac-lof-dropdown-state" in bookmark) {
+                        init_lof_dropdown_state = bookmark["dac-lof-dropdown-state"];
+                    }
+
+                    // initialize dbscan dropdwon
+                    var init_dbscan_dropdown_state = true;
+                    if ("dac-dbscan-dropdown-state" in bookmark) {
+                        init_dbscan_dropdown_state = bookmark["dac-dbscan-dropdown-state"];
+                    }
+
+                    // initialize silhouette dropdwon
+                    var init_silhouette_dropdown_state = true;
+                    if ("dac-silhouette-dropdown-state" in bookmark) {
+                        init_silhouette_dropdown_state = bookmark["dac-silhouette-dropdown-state"];
                     }
 
                     // initialize difference button order and position
@@ -1033,8 +1141,9 @@ $(document).ready(function() {
                       init_zoom_flag, init_fisher_order, init_fisher_pos, 
                       init_diff_desired_state, var_include_columns, data_table_meta[0], 
                       meta_include_columns, data_table[0], editable_columns, model_origin, 
-                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps, lof_values, 
-                      init_lof_button_state
+                      init_color_by_sel, MAX_COLOR_NAME, use_PCA_comps, 
+                      lof_values, dbscan_values, silhouette_values,
+                      init_lof_dropdown_state, init_dbscan_dropdown_state, init_silhouette_dropdown_state
                     );
 
                     // set up the MDS scatter plot
@@ -1162,20 +1271,40 @@ $(document).ready(function() {
         // update MDS scatter plot
         scatter_plot.update(new_alpha_values.detail);
 
-        // update lof button to show that it's out of date
-        lof_button_changed({detail: false});
+        // update dropdown to show that they're out of date
+        lof_dropdown_changed({detail: false});
+        dbscan_dropdown_changed({detail: false});
+        silhouette_dropdown_changed({detail: false});
 
         // update bookmark to reflect new values
         bookmarker.updateState({"dac-slider-values": new_alpha_values.detail});
     }
 
-    // custom event for change in lof button state
-    function lof_button_changed (new_lof_state)
+    // custom event for change in lof dropdown state
+    function lof_dropdown_changed (new_lof_state)
     {
-        scatter_buttons.update_lof_button(new_lof_state.detail);
+        scatter_buttons.update_lof_dropdown(new_lof_state.detail);
 
-        // update bookmark to reflect to lof value
-        bookmarker.updateState({"dac-lof-button-state": new_lof_state.detail});
+        // update bookmark to reflect to lof dropdown state
+        bookmarker.updateState({"dac-lof-dropdown-state": new_lof_state.detail});
+    }
+
+    // custom event for change in dbscan dropdown state
+    function dbscan_dropdown_changed (new_dbscan_state)
+    {
+        scatter_buttons.update_dbscan_dropdown(new_dbscan_state.detail);
+
+        // update bookmark to reflect to lof dropdown state
+        bookmarker.updateState({"dac-dbscan-dropdown-state": new_dbscan_state.detail});
+    }
+
+    // custom event for change in silhouette dropdown state
+    function silhouette_dropdown_changed (new_silhouette_state)
+    {
+        scatter_buttons.update_silhouette_dropdown(new_silhouette_state.detail);
+
+        // update bookmark to reflect to lof dropdown state
+        bookmarker.updateState({"dac-silhouette-dropdown-state": new_silhouette_state.detail});
     }
 
     // custom event for change in selection 1, selection 2, active selection

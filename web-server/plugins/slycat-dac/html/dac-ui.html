@@ -33,7 +33,7 @@ S. Martin
 
   <div class="ui-layout-center dac-model-content" id="dac-main-console" style="display: none">
     <div class="ui-layout-center" id="dac-control-bar-scatter-plot">
-      <div class="ui-layout-north">
+      <div class="ui-layout-north" id="dac-control-bar">
         <!-- MDS Scatter Plot Buttons (above scatter plot)-->
         <div class="bootstrap-styles">
           <div
@@ -163,21 +163,45 @@ S. Martin
             </button>
           </div>
 
-          <div class="btn-group mt-1">
+          <div id="dac-calculator-button" class="btn-group mt-1">
             <button
-              id="dac-lof-button"
-              class="btn btn-outline-secondary btn-sm"
-              title="Compute local outlier factor values using current coordinates."
+              id="dac-calculator-dropdown"
+              class="btn btn-sm btn-outline-secondary dropdown-toggle"
+              style="min-width: auto; width: 50px"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              title="Select calculation to perform."
             >
-              <i class="fa fa-bullseye" aria-hidden="true"></i>
+              <i class="fa fa-calculator" aria-hidden="true"></i>
             </button>
+            <div class="dropdown-menu" aria-labelledby="filter-dropdown">
+              <button
+                id="dac-lof-dropdown"
+                type="button"
+                class="dropdown-item"
+                title="Compute local outlier factor scores using current scatterplot."
+              >Local Outlier Factor</button>
+              <button
+                id="dac-dbscan-dropdown"
+                type="button"
+                class="dropdown-item"
+                title="Compute DBSCAN clustering using current scatterplot."
+              >DBSCAN Clustering</button>
+              <button
+                id="dac-silhouette-dropdown"
+                type="button"
+                class="dropdown-item"
+                title="Compute Silhouette cluster scores using current scatterplot."
+              >Silhouette Cluster Score</button>
+            </div>
           </div>
 
           <select
             class="dac-select"
             title="Color scatter plot by table column."
-            id="dac-scatter-select"
-          ></select>
+            id="dac-scatter-select">
+          </select>
         </div>
       </div>
 

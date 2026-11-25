@@ -23,6 +23,7 @@ interface ModelProps {
   selected: boolean;
   onSelect: (id: string, e: React.SyntheticEvent) => void;
   outlier: number;
+  cluster: number;
 }
 
 /**
@@ -68,6 +69,7 @@ const Model: React.FC<ModelProps> = ({
   selected,
   onSelect,
   outlier,
+  cluster,
 }) => {
   const recognized_marking = markings.find((obj) => obj.type == marking);
   const model_href = server_root + "models/" + id;
@@ -108,7 +110,8 @@ const Model: React.FC<ModelProps> = ({
             Created <span>{formatDateToLocaleString(created)}</span>
             <br />
             by <span>{creator}</span>
-            {outlier !== null ? `, outlier score: ${outlier.toFixed(2)}` : null}
+            {outlier !== null ? `, outlier: ${outlier.toFixed(2)}` : null}
+            {cluster !== null ? `, cluster: ${cluster.toFixed(2)}` : null}
           </small>
             {canDelete && (
               <>

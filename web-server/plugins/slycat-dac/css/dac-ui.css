@@ -15,6 +15,14 @@
 	padding: 0px !important;
 }
 
+/* Calculator menu must paint over the scatter plot. jQuery layout sets
+   overflow and z-index inline, so these need !important. */
+#dac-control-bar
+{
+	overflow: visible !important;
+	z-index: 3 !important;
+}
+
 /***************************/
 /* mds scatter plot styles */
 /***************************/
