@@ -940,6 +940,9 @@ function silhouette_dropdown () {
                     if (JSON.parse(result).hasOwnProperty("silhouette")) {
                         silhouette_color_by_col = JSON.parse(result)["silhouette"];
                     }
+                    if (JSON.parse(result).hasOwnProperty("dbscan")) {
+                        dbscan_color_by_col = JSON.parse(result)["dbscan"];
+                    }
                     
                     // set color by pulldown to display dbscan
                     $("#dac-scatter-select").prop("selectedIndex", 3);
@@ -949,7 +952,7 @@ function silhouette_dropdown () {
                     // re-color by dbscan
                     scatter_plot.update_color(curr_color_by_col);
 
-                    // update dbscan dropdown event
+                    // update silhouette dropdown event
                     var SilhouetteDropdownEvent = new CustomEvent("DACSilhouetteDropdownChanged", 
                         { detail: true });
                     document.body.dispatchEvent(SilhouetteDropdownEvent);
@@ -959,13 +962,20 @@ function silhouette_dropdown () {
                         {detail: curr_color_by_sel});
                     document.body.dispatchEvent(colorbyEvent);
 
-                    // update lof values
+                    // update dbscan values
+                    client.put_model_parameter ({
+                        mid: mid,
+                        aid: "dac-dbscan-values",
+                        value: dbscan_color_by_col
+                    })
+
+                    // update silhouette values
                     client.put_model_parameter ({
                         mid: mid,
                         aid: "dac-silhouette-values",
                         value: silhouette_color_by_col
                     })
-    
+
                 },
             error: function ()
         

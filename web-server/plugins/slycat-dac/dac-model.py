@@ -679,9 +679,10 @@ def register_slycat_plugin(context):
         mds_coords = mds_coords[:,0:2]
 
         # compute silhouette scores
-        silhouette_values = dac.compute_silhouette(mds_coords, subset=subset)
+        silhouette_values, dbscan_values = dac.compute_silhouette(mds_coords, subset=subset)
 
-        return json.dumps({"silhouette": silhouette_values.tolist()})
+        return json.dumps({"silhouette": silhouette_values.tolist(),
+                           "dbscan": dbscan_values.tolist()})
 
     # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):

@@ -1226,4 +1226,4 @@ def compute_silhouette(mds_coords, labels=None, subset=None):
     silhouette_subset = silhouette_samples(mds_subset, labels_subset)
     silhouette_vals[subset_inds] = silhouette_subset
     
-    return silhouette_vals
+    return silhouette_vals, labels
