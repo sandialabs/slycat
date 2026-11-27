@@ -42,6 +42,7 @@ import {
 } from "../store";
 import { IDropdownItems, SetSelectedFunction } from "components/ControlsDropdown";
 import _ from "lodash";
+import { setActiveView, selectUqsaActiveView, UqsaActiveView } from "../uqsaSlice";
 
 interface PSControlsBarDropdownsType {
   id: string;
@@ -61,6 +62,7 @@ interface PSControlsBarAxesVariablesType {
 
 interface PSControlsBarProps {
   store: any;
+  layout: any;
   auto_scale: boolean;
   variableRanges: VariableRangesType;
   active_filters: ActiveFiltersType;
@@ -70,6 +72,7 @@ interface PSControlsBarProps {
   xy_pairs_items: { key: string; name: string }[];
   xy_pairs_indexes: number[];
   show_histogram: boolean;
+  uqsa_active_view: UqsaActiveView;
   metadata: TableMetadataType;
   xy_pair_selected: string;
   model: any;
@@ -560,6 +563,16 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
       }
     }
 
+    // UQ/SA controls — menu only dispatches view + opens east pane;
+    // PSUQSAPanel owns fetching and rendering.
+    const dropdown_UQSA_items = [
+      { type: "header", name: "Uncertainty Quantification" },
+      { key: "means-ci", name: "Means and Confidence Intervals" },
+      { type: "divider" },
+      { type: "header", name: "Sensitivity Analysis" },
+      { key: "pearsons", name: "Pearson's Correlation" },
+    ];
+
     return (
       <Provider store={this.props.store}>
         <React.Fragment>
@@ -702,6 +715,24 @@ class PSControlsBar extends React.Component<PSControlsBarProps> {
                 setColormap={this.props.setColormap}
               />
             </ControlsGroup>
+            <ControlsGroup id="uq-sa-switcher" class="btn-group ms-3">
+              <ControlsDropdown
+                key="uq-sa-dropdown"
+                id="uq-sa-dropdown"
+                label="UQ/SA"
+                title="Uncertainty Quantification, Sensitivity Analysis"
+                state_label="uqsa_view"
+                items={dropdown_UQSA_items}
+                selected={this.props.uqsa_active_view ?? ""}
+                set_selected={(key) => {
+                  if (key === "means-ci" || key === "pearsons") {
+                    this.props.setActiveView(key);
+                    this.props.layout.open("east");
+                  }
+                }}
+                button_style={button_style}
+              />
+            </ControlsGroup>
           </React.StrictMode>
         </React.Fragment>
       </Provider>
@@ -746,6 +777,7 @@ const mapStateToProps = (state: RootState) => {
     show_histogram: state.scatterplot.show_histogram,
     auto_scale: state.scatterplot.auto_scale,
     metadata: state.derived.table_metadata,
+    uqsa_active_view: selectUqsaActiveView(state),
   };
 };
 
@@ -765,4 +797,5 @@ export default connect(mapStateToProps, {
   setHiddenSimulations,
   setManuallyHiddenSimulations,
   setSelectedSimulations,
+  setActiveView,
 })(PSControlsBar);

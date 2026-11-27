@@ -59,7 +59,18 @@ import data_reducer, {
   setSelectedSimulations,
   setHiddenSimulations,
 } from "./dataSlice";
-import layout_reducer, { SLICE_NAME as LAYOUT_SLICE_NAME, setWestPaneSize } from "./layoutSlice";
+import uqsa_reducer, {
+  SLICE_NAME as UQSA_SLICE_NAME,
+  initialState as uqsaInitialState,
+  setActiveView,
+  selectUqsaActiveView,
+} from "./uqsaSlice";
+import layout_reducer, {
+  SLICE_NAME as LAYOUT_SLICE_NAME,
+  setWestPaneSize,
+  setEastPaneSize,
+  selectLayoutEastSize,
+} from "./layoutSlice";
 import {
   setXValues,
   setYValues,
@@ -106,9 +117,11 @@ import {
   selectVIsCategorical,
 } from "./selectors";
 
-import React from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 import PSControlsBar from "./Components/PSControlsBar";
+import PSUQSAPanel from "./Components/PSUQSAPanel";
 import { COLUMN_LABELS } from "utils/ui-labels";
 
 let table_metadata = null;
@@ -200,7 +213,9 @@ $(document).ready(function () {
   //////////////////////////////////////////////////////////////////////////////////////////
 
   // jquery.layout applies the new size after ondrag_end, then fires onresize_end with the final size.
+  // Window resizes also fire onresize_end, so the flag keeps those from overwriting a user size.
   let westUserDragging = false;
+  let eastUserDragging = false;
 
   layout = $("#parameter-image-plus-layout").layout({
     north: {
@@ -227,6 +242,37 @@ $(document).ready(function () {
       onopen_end: function () {
         if (filter_manager && typeof filter_manager.applyWestPaneSize === "function") {
           filter_manager.applyWestPaneSize();
+        }
+      },
+    },
+    east: {
+      // UQ/SA. size 0 in Redux means "user has not resized": keep this default.
+      // A remembered size is applied on open, same as the west pane.
+      initClosed: true,
+      size: $("#parameter-image-plus-layout").width() / 4,
+      ondrag_end: function () {
+        eastUserDragging = true;
+      },
+      onresize_end: function (pane_name, pane_element, pane_state) {
+        if (eastUserDragging && window.store) {
+          eastUserDragging = false;
+          window.store.dispatch(setEastPaneSize(pane_state.size));
+        }
+      },
+      onopen_end: function () {
+        if (!window.store || !layout) {
+          return;
+        }
+        const userSize = selectLayoutEastSize(window.store.getState());
+        // Skip when the pane is already that size. sizePane from here would
+        // otherwise resize a pane that just opened.
+        if (userSize > 0 && Number(layout.state.east.size) !== userSize) {
+          layout.sizePane("east", userSize);
+        }
+      },
+      onclose_end: function () {
+        if (window.store) {
+          window.store.dispatch(setActiveView(null));
         }
       },
     },
@@ -484,6 +530,13 @@ $(document).ready(function () {
             derivedState,
           );
 
+          // Persist the selected analysis only. Drop cells and status so results refetch.
+          // Pane size is layout.east and arrives with the rest of the bookmarked layout state.
+          preloadedState.uqsa = {
+            ...uqsaInitialState,
+            activeView: preloadedState.uqsa?.activeView ?? null,
+          };
+
           // Unknown / renamed bookmarked colormaps fall back to Night.
           preloadedState.colormap = slycat_color_maps.resolve_colormap_name(preloadedState.colormap);
 
@@ -493,6 +546,7 @@ $(document).ready(function () {
           const reducer = combinedReduction(ps_reducer, {
             [SCATTERPLOT_SLICE_NAME]: scatterplot_reducer,
             [DATA_SLICE_NAME]: data_reducer,
+            [UQSA_SLICE_NAME]: uqsa_reducer,
             [LAYOUT_SLICE_NAME]: layout_reducer,
           });
 
@@ -520,8 +574,11 @@ $(document).ready(function () {
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkReduxStateTree = () => {
+            const fullState = window.store.getState();
+            const { uqsa, ...rest } = fullState;
             bookmarker.updateState({
-              state:
+              state: {
+                ...rest,
                 // Remove derived property from state tree because it should be computed
                 // from model data each time the model is loaded. Otherwise it has the
                 // potential of becoming huge. Plus we shouldn't be storing model data
@@ -529,7 +586,12 @@ $(document).ready(function () {
                 // Passing 'undefined' removes it from bookmark. Passing 'null' actually
                 // sets it to null, so I think it's better to remove it entirely.
                 // eslint-disable-next-line no-undefined
-                { ...window.store.getState(), derived: undefined },
+                derived: undefined,
+                // Persist the selected analysis. Pane size is on layout, and heatmap data is recomputed.
+                uqsa: {
+                  activeView: uqsa?.activeView ?? null,
+                },
+              },
             });
           };
           window.store.subscribe(bookmarkReduxStateTree);
@@ -553,6 +615,17 @@ $(document).ready(function () {
           manually_hidden_simulations = _.cloneDeep(
             selectManuallyHiddenSimulations(store.getState()),
           );
+
+          // Reopen UQ/SA when a bookmarked analysis is restored.
+          // Set the size before opening so the pane does not flash the default width.
+          // Later opens in this session go through onopen_end, which applies the same size.
+          if (selectUqsaActiveView(window.store.getState())) {
+            const bookmarkedPaneSize = selectLayoutEastSize(window.store.getState());
+            if (bookmarkedPaneSize > 0) {
+              layout.sizePane("east", bookmarkedPaneSize);
+            }
+            layout.open("east");
+          }
 
           // Setting the user's role in redux state
           // Get the slycat-navbar knockout component since it already calculates the user's role
@@ -1124,6 +1197,7 @@ $(document).ready(function () {
       const controls_bar = (
         <PSControlsBar
           store={window.store}
+          layout={layout}
           axes_variables={axes_variables}
           indices={indices}
           mid={model_id}
@@ -1139,6 +1213,16 @@ $(document).ready(function () {
       );
       const react_controls_root = createRoot(document.getElementById("react-controls"));
       react_controls_root.render(controls_bar);
+
+      // Mount UQ/SA panel into the east pane (React island + Redux Provider)
+      const uqsa_root = createRoot(document.getElementById("uq-sa"));
+      uqsa_root.render(
+        <StrictMode>
+          <Provider store={window.store}>
+            <PSUQSAPanel mid={model_id} layout={layout} />
+          </Provider>
+        </StrictMode>,
+      );
     }
   }
 
